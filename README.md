@@ -39,6 +39,7 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Check 2: Model Registry Query](#check-2-model-registry-query)
   - [Check 3: Structured Tool-Calling Test](#check-3-structured-tool-calling-test)
   - [Check 4: Agentic Codebase Task](#check-4-agentic-codebase-task)
+  - [Check 5: The Industry-Standard Benchmark Demo: HTML5 Water Simulation (`demo.sh`)](#check-5-the-industry-standard-benchmark-demo-html5-water-simulation-demosh)
 - [Recommended Models for Radeon AI PRO R9700 (32 GB VRAM)](#recommended-models-for-radeon-ai-pro-r9700-32-gb-vram)
 - [ROCm and RDNA 4 Optimization Tuning](#rocm-and-rdna-4-optimization-tuning)
 - [Benchmarking Models with SWE-bench](#benchmarking-models-with-swe-bench)
@@ -229,8 +230,10 @@ The project directory is structured as follows:
 ├── setup.sh                  # Quickstart helper to launch ROCm inference container (auto-routes vLLM or GGUF)
 ├── check.sh                  # Automated health check & live prompt verification script
 ├── test.sh                   # Automated dual benchmark runner (SWE-bench & GPQA) & results summary
+├── demo.sh                   # Industry-standard HTML5 water simulation coding challenge demo
 ├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite
 ├── download_model.sh         # Model downloader for Qwen3.8-27B-Q4_K_M.gguf (~16.8 GB) with resume
+├── jev_gateway.py            # Open Jev TypeSafe semantic routing gateway (AMD R9700 + Claude)
 ├── docker-compose.yml        # Primary orchestration file (vLLM ROCm FP8/SafeTensors + OpenCode + Benchmark)
 ├── docker-compose.gguf.yml   # GGUF orchestration file (llama.cpp ROCm server for quantized models)
 ├── docker-compose.sglang.yml # Alternative orchestration file for SGLang
@@ -240,6 +243,7 @@ The project directory is structured as follows:
 ├── .gitignore                # Ignores local model weights, caches, logs, and .env
 ├── README.md                 # Comprehensive documentation (this file)
 ├── models/                   # Directory holding GGUF model files (e.g. Qwen3.8-27B-Q4_K_M.gguf)
+├── opencode-water-sim/       # Generated 2D water simulation benchmark demo directory
 ├── benchmark/                # Model benchmarking harness (SWE-bench & GPQA)
 │   ├── Dockerfile            # Containerized benchmark runner
 │   ├── requirements.txt      # Benchmark dependencies (openai, datasets, swebench)
@@ -866,6 +870,63 @@ docker compose exec -it opencode opencode run \
 ```
 
 Check your host workspace directory: `fibonacci.py` will have been created locally on your filesystem.
+
+---
+
+### Check 5: The Industry-Standard Benchmark Demo: HTML5 Water Simulation (`demo.sh`)
+
+Across major coding agent leaderboards (like those on Artificial Analysis and community repos), the interactive **2D canvas water physics simulation** has become the definitive "vibe-coding" and capability benchmark demo.
+
+#### The Challenge
+Building a fully self-contained HTML5/JavaScript physics engine that simulates:
+- Falling fluid droplets and liquid particles with velocity and gravity vectors
+- Dynamic obstacle collisions with adjustable sliders and barriers
+- Fluid pooling at the bottom with realistic fluid density and surface tension
+- Real-time interactive ripples when clicked or dragged
+- Packing everything—CSS styling, HTML structure, and the complete physics math loop—into a single, production-grade `index.html` file.
+
+#### Why it's the Industry Standard
+It forces the agent to handle complex mathematics (Navier-Stokes approximations or particle systems), state management, and real-time DOM manipulation simultaneously. It immediately proves whether an agent can reason structurally or if it just spits out broken snippets.
+
+#### How to Run the Benchmark Demo
+
+Execute this standard evaluation directly using the provided [demo.sh](file:///home/amd/workspace/coder/demo.sh) script:
+
+```bash
+# 1. Run automated code generation and physics structural audit
+./demo.sh
+
+# 2. Run generation and immediately launch live preview server at http://localhost:3000
+./demo.sh --serve
+
+# 3. Run in interactive OpenCode TUI mode
+./demo.sh --interactive
+```
+
+The script automatically:
+1. Verifies local ROCm inference server readiness on port 8000.
+2. Auto-detects the active model identity from the `/v1/models` registry.
+3. Initializes the clean `opencode-water-sim/` workspace directory.
+4. Dispatches the standard benchmark prompt to OpenCode (`opencode run --auto`).
+5. Performs an automated 6-point structural audit on `opencode-water-sim/index.html` (Canvas element, `requestAnimationFrame` loop, fluid dynamics math, collision bounds, interactive ripples, and CSS styling).
+6. Optionally spins up a local HTTP preview server at `http://localhost:3000` to interact with the simulation live in your browser.
+
+#### Multi-Model Comparison with OpenCode Benchmark Dashboard
+
+If you are testing multiple underlying LLMs (like Qwen, DeepSeek, Claude, or GLM) via OpenCode's engine to see which performs best on your AMD Radeon AI PRO R9700 hardware, integrate your test cases directly into the OpenCode Benchmark Dashboard:
+
+```bash
+# 1. Add your water-sim test to the prompts directory and generate answers
+bun run answer -m "opencode/deepseek-v4-pro" -t CODING-water-sim
+
+# 2. Evaluate model outputs and score completion
+bun run evaluate -m "opencode/deepseek-v4-pro" -t CODING-water-sim
+
+# 3. Spin up the visual comparison dashboard at http://localhost:3000
+bun run dashboard
+```
+
+This spins up a local server at `http://localhost:3000` so you can visually audit the agent's completion speed, token efficiency, and accuracy score side-by-side.
 
 ---
 

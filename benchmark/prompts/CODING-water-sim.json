@@ -1,0 +1,16 @@
+{
+  "test_id": "CODING-water-sim",
+  "category": "canvas-physics",
+  "title": "The Industry-Standard Benchmark Demo: HTML5 Water Simulation",
+  "prompt": "Build a highly polished, interactive 2D water particle simulation using HTML5 Canvas and vanilla JavaScript. Liquid particles should fall from the top, collide with adjustable sliders/obstacles, pool at the bottom with realistic fluid density, and ripple when clicked. Pack everything—CSS styling, HTML structure, and the complete physics math loop—into a single, production-grade index.html file.",
+  "target_file": "index.html",
+  "validation_criteria": [
+    "HTML5 Canvas element rendering via getContext('2d')",
+    "requestAnimationFrame continuous rendering loop",
+    "Particle kinematics (gravity, velocity, position integration)",
+    "Fluid density / pooling behavior at container bottom",
+    "Adjustable sliders or interactive collision obstacles",
+    "Mouse click or pointer drag ripple propagation",
+    "Self-contained single index.html file with embedded CSS and JS"
+  ]
+}
