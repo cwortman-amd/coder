@@ -1,0 +1,20 @@
+# Environment & secrets
+.env
+
+# Logs and caches
+*.log
+.cache/
+opencode-data/
+test_*.json
+benchmark_results/
+**/benchmark_results/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local model weights (downloaded via download_model.sh)
+models/*
+!models/.gitkeep

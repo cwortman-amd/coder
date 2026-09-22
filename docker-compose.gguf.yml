@@ -1,0 +1,86 @@
+services:
+  # ============================================================================
+  # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
+  # ============================================================================
+  inference:
+    image: ${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}
+    container_name: rocm-inference-server
+    restart: unless-stopped
+    ipc: host
+    network_mode: host
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
+      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+    volumes:
+      - ${MODELS_DIR:-./models}:/models
+      - ${HF_CACHE_DIR:-~/.cache/huggingface}:/root/.cache/huggingface
+    command: >
+      -m /models/${MODEL_FILE:-Qwen3.8-27B-Q4_K_M.gguf}
+      --host 0.0.0.0
+      --port ${INFERENCE_PORT:-8000}
+      -ngl 99
+      --ctx-size ${MAX_MODEL_LEN:-32768}
+      --alias ${MODEL_NAME:-Qwen3.8-27B}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # ============================================================================
+  # Client Agent: OpenCode Web & CLI (ghcr.io/anomalyco/opencode)
+  # ============================================================================
+  opencode:
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
+    container_name: opencode-client
+    restart: unless-stopped
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
+      - OPENAI_API_KEY=dummy-local-key
+      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B}
+    volumes:
+      - .:/workspace
+      - ./opencode.json:/root/.config/opencode/opencode.json:ro
+      - opencode-data:/root/.local/share/opencode
+    working_dir: /workspace
+    command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "0.0.0.0"]
+
+  # ============================================================================
+  # Benchmark Suite: SWE-bench Runner for Model Evaluation
+  # ============================================================================
+  benchmark:
+    build:
+      context: ./benchmark
+      dockerfile: Dockerfile
+    container_name: swebench-runner
+    profiles:
+      - benchmark
+    network_mode: host
+    depends_on:
+      inference:
+        condition: service_healthy
+    volumes:
+      - ./benchmark:/app
+      - ./benchmark_results:/app/benchmark_results
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["python3"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
+
+volumes:
+  opencode-data:
+    name: opencode-data

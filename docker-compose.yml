@@ -1,0 +1,110 @@
+services:
+  # ============================================================================
+  # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
+  # ============================================================================
+  inference:
+    image: ${INFERENCE_IMAGE:-vllm/vllm-openai-rocm:latest}
+    container_name: rocm-inference-server
+    restart: unless-stopped
+    ipc: host
+    network_mode: host # Allows direct, low-latency access and seamless ROCm IPC
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      # Target the discrete Radeon AI PRO R9700 (GPU 0), ignoring integrated iGPU
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
+      - PYTORCH_ROCM_ARCH=gfx1201
+      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - HF_HOME=/root/.cache/huggingface
+      - SAFETENSORS_FAST_GPU=1
+      - HIP_FORCE_DEV_KERNARG=1
+      - TOKENIZERS_PARALLELISM=false
+      - PYTHONUNBUFFERED=1
+      - VLLM_ROCM_FP8_PADDING=0
+    volumes:
+      # Persist downloaded Hugging Face model weights on host
+      - ${HF_CACHE_DIR:-~/.cache/huggingface}:/root/.cache/huggingface
+      - /home/amd/.cache/vllm:/root/.cache/vllm
+      - /home/amd/.triton:/root/.triton
+      - .:/workspace
+      - ./qwen3_5.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen3_5.py:ro
+    entrypoint: ["vllm", "serve"]
+    command: >
+      ${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
+      --host 0.0.0.0
+      --port ${INFERENCE_PORT:-8000}
+      --max-model-len ${MAX_MODEL_LEN:-9600}
+      --max-num-seqs 16
+      --max-num-batched-tokens 2048
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.90}
+      --enable-auto-tool-choice
+      --tool-call-parser ${TOOL_PARSER:-hermes}
+      --hf-overrides '{"architectures": ["Qwen3_5ForCausalLM"]}'
+      --compilation-config '{"cudagraph_mode": "NONE"}'
+      --kv-cache-memory-bytes 1073741824
+      --enable-prefix-caching
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  # ============================================================================
+  # Client Agent: OpenCode CLI (ghcr.io/anomalyco/opencode)
+  # ============================================================================
+  opencode:
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
+    container_name: opencode-client
+    restart: unless-stopped
+    network_mode: host # Connect directly to inference server on 127.0.0.1:8000
+    stdin_open: true
+    tty: true
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
+      - OPENAI_API_KEY=dummy-local-key
+      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B}
+    volumes:
+      # Mount current workspace into container working directory
+      - .:/workspace
+      # Mount OpenCode provider configuration
+      - ./opencode.json:/root/.config/opencode/opencode.json:ro
+      # Persist OpenCode session history and state
+      - opencode-data:/root/.local/share/opencode
+    working_dir: /workspace
+    # Automatically launches the OpenCode Web UI on port 4096 for interactive demos
+    command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "0.0.0.0"]
+
+  # ============================================================================
+  # Benchmark Suite: SWE-bench Runner for Model Evaluation
+  # ============================================================================
+  benchmark:
+    build:
+      context: ./benchmark
+      dockerfile: Dockerfile
+    container_name: swebench-runner
+    profiles:
+      - benchmark
+    network_mode: host
+    depends_on:
+      inference:
+        condition: service_healthy
+    volumes:
+      - ./benchmark:/app
+      - ./benchmark_results:/app/benchmark_results
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["python3"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
+
+volumes:
+  opencode-data:
+    name: opencode-data

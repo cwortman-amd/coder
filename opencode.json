@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "rocm-local/Qwen3.8-27B",
+  "provider": {
+    "rocm-local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "ROCm Local (AMD Radeon AI PRO R9700)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8000/v1"
+      },
+      "models": {
+        "Qwen3.8-27B": {
+          "name": "Qwen 3.8 27B"
+        },
+        "Qwen/Qwen3.8-27B-FP8": {
+          "name": "Qwen 3.8 27B (FP8)"
+        },
+        "Qwen3.8-27B-Q4_K_M.gguf": {
+          "name": "Qwen 3.8 27B (Q4_K_M GGUF)"
+        },
+        "Qwen/Qwen2.5-Coder-7B-Instruct": {
+          "name": "Qwen 2.5 Coder 7B"
+        },
+        "Qwen/Qwen2.5-Coder-14B-Instruct": {
+          "name": "Qwen 2.5 Coder 14B"
+        },
+        "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ": {
+          "name": "Qwen 2.5 Coder 32B (AWQ)"
+        },
+        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct": {
+          "name": "DeepSeek Coder V2 Lite"
+        },
+        "Qwen/Qwen3-0.6B": {
+          "name": "Qwen3 0.6B (Smoke Test)"
+        }
+      }
+    }
+  }
+}

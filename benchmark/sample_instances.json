@@ -1,0 +1,23 @@
+[
+  {
+    "instance_id": "astropy__astropy-12907",
+    "repo": "astropy/astropy",
+    "base_commit": "e143169c5e3158c3046755fbab52c42289c02604",
+    "problem_statement": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels.\n\nConsider the following model:\n\n```python\nfrom astropy.modeling import models as m\nfrom astropy.modeling.separable import separability_matrix\n\ncm = m.Linear1D(10) & m.Linear1D(5)\nprint(separability_matrix(cm))\n# array([[ True, False],\n#        [False,  True]])\n```\n\nIf we nest compound models:\n```python\ncm_nested = m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5)\nprint(separability_matrix(cm_nested))\n```\nExpected output should correctly preserve the block-diagonal structure for nested compounds, but currently returns True across diagonal blocks incorrectly.",
+    "hints_text": "Check `_separable` function in astropy/modeling/separable.py for nested CompoundModel operators (& and |)."
+  },
+  {
+    "instance_id": "sympy__sympy-18057",
+    "repo": "sympy/sympy",
+    "base_commit": "b0a68d0c75ffae002d2c129e71ab85c961e687e1",
+    "problem_statement": "Equality with custom class fails with AttributeError: 'Symbol' object has no attribute 'x'.\n\nEvaluating `x == CustomClass()` raises an AttributeError when the custom class has an `__eq__` implementation that expects specific attributes on unknown objects instead of returning NotImplemented or False.\nSymPy's `Expr.__eq__` should handle equality comparisons defensively without uncaught exceptions.",
+    "hints_text": "In sympy/core/expr.py, ensure __eq__ catches AttributeError when comparing with foreign unknown objects."
+  },
+  {
+    "instance_id": "django__django-11099",
+    "repo": "django/django",
+    "base_commit": "e6312a04033320c228807d9f7572704207901007",
+    "problem_statement": "UsernameValidator regex allows trailing newline in username.\n\nASCIIUsernameValidator and UnicodeUsernameValidator use `r'^[\\w.@+-]+$'` which in Python regex permits a trailing newline `\\n` because `$` matches end of string or before newline.\nThe regex should use `\\A` and `\\Z` instead of `^` and `$` to prevent trailing newlines.",
+    "hints_text": "Update regex in django/contrib/auth/validators.py to use \\A and \\Z."
+  }
+]

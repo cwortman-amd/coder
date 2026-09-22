@@ -1,0 +1,32 @@
+[
+  {
+    "Question": "A particle of mass m is in a 1D infinite potential well with boundaries at x = 0 and x = L. A perturbation H' = alpha * delta(x - L/2) is added at the center of the well, where alpha > 0. What is the first-order energy correction E^(1)_n for the n-th energy eigenstate?",
+    "Correct Answer": "(2 * alpha / L) * sin^2(n * pi / 2), which is 0 for even n and 2 * alpha / L for odd n",
+    "Incorrect Answer 1": "alpha / L for all n",
+    "Incorrect Answer 2": "(alpha / L) * cos^2(n * pi / 2), which is alpha / L for even n and 0 for odd n",
+    "Incorrect Answer 3": "2 * alpha / L for all n",
+    "High-level domain": "Physics",
+    "Subdomain": "Quantum Mechanics",
+    "Explanation": "The unperturbed wavefunctions are psi_n(x) = sqrt(2/L) * sin(n * pi * x / L). The first order correction is <psi_n|H'|psi_n> = int_0^L (2/L) * sin^2(n*pi*x/L) * alpha * delta(x - L/2) dx = (2*alpha/L) * sin^2(n*pi/2). For even n, sin(n*pi/2) = 0, so E^(1)_n = 0. For odd n, sin^2(n*pi/2) = 1, so E^(1)_n = 2*alpha/L."
+  },
+  {
+    "Question": "Consider the SN2 substitution reaction of (2R)-2-bromobutane with sodium cyanide in anhydrous dimethyl sulfoxide (DMSO). What is the stereochemical configuration and IUPAC name of the major organic product formed?",
+    "Correct Answer": "(2S)-2-methylbutanenitrile",
+    "Incorrect Answer 1": "(2R)-2-methylbutanenitrile",
+    "Incorrect Answer 2": "(2R)-2-bromopentanenitrile",
+    "Incorrect Answer 3": "A racemic mixture of (2R)- and (2S)-2-methylbutanenitrile",
+    "High-level domain": "Chemistry",
+    "Subdomain": "Organic Chemistry",
+    "Explanation": "The SN2 mechanism involves backside nucleophilic attack at the electrophilic carbon bearing the bromide leaving group, causing a clean inversion of stereochemical configuration from (2R) to (2S). The incoming cyanide carbon replaces the bromine atom, producing (2S)-2-methylbutanenitrile."
+  },
+  {
+    "Question": "In eukaryotic mRNA translation, which initiation factor specifically binds to the 7-methylguanosine (m7G) 5' cap structure of mRNA as part of the eIF4F complex?",
+    "Correct Answer": "eIF4E",
+    "Incorrect Answer 1": "eIF4A",
+    "Incorrect Answer 2": "eIF4G",
+    "Incorrect Answer 3": "eIF2",
+    "High-level domain": "Biology",
+    "Subdomain": "Molecular Biology",
+    "Explanation": "The eIF4F initiation complex consists of eIF4E (the 5' cap-binding subunit), eIF4A (an ATP-dependent RNA helicase), and eIF4G (a scaffolding protein that coordinates the complex). eIF4E specifically recognizes and binds the m7G cap."
+  }
+]
