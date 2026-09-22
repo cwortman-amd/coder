@@ -17,8 +17,8 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
 - [Prerequisites](#prerequisites)
 - [File Structure](#file-structure)
 - [Docker Compose Specification](#docker-compose-specification)
-  - [vLLM Configuration (Default SafeTensors / FP8)](#vllm-configuration-default-safetensors--fp8)
-  - [llama.cpp ROCm GGUF Configuration (`docker-compose.gguf.yml`)](#llamacpp-rocm-gguf-configuration-docker-composeggufyml)
+  - [vLLM Configuration (Dual R9700 for FP8 / Single R9700 for <=14B)](#vllm-configuration-dual-r9700-for-fp8--single-r9700-for-14b)
+  - [llama.cpp ROCm GGUF Configuration (Recommended for Single 32GB R9700)](#llamacpp-rocm-gguf-configuration-recommended-for-single-32gb-r9700)
   - [SGLang Configuration (Alternative)](#sglang-configuration-alternative)
   - [Qwen3.5 Architecture Support & Kernel Fix (`qwen3_5.py`)](#qwen35-architecture-support--kernel-fix-qwen3_5py)
   - [Model Weight Downloader (`download_model.sh`)](#model-weight-downloader-download_modelsh)
@@ -87,9 +87,22 @@ When powered by public cloud APIs, every file read by the agent leaves your orga
 ## Target Hardware: AMD Radeon™ AI PRO R9700 (gfx1201)
 
 The **AMD Radeon™ AI PRO R9700** is built on AMD's **RDNA 4** architecture (`gfx1201`), equipped with:
-- **32 GB of high-speed GDDR6 VRAM**: Enables serving unquantized 7B/14B parameters at full FP16/BF16 precision, or 32B parameters with 4-bit/8-bit quantization (AWQ/GPTQ/FP8) alongside extended context windows (up to 32,768+ tokens).
+- **32 GB of high-speed GDDR6 VRAM**: Enables serving unquantized 7B/14B parameters at full FP16/BF16 precision, or 32B parameters with 4-bit/8-bit quantization (AWQ/GPTQ) alongside extended context windows (up to 32,768+ tokens).
 - **Native ROCm Software Ecosystem**: Supported by ROCm drivers with accelerated matrix multiplication, FlashAttention/Triton kernels, and direct device access via AMD's Kernel Fusion Driver (`/dev/kfd`) and Direct Rendering Infrastructure (`/dev/dri`).
-- **Workstation Isolation**: On workstations equipped with an APU or integrated GPU (such as the AMD Radeon 780M / `gfx1103`), configuring `HIP_VISIBLE_DEVICES=0` ensures that vLLM/SGLang strictly binds to the dedicated Radeon AI PRO R9700 compute card, leaving the integrated display controller free for desktop rendering.
+- **Workstation Isolation**: On workstations equipped with an APU or integrated GPU (such as the AMD Radeon 780M / `gfx1103`), configuring `HIP_VISIBLE_DEVICES=0` ensures that vLLM/llama.cpp strictly binds to the dedicated Radeon AI PRO R9700 compute card, leaving the integrated display controller free for desktop rendering.
+
+### VRAM Partitioning & Sizing: Single vs. Dual R9700
+
+> [!IMPORTANT]
+> **FP8 Out-Of-Memory (OOM) Notice**: Serving `Qwen3.8-27B` in **FP8 precision** requires **~27 GB of VRAM** for model weights alone. On a single 32 GB R9700, this leaves less than 5 GB for dynamic activations, KV-cache, and scratch buffers, causing **Out-Of-Memory (OOM) crashes**.
+> - **Single 32 GB R9700**: **`Q4_K_M` GGUF quantization is STRONGLY RECOMMENDED** (~16.8–17.6 GB weights), providing ample headroom (>14 GB) for extended 32k–64k context windows with zero OOM risk.
+> - **Dual R9700 (64 GB Total VRAM)**: **REQUIRED to run `Qwen3.8-27B` in FP8 precision**. Tensor parallelism (`--tensor-parallel-size 2` / `--tp 2`) splits weights across both GPUs (~13.5 GB per card), leaving over 18 GB of VRAM per card for deep context and concurrent queries.
+
+| Setup Topology | Total VRAM | Recommended Model & Format | Memory Allocation & Fit |
+| :--- | :--- | :--- | :--- |
+| **Single R9700 (Workstation)** | **32 GB** GDDR6 | **`Qwen3.8-27B-Q4_K_M.gguf` (RECOMMENDED)** | **Zero OOM Risk**. ~17.6 GB weights + ~7.8 GB 8-bit KV cache (`q8_0`) at 64k ctx = **~26.9 GB total** (~5.1 GB headroom). *(FP8 triggers OOM).* |
+| **Dual R9700 (Server / Multi-GPU)** | **64 GB** GDDR6 | **`Qwen/Qwen3.8-27B-FP8` (REQUIRED FOR FP8)** | **Native FP8 Tensor Parallelism (`--tp 2`)**. Splits ~27 GB weights into ~13.5 GB / GPU, leaving ~18.5 GB VRAM / GPU for massive KV-cache buffers. |
+
 
 ```
 +-------------------------------------------------------------------------+
@@ -242,7 +255,12 @@ The project directory is structured as follows:
 
 ## Docker Compose Specification
 
-### vLLM Configuration (Default SafeTensors / FP8)
+### vLLM Configuration (Dual R9700 for FP8 / Single R9700 for <=14B)
+
+> [!WARNING]
+> **Single-GPU Out-Of-Memory (OOM) Warning**: Serving `Qwen/Qwen3.8-27B-FP8` on a single 32 GB R9700 card causes **Out-Of-Memory (OOM)** failures because the ~27 GB weights leave less than 5 GB for dynamic activations, KV-cache, and runtime buffers.
+> - **Single 32 GB R9700**: **`Q4_K_M` GGUF quantization is RECOMMENDED** via [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) (llama.cpp server).
+> - **Dual 64 GB R9700**: **REQUIRED to serve `Qwen3.8-27B` in FP8 precision**. Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` (`--tp 2`) to split the weights across both GPUs.
 
 The primary [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) orchestrates the inference engine, client agent, and optional benchmarking suite using **vLLM** optimized for AMD ROCm:
 
@@ -365,9 +383,9 @@ volumes:
 
 ---
 
-### llama.cpp ROCm GGUF Configuration (`docker-compose.gguf.yml`)
+### llama.cpp ROCm GGUF Configuration (Recommended for Single 32GB R9700)
 
-For maximum VRAM efficiency and extended context windows (up to 32,768 tokens), this repository provides [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml), which uses the native ROCm build of **llama.cpp server** (`ghcr.io/ggerganov/llama.cpp:server-rocm`):
+For a single **AMD Radeon™ AI PRO R9700 (32 GB VRAM)**, **Q4_K_M GGUF quantization is the strongly recommended deployment configuration**. Because FP8 precision causes Out-Of-Memory errors on a single 32 GB card, this repository provides [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml), which uses the native ROCm build of **llama.cpp server** (`ghcr.io/ggerganov/llama.cpp:server-rocm`) to deliver full 32,768–65,536 token context windows within a ~22 GB working VRAM budget:
 
 ```yaml
 services:
@@ -543,8 +561,8 @@ Launch the stack using the provided [setup.sh](file:///home/amd/workspace/coder/
 This will automatically:
 1. Verify/initialize your `.env` configuration file from `.env.example`.
 2. **Intelligent Compose Routing**:
-   - If `MODEL_NAME` is configured for GGUF (e.g. `Qwen3.8-27B` or `*.gguf`), `setup.sh` checks `./models/` for `Qwen3.8-27B-Q4_K_M.gguf`. If missing, it interactively prompts to download it via [download_model.sh](file:///home/amd/workspace/coder/download_model.sh) and boots [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) with the ROCm llama.cpp server.
-   - If `MODEL_NAME` is configured for FP8 or a Hugging Face repository (e.g. `Qwen/Qwen3.8-27B-FP8`), `setup.sh` launches [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) with the ROCm vLLM engine, applying the [qwen3_5.py](file:///home/amd/workspace/coder/qwen3_5.py) architecture override.
+   - **Single 32 GB R9700 (RECOMMENDED)**: Set `MODEL_NAME=Qwen3.8-27B`. `setup.sh` verifies `./models/Qwen3.8-27B-Q4_K_M.gguf` (prompting to download via [download_model.sh](file:///home/amd/workspace/coder/download_model.sh) if missing) and boots [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) with the ROCm llama.cpp server to guarantee zero OOM.
+   - **Dual 64 GB R9700 (REQUIRED FOR FP8)**: If `MODEL_NAME` is configured for FP8 (`Qwen/Qwen3.8-27B-FP8`), `setup.sh` launches [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) with the ROCm vLLM engine using tensor parallelism across both GPUs. *(Notice: Running FP8 on a single 32 GB card causes Out-Of-Memory failures).*
 3. Launch the selected ROCm inference engine container bound to your Radeon AI PRO R9700 GPU (`/dev/kfd`, `/dev/dri`).
 4. Start the OpenCode client container with its web UI exposed on port `4096`.
 5. Display the direct web interface URL (`http://localhost:4096`), local network IP, and actionable next steps.
@@ -855,27 +873,27 @@ Check your host workspace directory: `fibonacci.py` will have been created local
 
 The table below outlines optimal coding models validated for the 32 GB VRAM capacity of the AMD Radeon AI PRO R9700:
 
-| Model ID | Precision / Quant | Weights Size | Working VRAM (at max context) | Engine / Parser | Notes |
+| Model ID | Precision / Quant | Weights Size | Working VRAM (at max context) | Engine / Parser | Single vs. Dual R9700 Guidance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`Qwen/Qwen3.8-27B-FP8`** | FP8 | ~27 GB | ~30 GB (9.6k ctx) | `vLLM` / `hermes` | **SOTA Dense 27B Model**. Unmatched coding and agentic capability; uses `qwen3_5.py` architecture override. |
-| **`Qwen3.8-27B`** *(or `.gguf`)* | GGUF (Q4_K_M) | ~16.8 GB | ~22 GB (32k ctx) | `llama.cpp` / `hermes` | **High-Efficiency 27B Model**. Fits full 32,768 context window comfortably in 32 GB VRAM; downloadable via `download_model.sh`. |
-| **`Qwen/Qwen2.5-Coder-7B-Instruct`** | BF16 / FP16 | ~15 GB | ~18 GB (32k ctx) | `vLLM` / `hermes` | Blazing fast (>45 tok/s), strong tool calling, fits comfortably with 32k context. |
-| **`Qwen/Qwen2.5-Coder-14B-Instruct`** | BF16 | ~28 GB | ~30 GB (16k ctx) | `vLLM` / `hermes` | High coding intelligence. Set `--max-model-len 16384` to prevent VRAM overflow. |
-| **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`** | AWQ (4-bit) | ~19 GB | ~24 GB (32k ctx) | `vLLM` / `hermes` | **Best reasoning-to-VRAM ratio**. Delivers 32B capability within 32 GB VRAM budget. |
-| **`deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct`** | BF16 (MoE 16B active 2.4B) | ~30 GB | ~31 GB (16k ctx) | `vLLM` / `deepseek` | MoE architecture. Highly proficient in multi-language programming. |
+| **`Qwen3.8-27B`** *(or `.gguf`)* | GGUF (Q4_K_M) | ~16.8 GB | ~22 GB (32k ctx) | `llama.cpp` / `hermes` | **RECOMMENDED FOR SINGLE R9700 (32 GB)**. Fits full 32,768 context window with zero OOM risk; downloadable via `download_model.sh`. |
+| **`Qwen/Qwen3.8-27B-FP8`** | FP8 | ~27 GB | **OOM on Single 32GB** | `vLLM` / `hermes` | **REQUIRES DUAL R9700 (64 GB TOTAL VRAM)**. Triggers Out-of-Memory faults on single 32GB card (~27 GB weights + KV cache > 32 GB). Requires Dual R9700 with `--tp 2`. |
+| **`Qwen/Qwen2.5-Coder-7B-Instruct`** | BF16 / FP16 | ~15 GB | ~18 GB (32k ctx) | `vLLM` / `hermes` | Blazing fast (>45 tok/s), strong tool calling, fits comfortably with 32k context on single R9700. |
+| **`Qwen/Qwen2.5-Coder-14B-Instruct`** | BF16 | ~28 GB | ~30 GB (16k ctx) | `vLLM` / `hermes` | High coding intelligence on single R9700. Set `--max-model-len 16384` to prevent VRAM overflow. |
+| **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`** | AWQ (4-bit) | ~19 GB | ~24 GB (32k ctx) | `vLLM` / `hermes` | **Best reasoning-to-VRAM ratio** on single R9700. Delivers 32B capability within 32 GB VRAM budget. |
+| **`deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct`** | BF16 (MoE 16B active 2.4B) | ~30 GB | ~31 GB (16k ctx) | `vLLM` / `deepseek` | MoE architecture on single R9700. Highly proficient in multi-language programming. |
 | **`Qwen/Qwen3-0.6B`** | BF16 | ~1.4 GB | ~4 GB (32k ctx) | `vLLM` / `hermes` | Ultra-fast validation model for testing container pipelines. |
 
 To switch models, edit `MODEL_NAME` in your `.env` file and run `./setup.sh`:
 ```bash
-# Example: Switch to 27B FP8 on vLLM
-sed -i 's/^MODEL_NAME=.*/MODEL_NAME=Qwen\/Qwen3.8-27B-FP8/' .env
-./setup.sh
-
-# Example: Switch to 27B Q4_K_M GGUF on llama.cpp
+# Recommended for Single R9700 (32GB): Run 27B Q4_K_M GGUF on llama.cpp
 sed -i 's/^MODEL_NAME=.*/MODEL_NAME=Qwen3.8-27B/' .env
 ./setup.sh
+
+# For Dual R9700 (64GB): Run 27B FP8 on vLLM (requires 2x R9700 with TP=2)
+sed -i 's/^MODEL_NAME=.*/MODEL_NAME=Qwen\/Qwen3.8-27B-FP8/' .env
+./setup.sh
 ```
-`./setup.sh` detects the model type and automatically boots either `docker-compose.yml` (vLLM) or `docker-compose.gguf.yml` (llama.cpp).
+`./setup.sh` detects the model type and automatically boots either `docker-compose.gguf.yml` (llama.cpp) or `docker-compose.yml` (vLLM).
 
 ---
 
@@ -1444,11 +1462,12 @@ Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (
 
 ---
 
-### 7. VRAM Headroom Tuning for 27B FP8 Models
-- **Symptom**: The 27B FP8 model (~27 GB weights) fails to start with `torch.OutOfMemoryError: CUDA out of memory` on the 32 GB Radeon AI PRO R9700.
+### 7. Out-of-Memory (OOM) with Qwen3.8-27B FP8 on Single 32 GB R9700
+- **Symptom**: `Qwen/Qwen3.8-27B-FP8` fails during container startup or crashes during prompt prefill with `torch.OutOfMemoryError: CUDA out of memory` on the 32 GB Radeon AI PRO R9700.
+- **Cause**: Dense 27B FP8 weights alone consume **~27 GB of VRAM**. On a single 32 GB card, the remaining <5 GB is insufficient to house the KV-cache, scratchpads, and dynamic activations required for agentic coding contexts.
 - **Remedy**:
-  1. Allocate a fixed KV cache block using `--kv-cache-memory-bytes 1073741824` (1 GB) and configure `--max-model-len 9600`. This leaves ~4 GB headroom for activations and buffers.
-  2. Alternatively, switch to the GGUF Q4_K_M model (`Qwen3.8-27B-Q4_K_M.gguf`), which uses only ~16.8 GB for weights, leaving ~15 GB VRAM for a full 32,768-token context window.
+  1. **Single 32 GB R9700 (RECOMMENDED)**: Switch to the 4-bit quantized GGUF model (`Qwen3.8-27B-Q4_K_M.gguf`) using [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml). The weights occupy only **~16.8–17.6 GB**, leaving over 14 GB of VRAM for deep 32k–64k context windows with 8-bit KV caching (`--cache-type-k q8_0 --cache-type-v q8_0`) with zero OOM risk.
+  2. **Dual R9700 (64 GB Total VRAM)**: To serve `Qwen3.8-27B` in FP8 precision, a **Dual Radeon AI PRO R9700 setup is strictly required**. Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` in [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) to divide the ~27 GB weights evenly (~13.5 GB per GPU), leaving abundant headroom (>18 GB per GPU).
 
 ---
 

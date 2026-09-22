@@ -9,6 +9,7 @@ cd "$SCRIPT_DIR"
 
 # ANSI Colors
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 BOLD='\033[1m'
@@ -54,6 +55,12 @@ if [[ "$MODEL" != *"FP8"* ]] && [[ "$MODEL" != *"/"* ]] && ([[ "$MODEL" == *.ggu
             exit 1
         fi
     fi
+fi
+
+if [[ "$MODEL" == *"FP8"* ]] || [[ "$MODEL" == *"fp8"* ]]; then
+    echo -e "${YELLOW}${BOLD}[NOTICE] Qwen3.8-27B in FP8 precision consumes ~27 GB weights and causes Out-Of-Memory (OOM) on a single 32GB R9700!${NC}"
+    echo -e "${YELLOW}Dual R9700 (64GB VRAM) is required for FP8. For a single R9700, Q4_K_M GGUF (MODEL_NAME=Qwen3.8-27B) is recommended.${NC}"
+    echo ""
 fi
 
 # Launch docker compose services
