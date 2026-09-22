@@ -54,11 +54,9 @@ for MODEL in "${MODELS[@]}"; do
   echo " Deploying Model: ${MODEL}"
   echo "--------------------------------------------------------------------------"
 
-  # Determine tool call parser based on model family
+  # Determine tool call parser based on model family (hermes for Qwen)
   TOOL_PARSER="hermes"
-  if [[ "${MODEL}" =~ "deepseek" ]]; then
-    TOOL_PARSER="deepseek"
-  elif [[ "${MODEL}" =~ "mistral" ]] || [[ "${MODEL}" =~ "Codestral" ]]; then
+  if [[ "${MODEL}" =~ "mistral" ]] || [[ "${MODEL}" =~ "Codestral" ]]; then
     TOOL_PARSER="mistral"
   fi
 

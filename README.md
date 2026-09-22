@@ -520,8 +520,8 @@ The stack is configured to **automatically use the locally hosted ROCm model** w
         "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ": {
           "name": "Qwen 2.5 Coder 32B (AWQ)"
         },
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct": {
-          "name": "DeepSeek Coder V2 Lite"
+        "Qwen/Qwen2.5-Coder-32B-Instruct": {
+          "name": "Qwen 2.5 Coder 32B"
         },
         "Qwen/Qwen3-0.6B": {
           "name": "Qwen3 0.6B (Smoke Test)"
@@ -683,7 +683,7 @@ You can also install and run OpenCode natively on your Linux host machine withou
            "Qwen/Qwen2.5-Coder-7B-Instruct": { "name": "Qwen 2.5 Coder 7B" },
            "Qwen/Qwen2.5-Coder-14B-Instruct": { "name": "Qwen 2.5 Coder 14B" },
            "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ": { "name": "Qwen 2.5 Coder 32B (AWQ)" },
-           "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct": { "name": "DeepSeek Coder V2 Lite" }
+           "Qwen/Qwen2.5-Coder-32B-Instruct": { "name": "Qwen 2.5 Coder 32B" }
          }
        }
      }
@@ -913,14 +913,14 @@ The script automatically:
 
 #### Multi-Model Comparison with OpenCode Benchmark Dashboard
 
-If you are testing multiple underlying LLMs (like Qwen, DeepSeek, Claude, or GLM) via OpenCode's engine to see which performs best on your AMD Radeon AI PRO R9700 hardware, integrate your test cases directly into the OpenCode Benchmark Dashboard:
+If you are testing multiple underlying models (like Qwen 3.8 27B, Qwen 2.5 Coder 32B/7B, or Claude) via OpenCode's engine to see which performs best on your AMD Radeon AI PRO R9700 hardware, integrate your test cases directly into the OpenCode Benchmark Dashboard:
 
 ```bash
 # 1. Add your water-sim test to the prompts directory and generate answers
-bun run answer -m "opencode/deepseek-v4-pro" -t CODING-water-sim
+bun run answer -m "rocm-local/Qwen3.8-27B" -t CODING-water-sim
 
 # 2. Evaluate model outputs and score completion
-bun run evaluate -m "opencode/deepseek-v4-pro" -t CODING-water-sim
+bun run evaluate -m "rocm-local/Qwen3.8-27B" -t CODING-water-sim
 
 # 3. Spin up the visual comparison dashboard at http://localhost:3000
 bun run dashboard
@@ -941,7 +941,7 @@ The table below outlines optimal coding models validated for the 32 GB VRAM capa
 | **`Qwen/Qwen2.5-Coder-7B-Instruct`** | BF16 / FP16 | ~15 GB | ~18 GB (32k ctx) | `vLLM` / `hermes` | Blazing fast (>45 tok/s), strong tool calling, fits comfortably with 32k context on single R9700. |
 | **`Qwen/Qwen2.5-Coder-14B-Instruct`** | BF16 | ~28 GB | ~30 GB (16k ctx) | `vLLM` / `hermes` | High coding intelligence on single R9700. Set `--max-model-len 16384` to prevent VRAM overflow. |
 | **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`** | AWQ (4-bit) | ~19 GB | ~24 GB (32k ctx) | `vLLM` / `hermes` | **Best reasoning-to-VRAM ratio** on single R9700. Delivers 32B capability within 32 GB VRAM budget. |
-| **`deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct`** | BF16 (MoE 16B active 2.4B) | ~30 GB | ~31 GB (16k ctx) | `vLLM` / `deepseek` | MoE architecture on single R9700. Highly proficient in multi-language programming. |
+| **`Qwen/Qwen2.5-Coder-32B-Instruct`** | BF16 / FP16 | ~65 GB | **Requires Dual R9700** | `vLLM` / `hermes` | Full-precision 32B dense coder on Dual R9700 (64 GB) with TP=2. |
 | **`Qwen/Qwen3-0.6B`** | BF16 | ~1.4 GB | ~4 GB (32k ctx) | `vLLM` / `hermes` | Ultra-fast validation model for testing container pipelines. |
 
 To switch models, edit `MODEL_NAME` in your `.env` file and run `./setup.sh`:

@@ -27,8 +27,8 @@
         "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ": {
           "name": "Qwen 2.5 Coder 32B (AWQ)"
         },
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct": {
-          "name": "DeepSeek Coder V2 Lite"
+        "Qwen/Qwen2.5-Coder-32B-Instruct": {
+          "name": "Qwen 2.5 Coder 32B"
         },
         "Qwen/Qwen3-0.6B": {
           "name": "Qwen3 0.6B (Smoke Test)"
