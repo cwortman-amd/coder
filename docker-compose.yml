@@ -3,7 +3,7 @@ services:
   # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
   # ============================================================================
   inference:
-    image: ${INFERENCE_IMAGE:-vllm/vllm-openai-rocm:latest}
+    image: ${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host

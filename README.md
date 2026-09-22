@@ -274,7 +274,7 @@ services:
   # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
   # ============================================================================
   inference:
-    image: ${INFERENCE_IMAGE:-vllm/vllm-openai-rocm:latest}
+    image: ${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host
@@ -397,7 +397,7 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}
+    image: ${GGUF_IMAGE:-${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host
@@ -1054,13 +1054,34 @@ The benchmark harness operates in two distinct phases:
 To execute both benchmarks consecutively and generate an automated comparative summary table and Markdown report with one command:
 
 ```bash
+# Default: Offline smoke test (3 SWE-bench problems + 3 GPQA questions)
 ./test.sh
+
+# Diamond / Lite Tier: SWE-bench Lite (300 problems) + GPQA Diamond (198 questions)
+./test.sh -d
+
+# Main / Verified Tier: SWE-bench Verified (500 problems) + GPQA Main (448 questions)
+./test.sh -m
+
+# All Tests: Full SWE-bench (2,294 problems) + GPQA Extended (546 questions)
+./test.sh -a
+
+# Quick sample limits (e.g., test first 5 questions of Diamond/Lite tier)
+./test.sh -d -n 5
 ```
+
+#### Benchmark Tiers:
+| Flag | Tier | SWE-bench Dataset | GPQA Subset | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| `-s`, `--sample` | **Sample** *(Default)* | `sample` (3 problems) | `sample` (3 questions) | Quick pre-flight smoke testing (~3-5 min) |
+| `-d`, `--diamond` *(alias `-l`)* | **Diamond / Lite** | `princeton-nlp/SWE-bench_Lite` | `diamond` (198 questions) | Rapid capability benchmark (~5-8 hrs) |
+| `-m`, `--main` | **Main / Verified** | `princeton-nlp/SWE-bench_Verified`| `main` (448 questions) | Production model card evaluation (~10-14 hrs) |
+| `-a`, `--all` | **All Tests** | `princeton-nlp/SWE-bench` | `extended` (546 questions) | Exhaustive full benchmark coverage |
 
 This script:
 1. Verifies the ROCm inference server health.
-2. Executes **SWE-bench** inside Docker (`docker compose run --rm benchmark`).
-3. Executes **GPQA** scientific reasoning (`python3 benchmark/run_gpqa.py --dataset sample`).
+2. Executes **SWE-bench** inside Docker (`docker compose run --rm --no-deps benchmark`).
+3. Executes **GPQA** scientific reasoning (`python3 benchmark/run_gpqa.py`).
 4. Formats and prints an aggregated comparison table with throughput (tokens/sec), latency, and accuracy rates.
 5. Emits an archival report to `benchmark_results/test_run_summary_<timestamp>.md`.
 
@@ -1071,7 +1092,7 @@ This script:
 Run a rapid 3-problem benchmark against your active model without downloading external datasets:
 
 ```bash
-docker compose run --rm benchmark
+docker compose run --rm --no-deps benchmark
 ```
 
 *Example Output:*
@@ -1109,7 +1130,7 @@ To benchmark on the full or partial SWE-bench Lite dataset from Hugging Face:
 
 #### 1. Evaluate First 10 Instances of SWE-bench Lite
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark run_benchmark.py \
   --dataset princeton-nlp/SWE-bench_Lite \
   --num-samples 10 \
   --output-dir benchmark_results
@@ -1117,7 +1138,7 @@ docker compose run --rm benchmark \
 
 #### 2. Evaluate SWE-bench Verified
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark run_benchmark.py \
   --dataset princeton-nlp/SWE-bench_Verified \
   --num-samples 25 \
   --output-dir benchmark_results
@@ -1157,7 +1178,7 @@ This automated script:
 To run the official SWE-bench evaluation harness and compute functional resolution pass rates:
 
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark \
   python3 -m swebench.harness.run_evaluation \
     --dataset_name princeton-nlp/SWE-bench_Lite \
     --predictions_path /app/benchmark_results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/predictions.jsonl \
@@ -1258,7 +1279,7 @@ The GPQA benchmark supports the following dataset splits:
 Run an instant 3-question scientific reasoning test against your active model:
 
 ```bash
-docker compose run --rm benchmark python3 run_gpqa.py --subset sample
+docker compose run --rm --no-deps benchmark python3 run_gpqa.py --subset sample
 ```
 
 *Example Output:*
@@ -1292,7 +1313,7 @@ Total Questions: 3
   • Biology           : 100.00% (1/1)
 ---------------------------------------------------------------------------
  Detailed Output Log       : benchmark_results/gpqa/.../gpqa_detailed_results.jsonl
- Summary Metric Report     : benchmark_results/gpqa/.../gpqa_summary.json
+  Summary Metric Report     : benchmark_results/gpqa/.../gpqa_summary.json
 ===========================================================================
 ```
 
@@ -1302,7 +1323,7 @@ Total Questions: 3
 
 #### 1. Evaluate GPQA Diamond (Subset of 20 Questions)
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_diamond \
     --num-samples 20 \
@@ -1311,7 +1332,7 @@ docker compose run --rm benchmark \
 
 #### 2. Evaluate Full GPQA Diamond Benchmark (198 Questions)
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_diamond \
     --output-dir benchmark_results/gpqa
@@ -1319,7 +1340,7 @@ docker compose run --rm benchmark \
 
 #### 3. Evaluate Full GPQA Main Benchmark (448 Questions)
 ```bash
-docker compose run --rm benchmark \
+docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_main \
     --output-dir benchmark_results/gpqa

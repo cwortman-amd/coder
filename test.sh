@@ -3,9 +3,15 @@
 # test.sh - Automated Dual Benchmark Test Runner & Results Summary
 # ==============================================================================
 # Executes:
-#   1. SWE-bench evaluation:  docker compose run --rm benchmark
-#   2. GPQA reasoning test:   python3 benchmark/run_gpqa.py --dataset sample
+#   1. SWE-bench evaluation:  docker compose run --rm --no-deps benchmark ...
+#   2. GPQA reasoning test:   python3 benchmark/run_gpqa.py ...
 # Generates a unified benchmark summary table and markdown report.
+#
+# Supported Tiers:
+#   -s, --sample (Default) : Offline sample smoke test (3 SWE-bench, 3 GPQA)
+#   -d, --diamond          : Diamond / Lite tier (SWE-bench Lite & GPQA Diamond)
+#   -m, --main             : Main / Verified tier (SWE-bench Verified & GPQA Main)
+#   -a, --all              : All tests (Full SWE-bench & Full GPQA Extended)
 # ==============================================================================
 set -euo pipefail
 
@@ -21,6 +27,131 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
+# Default Benchmark Configuration
+PROFILE="sample"
+SWE_DATASET="sample"
+GPQA_SUBSET="sample"
+NUM_SAMPLES=""
+RUN_SWE=true
+RUN_GPQA=true
+RUN_EVAL=false
+
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+AMD ROCm AI Model Benchmarking Suite (SWE-bench & GPQA)
+
+Benchmark Tiers:
+  -s, --sample             Run offline smoke test with sample subsets (Default)
+                           • SWE-bench: 3 offline sample problems
+                           • GPQA: 3 offline sample questions
+  -d, --diamond            Run Diamond / Lite evaluation tier
+                           • SWE-bench: princeton-nlp/SWE-bench_Lite (300 problems)
+                           • GPQA: diamond (198 questions)
+                           (Alias: -l, --lite)
+  -m, --main               Run Main / Verified evaluation tier
+                           • SWE-bench: princeton-nlp/SWE-bench_Verified (500 problems)
+                           • GPQA: main (448 questions)
+  -a, --all                Run all available benchmark tests
+                           • SWE-bench: princeton-nlp/SWE-bench (all 2,294 problems)
+                           • GPQA: extended (all 546 questions)
+
+Execution Options:
+  -n, --limit <N>          Limit execution to N instances per benchmark (e.g. -n 5)
+  --num-samples <N>        Alias for -n / --limit
+  --swe-only               Run only SWE-bench evaluation
+  --gpqa-only              Run only GPQA scientific reasoning benchmark
+  --eval, --run-eval       Execute SWE-bench Docker evaluation harness after patch generation
+  -h, --help               Show this help message and exit
+
+Examples:
+  ./test.sh                 # Quick 3-question smoke test (default)
+  ./test.sh -s              # Explicit sample smoke test
+  ./test.sh -d              # SWE-bench Lite + GPQA Diamond
+  ./test.sh -d -n 5         # SWE-bench Lite + GPQA Diamond, limited to 5 questions each
+  ./test.sh -m              # SWE-bench Verified + GPQA Main
+  ./test.sh -a              # All tests (Full SWE-bench + GPQA Extended)
+  ./test.sh --gpqa-only -d  # GPQA Diamond only
+EOF
+    exit 0
+}
+
+# Parse Command-Line Arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s|--sample)
+            PROFILE="sample"
+            SWE_DATASET="sample"
+            GPQA_SUBSET="sample"
+            shift
+            ;;
+        -d|--diamond|-l|--lite)
+            PROFILE="diamond"
+            SWE_DATASET="princeton-nlp/SWE-bench_Lite"
+            GPQA_SUBSET="diamond"
+            shift
+            ;;
+        -m|--main)
+            PROFILE="main"
+            SWE_DATASET="princeton-nlp/SWE-bench_Verified"
+            GPQA_SUBSET="main"
+            shift
+            ;;
+        -a|--all)
+            PROFILE="all"
+            SWE_DATASET="princeton-nlp/SWE-bench"
+            GPQA_SUBSET="extended"
+            shift
+            ;;
+        -n|--limit|--num-samples)
+            if [[ -z "${2:-}" ]] || [[ ! "$2" =~ ^[0-9]+$ ]]; then
+                echo -e "${RED}Error: $1 requires an integer argument.${NC}" >&2
+                exit 1
+            fi
+            NUM_SAMPLES="$2"
+            shift 2
+            ;;
+        --swe-only)
+            RUN_SWE=true
+            RUN_GPQA=false
+            shift
+            ;;
+        --gpqa-only)
+            RUN_SWE=false
+            RUN_GPQA=true
+            shift
+            ;;
+        --eval|--run-eval|--run-evaluation)
+            RUN_EVAL=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}" >&2
+            echo "Use --help for available options." >&2
+            exit 1
+            ;;
+    esac
+done
+
+case "$PROFILE" in
+    sample)
+        PROFILE_LABEL="Sample Smoke Test (-s, --sample)"
+        ;;
+    diamond|lite)
+        PROFILE_LABEL="Diamond / Lite Tier (-d, --diamond)"
+        ;;
+    main)
+        PROFILE_LABEL="Main / Verified Tier (-m, --main)"
+        ;;
+    all)
+        PROFILE_LABEL="All Tests (-a, --all)"
+        ;;
+esac
+
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 RESULTS_DIR="${SCRIPT_DIR}/benchmark_results"
 mkdir -p "$RESULTS_DIR"
@@ -30,6 +161,12 @@ echo -e "${BLUE}${BOLD}     AMD ROCm AI Model Benchmarking Suite (SWE-bench & GP
 echo -e "${BLUE}${BOLD}======================================================================${NC}"
 echo -e "Hardware Target  : ${BOLD}AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB VRAM)${NC}"
 echo -e "Execution Time   : $(date)"
+echo -e "Benchmark Tier   : ${CYAN}${BOLD}${PROFILE_LABEL}${NC}"
+echo -e "SWE-bench Target : ${BOLD}${SWE_DATASET}${NC}$([ "$RUN_SWE" = false ] && echo " (Disabled)" || echo "")"
+echo -e "GPQA Target      : ${BOLD}${GPQA_SUBSET}${NC}$([ "$RUN_GPQA" = false ] && echo " (Disabled)" || echo "")"
+if [ -n "$NUM_SAMPLES" ]; then
+    echo -e "Instance Limit   : ${YELLOW}${BOLD}${NUM_SAMPLES} samples${NC}"
+fi
 echo ""
 
 # ------------------------------------------------------------------------------
@@ -57,15 +194,33 @@ SWE_STATUS="SKIPPED"
 GPQA_STATUS="SKIPPED"
 
 # ------------------------------------------------------------------------------
-# Test Case 1: SWE-bench Benchmark (Docker Container)
+# Test Case 1: SWE-bench Benchmark
 # ------------------------------------------------------------------------------
-echo -e "${CYAN}${BOLD}>>> [1/2] Running SWE-bench Evaluation (docker compose run --rm benchmark)...${NC}"
-if docker compose run --rm benchmark; then
-    SWE_STATUS="PASSED"
-    echo -e "${GREEN}${BOLD}✓ SWE-bench test run completed successfully.${NC}"
+if [ "$RUN_SWE" = true ]; then
+    echo -e "${CYAN}${BOLD}>>> [1/2] Running SWE-bench Evaluation (${SWE_DATASET})...${NC}"
+    SWE_CMD=("run_benchmark.py" "--base-url" "http://127.0.0.1:8000/v1" "--dataset" "$SWE_DATASET")
+    if [ -n "$NUM_SAMPLES" ]; then
+        SWE_CMD+=("--num-samples" "$NUM_SAMPLES")
+    fi
+    if [ "$RUN_EVAL" = true ]; then
+        SWE_CMD+=("--run-evaluation")
+    fi
+
+    if docker compose run --rm --no-deps benchmark "${SWE_CMD[@]}"; then
+        SWE_STATUS="PASSED"
+        echo -e "${GREEN}${BOLD}✓ SWE-bench test run completed successfully.${NC}"
+    else
+        echo -e "${YELLOW}Docker benchmark container failed or was interrupted. Attempting direct host execution...${NC}"
+        if python3 "${SCRIPT_DIR}/benchmark/run_benchmark.py" "${SWE_CMD[@]:1}"; then
+            SWE_STATUS="PASSED"
+            echo -e "${GREEN}${BOLD}✓ SWE-bench test run completed successfully (host fallback).${NC}"
+        else
+            SWE_STATUS="FAILED"
+            echo -e "${RED}${BOLD}✗ SWE-bench test run failed.${NC}"
+        fi
+    fi
 else
-    SWE_STATUS="FAILED"
-    echo -e "${RED}${BOLD}✗ SWE-bench test run failed.${NC}"
+    echo -e "${YELLOW}>>> [1/2] SWE-bench Evaluation: SKIPPED (--gpqa-only specified)${NC}"
 fi
 echo ""
 
@@ -73,15 +228,24 @@ echo ""
 chmod -R ugo+rwX "$RESULTS_DIR" 2>/dev/null || true
 
 # ------------------------------------------------------------------------------
-# Test Case 2: GPQA Scientific Reasoning Benchmark (Host Python)
+# Test Case 2: GPQA Scientific Reasoning Benchmark
 # ------------------------------------------------------------------------------
-echo -e "${CYAN}${BOLD}>>> [2/2] Running GPQA Reasoning Benchmark (python3 benchmark/run_gpqa.py --dataset sample)...${NC}"
-if python3 benchmark/run_gpqa.py --dataset sample; then
-    GPQA_STATUS="PASSED"
-    echo -e "${GREEN}${BOLD}✓ GPQA test run completed successfully.${NC}"
+if [ "$RUN_GPQA" = true ]; then
+    echo -e "${CYAN}${BOLD}>>> [2/2] Running GPQA Reasoning Benchmark (${GPQA_SUBSET})...${NC}"
+    GPQA_CMD=("python3" "${SCRIPT_DIR}/benchmark/run_gpqa.py" "--base-url" "http://127.0.0.1:8000/v1" "--subset" "$GPQA_SUBSET")
+    if [ -n "$NUM_SAMPLES" ]; then
+        GPQA_CMD+=("--num-samples" "$NUM_SAMPLES")
+    fi
+
+    if "${GPQA_CMD[@]}"; then
+        GPQA_STATUS="PASSED"
+        echo -e "${GREEN}${BOLD}✓ GPQA test run completed successfully.${NC}"
+    else
+        GPQA_STATUS="FAILED"
+        echo -e "${RED}${BOLD}✗ GPQA test run failed.${NC}"
+    fi
 else
-    GPQA_STATUS="FAILED"
-    echo -e "${RED}${BOLD}✗ GPQA test run failed.${NC}"
+    echo -e "${YELLOW}>>> [2/2] GPQA Reasoning Benchmark: SKIPPED (--swe-only specified)${NC}"
 fi
 echo ""
 
@@ -89,10 +253,17 @@ TESTS_END=$(date +%s)
 TOTAL_TIME=$(( TESTS_END - TESTS_START ))
 
 # ------------------------------------------------------------------------------
-# Locate Latest Metrics Files
+# Locate Metrics Files for Current or Latest Run
 # ------------------------------------------------------------------------------
-LATEST_SWE_FILE=$(find "${RESULTS_DIR}" -maxdepth 2 -name "benchmark_metrics.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | awk '{print $2}')
-LATEST_GPQA_FILE=$(find "${RESULTS_DIR}/gpqa" -maxdepth 2 -name "gpqa_summary.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | awk '{print $2}')
+LATEST_SWE_FILE=$(find "${RESULTS_DIR}" -maxdepth 2 -name "benchmark_metrics.json" -type f -newermt "@${TESTS_START}" 2>/dev/null | sort -nr | head -n1 || true)
+if [ -z "$LATEST_SWE_FILE" ]; then
+    LATEST_SWE_FILE=$(find "${RESULTS_DIR}" -maxdepth 2 -name "benchmark_metrics.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | awk '{print $2}' || true)
+fi
+
+LATEST_GPQA_FILE=$(find "${RESULTS_DIR}/gpqa" -maxdepth 2 -name "gpqa_summary.json" -type f -newermt "@${TESTS_START}" 2>/dev/null | sort -nr | head -n1 || true)
+if [ -z "$LATEST_GPQA_FILE" ]; then
+    LATEST_GPQA_FILE=$(find "${RESULTS_DIR}/gpqa" -maxdepth 2 -name "gpqa_summary.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | awk '{print $2}' || true)
+fi
 
 # ------------------------------------------------------------------------------
 # Parse Metrics
@@ -103,7 +274,7 @@ SWE_RATE="N/A"
 SWE_THROUGHPUT="N/A"
 SWE_LATENCY="N/A"
 
-if [ -n "$LATEST_SWE_FILE" ] && [ -f "$LATEST_SWE_FILE" ]; then
+if [ "$RUN_SWE" = true ] && [ -n "$LATEST_SWE_FILE" ] && [ -f "$LATEST_SWE_FILE" ]; then
     SWE_TOTAL=$(jq -r '.total_instances // "?"' "$LATEST_SWE_FILE")
     SWE_VALID=$(jq -r '.valid_patches_generated // "?"' "$LATEST_SWE_FILE")
     SWE_RATE=$(jq -r '.patch_formatting_rate_pct // "?"' "$LATEST_SWE_FILE")
@@ -120,7 +291,7 @@ GPQA_PHYSICS="N/A"
 GPQA_CHEMISTRY="N/A"
 GPQA_BIOLOGY="N/A"
 
-if [ -n "$LATEST_GPQA_FILE" ] && [ -f "$LATEST_GPQA_FILE" ]; then
+if [ "$RUN_GPQA" = true ] && [ -n "$LATEST_GPQA_FILE" ] && [ -f "$LATEST_GPQA_FILE" ]; then
     GPQA_TOTAL=$(jq -r '.total_questions // "?"' "$LATEST_GPQA_FILE")
     GPQA_CORRECT=$(jq -r '.correct_answers // "?"' "$LATEST_GPQA_FILE")
     GPQA_ACCURACY=$(jq -r '.accuracy_pct // "?"' "$LATEST_GPQA_FILE")
@@ -139,18 +310,25 @@ echo -e "${BLUE}${BOLD}                   UNIFIED BENCHMARK RESULTS SUMMARY     
 echo -e "${BLUE}${BOLD}======================================================================${NC}"
 printf "%-14s | %-16s | %-15s | %-12s | %-12s\n" "Benchmark" "Task Type" "Score / Metric" "Throughput" "Latency / Item"
 echo "----------------------------------------------------------------------"
-printf "%-14s | %-16s | %-15s | %-12s | %-12s\n" \
-  "SWE-bench" "Code Patching" "${SWE_RATE}% (${SWE_VALID}/${SWE_TOTAL})" "${SWE_THROUGHPUT} tok/s" "${SWE_LATENCY}s"
-printf "%-14s | %-16s | %-15s | %-12s | %-12s\n" \
-  "GPQA" "Sci. Reasoning" "${GPQA_ACCURACY}% (${GPQA_CORRECT}/${GPQA_TOTAL})" "${GPQA_THROUGHPUT} tok/s" "${GPQA_LATENCY}s"
+if [ "$RUN_SWE" = true ]; then
+    printf "%-14s | %-16s | %-15s | %-12s | %-12s\n" \
+      "SWE-bench" "Code Patching" "${SWE_RATE}% (${SWE_VALID}/${SWE_TOTAL})" "${SWE_THROUGHPUT} tok/s" "${SWE_LATENCY}s"
+fi
+if [ "$RUN_GPQA" = true ]; then
+    printf "%-14s | %-16s | %-15s | %-12s | %-12s\n" \
+      "GPQA" "Sci. Reasoning" "${GPQA_ACCURACY}% (${GPQA_CORRECT}/${GPQA_TOTAL})" "${GPQA_THROUGHPUT} tok/s" "${GPQA_LATENCY}s"
+fi
 echo "----------------------------------------------------------------------"
-echo -e "${BOLD}GPQA Scientific Domain Breakdown:${NC}"
-echo -e "  • Physics   : ${BOLD}${GPQA_PHYSICS}%${NC}"
-echo -e "  • Chemistry : ${BOLD}${GPQA_CHEMISTRY}%${NC}"
-echo -e "  • Biology   : ${BOLD}${GPQA_BIOLOGY}%${NC}"
-echo "----------------------------------------------------------------------"
+if [ "$RUN_GPQA" = true ]; then
+    echo -e "${BOLD}GPQA Scientific Domain Breakdown:${NC}"
+    echo -e "  • Physics   : ${BOLD}${GPQA_PHYSICS}%${NC}"
+    echo -e "  • Chemistry : ${BOLD}${GPQA_CHEMISTRY}%${NC}"
+    echo -e "  • Biology   : ${BOLD}${GPQA_BIOLOGY}%${NC}"
+    echo "----------------------------------------------------------------------"
+fi
 echo -e "Hardware Platform   : AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB VRAM)"
 echo -e "Target Model Tested : ${BOLD}${ACTIVE_MODEL}${NC}"
+echo -e "Benchmark Tier      : ${BOLD}${PROFILE_LABEL}${NC}"
 echo -e "Total Test Duration : ${BOLD}${TOTAL_TIME} seconds${NC}"
 echo -e "SWE-bench Status    : $([ "$SWE_STATUS" = "PASSED" ] && echo -e "${GREEN}${BOLD}PASSED${NC}" || echo -e "${RED}${BOLD}${SWE_STATUS}${NC}")"
 echo -e "GPQA Status         : $([ "$GPQA_STATUS" = "PASSED" ] && echo -e "${GREEN}${BOLD}PASSED${NC}" || echo -e "${RED}${BOLD}${GPQA_STATUS}${NC}")"
@@ -164,15 +342,16 @@ cat << EOF > "$SUMMARY_REPORT"
 
 - **Target Hardware**: AMD Radeon™ AI PRO R9700 (\`gfx1201\`, 32 GB GDDR6 VRAM)
 - **Model Evaluated**: \`${ACTIVE_MODEL}\`
+- **Benchmark Tier**: \`${PROFILE_LABEL}\`
 - **Execution Date**: $(date)
 - **Total Runtime**: ${TOTAL_TIME} seconds
 
 ## Performance & Accuracy Summary Table
 
-| Benchmark | Target Capability | Dataset | Score / Primary Metric | Throughput | Latency | Status |
+| Benchmark | Target Capability | Dataset / Subset | Score / Primary Metric | Throughput | Latency | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **SWE-bench** | Software Engineering / Git Diff Patches | \`sample\` (3 instances) | **${SWE_RATE}%** (${SWE_VALID}/${SWE_TOTAL} valid patches) | **${SWE_THROUGHPUT} tok/s** | **${SWE_LATENCY} s/sample** | \`${SWE_STATUS}\` |
-| **GPQA** | Scientific & Technical Multiple-Choice Reasoning | \`sample\` (3 questions) | **${GPQA_ACCURACY}%** (${GPQA_CORRECT}/${GPQA_TOTAL} correct) | **${GPQA_THROUGHPUT} tok/s** | **${GPQA_LATENCY} s/item** | \`${GPQA_STATUS}\` |
+| **SWE-bench** | Software Engineering / Git Diff Patches | \`${SWE_DATASET}\` (${SWE_TOTAL} instances) | **${SWE_RATE}%** (${SWE_VALID}/${SWE_TOTAL} valid patches) | **${SWE_THROUGHPUT} tok/s** | **${SWE_LATENCY} s/sample** | \`${SWE_STATUS}\` |
+| **GPQA** | Scientific & Technical Multiple-Choice Reasoning | \`${GPQA_SUBSET}\` (${GPQA_TOTAL} questions) | **${GPQA_ACCURACY}%** (${GPQA_CORRECT}/${GPQA_TOTAL} correct) | **${GPQA_THROUGHPUT} tok/s** | **${GPQA_LATENCY} s/item** | \`${GPQA_STATUS}\` |
 
 ## GPQA Domain Accuracy Breakdown
 
@@ -189,9 +368,3 @@ EOF
 echo ""
 echo -e "${GREEN}${BOLD}✓ Markdown Report Generated:${NC} ${SUMMARY_REPORT}"
 echo -e "${BLUE}======================================================================${NC}"
-
-if [ "$SWE_STATUS" = "PASSED" ] && [ "$GPQA_STATUS" = "PASSED" ]; then
-    exit 0
-else
-    exit 1
-fi

@@ -3,7 +3,7 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}
+    image: ${GGUF_IMAGE:-${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host
