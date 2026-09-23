@@ -1,0 +1,22 @@
+FROM rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN python3 -m pip install --no-cache-dir --upgrade \
+      pip \
+      setuptools \
+      wheel \
+    && python3 -m pip install --no-cache-dir --upgrade \
+      huggingface_hub[cli] \
+      vllm-gguf-plugin
+
+RUN python3 - <<'PY'
+import importlib.metadata
+import torch
+import vllm
+
+print("torch:", torch.__version__)
+print("torch hip:", torch.version.hip)
+print("vLLM:", vllm.__version__)
+print("vllm-gguf-plugin:", importlib.metadata.version("vllm-gguf-plugin"))
+PY

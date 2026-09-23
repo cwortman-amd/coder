@@ -3,7 +3,7 @@ services:
   # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
   # ============================================================================
   inference:
-    image: ${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}
+    image: ${VLLM_IMAGE:-rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host
@@ -12,8 +12,8 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - video
-      - render
+      - "44"
+      - "109"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
@@ -21,7 +21,7 @@ services:
       # Target the discrete Radeon AI PRO R9700 (GPU 0), ignoring integrated iGPU
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
       - PYTORCH_ROCM_ARCH=gfx1201
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
       - HF_HOME=/root/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
       - SAFETENSORS_FAST_GPU=1
@@ -38,7 +38,7 @@ services:
       - ./_results:/results
       - ./_results:/workspace/_results
       - ${MODELS_DIR:-./models}:/models
-      - ./qwen3_5.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen3_5.py:ro
+      - ./qwen3_5_rocm10.py:/opt/python/lib/python3.14/site-packages/vllm/model_executor/models/qwen3_5.py:ro
     entrypoint: ["vllm", "serve"]
     command: >
       ${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}

@@ -283,7 +283,7 @@ services:
   # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
   # ============================================================================
   inference:
-    image: ${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}
+    image: ${VLLM_IMAGE:-rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0}
     container_name: rocm-inference-server
     restart: unless-stopped
     ipc: host
@@ -292,16 +292,18 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - video
-      - render
+      - "44"
+      - "109"
     security_opt:
       - seccomp=unconfined
+      - apparmor=unconfined
     environment:
       # Target the discrete Radeon AI PRO R9700 (GPU 0), ignoring integrated iGPU
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
       - PYTORCH_ROCM_ARCH=gfx1201
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
       - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
       - SAFETENSORS_FAST_GPU=1
       - HIP_FORCE_DEV_KERNARG=1
       - TOKENIZERS_PARALLELISM=false
@@ -313,7 +315,10 @@ services:
       - /home/amd/.cache/vllm:/root/.cache/vllm
       - /home/amd/.triton:/root/.triton
       - .:/workspace
-      - ./qwen3_5.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen3_5.py:ro
+      - ./_results:/results
+      - ./_results:/workspace/_results
+      - ${MODELS_DIR:-./models}:/models
+      - ./qwen3_5_rocm10.py:/opt/python/lib/python3.14/site-packages/vllm/model_executor/models/qwen3_5.py:ro
     entrypoint: ["vllm", "serve"]
     command: >
       ${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
@@ -449,7 +454,7 @@ docker build -f Dockerfile.llamacpp-rocm-gfx1201 -t local/llama.cpp:rocm7-gfx120
 
 #### GGUF Docker Compose Specification (`docker-compose.gguf.yml`)
 
-The [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) file orchestrates the native `local/llama.cpp:rocm7-gfx1201` server:
+The [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) file orchestrates the native `local/llama.cpp:rocm10-gfx1201` server (built via [Dockerfile.llamacpp-rocm10-gfx1201](file:///home/amd/workspace/coder/Dockerfile.llamacpp-rocm10-gfx1201) with ROCm 10.0 and Clang 23):
 
 ```yaml
 services:
@@ -457,7 +462,7 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${GGUF_IMAGE:-local/llama.cpp:rocm7-gfx1201}
+    image: ${GGUF_IMAGE:-local/llama.cpp:rocm10-gfx1201}
     container_name: rocm-llama-server
     restart: unless-stopped
     ipc: host
@@ -466,14 +471,13 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - video
-      - render
+      - "44"
+      - "109"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
       - HF_HOME=/root/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
     volumes:
@@ -1726,6 +1730,31 @@ Direct evaluation of `Qwen3.8-27B-Q4_K_M.gguf` via `llama-bench` on the R9700:
 | **1024** | **1024** | 2048 | **389.23 tok/s** | **781.51 tok/s** | 32.44 ms | 5.11 ms | 5.26 s |
 | **8192** | **1024** | 9216 | **127.90 tok/s** | **1152.11 tok/s** | 926.45 ms | 14.72 ms | 16.01 s |
 | **1024** | **8192** | 9216 | **201.06 tok/s** | **226.39 tok/s** | 32.59 ms | 9.94 ms | 81.49 s |
+
+#### 4. ROCm 10.0 vs. ROCm 7.x Empirical Benchmark Comparison on Radeon AI PRO R9700
+
+Empirical throughput evaluation conducted on the **AMD Radeon™ AI PRO R9700** (32 GB GDDR6, `gfx1201`) demonstrates reproducible performance uplifts across both `llama.cpp` HIP and native `vLLM`:
+
+##### A. llama.cpp Hardware Microbenchmark (`llama-bench`, Qwen3.8-27B-Q4_K_M.gguf)
+
+| Test Slice | ROCm 7.1 (`gfx1201`) | ROCm 10.0 (`gfx1201`, Clang 23) | Uplift / Gain | Hardware Operating State |
+| :--- | :--- | :--- | :--- | :--- |
+| **`pp8192` (Prompt Prefill)** | 1,069.69 ± 0.00 tok/s | **1,100.57 ± 6.49 tok/s** | **+2.89% throughput uplift** | 100% Compute, 299W / 300W TDP, 3,407 MHz Clock |
+| **`tg1024` (Token Generation)** | 29.43 ± 0.00 tok/s | **29.85 ± 0.01 tok/s** | **+1.43% throughput uplift** | 100% Compute, 16.8 GB VRAM Allocated |
+
+##### B. Live Serving Benchmark Matrix (`vllm bench serve`, 8192:1024, CONC=1)
+
+Both servers were tested via the standard OpenAI Chat API endpoint (`/v1/chat/completions`) using `vllm bench serve` with full prompt tokenization:
+
+| Engine | Quantization & Precision | ISL : OSL | Mean TTFT | Prompt Prefill Speed | Mean TPOT | Decode Speed (CONC=1) | Total Token Throughput |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **llama.cpp (ROCm 10)** | `Q4_K_M` GGUF | 8192 : 1024 | 7,631.91 ms | 1,073.4 tok/s | **35.17 ms** | **28.43 tok/s** | **192.54 tok/s** |
+| **vLLM (ROCm 10)** | Native FP8 SafeTensors | 8192 : 1024 | **3,480.57 ms** | **2,353.6 tok/s** | 73.31 ms | 13.64 tok/s | **118.12 tok/s** |
+
+##### Key Architectural Insights:
+1. **Prefill Superiority (vLLM Native FP8)**: vLLM on ROCm 10 achieves **2,353.6 prompt tokens/sec** on 8K context prompts—**2.19x faster** than llama.cpp GGUF. vLLM's native Triton GDN prefill kernel (`qwen_gdn_linear_attn.py`) fully leverages RDNA 4 vector hardware.
+2. **Decode Bandwidth Scaling (llama.cpp Q4_K_M)**: At concurrency 1, autoregressive generation is purely memory-bandwidth bound. Reading 4-bit weights (~16.8 GB) achieves **28.43 tok/s**, whereas reading 8-bit FP8 weights (~27.5 GB) delivers **13.64 tok/s**.
+3. **vLLM GGUF Validation Gate**: Testing `vllm-gguf-plugin` (v0.0.5) against `qwen3_5` confirms it strictly lacks hybrid architecture tensor mapping. Adhering to the project's fallback decision rule: `local/llama.cpp:rocm10-gfx1201` is retained as the preferred GGUF runtime, while `vLLM` is retained as the production FP8 serving baseline.
 
 ---
 

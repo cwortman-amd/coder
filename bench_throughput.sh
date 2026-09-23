@@ -224,7 +224,7 @@ start_engine() {
     echo -e "${CYAN}Switching active server to: ${BOLD}${target}${NC}..."
     case "$target" in
         vllm)
-            if docker ps --format '{{.Names}}' | grep -q "^rocm-inference-server$" && curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1; then
+            if (docker ps --format '{{.Names}}' | grep -E -q "^(rocm-inference-server|vllm-rocm10-test)$") && curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1; then
                 echo "Using currently active vLLM container."
                 return 0
             fi
@@ -327,6 +327,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         echo -e "${CYAN}${BOLD}[${CURR_ENGINE}] [${CURRENT_CASE}/${TOTAL_CASES}] Testing: Input=${ISL} | Output=${OSL} | Prompts=${NUM_PROMPTS} | Concurrency=${CONC}...${NC}"
 
         RESULT_FILE="bench_${CURR_ENGINE}_${ISL}_${OSL}.json"
+        FULL_PATH="${RESULTS_DIR}/${RESULT_FILE}"
         CONTAINER_RES_DIR="/results"
         # Determine matching HF tokenizer for client-side token counting
         tok_args=()
@@ -339,9 +340,9 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         fi
 
         # Execute vllm bench serve
-        # If testing vllm and rocm-inference-server is active, use docker exec
-        if [ "$CURR_ENGINE" = "vllm" ] && docker ps --format '{{.Names}}' | grep -q "^rocm-inference-server$"; then
-            docker exec rocm-inference-server vllm bench serve \
+        ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test)$" | head -n1 || true)
+        if [ "$CURR_ENGINE" = "vllm" ] && [ -n "$ACTIVE_VLLM" ]; then
+            docker exec "$ACTIVE_VLLM" vllm bench serve \
               --backend openai-chat \
               --model "$MODEL_NAME" \
               "${tok_args[@]}" \
@@ -355,13 +356,15 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
               --max-concurrency "$CONC" \
               --request-rate inf \
               --save-result \
-              --result-dir "/workspace/_results/throughput/${TIMESTAMP}" \
+              --result-dir "/results" \
               --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+            # Copy result if placed inside /results
+            [ -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" ] && cp -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" "${FULL_PATH}" 2>/dev/null || true
         else
             # Standalone containerized benchmark client targeting http://127.0.0.1:8000
             docker run --rm --network host \
               --device /dev/kfd --device /dev/dri \
-              --group-add video --group-add render \
+              --group-add 44 --group-add 109 \
               --security-opt seccomp=unconfined \
               --security-opt apparmor=unconfined \
               -e HIP_VISIBLE_DEVICES=0 \
@@ -369,7 +372,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
               -e HF_HOME=/root/.cache/huggingface \
               -v "${HF_HOME}:/root/.cache/huggingface" \
               -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
-              --entrypoint python3 vllm/vllm-openai-rocm:latest -m vllm.entrypoints.cli.main bench serve \
+              --entrypoint python rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0 -m vllm.entrypoints.cli.main bench serve \
               --backend openai-chat \
               --model "$MODEL_NAME" \
               "${tok_args[@]}" \

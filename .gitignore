@@ -22,3 +22,6 @@ __pycache__/
 # Local model weights (downloaded via download_model.sh)
 models/*
 !models/.gitkeep
+
+# Build artifacts
+build/

@@ -3,7 +3,7 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${GGUF_IMAGE:-local/llama.cpp:rocm7-gfx1201}
+    image: ${GGUF_IMAGE:-local/llama.cpp:rocm10-gfx1201}
     container_name: rocm-llama-server
     restart: unless-stopped
     ipc: host
@@ -12,14 +12,13 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - video
-      - render
+      - "44"
+      - "109"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
       - HF_HOME=/root/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
     volumes:
