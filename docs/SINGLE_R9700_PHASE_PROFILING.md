@@ -213,7 +213,70 @@ Because host-to-device PCIe transfer ($5.16\text{ ms}$) is **$<0.2\%$** of the c
 
 ---
 
-## 6. Concurrency Scaling & Energy Trade-Offs (C = 1, 2, 4, 8, 16)
+## 6. Power, Energy & Thermodynamic Dynamics: Prefill vs. Decode
+
+Using continuous 250 ms sysfs hwmon telemetry captured during the phase benchmarks, we can directly compare the power consumption, energy efficiency, and thermal profiles of isolated prefill against isolated decode.
+
+### Empirical Power & Energy Matrix
+
+| Operating Phase | Workload Shape | Average Power (W) | Peak Package Power (W) | Phase Duration | Energy per Token | Primary Hardware Bottleneck |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Idle Baseline** | Standby / listening | **14.0 W** | 16.0 W | Continuous | 0 J | Static leakage |
+| **Prefill-Only (P1)** | 128 tokens $\to$ 1 out | **194.6 W** | 299.0 W | 95.5 ms | **0.145 J / tok** | Kernel launch overhead |
+| **Prefill-Only (P2)** | 1,024 tokens $\to$ 1 out | **273.7 W** | 314.0 W | 308.5 ms | **0.082 J / tok** | Compute ramp-up |
+| **Prefill-Only (P4)** | 8,192 tokens $\to$ 1 out | **295.9 W** | **312.0 W** | 2,599.6 ms | **0.094 J / tok** | **Compute (GEMM / WMMA)** |
+| **Decode-Only (D1)** | 128 ctx $\to$ 1,024 out | **295.3 W** | 302.0 W | 30.01 s | **8.65 J / tok** | Memory bus (Weight read) |
+| **Decode-Only (D4)** | 8,192 ctx $\to$ 1,024 out | **296.9 W** | **328.0 W** | 30.62 s | **8.87 J / tok** | **Memory Bandwidth (640 GB/s)** |
+
+```
+        Instantaneous Power vs. Energy per Token
+  
+     Instantaneous Power (Watts)              Energy per Token (Joules)
+  350 ┼───────────────────────────       10 ┼───────────────────────────
+  300 ┼  295.9 W         296.9 W          8 ┼                  8.87 J
+  250 ┼ ┌───────┐       ┌───────┐         6 ┼                 ┌───────┐
+  200 ┼ │       │       │       │         4 ┼                 │       │
+  150 ┼ │       │       │       │         2 ┼                 │       │
+  100 ┼ │       │       │       │         0 ┼──0.094 J────────┤       ├──
+    0 ┼─┴───────┴───────┴───────┴─          └──Prefill─────────Decode───
+        Prefill         Decode                     (94x Disparity)
+```
+
+### 1. Instantaneous Power Equivalence (~296 W)
+Both prefill and decode peg the Radeon AI PRO R9700 at its **~300 W package TDP envelope**:
+- **Prefill Sustained Power**: **295.9 W** (spiking to 312 W)
+- **Decode Sustained Power**: **296.9 W** (spiking to 328 W)
+
+Even though decode computes only 1 token per forward step, it draws virtually identical instantaneous wattage to compute-heavy prefill.
+
+### 2. The 94× Energy-per-Token Disparity
+While instantaneous wattage is identical, **energy per token differs by nearly two orders of magnitude**:
+- **1 Prefill Token**: **0.094 Joules** (94 milliJoules)
+- **1 Decode Token**: **8.87 Joules** (8,870 milliJoules)
+
+> A single generated decode token consumes **~94× more electrical energy** than ingesting an input prompt token.
+
+### 3. Hardware Subsystem Stress
+- **Prefill (Compute-Bound)**: All 8,192 prompt tokens are ingested simultaneously via parallel Matrix-Matrix multiplication (GEMM / WMMA). The ~14 GB of model weights are loaded from GDDR6 once, and reused across thousands of prompt tokens ($\text{FLOPs} \gg \text{Bytes loaded}$). Throughput is **3,151.2 prompt tok/s**, amortizing the 296 W across thousands of tokens per second.
+- **Decode (Memory-Bandwidth Bound)**: To generate a *single* token, the GPU must sweep the entire 14 GB of model weights from GDDR6 into registers for just 1 token step ($\text{Bytes loaded} \gg \text{FLOPs}$). The memory controllers and PHYs burn ~297 W continuously while waiting on GDDR6 bandwidth, accumulating **8.87 Joules per token**.
+
+### 4. Thermal Signatures
+The internal subsystem being stressed is directly reflected in the hardware thermal telemetry:
+
+| Sensor / Metric | Idle Baseline | Prefill Burst (8K Tokens, 2.6s) | Steady Decode (1K Tokens, 30s) | Subsystem Explanation |
+| :--- | :---: | :---: | :---: | :--- |
+| **GPU Edge Temp** | 33.0 °C | 42.0 °C | **58.0 °C** | Sustained heat accumulation over 30s decode |
+| **Hotspot (Junction)** | 35.0 °C | 89.2 °C (peak 91 °C) | **89.3 °C (peak 93 °C)** | Both saturate silicon compute/cache hotspots |
+| **GDDR6 Memory Temp** | 33.0 °C | 72.4 °C (peak 76 °C) | **87.6 °C (peak 89 °C)** | **+13 °C hotter during decode**: memory bus is pegged at 100% duty cycle |
+
+### 5. Multi-GPU P/D Architectural Implications
+In a two-card Disaggregated (P/D 1+1) deployment:
+1. **The Prefill GPU (GPU 0)**: Operates in a **bursty thermal/power profile**. It sits at idle (~14 W) between requests, rapidly spiking to ~296 W for ~2.6 seconds during an 8K prompt, then cooling back down immediately.
+2. **The Decode GPU (GPU 1)**: Operates in a **continuous thermal soak**. It draws a flat ~297 W for tens of seconds to minutes while streaming tokens, with its GDDR6 memory controllers running ~13 °C hotter due to persistent memory bus saturation.
+
+---
+
+## 7. Concurrency Scaling & Energy Trade-Offs (C = 1, 2, 4, 8, 16)
 
 ```
         Concurrency Throughput & Energy Efficiency Plateau
@@ -247,7 +310,7 @@ Because host-to-device PCIe transfer ($5.16\text{ ms}$) is **$<0.2\%$** of the c
 
 ---
 
-## 7. Strategic Recommendations for Multi-GPU Architecture
+## 8. Strategic Recommendations for Multi-GPU Architecture
 
 Based strictly on this empirical evidence from the single Radeon AI PRO R9700:
 

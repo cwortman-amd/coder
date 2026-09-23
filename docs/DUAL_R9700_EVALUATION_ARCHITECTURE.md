@@ -69,6 +69,9 @@ A two-card AMD Radeon™ AI PRO R9700 workstation provides **64 GB of physical G
 | **Tail ITL Under Burst** | High jitter | Moderate jitter reduction | High jitter | Isolated per replica | **Minimal (True phase isolation)** |
 | **Aggregate tok/s** | 1.0× (Baseline) | 0.95× – 1.0× | 1.4× – 1.8× | **2.0× (Linear)** | 0.9× – 1.3× (Role idle bubbles) |
 | **Context Window Limit** | Bounded (8K–12K @ 27B) | Bounded (8K–12K) | **Extended (32K–64K @ 27B)**| Bounded (8K–12K) | Bounded (8K–12K) |
+| **Power Profile** | ~296 W under load | ~296 W under load | ~580 W combined continuous | ~590 W combined parallel | **Asymmetric: GPU0 bursty, GPU1 steady** |
+| **Thermodynamic Duty** | Cyclic thermal soak | Cyclic thermal soak | Symmetric thermal soak | Symmetric thermal soak | **GPU0: 14W $\leftrightarrow$ 296W; GPU1: 297W / 88°C GDDR6** |
+| **Energy Disparity** | 0.094 J/in, 8.87 J/out | 0.094 J/in, 8.87 J/out | ~0.08 J/in, ~7.5 J/out | 0.094 J/in, 8.87 J/out | **0.094 J/prefill tok vs 8.87 J/decode tok** |
 | **Implementation Maturity**| Production | Production | **Production Priority** | Production | **Gated Prototype** |
 
 ---
@@ -108,6 +111,16 @@ Before running multi-card workloads on dual R9700 hardware:
 2. **PCIe Slot Bifurcation**: Ensure motherboard PCIe slot 2 has not silently negotiated down to `x4` or `x8` lanes.
 3. **IOMMU / Access Control Services (ACS)**: Enable PCIe P2P direct memory access in the system BIOS.
 4. **iGPU Masking**: Ensure `HIP_VISIBLE_DEVICES=0,1` strictly references the two dGPUs, isolating the integrated `gfx1103` display controller.
+
+### Thermodynamic & Power Asymmetry: Prefill vs. Decode Duty Cycles
+
+Empirical telemetry on the R9700 reveals a critical physical divergence between prefill and decode:
+- **Instantaneous Power Equivalence**: Both roles draw **~296 W** sustained (peaking at 312 W – 328 W).
+- **The 94× Energy-per-Token Disparity**: A prefill token costs **0.094 Joules**, while a generated decode token costs **8.87 Joules**.
+- **Role Duty Cycles in P/D 1+1**:
+  - **GPU 0 (Prefill)**: Experiences a **bursty power profile**. It idles at ~14 W between incoming requests, spikes to ~296 W for ~2.60 seconds during an 8,192-token prompt ingestion, and returns immediately to idle.
+  - **GPU 1 (Decode)**: Experiences a **continuous thermal soak**. It draws ~297 W continuously while streaming tokens, causing its GDDR6 memory to run **~13 °C hotter (87.6 °C vs 72.4 °C)** due to 100% memory bus duty cycle.
+- **Power Provisioning**: Unlike TP=2 or DP=2 where both cards share identical symmetric load, P/D requires thermal cooling and power provisioning optimized for continuous memory soak on the decode card.
 
 ---
 
