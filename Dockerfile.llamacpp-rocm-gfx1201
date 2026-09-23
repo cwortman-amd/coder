@@ -1,0 +1,37 @@
+# Dockerfile.llamacpp-rocm-gfx1201
+FROM rocm/dev-ubuntu-24.04:7.1-complete
+
+ARG LLAMA_CPP_REF=master
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    curl \
+    libcurl4-openssl-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 --branch ${LLAMA_CPP_REF} \
+    https://github.com/ggml-org/llama.cpp.git /opt/llama.cpp
+
+WORKDIR /opt/llama.cpp
+
+RUN HIPCXX="$(hipconfig -l)/clang" \
+    HIP_PATH="$(hipconfig -R)" \
+    cmake -S . -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DGGML_HIP=ON \
+      -DAMDGPU_TARGETS=gfx1201 \
+      -DLLAMA_CURL=ON \
+    && cmake --build build --config Release -j"$(nproc)"
+
+ENV PATH="/opt/llama.cpp/build/bin:${PATH}"
+
+# Ensure standard binary aliases exist for both /app/llama-server and llama-server
+RUN mkdir -p /app && \
+    ln -sf /opt/llama.cpp/build/bin/llama-server /app/llama-server && \
+    ln -sf /opt/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server && \
+    ln -sf /opt/llama.cpp/build/bin/llama-cli /usr/local/bin/llama-cli
+
+ENTRYPOINT ["llama-server"]

@@ -15,13 +15,25 @@ NC='\033[0m' # No Color
 # Determine project directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Load user environment (~/.env) if present
+if [ -f "$HOME/.env" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$HOME/.env"
+    set +a
+fi
+
 # Load .env if present
 if [ -f "${SCRIPT_DIR}/.env" ]; then
+    PREV_HF_TOKEN="${HF_TOKEN:-}"
     # Export non-comment variables
     set -a
     # shellcheck disable=SC1090
     source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
     set +a
+    if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
+        export HF_TOKEN="${PREV_HF_TOKEN}"
+    fi
 fi
 
 PORT="${INFERENCE_PORT:-8000}"
@@ -58,10 +70,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+CHECKS_DIR="${SCRIPT_DIR}/_results/checks"
+mkdir -p "$CHECKS_DIR"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+CHECK_LOG="${CHECKS_DIR}/check_${TIMESTAMP}.log"
+CHECK_REPORT="${CHECKS_DIR}/check_summary_${TIMESTAMP}.md"
+
+# Redirect execution log for reviewing while displaying to terminal
+exec > >(tee -a "$CHECK_LOG") 2>&1
+
 echo -e "${BLUE}${BOLD}============================================================${NC}"
 echo -e "${BLUE}${BOLD} ROCm Inference Server Health & Response Verification Check ${NC}"
 echo -e "${BLUE}${BOLD}============================================================${NC}"
 echo -e "Target Server: ${BOLD}${BASE_URL}${NC}"
+echo -e "Review Log   : ${BOLD}${CHECK_LOG}${NC}"
 echo ""
 
 # Check dependencies
@@ -171,5 +193,25 @@ echo "$CLEAN_CONTENT"
 echo -e "${BLUE}------------------------------------------------------------${NC}"
 echo -e "Usage: ${BOLD}${PROMPT_TOKENS}${NC} prompt tokens + ${BOLD}${COMPL_TOKENS}${NC} completion tokens = ${BOLD}${TOTAL_TOKENS}${NC} total"
 echo ""
+
+# Write reviewable summary report
+cat << EOF > "$CHECK_REPORT"
+# Inference Health & Verification Check Report
+
+- **Date**: $(date)
+- **Target Server**: \`${BASE_URL}\`
+- **Active Model**: \`${ACTIVE_MODEL}\`
+- **Health Status**: \`HTTP 200 (HEALTHY)\`
+- **Verification Prompt**: \`Hello world! Respond with a brief greeting.\`
+- **Usage**: ${PROMPT_TOKENS} prompt tokens + ${COMPL_TOKENS} completion tokens = ${TOTAL_TOKENS} total
+- **Execution Log**: \`${CHECK_LOG}\`
+
+## Model Response
+\`\`\`text
+${CLEAN_CONTENT}
+\`\`\`
+EOF
+
+echo -e "${GREEN}${BOLD}✓ Review Report Saved:${NC} ${CHECK_REPORT}"
 echo -e "${GREEN}${BOLD}✓ Verification Complete: Inference server is healthy, serving '${ACTIVE_MODEL}', and responding to queries!${NC}"
 exit 0

@@ -1,20 +1,44 @@
 #!/bin/bash
 # ==============================================================================
-# bench_throughput.sh - Multi-Length Token Throughput Benchmarking Suite
+# bench_throughput.sh - Multi-Engine Token Throughput Benchmarking Suite
 # ==============================================================================
-# Benchmarks vLLM model throughput across requested Input/Output length matrix:
-#   1. 2048:512   (2048 input, 512 output)
-#   2. 2048:2048  (2048 input, 2048 output)
-#   3. 128:2048   (128 input, 2048 output)
-#   4. 1024:1024  (1024 input, 1024 output)
-#   5. 8192:1024  (8192 input, 1024 output)
-#   6. 1024:8192  (1024 input, 8192 output)
+# Benchmarks throughput across requested Input/Output length matrix:
+#   1. 8192:1024  (8192 input, 1024 output)
+#   2. 1024:8192  (1024 input, 8192 output)
+#   3. 1024:1024  (1024 input, 1024 output)
+# Supports:
+#   - vLLM (Default ROCm PagedAttention engine)
+#   - llama.cpp (Alternative GGML GGUF engine)
+#   - SGLang (Alternative RadixAttention engine)
 # Reference: https://docs.vllm.ai/en/latest/cli/bench/throughput/
 # ==============================================================================
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$SCRIPT_DIR"
 cd "$SCRIPT_DIR"
+
+# 1. Load user environment (~/.env) if present to pull in HF_TOKEN
+if [ -f "$HOME/.env" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$HOME/.env"
+    set +a
+fi
+
+# 2. Load local environment configuration (.env)
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    PREV_HF_TOKEN="${HF_TOKEN:-}"
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    set +a
+    if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
+        export HF_TOKEN="${PREV_HF_TOKEN}"
+    fi
+fi
+export HF_TOKEN="${HF_TOKEN:-}"
+export HF_HOME="${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}"
 
 # ANSI Colors
 GREEN='\033[0;32m'
@@ -26,113 +50,369 @@ BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-RESULTS_DIR="${SCRIPT_DIR}/benchmark_results/throughput/${TIMESTAMP}"
+RESULTS_DIR="${SCRIPT_DIR}/_results/throughput/${TIMESTAMP}"
 mkdir -p "$RESULTS_DIR"
 
-NUM_PROMPTS="${NUM_PROMPTS:-2}"
+CONC="${CONC:-1}"
+NUM_PROMPTS_OVERRIDE="${NUM_PROMPTS:-}"
 SERVER_URL="${SERVER_URL:-http://127.0.0.1:8000}"
+ENGINE="${INFERENCE_ENGINE:-vllm}"
+QUICK_MODE=false
+CUSTOM_CASES=""
 
-echo -e "${BLUE}${BOLD}======================================================================${NC}"
-echo -e "${BLUE}${BOLD}   vLLM ROCm Model Throughput Benchmark Suite (Radeon AI PRO R9700)   ${NC}"
-echo -e "${BLUE}${BOLD}======================================================================${NC}"
-echo -e "Target Server     : ${BOLD}${SERVER_URL}${NC}"
-echo -e "Hardware Platform : ${BOLD}AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB VRAM)${NC}"
-echo -e "Prompts / Test    : ${BOLD}${NUM_PROMPTS}${NC}"
-echo -e "Reference Docs    : ${CYAN}https://docs.vllm.ai/en/latest/cli/bench/throughput/${NC}"
-echo ""
+usage() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
 
-# Pre-flight check
-if ! curl -sf --connect-timeout 3 "${SERVER_URL}/health" >/dev/null 2>&1; then
-    echo -e "${RED}[FAIL] Inference server at ${SERVER_URL} is not responding.${NC}"
-    echo -e "${YELLOW}Please start it first using: ./setup.sh${NC}"
-    exit 1
+vLLM, llama.cpp & SGLang Multi-Length Token Throughput Benchmarking Suite
+
+Options:
+  -e, --engine <engine>    Inference engine to benchmark ('vllm', 'llama.cpp', 'sglang', or 'all') (default: vllm)
+  --engines <list>         Comma-separated list of engines (e.g. 'vllm,llama.cpp,sglang' or 'all')
+  -c, --concurrency <N>    Concurrency level (default: 1)
+  -n, --num-prompts <N>    Override number of test prompts per slice (default: dynamic by OSL & CONC)
+  --test-cases <cases>     Comma-separated I:O token pairs (default: '8192:1024')
+  -q, --quick              Quick smoke test (1 prompt, 128:64) for rapid multi-engine validation
+  -u, --server-url <URL>   Target server URL (default: http://127.0.0.1:8000)
+  --compare-engines        Compare throughput across all three engines (equivalent to -e all)
+  -h, --help               Show this help message
+
+Dynamic Prompt Sizing:
+  • If OSL == 8192: NUM_PROMPTS = CONC * 20 (e.g. 20 prompts at CONC=1)
+  • If OSL != 8192: NUM_PROMPTS = CONC * 50 (e.g. 50 prompts at CONC=1)
+EOF
+    exit 0
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -c|--conc|--concurrency)
+            CONC="$2"
+            shift 2
+            ;;
+        -e|--engine)
+            ENGINE="$2"
+            shift 2
+            ;;
+        --engines)
+            ENGINE="$2"
+            shift 2
+            ;;
+        --compare-engines)
+            ENGINE="all"
+            shift
+            ;;
+        -n|--num-prompts)
+            NUM_PROMPTS_OVERRIDE="$2"
+            shift 2
+            ;;
+        --test-cases)
+            CUSTOM_CASES="$2"
+            shift 2
+            ;;
+        -q|--quick)
+            QUICK_MODE=true
+            shift
+            ;;
+        -u|--url|--server-url)
+            SERVER_URL="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+# Resolve list of engines to benchmark
+declare -a ENGINE_LIST=()
+if [ "$ENGINE" = "all" ] || [ "$ENGINE" = "compare" ]; then
+    ENGINE_LIST=("vllm" "llama.cpp" "sglang")
+elif [[ "$ENGINE" == *","* ]]; then
+    IFS="," read -ra SPLIT_ENGINES <<< "$ENGINE"
+    for E in "${SPLIT_ENGINES[@]}"; do
+        E_TRIM=$(echo "$E" | xargs)
+        [ -n "$E_TRIM" ] && ENGINE_LIST+=("$E_TRIM")
+    done
+else
+    ENGINE_LIST=("$ENGINE")
 fi
 
-MODEL_NAME=$(curl -s "${SERVER_URL}/v1/models" | jq -r '.data[0].id // "Unknown"')
-echo -e "Active Model      : ${GREEN}${BOLD}${MODEL_NAME}${NC}"
+# Define test cases
+declare -a TEST_CASES=()
+if [ "$QUICK_MODE" = true ]; then
+    TEST_CASES=("128:64")
+    [ -z "$NUM_PROMPTS_OVERRIDE" ] && NUM_PROMPTS_OVERRIDE="1"
+elif [ -n "$CUSTOM_CASES" ]; then
+    IFS="," read -ra SPLIT_CASES <<< "$CUSTOM_CASES"
+    for C in "${SPLIT_CASES[@]}"; do
+        C_TRIM=$(echo "$C" | xargs)
+        [ -n "$C_TRIM" ] && TEST_CASES+=("$C_TRIM")
+    done
+else
+    # Default comparison slice: 8192:1024
+    TEST_CASES=(
+      "8192:1024"
+    )
+fi
+
+echo -e "${BLUE}${BOLD}======================================================================${NC}"
+echo -e "${BLUE}${BOLD}   Inference Model Throughput Benchmark Suite (Radeon AI PRO R9700)   ${NC}"
+echo -e "${BLUE}${BOLD}======================================================================${NC}"
+echo -e "Hardware Platform : ${BOLD}AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB VRAM)${NC}"
+echo -e "Target Engines    : ${CYAN}${BOLD}${ENGINE_LIST[*]}${NC}"
+echo -e "Concurrency (CONC): ${BOLD}${CONC}${NC}"
+if [ -n "${NUM_PROMPTS_OVERRIDE:-}" ]; then
+    echo -e "Prompts / Test    : ${BOLD}${NUM_PROMPTS_OVERRIDE} (User Override)${NC}"
+else
+    echo -e "Prompts / Test    : ${BOLD}Dynamic by OSL (OSL=8192 -> $(( CONC * 20 )), OSL!=8192 -> $(( CONC * 50 )))${NC}"
+fi
+echo -e "Test Cases Matrix : ${BOLD}${TEST_CASES[*]}${NC}"
+echo -e "Results Directory : ${RESULTS_DIR}"
 echo ""
 
-# Define requested test cases: "INPUT_LEN:OUTPUT_LEN"
-TEST_CASES=(
-  "2048:512"
-  "2048:2048"
-  "128:2048"
-  "1024:1024"
-  "8192:1024"
-  "1024:8192"
-)
+# Helper to wait for server health
+wait_for_server() {
+    local port="${1:-8000}"
+    local max_wait="${2:-90}"
+    local elapsed=0
+    echo -n "Waiting for inference server on port ${port}..."
+    while ! (curl -s -f "http://127.0.0.1:${port}/health" >/dev/null 2>&1 || curl -s -f "http://127.0.0.1:${port}/v1/models" >/dev/null 2>&1); do
+        sleep 2
+        elapsed=$((elapsed + 2))
+        echo -n "."
+        if [ "$elapsed" -ge "$max_wait" ]; then
+            echo " TIMEOUT"
+            return 1
+        fi
+    done
+    echo " READY (${elapsed}s)"
+    return 0
+}
 
-TOTAL_CASES=${#TEST_CASES[@]}
-CURRENT_CASE=0
-
-# Summary tracking arrays
-declare -a TABLE_ROWS
-
-for TC in "${TEST_CASES[@]}"; do
-    CURRENT_CASE=$((CURRENT_CASE + 1))
-    IFS=":" read -r IN_LEN OUT_LEN <<< "$TC"
-    
-    echo -e "${CYAN}${BOLD}>>> [${CURRENT_CASE}/${TOTAL_CASES}] Testing Configuration: Input=${IN_LEN} tokens | Output=${OUT_LEN} tokens...${NC}"
-    
-    RESULT_FILE="bench_${IN_LEN}_${OUT_LEN}.json"
-    CONTAINER_RES_DIR="/results"
-
-    # Run vllm bench serve: use docker exec against running server container if available, else docker run
-    if docker ps --format '{{.Names}}' | grep -q "^rocm-inference-server$"; then
-        docker exec rocm-inference-server vllm bench serve \
-          --backend openai-chat \
-          --model "$MODEL_NAME" \
-          --endpoint /v1/chat/completions \
-          --host 127.0.0.1 \
-          --port 8000 \
-          --dataset-name random \
-          --random-input-len "$IN_LEN" \
-          --random-output-len "$OUT_LEN" \
-          --num-prompts "$NUM_PROMPTS" \
-          --request-rate inf \
-          --save-result \
-          --result-dir "/workspace/benchmark_results/throughput/${TIMESTAMP}" \
-          --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/bench_${IN_LEN}_${OUT_LEN}.log" 2>&1 || true
-    else
-        docker run --rm --network host \
-          --device /dev/kfd --device /dev/dri \
-          --group-add video --group-add render \
-          --security-opt seccomp=unconfined \
-          -e HIP_VISIBLE_DEVICES=0 \
-          -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
-          --entrypoint python3 vllm/vllm-openai-rocm:latest -m vllm.entrypoints.cli.main bench serve \
-          --backend openai-chat \
-          --model "$MODEL_NAME" \
-          --endpoint /v1/chat/completions \
-          --host 127.0.0.1 \
-          --port 8000 \
-          --dataset-name random \
-          --random-input-len "$IN_LEN" \
-          --random-output-len "$OUT_LEN" \
-          --num-prompts "$NUM_PROMPTS" \
-          --request-rate inf \
-          --save-result \
-          --result-dir "$CONTAINER_RES_DIR" \
-          --result-filename "$RESULT_FILE" >/dev/null 2>&1 || true
+# Helper to stop a container reliably across snap AppArmor environments
+stop_container() {
+    local name="$1"
+    if docker ps -a --format '{{.Names}}' | grep -q "^${name}$"; then
+        docker update --restart=no "$name" >/dev/null 2>&1 || true
+        local pid
+        pid=$(docker inspect -f '{{.State.Pid}}' "$name" 2>/dev/null || echo "0")
+        if ! docker stop -t 3 "$name" >/dev/null 2>&1; then
+            if [ -n "$pid" ] && [ "$pid" -gt 0 ] 2>/dev/null; then
+                sudo -n kill -TERM "$pid" >/dev/null 2>&1 || true
+                local count=0
+                while sudo -n kill -0 "$pid" >/dev/null 2>&1 && [ "$count" -lt 6 ]; do
+                    sleep 0.5
+                    count=$((count + 1))
+                done
+                if sudo -n kill -0 "$pid" >/dev/null 2>&1; then
+                    sudo -n kill -9 "$pid" >/dev/null 2>&1 || true
+                    sleep 1
+                fi
+            fi
+        fi
+        docker rm -f "$name" >/dev/null 2>&1 || sudo -n docker rm -f "$name" >/dev/null 2>&1 || true
     fi
+}
 
-    # Parse and report metrics
-    FULL_PATH="${RESULTS_DIR}/${RESULT_FILE}"
-    if [ -f "$FULL_PATH" ]; then
-        OUT_TOK_S=$(jq -r '.output_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-        TOTAL_TOK_S=$(jq -r '.total_token_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-        TTFT_MS=$(jq -r '.mean_ttft_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-        TPOT_MS=$(jq -r '.mean_tpot_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-        DURATION_S=$(jq -r '.duration // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-        
-        echo -e "    ${GREEN}✓ Done in ${DURATION_S}s${NC} | Output: ${BOLD}${OUT_TOK_S} tok/s${NC} | Total: ${BOLD}${TOTAL_TOK_S} tok/s${NC} | TTFT: ${TTFT_MS} ms | TPOT: ${TPOT_MS} ms"
-        TABLE_ROWS+=("${IN_LEN}|${OUT_LEN}|${OUT_TOK_S}|${TOTAL_TOK_S}|${TTFT_MS}|${TPOT_MS}|${DURATION_S}")
-    else
-        echo -e "    ${RED}✗ Benchmark failed for ${IN_LEN}:${OUT_LEN}${NC}"
-        TABLE_ROWS+=("${IN_LEN}|${OUT_LEN}|ERROR|ERROR|ERROR|ERROR|ERROR")
-    fi
+# Helper to start an engine
+start_engine() {
+    local target="$1"
+    echo -e "${CYAN}Switching active server to: ${BOLD}${target}${NC}..."
+    case "$target" in
+        vllm)
+            if docker ps --format '{{.Names}}' | grep -q "^rocm-inference-server$" && curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1; then
+                echo "Using currently active vLLM container."
+                return 0
+            fi
+            stop_container "rocm-llama-server"
+            stop_container "rocm-sglang-server"
+            docker compose -p coder-vllm -f "${ROOT_DIR}/docker-compose.yml" up -d inference
+            wait_for_server 8000 90
+            ;;
+        llama.cpp|llamacpp|gguf)
+            local gguf_model="Qwen3.8-27B-Q4_K_M.gguf"
+            if [ -n "${MODEL_FILE:-}" ] && [ -f "${ROOT_DIR}/models/${MODEL_FILE}" ]; then
+                gguf_model="${MODEL_FILE}"
+            elif [ -f "${ROOT_DIR}/models/Qwen3.8-27B-Q4_K_M.gguf" ]; then
+                gguf_model="Qwen3.8-27B-Q4_K_M.gguf"
+            elif [ -f "${ROOT_DIR}/models/qwen2.5-0.5b-instruct-q4_k_m.gguf" ]; then
+                gguf_model="qwen2.5-0.5b-instruct-q4_k_m.gguf"
+            fi
+            if [ ! -f "${ROOT_DIR}/models/${gguf_model}" ]; then
+                echo -e "${YELLOW}Notice: GGUF weights not found at ./models/${gguf_model}.${NC}"
+                return 1
+            fi
+            if docker ps --format '{{.Names}}' | grep -q "^rocm-llama-server$" && curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1; then
+                echo "Using currently active llama.cpp container."
+                return 0
+            fi
+            stop_container "rocm-inference-server"
+            stop_container "rocm-sglang-server"
+            MODEL_FILE="${gguf_model}" MODEL_ALIAS="${gguf_model}" docker compose -p coder-llama -f "${ROOT_DIR}/docker-compose.gguf.yml" up -d inference
+            wait_for_server 8000 60
+            ;;
+        sglang)
+            if docker ps --format '{{.Names}}' | grep -q "^rocm-sglang-server$" && (curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1 || curl -s -f "http://127.0.0.1:8000/v1/models" >/dev/null 2>&1); then
+                echo "Using currently active SGLang container."
+                return 0
+            fi
+            stop_container "rocm-inference-server"
+            stop_container "rocm-llama-server"
+            local sglang_model="/models/Qwen3.8-27B-Q4_K_M.gguf"
+            local sglang_tok="Qwen/Qwen3.8-27B-FP8"
+            if [ -f "${ROOT_DIR}/models/Qwen3.8-27B-Q4_K_M.gguf" ]; then
+                sglang_model="/models/Qwen3.8-27B-Q4_K_M.gguf"
+                sglang_tok="Qwen/Qwen3.8-27B-FP8"
+            elif [ -f "${ROOT_DIR}/models/qwen2.5-0.5b-instruct-q4_k_m.gguf" ]; then
+                sglang_model="/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+                sglang_tok="Qwen/Qwen2.5-0.5B-Instruct"
+            fi
+            SGLANG_MODEL_PATH="${sglang_model}" SGLANG_TOKENIZER_PATH="${sglang_tok}" SGLANG_LOAD_FORMAT="gguf" docker compose -p coder-sglang -f "${ROOT_DIR}/docker-compose.sglang.yml" up -d inference
+            wait_for_server 8000 90
+            ;;
+        *)
+            echo -e "${RED}Unknown engine target: ${target}${NC}"
+            return 1
+            ;;
+    esac
+}
+
+# Summary tracking table
+declare -a TABLE_ROWS=()
+
+for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
     echo ""
+    echo -e "${BLUE}${BOLD}======================================================================${NC}"
+    echo -e "${BLUE}${BOLD}>>> BENCHMARKING ENGINE: ${CURR_ENGINE^^}${NC}"
+    echo -e "${BLUE}${BOLD}======================================================================${NC}"
+
+    if ! start_engine "$CURR_ENGINE"; then
+        echo -e "${YELLOW}Skipping throughput run for ${CURR_ENGINE} (engine unavailable).${NC}"
+        for TC in "${TEST_CASES[@]}"; do
+            IFS=":" read -r IN_LEN OUT_LEN <<< "$TC"
+            TABLE_ROWS+=("${CURR_ENGINE}|${IN_LEN}|${OUT_LEN}|N/A|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE")
+        done
+        continue
+    fi
+
+    # Query active model ID
+    MODEL_NAME=$(curl -s "http://127.0.0.1:8000/v1/models" 2>/dev/null | jq -r '.data[0].id // "Unknown"' || echo "Unknown")
+    echo -e "Active Model ID   : ${GREEN}${BOLD}${MODEL_NAME}${NC}"
+    echo ""
+
+    TOTAL_CASES=${#TEST_CASES[@]}
+    CURRENT_CASE=0
+
+    for TC in "${TEST_CASES[@]}"; do
+        CURRENT_CASE=$((CURRENT_CASE + 1))
+        IFS=":" read -r IN_LEN OUT_LEN <<< "$TC"
+        ISL="$IN_LEN"
+        OSL="$OUT_LEN"
+
+        # Dynamic prompt sizing based on OSL and CONC
+        if [ -n "${NUM_PROMPTS_OVERRIDE:-}" ]; then
+            export NUM_PROMPTS="$NUM_PROMPTS_OVERRIDE"
+        else
+            if [[ "$OSL" == "8192" ]]; then
+                export NUM_PROMPTS=$(( CONC * 20 ))
+            else
+                export NUM_PROMPTS=$(( CONC * 50 ))
+            fi
+        fi
+
+        echo -e "${CYAN}${BOLD}[${CURR_ENGINE}] [${CURRENT_CASE}/${TOTAL_CASES}] Testing: Input=${ISL} | Output=${OSL} | Prompts=${NUM_PROMPTS} | Concurrency=${CONC}...${NC}"
+
+        RESULT_FILE="bench_${CURR_ENGINE}_${ISL}_${OSL}.json"
+        CONTAINER_RES_DIR="/results"
+        # Determine matching HF tokenizer for client-side token counting
+        tok_args=()
+        if [[ "$MODEL_NAME" == *".gguf"* ]] || [[ "$MODEL_NAME" != *"/"* ]]; then
+            if [[ "$MODEL_NAME" == *"0.5b"* ]] || [[ "$MODEL_NAME" == *"0.5B"* ]]; then
+                tok_args=(--tokenizer "Qwen/Qwen2.5-0.5B-Instruct")
+            else
+                tok_args=(--tokenizer "Qwen/Qwen3.8-27B-FP8")
+            fi
+        fi
+
+        # Execute vllm bench serve
+        # If testing vllm and rocm-inference-server is active, use docker exec
+        if [ "$CURR_ENGINE" = "vllm" ] && docker ps --format '{{.Names}}' | grep -q "^rocm-inference-server$"; then
+            docker exec rocm-inference-server vllm bench serve \
+              --backend openai-chat \
+              --model "$MODEL_NAME" \
+              "${tok_args[@]}" \
+              --endpoint /v1/chat/completions \
+              --host 127.0.0.1 \
+              --port 8000 \
+              --dataset-name random \
+              --random-input-len "$ISL" \
+              --random-output-len "$OSL" \
+              --num-prompts "$NUM_PROMPTS" \
+              --max-concurrency "$CONC" \
+              --request-rate inf \
+              --save-result \
+              --result-dir "/workspace/_results/throughput/${TIMESTAMP}" \
+              --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+        else
+            # Standalone containerized benchmark client targeting http://127.0.0.1:8000
+            docker run --rm --network host \
+              --device /dev/kfd --device /dev/dri \
+              --group-add video --group-add render \
+              --security-opt seccomp=unconfined \
+              --security-opt apparmor=unconfined \
+              -e HIP_VISIBLE_DEVICES=0 \
+              -e HF_TOKEN="${HF_TOKEN:-}" \
+              -e HF_HOME=/root/.cache/huggingface \
+              -v "${HF_HOME}:/root/.cache/huggingface" \
+              -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
+              --entrypoint python3 vllm/vllm-openai-rocm:latest -m vllm.entrypoints.cli.main bench serve \
+              --backend openai-chat \
+              --model "$MODEL_NAME" \
+              "${tok_args[@]}" \
+              --endpoint /v1/chat/completions \
+              --host 127.0.0.1 \
+              --port 8000 \
+              --dataset-name random \
+              --random-input-len "$ISL" \
+              --random-output-len "$OSL" \
+              --num-prompts "$NUM_PROMPTS" \
+              --max-concurrency "$CONC" \
+              --request-rate inf \
+              --save-result \
+              --result-dir "$CONTAINER_RES_DIR" \
+              --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+        fi
+
+        # Parse and report metrics
+        FULL_PATH="${RESULTS_DIR}/${RESULT_FILE}"
+        if [ -f "$FULL_PATH" ]; then
+            OUT_TOK_S=$(jq -r '.output_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+            TOTAL_TOK_S=$(jq -r '.total_token_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+            TTFT_MS=$(jq -r '.mean_ttft_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+            TPOT_MS=$(jq -r '.mean_tpot_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+            DURATION_S=$(jq -r '.duration // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+
+            echo -e "    ${GREEN}✓ Done in ${DURATION_S}s${NC} | Output: ${BOLD}${OUT_TOK_S} tok/s${NC} | Total: ${BOLD}${TOTAL_TOK_S} tok/s${NC} | TTFT: ${TTFT_MS} ms | TPOT: ${TPOT_MS} ms"
+            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|${OUT_TOK_S}|${TOTAL_TOK_S}|${TTFT_MS}|${TPOT_MS}|${DURATION_S}")
+        else
+            echo -e "    ${RED}✗ Benchmark failed for ${CURR_ENGINE} on ${ISL}:${OSL}${NC}"
+            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|ERROR|ERROR|ERROR|ERROR|ERROR")
+        fi
+        echo ""
+    done
 done
+
+# Restore default vLLM engine if multiple engines were benchmarked
+if [ "${#ENGINE_LIST[@]}" -gt 1 ] || [ "${ENGINE_LIST[0]}" != "vllm" ]; then
+    echo -e "${CYAN}Restoring default inference engine: vLLM...${NC}"
+    stop_container "rocm-llama-server"
+    stop_container "rocm-sglang-server"
+    docker compose -p coder-vllm -f "${ROOT_DIR}/docker-compose.yml" up -d inference >/dev/null 2>&1 || true
+fi
 
 # Ensure results directory permissions
 chmod -R ugo+rwX "$RESULTS_DIR" 2>/dev/null || true
@@ -140,22 +420,22 @@ chmod -R ugo+rwX "$RESULTS_DIR" 2>/dev/null || true
 # ------------------------------------------------------------------------------
 # Terminal Formatted Results Table
 # ------------------------------------------------------------------------------
-echo -e "${BLUE}${BOLD}========================================================================================${NC}"
-echo -e "${BLUE}${BOLD}                   THROUGHPUT BENCHMARK RESULTS SUMMARY MATRIX                         ${NC}"
-echo -e "${BLUE}${BOLD}========================================================================================${NC}"
-printf "%-10s | %-11s | %-16s | %-15s | %-12s | %-12s\n" \
-  "Input (tok)" "Output (tok)" "Output Throughput" "Total Throughput" "Mean TTFT" "Mean TPOT"
-echo "----------------------------------------------------------------------------------------"
+echo -e "${BLUE}${BOLD}===============================================================================================================${NC}"
+echo -e "${BLUE}${BOLD}                           THROUGHPUT BENCHMARK RESULTS SUMMARY MATRIX                                         ${NC}"
+echo -e "${BLUE}${BOLD}===============================================================================================================${NC}"
+printf "%-11s | %-10s | %-11s | %-8s | %-16s | %-15s | %-12s | %-12s\n" \
+  "Engine" "Input (tok)" "Output (tok)" "Prompts" "Output Throughput" "Total Throughput" "Mean TTFT" "Mean TPOT"
+echo "---------------------------------------------------------------------------------------------------------------"
 
 for ROW in "${TABLE_ROWS[@]}"; do
-    IFS="|" read -r R_IN R_OUT R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
-    printf "%-10s | %-11s | %-16s | %-15s | %-12s | %-12s\n" \
-      "${R_IN}" "${R_OUT}" "${R_OUT_S} tok/s" "${R_TOT_S} tok/s" "${R_TTFT} ms" "${R_TPOT} ms"
+    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
+    printf "%-11s | %-10s | %-11s | %-8s | %-16s | %-15s | %-12s | %-12s\n" \
+      "${R_ENG}" "${R_IN}" "${R_OUT}" "${R_NUM}" "${R_OUT_S} tok/s" "${R_TOT_S} tok/s" "${R_TTFT} ms" "${R_TPOT} ms"
 done
 
-echo "----------------------------------------------------------------------------------------"
-echo -e "Tested Model    : ${BOLD}${MODEL_NAME}${NC}"
+echo "---------------------------------------------------------------------------------------------------------------"
 echo -e "Hardware Device : AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6)"
+echo -e "Concurrency     : ${BOLD}${CONC}${NC}"
 echo -e "Metrics Folder  : ${RESULTS_DIR}"
 
 # ------------------------------------------------------------------------------
@@ -163,26 +443,30 @@ echo -e "Metrics Folder  : ${RESULTS_DIR}"
 # ------------------------------------------------------------------------------
 REPORT_FILE="${RESULTS_DIR}/throughput_benchmark_report.md"
 cat << EOF > "$REPORT_FILE"
-# Throughput Benchmark Performance Report
+# Multi-Engine Throughput Benchmark Performance Report
 
-- **Model Evaluated**: \`${MODEL_NAME}\`
 - **Target Hardware**: AMD Radeon™ AI PRO R9700 (\`gfx1201\`, 32 GB GDDR6 VRAM)
-- **Benchmark Suite**: vLLM Throughput Matrix (\`vllm bench\`)
+- **Engines Tested**: \`${ENGINE_LIST[*]}\`
+- **Benchmark Suite**: vLLM Throughput Matrix (\`vllm bench serve\`)
 - **Reference**: [vLLM Throughput CLI Docs](https://docs.vllm.ai/en/latest/cli/bench/throughput/)
 - **Timestamp**: $(date)
-- **Prompts per Configuration**: ${NUM_PROMPTS}
+- **Concurrency (CONC)**: ${CONC}
+- **Prompt Sizing Strategy**: Dynamic by OSL (OSL=8192 -> $(( CONC * 20 )), OSL!=8192 -> $(( CONC * 50 )))
 
-## Throughput & Latency Matrix
+## Comparative Throughput & Latency Matrix
 
-| Input Tokens (ISL) | Output Tokens (OSL) | Total Tokens | Output Throughput | Total Throughput | Mean TTFT | Mean TPOT | Duration |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Engine | Input Tokens (ISL) | Output Tokens (OSL) | Prompts | Total Tokens | Output Throughput | Total Throughput | Mean TTFT | Mean TPOT | Duration |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 EOF
 
 for ROW in "${TABLE_ROWS[@]}"; do
-    IFS="|" read -r R_IN R_OUT R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
-    TOTAL_TOK=$(( R_IN + R_OUT )) 2>/dev/null || TOTAL_TOK="N/A"
+    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
+    TOTAL_TOK="N/A"
+    if [[ "${R_NUM}" =~ ^[0-9]+$ ]]; then
+        TOTAL_TOK=$(( (R_IN + R_OUT) * R_NUM ))
+    fi
     cat << EOF >> "$REPORT_FILE"
-| **${R_IN}** | **${R_OUT}** | ${TOTAL_TOK} | **${R_OUT_S} tok/s** | **${R_TOT_S} tok/s** | ${R_TTFT} ms | ${R_TPOT} ms | ${R_DUR} s |
+| **${R_ENG}** | **${R_IN}** | **${R_OUT}** | ${R_NUM} | ${TOTAL_TOK} | **${R_OUT_S} tok/s** | **${R_TOT_S} tok/s** | ${R_TTFT} ms | ${R_TPOT} ms | ${R_DUR} s |
 EOF
 done
 
@@ -191,6 +475,7 @@ cat << EOF >> "$REPORT_FILE"
 ## Metric Definitions
 - **Input Tokens (ISL)**: Number of prompt context tokens fed into the model.
 - **Output Tokens (OSL)**: Number of generative completion tokens sampled.
+- **Prompts**: Number of requests executed in this test slice.
 - **Output Throughput**: Speed of generated tokens (\`completion_tokens / duration\`).
 - **Total Throughput**: Combined prefill and decode token processing speed (\`(input_tokens + output_tokens) / duration\`).
 - **Mean TTFT (Time to First Token)**: Prefill latency before the first token is emitted.
@@ -199,4 +484,4 @@ EOF
 
 echo ""
 echo -e "${GREEN}${BOLD}✓ Archival Markdown Report Saved:${NC} ${REPORT_FILE}"
-echo -e "${BLUE}========================================================================================${NC}"
+echo -e "${BLUE}===============================================================================================================${NC}"

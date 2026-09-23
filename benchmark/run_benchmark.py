@@ -119,7 +119,8 @@ def load_benchmark_dataset(dataset_name: str, split: str = "test", num_samples: 
     try:
         from datasets import load_dataset
         print(f"Downloading/loading SWE-bench dataset: {dataset_name} ({split} split)...")
-        ds = load_dataset(dataset_name, split=split)
+        token = os.environ.get("HF_TOKEN")
+        ds = load_dataset(dataset_name, split=split, token=token)
         instances = list(ds)
         if num_samples:
             instances = instances[:num_samples]
@@ -330,7 +331,7 @@ def main():
     parser.add_argument("--dataset", default="sample", help="Dataset: 'sample', 'princeton-nlp/SWE-bench_Lite', 'princeton-nlp/SWE-bench_Verified', or local JSON/JSONL path")
     parser.add_argument("--split", default="test", help="Dataset split (default: test)")
     parser.add_argument("--num-samples", type=int, default=None, help="Number of instances to evaluate (default: all)")
-    parser.add_argument("--output-dir", default="benchmark_results", help="Directory to store outputs")
+    parser.add_argument("--output-dir", default="_results", help="Directory to store outputs")
     parser.add_argument("--max-tokens", type=int, default=4096, help="Max tokens to generate per solution")
     parser.add_argument("--temperature", type=float, default=0.0, help="Sampling temperature")
     parser.add_argument("--run-evaluation", action="store_true", help="Print or execute swebench.harness evaluation")

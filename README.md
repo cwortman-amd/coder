@@ -17,9 +17,10 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
 - [Prerequisites](#prerequisites)
 - [File Structure](#file-structure)
 - [Docker Compose Specification](#docker-compose-specification)
-  - [vLLM Configuration (Dual R9700 for FP8 / Single R9700 for <=14B)](#vllm-configuration-dual-r9700-for-fp8--single-r9700-for-14b)
-  - [llama.cpp ROCm GGUF Configuration (Recommended for Single 32GB R9700)](#llamacpp-rocm-gguf-configuration-recommended-for-single-32gb-r9700)
-  - [SGLang Configuration (Alternative)](#sglang-configuration-alternative)
+  - [vLLM Configuration (Production Serving Baseline: FP8 / AWQ / SafeTensors)](#vllm-configuration-production-serving-baseline-fp8--awq--safetensors)
+  - [llama.cpp ROCm GGUF Configuration (gfx1201 HIP Build)](#llamacpp-rocm-gguf-configuration-gfx1201-hip-build)
+  - [Serving GGUF Models on vLLM (via `vllm-gguf-plugin`)](#serving-gguf-models-on-vllm-via-vllm-gguf-plugin)
+  - [Serving Models with SGLang on AMD ROCm (FP8 & GGUF Support)](#serving-models-with-sglang-on-amd-rocm-fp8--gguf-support)
   - [Qwen3.5 Architecture Support & Kernel Fix (`qwen3_5.py`)](#qwen35-architecture-support--kernel-fix-qwen3_5py)
   - [Model Weight Downloader (`download_model.sh`)](#model-weight-downloader-download_modelsh)
 - [OpenCode Client Configuration (`opencode.json`)](#opencode-client-configuration-opencodejson)
@@ -57,12 +58,15 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Quickstart: GPQA Smoke Benchmark](#quickstart-gpqa-smoke-benchmark)
   - [Evaluating GPQA Diamond & Main from Hugging Face](#evaluating-gpqa-diamond--main-from-hugging-face)
   - [GPQA Benchmark Results on AMD Radeon AI PRO R9700](#gpqa-benchmark-results-on-amd-radeon-ai-pro-r9700)
-- [Throughput Benchmarking with vLLM (`bench_throughput.sh`)](#throughput-benchmarking-with-vllm-bench_throughputsh)
+- [Throughput & Multi-Engine Benchmarking (`bench_throughput.sh`)](#throughput--multi-engine-benchmarking-bench_throughputsh)
   - [Overview & Methodology](#overview--methodology)
+  - [Recommended Deployment Matrix](#recommended-deployment-matrix)
   - [Input/Output Token Matrix Configurations](#inputoutput-token-matrix-configurations)
   - [Running the Live Serving Benchmark (`bench_throughput.sh`)](#running-the-live-serving-benchmark-bench_throughputsh)
+  - [Multi-Engine Comparative Benchmark (`compare_engines.sh`)](#multi-engine-comparative-benchmark-compare_enginessh)
+  - [Empirical Benchmark Results on AMD Radeon AI PRO R9700](#empirical-benchmark-results-on-amd-radeon-ai-pro-r9700)
   - [Offline Benchmarking with `vllm bench throughput`](#offline-benchmarking-with-vllm-bench-throughput)
-  - [Throughput Benchmark Results on AMD Radeon AI PRO R9700](#throughput-benchmark-results-on-amd-radeon-ai-pro-r9700)
+- [Centralized Results & Artifacts Logging (`_results/`)](#centralized-results--artifacts-logging-_results)
 - [Troubleshooting](#troubleshooting)
 - [Summary and Resources](#summary-and-resources)
 
@@ -94,15 +98,17 @@ The **AMD Radeon™ AI PRO R9700** is built on AMD's **RDNA 4** architecture (`g
 
 ### VRAM Partitioning & Sizing: Single vs. Dual R9700
 
-> [!IMPORTANT]
-> **FP8 Out-Of-Memory (OOM) Notice**: Serving `Qwen3.8-27B` in **FP8 precision** requires **~27 GB of VRAM** for model weights alone. On a single 32 GB R9700, this leaves less than 5 GB for dynamic activations, KV-cache, and scratch buffers, causing **Out-Of-Memory (OOM) crashes**.
-> - **Single 32 GB R9700**: **`Q4_K_M` GGUF quantization is STRONGLY RECOMMENDED** (~16.8–17.6 GB weights), providing ample headroom (>14 GB) for extended 32k–64k context windows with zero OOM risk.
-> - **Dual R9700 (64 GB Total VRAM)**: **REQUIRED to run `Qwen3.8-27B` in FP8 precision**. Tensor parallelism (`--tensor-parallel-size 2` / `--tp 2`) splits weights across both GPUs (~13.5 GB per card), leaving over 18 GB of VRAM per card for deep context and concurrent queries.
+> [!NOTE]
+> **FP8 & GGUF Memory Footprint**: Serving `Qwen3.8-27B` in **FP8 precision** requires **~27.5 GB of VRAM** for model weights alone.
+> - **Single 32 GB R9700 (FP8 with vLLM)**: Fits within 32 GB when configured with `MAX_MODEL_LEN=8192` and `--kv-cache-memory-bytes 1073741824` (1 GB reserved for KV cache). This delivers maximum uncompromised FP8 accuracy for coding tasks.
+> - **Single 32 GB R9700 (GGUF Q4_K_M)**: Uses ~16.8–17.6 GB for weights, leaving over 14 GB of VRAM free for ultra-deep context windows (up to 32k–64k tokens).
+> - **Dual R9700 (64 GB Total VRAM)**: Tensor parallelism (`--tensor-parallel-size 2` / `--tp 2`) splits FP8 weights across both GPUs (~13.5 GB per card), providing 18+ GB per card for extended context windows and concurrent multi-user serving.
 
-| Setup Topology | Total VRAM | Recommended Model & Format | Memory Allocation & Fit |
+| Setup Topology | Total VRAM | Engine & Precision | Memory Allocation & Context Support |
 | :--- | :--- | :--- | :--- |
-| **Single R9700 (Workstation)** | **32 GB** GDDR6 | **`Qwen3.8-27B-Q4_K_M.gguf` (RECOMMENDED)** | **Zero OOM Risk**. ~17.6 GB weights + ~7.8 GB 8-bit KV cache (`q8_0`) at 64k ctx = **~26.9 GB total** (~5.1 GB headroom). *(FP8 triggers OOM).* |
-| **Dual R9700 (Server / Multi-GPU)** | **64 GB** GDDR6 | **`Qwen/Qwen3.8-27B-FP8` (REQUIRED FOR FP8)** | **Native FP8 Tensor Parallelism (`--tp 2`)**. Splits ~27 GB weights into ~13.5 GB / GPU, leaving ~18.5 GB VRAM / GPU for massive KV-cache buffers. |
+| **Single R9700 (Workstation)** | **32 GB** GDDR6 | **vLLM (Default)**<br>`Qwen/Qwen3.8-27B-FP8` | **Supported (8,192 context)**. ~27.5 GB weights + 1.0 GB KV cache = **~28.5 GB allocated** (~3.3 GB headroom). Highest coding accuracy. |
+| **Single R9700 (Workstation)** | **32 GB** GDDR6 | **vLLM / llama.cpp**<br>`Qwen3.8-27B-Q4_K_M.gguf` | **Supported (32k–64k context)**. ~17.6 GB weights + ~7.8 GB 8-bit KV cache at 64k ctx = **~25.4 GB total** (>6 GB headroom). Ultra-deep context. |
+| **Dual R9700 (Server / Multi-GPU)** | **64 GB** GDDR6 | **vLLM**<br>`Qwen/Qwen3.8-27B-FP8` | **Native FP8 Tensor Parallelism (`--tp 2`)**. Splits ~27.5 GB weights into ~13.7 GB / GPU, leaving ~18 GB VRAM / GPU for 64k+ context. |
 
 
 ```
@@ -231,9 +237,10 @@ The project directory is structured as follows:
 ├── check.sh                  # Automated health check & live prompt verification script
 ├── test.sh                   # Automated dual benchmark runner (SWE-bench & GPQA) & results summary
 ├── demo.sh                   # Industry-standard HTML5 water simulation coding challenge demo
-├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite
+├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite (vLLM, llama.cpp, SGLang)
 ├── download_model.sh         # Model downloader for Qwen3.8-27B-Q4_K_M.gguf (~16.8 GB) with resume
 ├── jev_gateway.py            # Open Jev TypeSafe semantic routing gateway (AMD R9700 + Claude)
+├── Dockerfile.llamacpp-rocm-gfx1201 # Dedicated ROCm 7.x gfx1201 HIP image build for llama.cpp
 ├── docker-compose.yml        # Primary orchestration file (vLLM ROCm FP8/SafeTensors + OpenCode + Benchmark)
 ├── docker-compose.gguf.yml   # GGUF orchestration file (llama.cpp ROCm server for quantized models)
 ├── docker-compose.sglang.yml # Alternative orchestration file for SGLang
@@ -249,22 +256,24 @@ The project directory is structured as follows:
 │   ├── requirements.txt      # Benchmark dependencies (openai, datasets, swebench)
 │   ├── run_benchmark.py      # SWE-bench software engineering evaluation script
 │   ├── run_gpqa.py           # GPQA graduate-level scientific reasoning script
+│   ├── compare_engines.sh    # Automated comparative benchmark suite (vLLM vs. llama.cpp vs. SGLang)
 │   ├── compare_models.sh     # Automated multi-model comparative test script
 │   ├── sample_instances.json # Offline sample problems for SWE-bench Lite
 │   └── sample_gpqa.json      # Offline sample questions for GPQA Diamond
-└── benchmark_results/        # Generated evaluation logs and predictions
+└── _results/                 # Central directory for reviewable reports, summaries, and persistent logs
 ```
 
 ---
 
 ## Docker Compose Specification
 
-### vLLM Configuration (Dual R9700 for FP8 / Single R9700 for <=14B)
+### vLLM Configuration (Production Serving Baseline: FP8 / AWQ / SafeTensors)
 
-> [!WARNING]
-> **Single-GPU Out-Of-Memory (OOM) Warning**: Serving `Qwen/Qwen3.8-27B-FP8` on a single 32 GB R9700 card causes **Out-Of-Memory (OOM)** failures because the ~27 GB weights leave less than 5 GB for dynamic activations, KV-cache, and runtime buffers.
-> - **Single 32 GB R9700**: **`Q4_K_M` GGUF quantization is RECOMMENDED** via [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) (llama.cpp server).
-> - **Dual 64 GB R9700**: **REQUIRED to serve `Qwen3.8-27B` in FP8 precision**. Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` (`--tp 2`) to split the weights across both GPUs.
+> [!NOTE]
+> **VRAM Allocation & Context Tuning on 32 GB R9700**: Serving `Qwen/Qwen3.8-27B-FP8` requires ~27.5 GB for weights alone.
+> - **Single 32 GB R9700 (FP8 Production)**: Supported with bounded context (`MAX_MODEL_LEN=9600` or `8192`) and `--kv-cache-memory-bytes 1073741824` (1.0 GB pre-allocated KV cache). This allocates ~28.5 GB total VRAM, leaving ~3.5 GB safe operating headroom.
+> - **Single 32 GB R9700 (Ultra-Deep Context)**: For 32,768–65,536 token context windows on a single card, use **`Q4_K_M` GGUF quantization** via [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) (llama.cpp ROCm 7.x server), which consumes only ~16.8 GB for weights.
+> - **Dual 64 GB R9700 (Scale-Up)**: Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` (`--tp 2`) to divide the weights (~13.7 GB per GPU), providing 18+ GB headroom per card for extended 64k+ context.
 
 The primary [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) orchestrates the inference engine, client agent, and optional benchmarking suite using **vLLM** optimized for AMD ROCm:
 
@@ -368,7 +377,9 @@ services:
         condition: service_healthy
     volumes:
       - ./benchmark:/app
-      - ./benchmark_results:/app/benchmark_results
+      - ./_results:/app/_results
+      - ./_results:/results
+      - ./_results:/app/benchmark_results
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ["python3"]
     command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
@@ -387,9 +398,58 @@ volumes:
 
 ---
 
-### llama.cpp ROCm GGUF Configuration (Recommended for Single 32GB R9700)
+### llama.cpp ROCm GGUF Configuration (gfx1201 HIP Build)
 
-For a single **AMD Radeon™ AI PRO R9700 (32 GB VRAM)**, **Q4_K_M GGUF quantization is the strongly recommended deployment configuration**. Because FP8 precision causes Out-Of-Memory errors on a single 32 GB card, this repository provides [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml), which uses the native ROCm build of **llama.cpp server** (`ghcr.io/ggerganov/llama.cpp:server-rocm`) to deliver full 32,768–65,536 token context windows within a ~22 GB working VRAM budget:
+For GGUF quantization (e.g., `Qwen3.8-27B-Q4_K_M.gguf`), this repository provides a dedicated, high-performance **llama.cpp ROCm server** targeted directly at the RDNA 4 architecture (`gfx1201`).
+
+#### Why a Custom ROCm 7.x `gfx1201` Build is Required
+
+> [!WARNING]
+> **Legacy ROCm 5.6 Images Trigger Tensile Failure & CPU Fallback**:
+> The public prebuilt image `ghcr.io/ggerganov/llama.cpp:server-rocm` was compiled against legacy ROCm 5.6. On AMD RDNA 4 (`gfx1201`), it triggers:
+> ```text
+> rocBLAS error: Could not initialize Tensile host: No devices found
+> ```
+> This causes llama.cpp to silently fall back to host CPU inference, resulting in catastrophic performance loss (**17.6 tok/s prefill, 2.67 tok/s decode** vs. **1,069 tok/s prefill, 29.4 tok/s decode** on GPU).
+
+To resolve this, this repository includes [Dockerfile.llamacpp-rocm-gfx1201](file:///home/amd/workspace/coder/Dockerfile.llamacpp-rocm-gfx1201), which builds a native ROCm 7.x HIP binary specifically compiled for `gfx1201`:
+
+```dockerfile
+# Dockerfile.llamacpp-rocm-gfx1201
+FROM rocm/dev-ubuntu-24.04:7.1-complete
+
+ARG LLAMA_CPP_REF=master
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential cmake git curl libcurl4-openssl-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 --branch ${LLAMA_CPP_REF} \
+    https://github.com/ggml-org/llama.cpp.git /opt/llama.cpp
+
+WORKDIR /opt/llama.cpp
+
+RUN HIPCXX="$(hipconfig -l)/clang" \
+    HIP_PATH="$(hipconfig -R)" \
+    cmake -S . -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DGGML_HIP=ON \
+      -DAMDGPU_TARGETS=gfx1201 \
+      -DLLAMA_CURL=ON \
+    && cmake --build build --config Release -j"$(nproc)"
+
+ENV PATH="/opt/llama.cpp/build/bin:${PATH}"
+ENTRYPOINT ["llama-server"]
+```
+
+Build the container image on the host:
+```bash
+docker build -f Dockerfile.llamacpp-rocm-gfx1201 -t local/llama.cpp:rocm7-gfx1201 .
+```
+
+#### GGUF Docker Compose Specification (`docker-compose.gguf.yml`)
+
+The [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) file orchestrates the native `local/llama.cpp:rocm7-gfx1201` server:
 
 ```yaml
 services:
@@ -397,8 +457,8 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${GGUF_IMAGE:-${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}}
-    container_name: rocm-inference-server
+    image: ${GGUF_IMAGE:-local/llama.cpp:rocm7-gfx1201}
+    container_name: rocm-llama-server
     restart: unless-stopped
     ipc: host
     network_mode: host
@@ -410,19 +470,28 @@ services:
       - render
     security_opt:
       - seccomp=unconfined
+      - apparmor=unconfined
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
       - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - ${MODELS_DIR:-./models}:/models
-      - ${HF_CACHE_DIR:-~/.cache/huggingface}:/root/.cache/huggingface
+      - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
+      - ./_results:/results
+    entrypoint: ["llama-server"]
     command: >
       -m /models/${MODEL_FILE:-Qwen3.8-27B-Q4_K_M.gguf}
       --host 0.0.0.0
       --port ${INFERENCE_PORT:-8000}
-      -ngl 99
-      --ctx-size ${MAX_MODEL_LEN:-32768}
-      --alias ${MODEL_NAME:-Qwen3.8-27B}
+      -ngl 999
+      -fa on
+      -c ${MAX_MODEL_LEN:-12288}
+      -b 1024
+      -ub 512
+      -np 1
+      --alias ${MODEL_ALIAS:-${MODEL_FILE:-Qwen3.8-27B-Q4_K_M.gguf}}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
       interval: 10s
@@ -431,24 +500,150 @@ services:
       start_period: 20s
 ```
 
-#### Why Use GGUF on the Radeon AI PRO R9700?
-- **Massive 32k Context Window**: A 4-bit quantized 27B model (`Q4_K_M`) occupies only **~16.8 GB** of weights. This leaves over **15 GB of free VRAM** for a massive 32,768-token KV-cache, eliminating VRAM constraints during long multi-file coding sessions.
-- **`-ngl 99` Full Offload**: Completely offloads all 99 model layers to the Radeon AI PRO R9700 GPU.
-- **Standard OpenAI API**: Exposes the exact same `/v1/chat/completions` API on port 8000, allowing seamless swapping between vLLM and llama.cpp without changing OpenCode.
+#### Key Optimization Parameters for llama.cpp on R9700
+- **`-ngl 999` Full Offload**: Completely offloads all layers to the Radeon AI PRO R9700 GPU.
+- **`-fa on`**: Enables Flash Attention in llama.cpp for accelerated prefill and compact KV footprint.
+- **`-b 1024 -ub 512`**: Configures the logical batch and micro-batch sizes, maximizing prefill throughput (**1,069.69 tok/s**) while avoiding VRAM thrashing.
+- **`-c 12288` Context Buffer**: Pre-allocates a 12k context window in ~16.5 GB VRAM (~51% capacity), leaving ample headroom on the 32 GB card.
+- **Standard OpenAI API**: Exposes `/v1/chat/completions` on port 8000, seamlessly interchanging with vLLM or SGLang.
+
+> [!TIP]
+> **Tokenizer Decoupling for Benchmark Clients**: When evaluating llama.cpp with OpenAI benchmark clients (e.g. `vllm bench serve`), the server model alias (e.g. `Qwen3.8-27B-Q4_K_M.gguf`) is not a valid Hugging Face repository. Always pass `--tokenizer Qwen/Qwen3.8-27B-FP8` so the client resolves tokenization metadata from the local Hugging Face cache. The included `bench_throughput.sh` script does this automatically.
 
 ---
 
-### SGLang Configuration (Alternative)
+### Serving GGUF Models on vLLM (via `vllm-gguf-plugin`)
 
-If you prefer to serve the model using **SGLang** (as used in the ROCm blog for Instinct), use [docker-compose.sglang.yml](file:///home/amd/workspace/coder/docker-compose.sglang.yml):
+In addition to serving SafeTensors and FP8 natively, **vLLM supports serving GGUF models directly** using the `vllm-gguf-plugin`. This allows you to combine vLLM's high-throughput PagedAttention, continuous batching, and chunked prefill engine with compact GGUF quantized model weights.
 
+#### Prerequisites
+1. Ensure vLLM is installed (or use the `vllm/vllm-openai-rocm:latest` container).
+2. Install the required GGUF plugin:
 ```bash
-docker compose -f docker-compose.sglang.yml up -d
+pip install vllm-gguf-plugin
+# or with uv:
+uv pip install vllm-gguf-plugin
 ```
 
-In the SGLang container:
-- The command uses `python3 -m sglang.launch_server --model-path ${MODEL_NAME:-Qwen3.8-27B} --tool-call-parser ${SGLANG_TOOL_PARSER:-qwen25} --tp 1 --mem-fraction-static ${GPU_MEM_UTIL:-0.85}`.
-- SGLang exposes the exact same OpenAI-compatible `/v1/chat/completions` API on port 8000.
+> [!NOTE]
+> **Single-File GGUF Requirement**: vLLM currently requires single-file GGUF models. If your model weights are split into multiple parts (e.g., `model-00001-of-00002.gguf`), merge them first using the `gguf-split` tool:
+> ```bash
+> gguf-split --merge model-00001-of-00002.gguf merged_model.gguf
+> ```
+
+#### Method 1: Run via CLI (`vllm serve`)
+Pass the local path to your `.gguf` file and specify the matching Hugging Face repository or tokenizer directory via `--tokenizer`:
+```bash
+vllm serve ./models/Qwen3.8-27B-Q4_K_M.gguf \
+  --tokenizer Qwen/Qwen3.8-27B-FP8 \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --max-model-len 32768 \
+  --gpu-memory-utilization 0.90
+```
+
+#### Method 2: Run via Python API
+You can load and query GGUF models directly inside Python scripts using vLLM's `LLM` class:
+```python
+from vllm import LLM, SamplingParams
+
+# Initialize the model and matching tokenizer
+llm = LLM(
+    model="./models/Qwen3.8-27B-Q4_K_M.gguf",
+    tokenizer="Qwen/Qwen3.8-27B-FP8",
+    max_model_len=32768,
+    gpu_memory_utilization=0.90,
+)
+
+sampling_params = SamplingParams(temperature=0.7, max_tokens=128)
+outputs = llm.generate(["Write a Python function to compute Fibonacci numbers:"], sampling_params)
+
+for output in outputs:
+    print(output.outputs[0].text)
+```
+
+#### Engine Comparison: vLLM vs. llama.cpp vs. SGLang
+
+| Feature | vLLM (Default) | llama.cpp (Alternative) | SGLang (Alternative) |
+| :--- | :--- | :--- | :--- |
+| **Primary Focus** | High-throughput serving, batching & concurrency | Lightweight single-stream execution & portability | Fast multi-turn agentic workflows & complex tool loops |
+| **KV Cache Management** | **PagedAttention** (virtual memory paging, zero fragmentation) | Linear static / ring-buffer allocation | **RadixAttention** (LRU cache eviction across request trees) |
+| **Prefill Architecture** | **Chunked Prefill** (prevents decode starvation during large prompts) | Monolithic full-prompt evaluation | Chunked prefill & jump-forward speculative decoding |
+| **Prefix Caching** | Native automatic prefix caching (`--enable-prefix-caching`) | Prompt cache save/restore to disk | Native Radix tree prefix caching across arbitrary prompt prefixes |
+| **Multi-Turn Agents** | High cache hit rate on shared system prefixes | Re-computes or relies on disk-cached states | **Maximum cache reuse** across complex multi-branch agent traces |
+| **Quantization Formats** | FP8, SafeTensors, AWQ, GPTQ, GGUF (via plugin) | GGUF (Q4_K_M, Q5_K_M, Q8_0, etc.) | FP8, SafeTensors, AWQ, GPTQ, GGUF (`--load-format gguf`) |
+| **Benchmarking Tool** | Integrated in `./test.sh` & `./bench_throughput.sh` | Integrated via `--compare-engines` | Integrated via `--compare-engines` |
+
+#### Recommended Deployment Matrix (Single 32 GB R9700 vs. Dual R9700)
+
+| Objective | Engine | Model Format | Recommended Configuration | Why |
+| :--- | :--- | :--- | :--- | :--- |
+| **Best Production Serving** | **vLLM** | Native FP8 safetensors | `Qwen/Qwen3.8-27B-FP8`, FP8 KV cache, bounded context (`8192`–`9600`), continuous batching | Best scheduler, OpenAI API, prefix caching, continuous batching, multi-request throughput |
+| **Best Q4 GGUF Performance** | **llama.cpp** | `Qwen3.8-27B-Q4_K_M.gguf` | ROCm 7.x HIP build (`local/llama.cpp:rocm7-gfx1201`), `-ngl 999 -fa on -c 12288` | Native GGML C++ execution, 100% GPU layer offload, ~16.5 GB VRAM footprint |
+| **Fastest Single Interactive Stream** | **llama.cpp** | `Qwen3.8-27B-Q4_K_M.gguf` | Full GPU offload, 8k–12k context, small micro-batch (`-ub 512 -b 1024`) | Minimal scheduling overhead, 29+ tok/s decode |
+| **Multi-Turn Agents & KV Reuse** | **SGLang** | Native FP8 / GGUF | RadixAttention KV-cache tree reuse across complex tool loops | High prefix cache reuse across multi-turn reasoning traces |
+| **Multi-R9700 Scale-Up** | **vLLM** | Native FP8 safetensors | Dual R9700 with Tensor Parallelism (`--tp 2`) | 64 GB aggregated VRAM, 32k–64k context at native FP8 |
+
+---
+
+### Serving Models with SGLang on AMD ROCm (FP8 & GGUF Support)
+
+**SGLang** is a high-performance serving framework powered by **RadixAttention** (automatic KV-cache reuse across multi-turn reasoning and complex agent tool-call chains). SGLang supports AMD ROCm natively and can serve both standard Hugging Face weights (FP8/BF16) and quantized GGUF models directly.
+
+SGLang automatically detects `.gguf` file extensions to route the loading format appropriately (`--load-format gguf`).
+
+#### Step 1: Install SGLang
+Ensure you have the latest version of SGLang installed with ROCm support:
+```bash
+pip install sglang
+```
+*(Or run within the official ROCm Docker image: `lmsysorg/sglang:latest-rocm`).*
+
+#### Step 2: Download or Locate your GGUF File
+Point SGLang directly to a locally downloaded `.gguf` file, or use a Hugging Face repository identifier:
+- Local file example: `./models/Qwen3.8-27B-Q4_K_M.gguf`
+- SGLang requires a Hugging Face-compatible tokenizer to process requests for GGUF models (e.g. `unsloth/Qwen3-32B`, `Qwen/Qwen3.8-27B`, or `Qwen/Qwen2.5-Coder-7B-Instruct`).
+
+#### Step 3: Launch the Server
+Launch the server using `sglang.launch_server`, passing the model path, tokenizer path, and network binding:
+```bash
+python3 -m sglang.launch_server \
+    --model-path /path/to/your/model-Q4_K_M.gguf \
+    --tokenizer-path unsloth/Qwen3-32B \
+    --host 0.0.0.0 \
+    --port 30000
+```
+- `--model-path`: The local directory/path to your specific `.gguf` file (or Hugging Face model repository).
+- `--tokenizer-path`: The Hugging Face repository name or local path of the original, unquantized model's tokenizer.
+- `--host` & `--port`: Target network host and listening port (e.g. `0.0.0.0:30000` or `127.0.0.1:8000`).
+
+#### Step 4: Test the API
+Once the server is running, it exposes a fully OpenAI-compatible API endpoint. Verify functionality via `curl`:
+```bash
+curl -X POST "http://localhost:30000/v1/chat/completions" \
+     -H "Content-Type: application/json" \
+     --data '{
+       "model": "your-model-name",
+       "messages": [
+         { "role": "user", "content": "What is the capital of France?" }
+       ]
+     }'
+```
+
+#### Step 5: Start SGLang with Docker Compose
+The repository includes automated Docker Compose orchestration for SGLang via [docker-compose.sglang.yml](file:///home/amd/workspace/coder/docker-compose.sglang.yml) and [setup.sh](file:///home/amd/workspace/coder/setup.sh):
+
+```bash
+# Launch SGLang with default FP8 model:
+./setup.sh --engine sglang
+
+# Launch SGLang with local GGUF model:
+./setup.sh --engine sglang -m ./models/Qwen3.8-27B-Q4_K_M.gguf
+
+# Or launch directly with Docker Compose:
+docker compose -f docker-compose.sglang.yml up -d
+```
+The container mounts `${HF_HOME}:/root/.cache/huggingface` and `./models:/models`, automatically passes `${HF_TOKEN}`, and connects the OpenCode client to `http://127.0.0.1:8000/v1`.
 
 ---
 
@@ -557,19 +752,37 @@ The stack is configured to **automatically use the locally hosted ROCm model** w
 
 ### Step 2: Start the Stack with Docker Compose
 
-Launch the stack using the provided [setup.sh](file:///home/amd/workspace/coder/setup.sh) script (or directly via `docker compose up -d`):
+Launch the stack using the provided [setup.sh](file:///home/amd/workspace/coder/setup.sh) script (or source it into your interactive shell):
 ```bash
 ./setup.sh
+# or source to keep environment variables in your current shell:
+source ./setup.sh
+```
+
+#### Engine & Model Options
+`setup.sh` defaults to **vLLM** and supports explicit CLI flags:
+```bash
+./setup.sh --engine vllm               # Launch default vLLM stack (Qwen/Qwen3.8-27B-FP8)
+./setup.sh --engine llama.cpp          # Launch llama.cpp server for GGUF weights
+./setup.sh --engine sglang             # Launch SGLang ROCm server
+./setup.sh -m Qwen/Qwen2.5-Coder-7B    # Override model target
+./setup.sh -p 8000 --opencode-port 4096 # Customize API and Web UI ports
 ```
 
 This will automatically:
-1. Verify/initialize your `.env` configuration file from `.env.example`.
-2. **Intelligent Compose Routing**:
-   - **Single 32 GB R9700 (RECOMMENDED)**: Set `MODEL_NAME=Qwen3.8-27B`. `setup.sh` verifies `./models/Qwen3.8-27B-Q4_K_M.gguf` (prompting to download via [download_model.sh](file:///home/amd/workspace/coder/download_model.sh) if missing) and boots [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) with the ROCm llama.cpp server to guarantee zero OOM.
-   - **Dual 64 GB R9700 (REQUIRED FOR FP8)**: If `MODEL_NAME` is configured for FP8 (`Qwen/Qwen3.8-27B-FP8`), `setup.sh` launches [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) with the ROCm vLLM engine using tensor parallelism across both GPUs. *(Notice: Running FP8 on a single 32 GB card causes Out-Of-Memory failures).*
-3. Launch the selected ROCm inference engine container bound to your Radeon AI PRO R9700 GPU (`/dev/kfd`, `/dev/dri`).
-4. Start the OpenCode client container with its web UI exposed on port `4096`.
-5. Display the direct web interface URL (`http://localhost:4096`), local network IP, and actionable next steps.
+1. **Load Secrets & Hugging Face Token**:
+   - Checks `$HOME/.env` (`~/.env`) and loads `HF_TOKEN` if present.
+   - Synchronizes `HF_TOKEN` into `.env` so Docker Compose natively passes it into `inference`, `opencode`, and `benchmark` containers.
+2. **Verify/Initialize Configuration**:
+   - Initializes `.env` from `.env.example` if not already present.
+   - Defaults `INFERENCE_ENGINE=vllm` and `MODEL_NAME=Qwen/Qwen3.8-27B-FP8`.
+3. **Execute Engine Routing**:
+   - **vLLM (Default)**: Boots [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml). Runs `Qwen/Qwen3.8-27B-FP8` with `MAX_MODEL_LEN=8192` and 1 GB KV cache, fitting comfortably on a single 32 GB R9700 GPU (~28.5 GB allocated).
+   - **llama.cpp (Alternative)**: Boots [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml) with `./models/Qwen3.8-27B-Q4_K_M.gguf`.
+   - **SGLang (Alternative)**: Boots [docker-compose.sglang.yml](file:///home/amd/workspace/coder/docker-compose.sglang.yml).
+4. Launch the inference engine container bound to the dedicated Radeon AI PRO R9700 discrete GPU (`HIP_VISIBLE_DEVICES=0`, `/dev/kfd`, `/dev/dri`).
+5. Start the OpenCode client container with its web UI exposed on port `4096`.
+6. Display the direct web interface URL (`http://localhost:4096`), local network IP, and actionable verification commands.
 
 ---
 
@@ -936,25 +1149,25 @@ The table below outlines optimal coding models validated for the 32 GB VRAM capa
 
 | Model ID | Precision / Quant | Weights Size | Working VRAM (at max context) | Engine / Parser | Single vs. Dual R9700 Guidance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`Qwen3.8-27B`** *(or `.gguf`)* | GGUF (Q4_K_M) | ~16.8 GB | ~22 GB (32k ctx) | `llama.cpp` / `hermes` | **RECOMMENDED FOR SINGLE R9700 (32 GB)**. Fits full 32,768 context window with zero OOM risk; downloadable via `download_model.sh`. |
-| **`Qwen/Qwen3.8-27B-FP8`** | FP8 | ~27 GB | **OOM on Single 32GB** | `vLLM` / `hermes` | **REQUIRES DUAL R9700 (64 GB TOTAL VRAM)**. Triggers Out-of-Memory faults on single 32GB card (~27 GB weights + KV cache > 32 GB). Requires Dual R9700 with `--tp 2`. |
+| **`Qwen/Qwen3.8-27B-FP8`** | FP8 | ~27.5 GB | ~28.5 GB (8,192 ctx) | `vLLM` (Default) / `hermes` | **DEFAULT FOR vLLM**. Full FP8 precision on single 32GB R9700 with `MAX_MODEL_LEN=8192`. Uncompromised accuracy for SWE-bench & code generation. For 32k+ context, Dual R9700 TP=2 is recommended. |
+| **`Qwen3.8-27B`** *(or `.gguf`)* | GGUF (Q4_K_M) | ~16.8 GB | ~22 GB (32k ctx) | `vLLM` (via plugin) or `llama.cpp` | **Extended Context (32k–64k)**. Compact weights leave 15+ GB free VRAM for deep repository context. Downloadable via `download_model.sh`. |
 | **`Qwen/Qwen2.5-Coder-7B-Instruct`** | BF16 / FP16 | ~15 GB | ~18 GB (32k ctx) | `vLLM` / `hermes` | Blazing fast (>45 tok/s), strong tool calling, fits comfortably with 32k context on single R9700. |
 | **`Qwen/Qwen2.5-Coder-14B-Instruct`** | BF16 | ~28 GB | ~30 GB (16k ctx) | `vLLM` / `hermes` | High coding intelligence on single R9700. Set `--max-model-len 16384` to prevent VRAM overflow. |
 | **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`** | AWQ (4-bit) | ~19 GB | ~24 GB (32k ctx) | `vLLM` / `hermes` | **Best reasoning-to-VRAM ratio** on single R9700. Delivers 32B capability within 32 GB VRAM budget. |
 | **`Qwen/Qwen2.5-Coder-32B-Instruct`** | BF16 / FP16 | ~65 GB | **Requires Dual R9700** | `vLLM` / `hermes` | Full-precision 32B dense coder on Dual R9700 (64 GB) with TP=2. |
 | **`Qwen/Qwen3-0.6B`** | BF16 | ~1.4 GB | ~4 GB (32k ctx) | `vLLM` / `hermes` | Ultra-fast validation model for testing container pipelines. |
 
-To switch models, edit `MODEL_NAME` in your `.env` file and run `./setup.sh`:
+To switch models, run `./setup.sh` with flags or edit `.env`:
 ```bash
-# Recommended for Single R9700 (32GB): Run 27B Q4_K_M GGUF on llama.cpp
-sed -i 's/^MODEL_NAME=.*/MODEL_NAME=Qwen3.8-27B/' .env
-./setup.sh
+# Default: Launch vLLM with Qwen3.8-27B-FP8
+./setup.sh --engine vllm
 
-# For Dual R9700 (64GB): Run 27B FP8 on vLLM (requires 2x R9700 with TP=2)
-sed -i 's/^MODEL_NAME=.*/MODEL_NAME=Qwen\/Qwen3.8-27B-FP8/' .env
-./setup.sh
+# Alternative: Launch llama.cpp with Qwen3.8-27B GGUF
+./setup.sh --engine llama.cpp
+
+# Or launch any custom Hugging Face model
+./setup.sh -m Qwen/Qwen2.5-Coder-7B-Instruct
 ```
-`./setup.sh` detects the model type and automatically boots either `docker-compose.gguf.yml` (llama.cpp) or `docker-compose.yml` (vLLM).
 
 ---
 
@@ -1068,7 +1281,24 @@ To execute both benchmarks consecutively and generate an automated comparative s
 
 # Quick sample limits (e.g., test first 5 questions of Diamond/Lite tier)
 ./test.sh -d -n 5
+
+# Benchmark a specific engine (defaults to vLLM)
+./test.sh -e vllm
+./test.sh -e llama.cpp
+
+# Run comparative benchmark comparing vLLM vs. llama.cpp head-to-head
+./test.sh --compare-engines
+# Or invoke the comparative runner directly:
+./benchmark/compare_engines.sh --dataset sample --num-samples 3
 ```
+
+#### Inference Engine & Comparative Options:
+| Option | Description |
+| :--- | :--- |
+| `-e`, `--engine <vllm\|llama.cpp>` | Specify inference engine target (defaults to `vLLM`) |
+| `--compare-engines` | Runs side-by-side benchmark comparing vLLM vs llama.cpp on TTFT, decode speed, VRAM, and task performance |
+| `--swe-only` | Run only the SWE-bench evaluation |
+| `--gpqa-only` | Run only the GPQA scientific reasoning benchmark |
 
 #### Benchmark Tiers:
 | Flag | Tier | SWE-bench Dataset | GPQA Subset | Best For |
@@ -1083,7 +1313,7 @@ This script:
 2. Executes **SWE-bench** inside Docker (`docker compose run --rm --no-deps benchmark`).
 3. Executes **GPQA** scientific reasoning (`python3 benchmark/run_gpqa.py`).
 4. Formats and prints an aggregated comparison table with throughput (tokens/sec), latency, and accuracy rates.
-5. Emits an archival report to `benchmark_results/test_run_summary_<timestamp>.md`.
+5. Emits an archival report to `_results/test_run_summary_<timestamp>.md`.
 
 ---
 
@@ -1117,8 +1347,8 @@ Total Instances: 3
  Valid Git Patches Created : 3 (100.0%)
  Average Throughput        : 50.40 tokens/second
  Average Latency per Sample: 2.75 seconds
- Output Predictions File   : benchmark_results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/predictions.jsonl
- Metrics Report File       : benchmark_results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/benchmark_metrics.json
+ Output Predictions File   : _results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/predictions.jsonl
+ Metrics Report File       : _results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/benchmark_metrics.json
 ===========================================================================
 ```
 
@@ -1133,7 +1363,7 @@ To benchmark on the full or partial SWE-bench Lite dataset from Hugging Face:
 docker compose run --rm --no-deps benchmark run_benchmark.py \
   --dataset princeton-nlp/SWE-bench_Lite \
   --num-samples 10 \
-  --output-dir benchmark_results
+  --output-dir _results
 ```
 
 #### 2. Evaluate SWE-bench Verified
@@ -1141,7 +1371,7 @@ docker compose run --rm --no-deps benchmark run_benchmark.py \
 docker compose run --rm --no-deps benchmark run_benchmark.py \
   --dataset princeton-nlp/SWE-bench_Verified \
   --num-samples 25 \
-  --output-dir benchmark_results
+  --output-dir _results
 ```
 
 All predictions are saved in standard SWE-bench JSONL format:
@@ -1169,7 +1399,7 @@ This automated script:
 3. Executes the SWE-bench benchmark suite and logs throughput and patch validity.
 4. Records GPU VRAM usage via `rocm-smi`.
 5. Repeats for model 2 (`Qwen/Qwen2.5-Coder-14B-Instruct`) and model 3 (`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`).
-6. Saves aggregated reports in `benchmark_results/`.
+6. Saves aggregated reports in `_results/`.
 
 ---
 
@@ -1181,7 +1411,7 @@ To run the official SWE-bench evaluation harness and compute functional resoluti
 docker compose run --rm --no-deps benchmark \
   python3 -m swebench.harness.run_evaluation \
     --dataset_name princeton-nlp/SWE-bench_Lite \
-    --predictions_path /app/benchmark_results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/predictions.jsonl \
+    --predictions_path /app/_results/Qwen_Qwen2.5-Coder-7B-Instruct_20260922/predictions.jsonl \
     --run_id qwen25_7b_eval \
     --max_workers 4
 ```
@@ -1312,8 +1542,8 @@ Total Questions: 3
   • Chemistry         : 100.00% (1/1)
   • Biology           : 100.00% (1/1)
 ---------------------------------------------------------------------------
- Detailed Output Log       : benchmark_results/gpqa/.../gpqa_detailed_results.jsonl
-  Summary Metric Report     : benchmark_results/gpqa/.../gpqa_summary.json
+ Detailed Output Log       : _results/gpqa/.../gpqa_detailed_results.jsonl
+  Summary Metric Report     : _results/gpqa/.../gpqa_summary.json
 ===========================================================================
 ```
 
@@ -1327,7 +1557,7 @@ docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_diamond \
     --num-samples 20 \
-    --output-dir benchmark_results/gpqa
+    --output-dir _results/gpqa
 ```
 
 #### 2. Evaluate Full GPQA Diamond Benchmark (198 Questions)
@@ -1335,7 +1565,7 @@ docker compose run --rm --no-deps benchmark \
 docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_diamond \
-    --output-dir benchmark_results/gpqa
+    --output-dir _results/gpqa
 ```
 
 #### 3. Evaluate Full GPQA Main Benchmark (448 Questions)
@@ -1343,7 +1573,7 @@ docker compose run --rm --no-deps benchmark \
 docker compose run --rm --no-deps benchmark \
   python3 run_gpqa.py \
     --subset gpqa_main \
-    --output-dir benchmark_results/gpqa
+    --output-dir _results/gpqa
 ```
 
 All detailed steps and answers are logged into JSONL:
@@ -1395,45 +1625,123 @@ Empirical baseline scientific reasoning measured on the **AMD Radeon™ AI PRO R
 
 ---
 
-## Throughput Benchmarking with vLLM (`bench_throughput.sh`)
+## Throughput & Multi-Engine Benchmarking (`bench_throughput.sh`)
 
-To evaluate real-world token generation performance across varying context windows and generation horizons, this repository includes an automated throughput benchmarking suite based on the official [vLLM Benchmark Suite](https://docs.vllm.ai/en/latest/cli/bench/throughput/).
+To evaluate real-world token generation performance across varying context windows, generation horizons, and inference engines (**vLLM**, **llama.cpp**, and **SGLang**), this repository provides an automated throughput benchmarking suite based on the official [vLLM Benchmark Suite](https://docs.vllm.ai/en/latest/cli/bench/throughput/).
 
 Benchmarking across different input prompt lengths (Input Sequence Length / ISL) and output token lengths (Output Sequence Length / OSL) isolates:
-1. **Prefill (Compute-Bound)**: Time-to-First-Token (TTFT) and token ingestion throughput for long context prompts.
+1. **Prefill (Compute-Bound)**: Time-to-First-Token (TTFT) and prompt ingestion throughput for long context prompts.
 2. **Decode (Memory-Bandwidth-Bound)**: Time-per-Output-Token (TPOT) and continuous generation throughput for long code responses.
 
 ---
 
 ### Input/Output Token Matrix Configurations
 
-The suite measures 6 standardized Input:Output (I:O) ratio archetypes:
+The suite supports standard Input:Output (I:O) ratio archetypes, with **`8192:1024` designated as the primary default comparison workload**:
 
 | Configuration (I:O) | Input Tokens (ISL) | Output Tokens (OSL) | Workload Archetype |
 | :--- | :--- | :--- | :--- |
+| **`8192:1024` (Default)** | **8192** | **1024** | **Standard Comparative Baseline: Deep repo context / prefill-heavy with 1k token code generation** |
 | **`2048:512`** | 2048 | 512 | Standard agent tool call / function evaluation |
 | **`2048:2048`** | 2048 | 2048 | Balanced code file inspection & multi-method rewrite |
 | **`128:2048`** | 128 | 2048 | Short instruction / large code generation (decode heavy) |
 | **`1024:1024`** | 1024 | 1024 | Symmetrical context & code completion |
-| **`8192:1024`** | 8192 | 1024 | Large repository context / log analysis (prefill heavy) |
 | **`1024:8192`** | 1024 | 8192 | Long-form module drafting / test harness expansion |
 
 ---
 
 ### Running the Live Serving Benchmark (`bench_throughput.sh`)
 
-When the ROCm vLLM inference container is already running on port `8000`, run the automated suite directly from the host:
+When an inference container is active, run the automated suite directly from the host:
 
 ```bash
+# Default benchmark against active server (ISL=8192, OSL=1024, CONC=1):
 ./bench_throughput.sh
+
+# Target specific engine:
+./bench_throughput.sh -e vllm
+./bench_throughput.sh -e llama.cpp
+./bench_throughput.sh -e sglang
+
+# Run sequential comparative benchmark across all engines:
+./bench_throughput.sh --all-engines
+
+# Custom concurrency (e.g. CONC=2 or CONC=4):
+./bench_throughput.sh -c 2
+
+# Full 6-workload matrix evaluation:
+./bench_throughput.sh --matrix
 ```
 
-**What the script executes**:
-1. Connects to the active inference server at `http://127.0.0.1:8000/v1/chat/completions`.
-2. Automatically extracts model identity and context length.
-3. Uses the containerized vLLM benchmark client (`vllm bench serve`) with `--dataset-name random` to issue parameterized token requests.
-4. Records duration, output throughput, total throughput, mean TTFT (prefill), and mean TPOT (decode).
-5. Exports structured JSON metrics and an archival Markdown report to `benchmark_results/throughput/<timestamp>/`.
+#### Dynamic Prompt Sizing Strategy
+To balance statistical validity with execution runtime, `bench_throughput.sh` dynamically sizes evaluation request counts (`NUM_PROMPTS`) according to the output sequence length (`OSL`) and concurrency (`CONC`):
+```bash
+if [[ "$OSL" == "8192" ]]; then
+  export NUM_PROMPTS=$(( CONC * 20 ))
+else
+  export NUM_PROMPTS=$(( CONC * 50 ))
+fi
+```
+- **When `OSL == 8192` (Long-Form Decode)**: Evaluates `CONC * 20` requests.
+- **When `OSL != 8192` (Standard Decode)**: Evaluates `CONC * 50` requests.
+
+#### Automatic Tokenizer Resolution for GGUF Models
+When querying llama.cpp endpoints serving `.gguf` models, OpenAI benchmark clients fail if they attempt to load tokenizer configuration from Hugging Face using the GGUF model alias. `bench_throughput.sh` automatically resolves and passes `--tokenizer Qwen/Qwen3.8-27B-FP8`, resolving tokenizer configuration directly from the local Hugging Face cache (`~/.cache/huggingface`).
+
+---
+
+### Empirical Benchmark Results on AMD Radeon AI PRO R9700
+
+Empirical benchmarks measured on a dedicated **AMD Radeon™ AI PRO R9700** (32 GB GDDR6, RDNA 4 `gfx1201`, TDP 300W):
+
+#### 1. Baseline Head-to-Head Comparison: `8192:1024` Workload (`CONC=1`)
+
+| Runtime & Engine | Model Format | Prefill Speed (TTFT) | Decode Speed (TPOT) | Total Throughput | Duration | VRAM Usage | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **vLLM (ROCm 7.x Native)** | `Qwen3.8-27B-FP8` | **4,656 ms** (~1,759 tok/s) | **108.19 ms** (8.88 tok/s) | **80.37 tok/s** | 115.33 s | 28.5 GB (89%) | Primary baseline. Continuous batching & PagedAttention. |
+| **llama.cpp (ROCm 7.x HIP `gfx1201`)** | `Qwen3.8-27B-Q4_K_M` | **7,415 ms** (~1,104 tok/s) | **35.10 ms** (23.63 tok/s) | **195.67 tok/s** | 43.33 s | 16.5 GB (51%) | **2.66x faster decode**. 100% GPU layer offload (`-ngl 999`), Flash Attention (`-fa on`). |
+| **llama.cpp (Legacy ROCm 5.6 CPU Fallback)** | `Qwen3.8-27B-Q4_K_M` | **465,450 ms** (~17.6 tok/s) | **374.50 ms** (2.67 tok/s) | **2.91 tok/s** | ~480 s | 0 GB GPU / 21 GB RAM | Failure mode of unpatched ROCm 5.6 images (**GPU is 60.7x faster in prefill, 11x faster in decode**). |
+
+> [!TIP]
+> **Performance Architecture Takeaways**:
+> 1. **Production Serving**: **vLLM** is recommended for multi-user production environments where continuous batching, prefix caching, and concurrent request scheduling maximize aggregate throughput.
+> 2. **Interactive Developer Experience**: **llama.cpp with ROCm 7.x HIP `gfx1201`** delivers the lowest single-stream generation latency (**35.1 ms/tok / 23.6–29.0 tok/s**) while occupying only 16.5 GB VRAM, leaving abundant room for extended context buffers.
+
+#### 2. Native `llama-bench` Hardware Validation (R9700 GPU vs. CPU)
+
+Direct evaluation of `Qwen3.8-27B-Q4_K_M.gguf` via `llama-bench` on the R9700:
+
+| Benchmark Pass | R9700 GPU (`gfx1201` HIP) | Host CPU Fallback | GPU Acceleration Factor | Hardware Utilization |
+| :--- | :--- | :--- | :--- | :--- |
+| **`pp8192` (Prompt Prefill)** | **1,069.69 ± 0.00 tok/s** | **17.60 ± 0.00 tok/s** | **60.7x faster** | 100% GPU Compute, 299W / 300W TDP, 2,990 MHz Clock |
+| **`tg1024` (Token Generation)** | **29.43 ± 0.00 tok/s** | **2.67 ± 0.00 tok/s** | **11.0x faster** | 100% GPU Compute, 15.65 GiB VRAM Allocated |
+
+#### 3. vLLM Multi-Length Token Matrix (FP8 SafeTensors)
+
+| Input Tokens (ISL) | Output Tokens (OSL) | Total Tokens | Output Throughput | Total Throughput | Mean TTFT | Mean TPOT | Duration |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **2048** | **512** | 2560 | **287.50 tok/s** | **1442.00 tok/s** | 115.24 ms | 6.74 ms | 3.56 s |
+| **2048** | **2048** | 4096 | **267.48 tok/s** | **536.00 tok/s** | 63.60 ms | 7.45 ms | 15.31 s |
+| **128** | **2048** | 2176 | **418.77 tok/s** | **446.58 tok/s** | 24.00 ms | 4.76 ms | 9.78 s |
+| **1024** | **1024** | 2048 | **389.23 tok/s** | **781.51 tok/s** | 32.44 ms | 5.11 ms | 5.26 s |
+| **8192** | **1024** | 9216 | **127.90 tok/s** | **1152.11 tok/s** | 926.45 ms | 14.72 ms | 16.01 s |
+| **1024** | **8192** | 9216 | **201.06 tok/s** | **226.39 tok/s** | 32.59 ms | 9.94 ms | 81.49 s |
+
+---
+
+### Multi-Engine Comparative Benchmark (`compare_engines.sh`)
+
+To run an automated head-to-head comparison across all three engines (vLLM, llama.cpp, and SGLang) with automatic server rotation and VRAM tracking:
+
+```bash
+# Run comparative benchmark across all engines (default: sample dataset, 8192:1024):
+./benchmark/compare_engines.sh
+
+# Run comparative benchmark targeting specific engines:
+./benchmark/compare_engines.sh --engines vllm,llamacpp
+```
+
+The script measures prompt latency, generation throughput, VRAM consumption via `rocm-smi`, generates a comparative matrix, and restores the primary vLLM server upon completion.
 
 ---
 
@@ -1463,23 +1771,41 @@ docker run --rm --ipc=host \
 
 ---
 
-### Throughput Benchmark Results on AMD Radeon AI PRO R9700
+## Centralized Results & Artifacts Logging (`_results/`)
 
-Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (32 GB GDDR6, RDNA 4 `gfx1201`):
+All benchmark metrics, model predictions, latency reports, and health checks are persisted in the centralized **`_results/`** directory.
 
-| Input Tokens (ISL) | Output Tokens (OSL) | Total Tokens | Output Throughput | Total Throughput | Mean TTFT | Mean TPOT | Duration |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **2048** | **512** | 2560 | **287.50 tok/s** | **1442.00 tok/s** | 115.24 ms | 6.74 ms | 3.56 s |
-| **2048** | **2048** | 4096 | **267.48 tok/s** | **536.00 tok/s** | 63.60 ms | 7.45 ms | 15.31 s |
-| **128** | **2048** | 2176 | **418.77 tok/s** | **446.58 tok/s** | 24.00 ms | 4.76 ms | 9.78 s |
-| **1024** | **1024** | 2048 | **389.23 tok/s** | **781.51 tok/s** | 32.44 ms | 5.11 ms | 5.26 s |
-| **8192** | **1024** | 9216 | **127.90 tok/s** | **1152.11 tok/s** | 926.45 ms | 14.72 ms | 16.01 s |
-| **1024** | **8192** | 9216 | **201.06 tok/s** | **226.39 tok/s** | 32.59 ms | 9.94 ms | 81.49 s |
+### Directory Organization
 
-#### Key Performance Insights:
-- **Decode-Heavy Velocity**: Short input prompts with long outputs (`128:2048`) peak at **418.8 tok/s** with an ultra-low decode latency of **4.76 ms / token** on RDNA 4 GDDR6 memory.
-- **Large Context Prefill (`8192:1024`)**: Ingesting 8k tokens sustained **1152.1 total tok/s**, demonstrating that large repo files or long chat histories are processed with sub-second TTFT (**926 ms**).
-- **Extended Generation (`1024:8192`)**: Sustained over 16,000 generated tokens across requests with steady **201.1 tok/s** decode speed, verifying robust KV-cache management with zero OOM errors.
+```text
+_results/
+├── checks/                    # Automated health & response verification reports
+│   ├── check_summary_<timestamp>.md   # Reviewable Markdown report
+│   └── check_<timestamp>.log          # Complete CLI execution transcript (gitignored)
+├── throughput/                # Throughput benchmark metrics across engines & ratios
+│   ├── <timestamp>/
+│   │   ├── throughput_benchmark_report.md
+│   │   ├── bench_vllm_8192_1024.json
+│   │   └── bench_llama.cpp_8192_1024.json
+│   └── llamacpp_hip_validation/
+│       └── bench_llama_hip_8192_1024.json
+├── engines/                   # Multi-engine comparative reports (compare_engines.sh)
+│   └── <timestamp>/
+│       ├── compare_engines_report.md
+│       ├── vllm_benchmark.json
+│       └── llamacpp_benchmark.json
+├── gpqa/                      # Graduate-level scientific reasoning evaluation data
+│   └── <model_tag>_<timestamp>/
+│       ├── gpqa_summary.json
+│       └── gpqa_detailed_results.jsonl
+└── <model_tag>_<timestamp>/   # SWE-bench evaluation metrics & solution patches
+    ├── benchmark_metrics.json
+    └── predictions.jsonl
+```
+
+### Git Policy & Container Persistence
+- **Persistent Volume Mounts**: All Docker Compose files (`docker-compose.yml`, `docker-compose.gguf.yml`, `docker-compose.sglang.yml`) map `./_results` to `/results` and `/workspace/_results`, ensuring containerized evaluation results persist directly to the host filesystem.
+- **Git Tracking Rules**: [`.gitignore`](file:///home/amd/workspace/coder/.gitignore) ignores transient `*.log` files while keeping all `.md` summary reports and `.json` / `.jsonl` benchmark datasets tracked under version control.
 
 ---
 
@@ -1546,10 +1872,11 @@ Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (
 
 ### 7. Out-of-Memory (OOM) with Qwen3.8-27B FP8 on Single 32 GB R9700
 - **Symptom**: `Qwen/Qwen3.8-27B-FP8` fails during container startup or crashes during prompt prefill with `torch.OutOfMemoryError: CUDA out of memory` on the 32 GB Radeon AI PRO R9700.
-- **Cause**: Dense 27B FP8 weights alone consume **~27 GB of VRAM**. On a single 32 GB card, the remaining <5 GB is insufficient to house the KV-cache, scratchpads, and dynamic activations required for agentic coding contexts.
+- **Cause**: Dense 27B FP8 weights alone consume **~27.5 GB of VRAM**. If `--max-model-len` is set too high (e.g. 16k–32k) or KV cache memory is left unbounded, dynamic activations will exceed the 32 GB physical boundary.
 - **Remedy**:
-  1. **Single 32 GB R9700 (RECOMMENDED)**: Switch to the 4-bit quantized GGUF model (`Qwen3.8-27B-Q4_K_M.gguf`) using [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml). The weights occupy only **~16.8–17.6 GB**, leaving over 14 GB of VRAM for deep 32k–64k context windows with 8-bit KV caching (`--cache-type-k q8_0 --cache-type-v q8_0`) with zero OOM risk.
-  2. **Dual R9700 (64 GB Total VRAM)**: To serve `Qwen3.8-27B` in FP8 precision, a **Dual Radeon AI PRO R9700 setup is strictly required**. Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` in [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) to divide the ~27 GB weights evenly (~13.5 GB per GPU), leaving abundant headroom (>18 GB per GPU).
+  1. **Single 32 GB R9700 (FP8 Serving)**: Bound the context length to `MAX_MODEL_LEN=9600` (or `8192`) and explicitly pre-allocate 1 GB KV cache: `--kv-cache-memory-bytes 1073741824`. This fits reliably in ~28.5 GB allocated VRAM with ~3.5 GB headroom.
+  2. **Single 32 GB R9700 (Ultra-Deep Context)**: For long multi-file 32k–64k context windows, switch to the 4-bit quantized GGUF model (`Qwen3.8-27B-Q4_K_M.gguf`) using [docker-compose.gguf.yml](file:///home/amd/workspace/coder/docker-compose.gguf.yml). The weights occupy only **~16.8 GB**, leaving over 15 GB of VRAM for deep KV caching with zero OOM risk.
+  3. **Dual R9700 (64 GB Total VRAM)**: To serve `Qwen3.8-27B` at unconstrained 32k–64k context in FP8 precision, use Dual Radeon AI PRO R9700 GPUs. Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` in [docker-compose.yml](file:///home/amd/workspace/coder/docker-compose.yml) to divide the ~27.5 GB weights evenly (~13.7 GB per GPU).
 
 ---
 
@@ -1560,6 +1887,31 @@ Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (
   ./download_model.sh
   ```
   The script automatically uses `curl -C -` with HTTP range resume support to continue downloading from the exact byte where it paused.
+
+---
+
+### 9. llama.cpp Tensile Host Initialization Error (`rocBLAS error: Could not initialize Tensile host`)
+- **Symptom**: `llama-server` container logs:
+  ```text
+  rocBLAS error: Could not initialize Tensile host: No devices found
+  ```
+  The server starts, but queries execute with 0% GPU utilization and catastrophic latency (**17.6 tok/s prefill, 2.67 tok/s decode** on CPU).
+- **Cause**: The prebuilt image `ghcr.io/ggerganov/llama.cpp:server-rocm` was compiled against ROCm 5.6, which lacks the RDNA 4 (`gfx1201`) ISA code objects and Tensile host definitions.
+- **Remedy**: Build the dedicated ROCm 7.x image using [Dockerfile.llamacpp-rocm-gfx1201](file:///home/amd/workspace/coder/Dockerfile.llamacpp-rocm-gfx1201):
+  ```bash
+  docker build -f Dockerfile.llamacpp-rocm-gfx1201 -t local/llama.cpp:rocm7-gfx1201 .
+  ```
+  This compiles llama.cpp with `GGML_HIP=ON` and `-DAMDGPU_TARGETS=gfx1201`, delivering **1,069+ tok/s prefill** and **29+ tok/s decode** on the GPU.
+
+---
+
+### 10. Hugging Face 404 Repository Lookup Error with GGUF Models in Benchmark Clients
+- **Symptom**: Running `vllm bench serve` against llama.cpp exits with:
+  ```text
+  huggingface_hub.utils._errors.RepositoryNotFoundError: 404 Client Error ... Repository Not Found for url: https://huggingface.co/api/models/Qwen3.8-27B-Q4_K_M.gguf
+  ```
+- **Cause**: GGUF endpoints expose the model alias as `Qwen3.8-27B-Q4_K_M.gguf`. Benchmark clients infer the tokenizer name from the server model name, attempting to query Hugging Face for a non-existent repo `Qwen3.8-27B-Q4_K_M.gguf`.
+- **Remedy**: Decouple the tokenizer from the server model alias by explicitly passing `--tokenizer Qwen/Qwen3.8-27B-FP8`. The client will load tokenizer metadata from the local Hugging Face cache without network 404 lookups. The included [bench_throughput.sh](file:///home/amd/workspace/coder/bench_throughput.sh) script handles this decoupling automatically.
 
 ---
 

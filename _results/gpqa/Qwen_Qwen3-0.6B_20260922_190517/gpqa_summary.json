@@ -1,0 +1,31 @@
+{
+  "model_name": "Qwen/Qwen3-0.6B",
+  "benchmark": "GPQA",
+  "subset": "sample",
+  "total_questions": 3,
+  "correct_answers": 1,
+  "accuracy_pct": 33.33,
+  "parsed_answers_pct": 66.67,
+  "average_throughput_tok_per_sec": 230.58,
+  "average_latency_sec": 4.8,
+  "total_tokens_generated": 3319,
+  "domain_breakdown": {
+    "Physics": {
+      "total": 1,
+      "correct": 0,
+      "accuracy_pct": 0.0
+    },
+    "Chemistry": {
+      "total": 1,
+      "correct": 0,
+      "accuracy_pct": 0.0
+    },
+    "Biology": {
+      "total": 1,
+      "correct": 1,
+      "accuracy_pct": 100.0
+    }
+  },
+  "timestamp": "20260922_190517",
+  "results_file": "/app/benchmark_results/gpqa/Qwen_Qwen3-0.6B_20260922_190517/gpqa_detailed_results.jsonl"
+}

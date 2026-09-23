@@ -3,8 +3,8 @@ services:
   # Inference Engine: llama.cpp ROCm Server for GGUF Models (gfx1201 / RDNA 4)
   # ============================================================================
   inference:
-    image: ${GGUF_IMAGE:-${INFERENCE_IMAGE:-ghcr.io/ggerganov/llama.cpp:server-rocm}}
-    container_name: rocm-inference-server
+    image: ${GGUF_IMAGE:-local/llama.cpp:rocm7-gfx1201}
+    container_name: rocm-llama-server
     restart: unless-stopped
     ipc: host
     network_mode: host
@@ -16,19 +16,28 @@ services:
       - render
     security_opt:
       - seccomp=unconfined
+      - apparmor=unconfined
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
       - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - ${MODELS_DIR:-./models}:/models
-      - ${HF_CACHE_DIR:-~/.cache/huggingface}:/root/.cache/huggingface
+      - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
+      - ./_results:/results
+    entrypoint: ["llama-server"]
     command: >
       -m /models/${MODEL_FILE:-Qwen3.8-27B-Q4_K_M.gguf}
       --host 0.0.0.0
       --port ${INFERENCE_PORT:-8000}
-      -ngl 99
-      --ctx-size ${MAX_MODEL_LEN:-32768}
-      --alias ${MODEL_NAME:-Qwen3.8-27B}
+      -ngl 999
+      -fa on
+      -c ${MAX_MODEL_LEN:-12288}
+      -b 1024
+      -ub 512
+      -np 1
+      --alias ${MODEL_ALIAS:-${MODEL_FILE:-Qwen3.8-27B-Q4_K_M.gguf}}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
       interval: 10s
@@ -53,8 +62,11 @@ services:
       - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
       - OPENAI_API_KEY=dummy-local-key
       - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B}
+      - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - .:/workspace
+      - ./_results:/results
+      - ./_results:/workspace/_results
       - ./opencode.json:/root/.config/opencode/opencode.json:ro
       - opencode-data:/root/.local/share/opencode
     working_dir: /workspace
@@ -74,10 +86,16 @@ services:
     depends_on:
       inference:
         condition: service_healthy
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_HOME=/root/.cache/huggingface
     volumes:
       - ./benchmark:/app
-      - ./benchmark_results:/app/benchmark_results
+      - ./_results:/app/_results
+      - ./_results:/results
+      - ./_results:/app/benchmark_results
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
     entrypoint: ["python3"]
     command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
 

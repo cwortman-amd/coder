@@ -3,7 +3,7 @@ services:
   # Inference Engine: SGLang for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
   # ============================================================================
   inference:
-    image: ${SGLANG_IMAGE:-rocm/sgl-dev:v0.5.15.post1-rocm720-mi35x-20260714}
+    image: ${SGLANG_IMAGE:-coder-sglang:latest}
     container_name: rocm-sglang-server
     restart: unless-stopped
     ipc: host
@@ -16,6 +16,7 @@ services:
       - render
     security_opt:
       - seccomp=unconfined
+      - apparmor=unconfined
       - label=disable
     shm_size: 16g
     environment:
@@ -23,20 +24,36 @@ services:
       - PYTORCH_ROCM_ARCH=gfx1201
       - HSA_OVERRIDE_GFX_VERSION=12.0.1
       - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
       - SAFETENSORS_FAST_GPU=1
+      - SGLANG_MODEL_PATH=${SGLANG_MODEL_PATH:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}
+      - SGLANG_TOKENIZER_PATH=${SGLANG_TOKENIZER_PATH:-}
+      - SGLANG_LOAD_FORMAT=${SGLANG_LOAD_FORMAT:-auto}
+      - INFERENCE_PORT=${INFERENCE_PORT:-8000}
+      - GPU_MEM_UTIL=${GPU_MEM_UTIL:-0.85}
+      - SGLANG_TOOL_PARSER=${SGLANG_TOOL_PARSER:-qwen25}
     volumes:
-      - ${HF_CACHE_DIR:-~/.cache/huggingface}:/root/.cache/huggingface
+      - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
+      - ./models:/models
+      - ./_results:/results
+    entrypoint: ["/bin/bash", "-c"]
     command: >
-      python3 -m sglang.launch_server
-      --model-path ${MODEL_NAME:-Qwen3.8-27B}
-      --host 0.0.0.0
-      --port ${INFERENCE_PORT:-8000}
-      --tp 1
-      --mem-fraction-static ${GPU_MEM_UTIL:-0.85}
-      --tool-call-parser ${SGLANG_TOOL_PARSER:-qwen25}
-      --trust-remote-code
+      '
+        CMD_ARGS="--model-path $${SGLANG_MODEL_PATH} --host 0.0.0.0 --port $${INFERENCE_PORT} --tp 1 --mem-fraction-static $${GPU_MEM_UTIL} --trust-remote-code"
+        if [ -n "$${SGLANG_TOKENIZER_PATH}" ]; then
+          CMD_ARGS="$$CMD_ARGS --tokenizer-path $${SGLANG_TOKENIZER_PATH}"
+        fi
+        if [ "$${SGLANG_LOAD_FORMAT}" = "gguf" ] || [[ "$${SGLANG_MODEL_PATH}" == *.gguf ]]; then
+          CMD_ARGS="$$CMD_ARGS --load-format gguf"
+        fi
+        if [ -n "$${SGLANG_TOOL_PARSER}" ]; then
+          CMD_ARGS="$$CMD_ARGS --tool-call-parser $${SGLANG_TOOL_PARSER}"
+        fi
+        echo "Launching SGLang: python3 -m sglang.launch_server $$CMD_ARGS"
+        exec python3 -m sglang.launch_server $$CMD_ARGS
+      '
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/v1/models || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -59,13 +76,43 @@ services:
       - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
       - OPENAI_API_KEY=dummy-local-key
       - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B}
+      - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - .:/workspace
+      - ./_results:/results
+      - ./_results:/workspace/_results
       - ./opencode.json:/root/.config/opencode/opencode.json:ro
       - opencode-data:/root/.local/share/opencode
     working_dir: /workspace
     # Automatically launches the OpenCode Web UI on port 4096 for interactive demos
     command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "0.0.0.0"]
+
+  # ============================================================================
+  # Benchmark Suite: SWE-bench Runner for Model Evaluation
+  # ============================================================================
+  benchmark:
+    build:
+      context: ./benchmark
+      dockerfile: Dockerfile
+    container_name: swebench-runner
+    profiles:
+      - benchmark
+    network_mode: host
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - ./benchmark:/app
+      - ./_results:/app/_results
+      - ./_results:/results
+      - ./_results:/app/benchmark_results
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
+    entrypoint: ["python3"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
 
 volumes:
   opencode-data:

@@ -18,6 +18,28 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 1. Load user environment (~/.env) if present to pull in HF_TOKEN
+if [ -f "$HOME/.env" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$HOME/.env"
+    set +a
+fi
+
+# 2. Load local environment configuration (.env)
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    PREV_HF_TOKEN="${HF_TOKEN:-}"
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    set +a
+    if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
+        export HF_TOKEN="${PREV_HF_TOKEN}"
+    fi
+fi
+export HF_TOKEN="${HF_TOKEN:-}"
+export HF_HOME="${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}"
+
 # ANSI Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -35,6 +57,8 @@ NUM_SAMPLES=""
 RUN_SWE=true
 RUN_GPQA=true
 RUN_EVAL=false
+BENCHMARK_ENGINE="${INFERENCE_ENGINE:-vllm}"
+COMPARE_ENGINES=false
 
 usage() {
     cat << EOF
@@ -57,6 +81,10 @@ Benchmark Tiers:
                            • SWE-bench: princeton-nlp/SWE-bench (all 2,294 problems)
                            • GPQA: extended (all 546 questions)
 
+Inference Engine & Comparative Options:
+  -e, --engine <engine>    Inference engine: 'vllm' (Default), 'llama.cpp', or 'sglang'
+  --compare-engines        Run comparative benchmark between vLLM, llama.cpp, and SGLang
+
 Execution Options:
   -n, --limit <N>          Limit execution to N instances per benchmark (e.g. -n 5)
   --num-samples <N>        Alias for -n / --limit
@@ -68,6 +96,8 @@ Execution Options:
 Examples:
   ./test.sh                 # Quick 3-question smoke test (default)
   ./test.sh -s              # Explicit sample smoke test
+  ./test.sh -e sglang       # Benchmark active SGLang server
+  ./test.sh --compare-engines # Compare vLLM vs llama.cpp vs SGLang
   ./test.sh -d              # SWE-bench Lite + GPQA Diamond
   ./test.sh -d -n 5         # SWE-bench Lite + GPQA Diamond, limited to 5 questions each
   ./test.sh -m              # SWE-bench Verified + GPQA Main
@@ -122,6 +152,14 @@ while [[ $# -gt 0 ]]; do
             RUN_GPQA=true
             shift
             ;;
+        -e|--engine)
+            BENCHMARK_ENGINE="$2"
+            shift 2
+            ;;
+        --compare-engines)
+            COMPARE_ENGINES=true
+            shift
+            ;;
         --eval|--run-eval|--run-evaluation)
             RUN_EVAL=true
             shift
@@ -136,6 +174,15 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [ "$COMPARE_ENGINES" = true ]; then
+    echo -e "${CYAN}${BOLD}Invoking comparative engine benchmark (vLLM vs llama.cpp vs SGLang)...${NC}"
+    COMP_ARGS=("--dataset" "$SWE_DATASET")
+    if [ -n "$NUM_SAMPLES" ]; then
+        COMP_ARGS+=("--num-samples" "$NUM_SAMPLES")
+    fi
+    exec "${SCRIPT_DIR}/benchmark/compare_engines.sh" "${COMP_ARGS[@]}"
+fi
 
 case "$PROFILE" in
     sample)
@@ -153,7 +200,7 @@ case "$PROFILE" in
 esac
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-RESULTS_DIR="${SCRIPT_DIR}/benchmark_results"
+RESULTS_DIR="${SCRIPT_DIR}/_results"
 mkdir -p "$RESULTS_DIR"
 
 echo -e "${BLUE}${BOLD}======================================================================${NC}"

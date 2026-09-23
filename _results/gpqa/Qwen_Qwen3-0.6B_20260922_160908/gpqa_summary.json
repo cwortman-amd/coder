@@ -1,0 +1,31 @@
+{
+  "model_name": "Qwen/Qwen3-0.6B",
+  "benchmark": "GPQA",
+  "subset": "sample",
+  "total_questions": 3,
+  "correct_answers": 2,
+  "accuracy_pct": 66.67,
+  "parsed_answers_pct": 100.0,
+  "average_throughput_tok_per_sec": 231.33,
+  "average_latency_sec": 4.8,
+  "total_tokens_generated": 3332,
+  "domain_breakdown": {
+    "Physics": {
+      "total": 1,
+      "correct": 1,
+      "accuracy_pct": 100.0
+    },
+    "Chemistry": {
+      "total": 1,
+      "correct": 0,
+      "accuracy_pct": 0.0
+    },
+    "Biology": {
+      "total": 1,
+      "correct": 1,
+      "accuracy_pct": 100.0
+    }
+  },
+  "timestamp": "20260922_160908",
+  "results_file": "/home/amd/workspace/coder/benchmark_results/gpqa/Qwen_Qwen3-0.6B_20260922_160908/gpqa_detailed_results.jsonl"
+}

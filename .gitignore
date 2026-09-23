@@ -3,6 +3,9 @@
 
 # Logs and caches
 *.log
+_results/**/*.log
+_results/*.log
+**/_results/**/*.log
 .cache/
 opencode-data/
 test_*.json
@@ -10,6 +13,7 @@ benchmark_results/
 **/benchmark_results/
 
 # Python artifacts
+.venv/
 __pycache__/
 *.py[cod]
 *$py.class

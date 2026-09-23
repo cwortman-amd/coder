@@ -1,0 +1,39 @@
+{
+  "model_name": "Qwen/Qwen3-0.6B",
+  "dataset": "sample",
+  "total_instances": 3,
+  "valid_patches_generated": 3,
+  "patch_formatting_rate_pct": 100.0,
+  "total_tokens_generated": 1211,
+  "total_latency_seconds": 4.49,
+  "avg_tokens_per_sec": 269.97,
+  "avg_latency_per_sample_sec": 1.5,
+  "predictions_file": "/app/benchmark_results/Qwen_Qwen3-0.6B_20260922_190323/predictions.jsonl",
+  "timestamp": "20260922_190323",
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "latency_sec": 1.56,
+      "prompt_tokens": 329,
+      "completion_tokens": 381,
+      "tokens_per_sec": 243.52,
+      "valid_patch_format": true
+    },
+    {
+      "instance_id": "sympy__sympy-18057",
+      "latency_sec": 1.44,
+      "prompt_tokens": 241,
+      "completion_tokens": 409,
+      "tokens_per_sec": 283.21,
+      "valid_patch_format": true
+    },
+    {
+      "instance_id": "django__django-11099",
+      "latency_sec": 1.48,
+      "prompt_tokens": 234,
+      "completion_tokens": 421,
+      "tokens_per_sec": 285.04,
+      "valid_patch_format": true
+    }
+  ]
+}

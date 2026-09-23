@@ -118,7 +118,8 @@ def load_gpqa_dataset(subset: str, split: str = "train", num_samples: int | None
         from datasets import load_dataset
         hf_subset = subset if subset.startswith("gpqa_") else f"gpqa_{subset}"
         print(f"Downloading/loading GPQA dataset: Idavidrein/gpqa ({hf_subset}, split={split})...")
-        ds = load_dataset("Idavidrein/gpqa", hf_subset, split=split)
+        token = os.environ.get("HF_TOKEN")
+        ds = load_dataset("Idavidrein/gpqa", hf_subset, split=split, token=token)
         instances = list(ds)
         if num_samples:
             instances = instances[:num_samples]
@@ -317,7 +318,7 @@ def main():
     parser.add_argument("--subset", "--dataset", dest="subset", default="sample", help="GPQA subset: 'sample', 'gpqa_diamond', 'gpqa_main', 'gpqa_extended', or local file")
     parser.add_argument("--split", default="train", help="Dataset split (default: train)")
     parser.add_argument("--num-samples", type=int, default=None, help="Number of questions to evaluate")
-    parser.add_argument("--output-dir", default="benchmark_results/gpqa", help="Output directory")
+    parser.add_argument("--output-dir", default="_results/gpqa", help="Output directory")
     parser.add_argument("--max-tokens", type=int, default=2048, help="Max reasoning and answer tokens")
     parser.add_argument("--temperature", type=float, default=0.0, help="Sampling temperature")
     parser.add_argument("--seed", type=int, default=42, help="Seed for choice randomization")

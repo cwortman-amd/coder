@@ -21,6 +21,27 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 1. Load user environment (~/.env) if present to pull in HF_TOKEN
+if [ -f "$HOME/.env" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$HOME/.env"
+    set +a
+fi
+
+# 2. Load local environment configuration (.env)
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    PREV_HF_TOKEN="${HF_TOKEN:-}"
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    set +a
+    if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
+        export HF_TOKEN="${PREV_HF_TOKEN}"
+    fi
+fi
+export HF_TOKEN="${HF_TOKEN:-}"
+
 # ANSI Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'

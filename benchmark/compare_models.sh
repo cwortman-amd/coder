@@ -7,7 +7,28 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RESULTS_DIR="${ROOT_DIR}/benchmark_results"
+RESULTS_DIR="${ROOT_DIR}/_results"
+
+# 1. Load user environment (~/.env) if present to pull in HF_TOKEN
+if [ -f "$HOME/.env" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$HOME/.env"
+    set +a
+fi
+
+# 2. Load repository environment configuration (.env)
+if [ -f "${ROOT_DIR}/.env" ]; then
+    PREV_HF_TOKEN="${HF_TOKEN:-}"
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -v '^[[:space:]]*#' "${ROOT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    set +a
+    if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
+        export HF_TOKEN="${PREV_HF_TOKEN}"
+    fi
+fi
+export HF_TOKEN="${HF_TOKEN:-}"
 
 BENCHMARK_TYPE="${1:-all}"  # "swebench", "gpqa", or "all"
 DATASET="${2:-sample}"
