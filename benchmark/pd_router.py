@@ -2,6 +2,11 @@
 """
 Prefill/Decode (P/D) Disaggregation Router & Request Orchestrator.
 
+Target Architecture: Dual homogeneous AMD Radeon AI PRO R9700 (gfx1201)
+Current Dev Host   : 1x Radeon AI PRO R9700 (gfx1201) + 1x Radeon 780M (gfx1103)
+Note               : On single-card dev hosts, run with --mock for choreography
+                     validation; production dual-card deployment requires 2x R9700.
+
 Implements OpenAI-compatible /v1/chat/completions proxy for Dual-GPU P/D architectures:
 1. Receives incoming chat completion request on port 8000.
 2. Dispatches prompt to Prefill Engine (GPU 0, default port 8100) with `do_remote_decode=True`.

@@ -2,18 +2,17 @@
 # TARGET ARCHITECTURE NOTICE: DUAL HOMOGENEOUS RADEON AI PRO R9700 ONLY
 #
 # DO NOT RUN ON SINGLE-CARD HOSTS (1x R9700 + 1x 780M APU):
-# Prefill/Decode Disaggregation requires two full homogeneous model replicas
-# running across two matching gfx1201 GPUs with dedicated GDDR6 memory.
-# The 780M APU cannot host a 27B model or execute matching A-tiled GEMM paths.
+# Data Parallelism (DP=2) hosts two complete model replicas, requiring two
+# dedicated 32 GB gfx1201 GPUs. The 780M APU cannot host a 27B model replica.
 # =========================================================================
 services:
   # =========================================================================
-  # Role 1: Prefill Engine pinned to Radeon AI PRO R9700 (GPU 0)
-  # Computes prompt context and Key-Value representations at high throughput
+  # Replica 0 pinned to Radeon AI PRO R9700 (GPU 0)
+  # Full independent model replica serving port 8001
   # =========================================================================
-  prefill:
+  replica_0:
     image: local/vllm-mxfp4:gfx1201
-    container_name: rocm-mxfp4-pd-prefill
+    container_name: rocm-mxfp4-dp2-replica0
     ipc: host
     network_mode: host
     shm_size: 16g
@@ -48,25 +47,25 @@ services:
         --mamba-ssm-cache-dtype float16
         --max-model-len 12288
         --gpu-memory-utilization 0.88
-        --max-num-seqs 8
-        --max-num-batched-tokens 8192
+        --max-num-seqs 16
+        --max-num-batched-tokens 4096
         --host 0.0.0.0
-        --port 8100
+        --port 8001
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8100/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/health"]
       interval: 15s
       timeout: 10s
       retries: 20
       start_period: 40s
 
   # =========================================================================
-  # Role 2: Decode Engine pinned to Radeon AI PRO R9700 (GPU 1)
-  # Streams autoregressive generation tokens with isolated, zero-jitter ITL
+  # Replica 1 pinned to Radeon AI PRO R9700 (GPU 1)
+  # Full independent model replica serving port 8002
   # =========================================================================
-  decode:
+  replica_1:
     image: local/vllm-mxfp4:gfx1201
-    container_name: rocm-mxfp4-pd-decode
+    container_name: rocm-mxfp4-dp2-replica1
     ipc: host
     network_mode: host
     shm_size: 16g
@@ -102,34 +101,34 @@ services:
         --max-model-len 12288
         --gpu-memory-utilization 0.88
         --max-num-seqs 16
-        --max-num-batched-tokens 2048
+        --max-num-batched-tokens 4096
         --host 0.0.0.0
-        --port 8200
+        --port 8002
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8200/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8002/health"]
       interval: 15s
       timeout: 10s
       retries: 20
       start_period: 40s
 
   # =========================================================================
-  # Role 3: Prefill/Decode Disaggregation Router (Port 8000)
-  # Bridges client requests across prefill (8100) and decode (8200) engines
+  # Role 3: DP=2 Round-Robin Load Balancer (Port 8000)
+  # Dispatches incoming requests across Replica 0 (8001) and Replica 1 (8002)
   # =========================================================================
-  router:
+  lb:
     image: local/vllm-mxfp4:gfx1201
-    container_name: rocm-mxfp4-pd-router
+    container_name: rocm-mxfp4-dp2-lb
     network_mode: host
     entrypoint: ["python3"]
     depends_on:
-      prefill:
+      replica_0:
         condition: service_healthy
-      decode:
+      replica_1:
         condition: service_healthy
     volumes:
-      - /home/amd/workspace/coder/benchmark/pd_router.py:/app/pd_router.py:ro
-    command: /app/pd_router.py --port 8000 --prefill-url http://127.0.0.1:8100/v1 --decode-url http://127.0.0.1:8200/v1
+      - /home/amd/workspace/coder/benchmark/dp_router.py:/app/dp_router.py:ro
+    command: /app/dp_router.py --port 8000 --replica-0 http://127.0.0.1:8001/v1 --replica-1 http://127.0.0.1:8002/v1
     restart: unless-stopped
 
   # =========================================================================
@@ -137,9 +136,9 @@ services:
   # =========================================================================
   opencode:
     image: ghcr.io/anomalyco/opencode:latest
-    container_name: opencode-client-pd
+    container_name: opencode-client-dp2
     depends_on:
-      - router
+      - lb
     network_mode: host
     environment:
       - OPENCODE_CONFIG=/config/opencode.json

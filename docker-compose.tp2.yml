@@ -1,3 +1,11 @@
+# =========================================================================
+# TARGET ARCHITECTURE NOTICE: DUAL HOMOGENEOUS RADEON AI PRO R9700 ONLY
+#
+# DO NOT RUN ON SINGLE-CARD HOSTS (1x R9700 + 1x 780M APU):
+# Running --tensor-parallel-size 2 across gfx1201 and gfx1103 causes fatal
+# memory allocator and kernel compilation failures.
+# This compose file requires 2x physical homogeneous gfx1201 R9700 cards.
+# =========================================================================
 services:
   # =========================================================================
   # Dual-GPU Tensor Parallelism (TP=2) vLLM MXFP4 Inference Server

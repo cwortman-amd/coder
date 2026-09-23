@@ -252,6 +252,7 @@ The project directory is structured as follows:
 ├── docker-compose.gguf.yml   # GGUF orchestration file (llama.cpp ROCm server for quantized models)
 ├── docker-compose.mxfp4.yml  # Radiance MXFP4 W4A8 orchestration file (Qwen3.8-27B Quark AWQ MXFP4)
 ├── docker-compose.tp2.yml    # Dual-GPU Tensor Parallelism (TP=2) orchestration file (64 GB pooled VRAM)
+├── docker-compose.dp2.yml    # Dual-GPU Data Parallelism (DP=2) orchestration file (2x independent replicas)
 ├── docker-compose.pd.yml     # Dual-GPU Prefill/Decode Disaggregation (P/D 1+1) orchestration file
 ├── docker-compose.sglang.yml # Alternative orchestration file for SGLang
 ├── collect_amd_power.py      # High-frequency 250ms sysfs hwmon GPU power/telemetry collector
@@ -272,6 +273,7 @@ The project directory is structured as follows:
 │   ├── Dockerfile            # Containerized benchmark runner
 │   ├── requirements.txt      # Benchmark dependencies (openai, datasets, swebench)
 │   ├── pd_router.py          # Prefill/Decode Disaggregation router & phase latency tracker
+│   ├── dp_router.py          # Data Parallelism (DP=2) round-robin load balancing proxy
 │   ├── run_benchmark.py      # SWE-bench software engineering evaluation script
 │   ├── run_gpqa.py           # GPQA graduate-level scientific reasoning script
 │   ├── compare_engines.sh    # Automated comparative benchmark suite (vLLM vs. llama.cpp vs. SGLang)
@@ -1836,11 +1838,12 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
   - **Interactive Agent SLA** ($p95\text{ TPOT} \le 50\text{ ms}$): Deploy at **$C=4$** ($p95\text{ TPOT} = 39.8\text{ ms}$, 91.5 tok/s).
   - **Asynchronous / Batch Agent Queue**: Deploy at **$C=8$** (138.7 tok/s, 0.455 tok/J).
 
-### 3. [Dual Radeon AI PRO R9700 Evaluation Architecture: TP=2 vs. P/D](docs/DUAL_R9700_EVALUATION_ARCHITECTURE.md)
-- **Architectural Trade-Off Space**: Formulates the fundamental divergence between Tensor Parallelism (TP=2) for pooled 64 GB capacity and Prefill/Decode Disaggregation (P/D 1+1) for tail-ITL phase isolation.
-- **Analytical PCIe KV Transfer Model**: Quantifies physical PCIe 5.0 x16 KV transfer times across context lengths ($2 \times L \times H_{kv} \times D \times S \times B$), proving that 8K FP8 KV handoff takes only **~5.16 ms** (<0.25% of prefill execution).
-- **In-Container Feasibility & Dependency Gating**: Empirical inspection of `local/vllm-mxfp4:gfx1201` demonstrates that while vLLM's `kv_connector` factory is present, `MoRIIOConnector` lacks `msgpack` and native ROCm `mori.io` libraries. TP=2 is validated as the immediate production baseline; P/D is structured as a prototype.
-- **Dual-Card Tooling & Infrastructure**: Includes [`docker-compose.tp2.yml`](docker-compose.tp2.yml) (TP=2 64GB pooled server), [`docker-compose.pd.yml`](docker-compose.pd.yml) (P/D prefill/decode/router stack), [`inspect_dual_gpu.py`](inspect_dual_gpu.py) (ROCm topology and KV connector diagnostic probe), and [`bench_dual_gpu.sh`](bench_dual_gpu.sh) (multi-mode evaluation suite).
+### 3. [Dual Radeon AI PRO R9700 Evaluation Architecture: TP=2, DP=2 & P/D](docs/DUAL_R9700_EVALUATION_ARCHITECTURE.md)
+- **Architectural Trade-Off Space**: Formulates the trade-off space across Tensor Parallelism (TP=2 for 64 GB pooled capacity), Data Parallelism (DP=2 for linear throughput scaling), and Prefill/Decode Disaggregation (P/D 1+1 for tail-ITL phase isolation).
+- **Hardware Boundary & Fail-Fast Preflight**: Documents current single-card dev host reality (1x R9700 dGPU + 1x 780M iGPU). Enforces a hard preflight gate preventing heterogeneous execution across dGPU and APU.
+- **Analytical PCIe KV Transfer Model**: Quantifies physical PCIe 5.0 x16 KV transfer times across context lengths ($\sum 2 \times H_{kv} \times D \times S \times B$), proving that 8K FP8 KV handoff has an ideal payload floor of **~5.16 ms** (<0.25% of prefill execution).
+- **In-Container Feasibility & Dependency Gating**: Empirical inspection of `local/vllm-mxfp4:gfx1201` demonstrates that while vLLM's `kv_connector` factory is present, `MoRIIOConnector` lacks `msgpack` and native ROCm `mori.io` libraries. TP=2 is validated as the immediate production baseline; P/D is structured as an experimental prototype.
+- **Dual-Card Tooling & Infrastructure**: Includes [`docker-compose.tp2.yml`](docker-compose.tp2.yml) (TP=2 64GB pooled server), [`docker-compose.dp2.yml`](docker-compose.dp2.yml) (DP=2 2x replica cluster with round-robin proxy), [`docker-compose.pd.yml`](docker-compose.pd.yml) (P/D prefill/decode/router stack), [`inspect_dual_gpu.py`](inspect_dual_gpu.py) (ROCm topology and KV connector diagnostic probe), and [`bench_dual_gpu.sh`](bench_dual_gpu.sh) (multi-mode evaluation suite with fail-fast hardware guard).
 
 ---
 
