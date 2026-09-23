@@ -69,6 +69,7 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
 - [Deep Architectural Benchmarks & Concurrency Reports (`docs/`)](#deep-architectural-benchmarks--concurrency-reports-docs)
   - [Comprehensive Benchmark Report (ROCm 10 FP8 vs. vLLM-MXFP4 Radiance)](#1-comprehensive-benchmark-report)
   - [Power-of-Two Concurrency Sweep Report (C = 1, 2, 4, 8, 16)](#2-power-of-two-concurrency-sweep-report-c--1-2-4-8-16)
+  - [Dual Radeon AI PRO R9700 Architecture (TP=2 vs. Prefill/Decode Disaggregation)](#3-dual-radeon-ai-pro-r9700-evaluation-architecture-tp2-vs-pd)
 - [Centralized Results & Artifacts Logging (`_results/`)](#centralized-results--artifacts-logging-_results)
 - [Troubleshooting](#troubleshooting)
 - [Summary and Resources](#summary-and-resources)
@@ -241,6 +242,8 @@ The project directory is structured as follows:
 ├── test.sh                   # Automated dual benchmark runner (SWE-bench & GPQA) & results summary
 ├── demo.sh                   # Industry-standard HTML5 water simulation coding challenge demo
 ├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite (vLLM, llama.cpp, SGLang, MXFP4)
+├── bench_dual_gpu.sh         # Dual-GPU multi-mode evaluation suite (TP=2, P/D, DP=2, single)
+├── inspect_dual_gpu.py       # Dual R9700 hardware topology, in-container KV connector probe, & analytical model
 ├── download_model.sh         # Model downloader for Qwen3.8-27B-Q4_K_M.gguf (~16.8 GB) with resume
 ├── jev_gateway.py            # Open Jev TypeSafe semantic routing gateway (AMD R9700 + Claude)
 ├── Dockerfile.llamacpp-rocm-gfx1201 # Dedicated ROCm 7.x gfx1201 HIP image build for llama.cpp
@@ -248,6 +251,8 @@ The project directory is structured as follows:
 ├── docker-compose.yml        # Primary orchestration file (vLLM ROCm FP8/SafeTensors + OpenCode + Benchmark)
 ├── docker-compose.gguf.yml   # GGUF orchestration file (llama.cpp ROCm server for quantized models)
 ├── docker-compose.mxfp4.yml  # Radiance MXFP4 W4A8 orchestration file (Qwen3.8-27B Quark AWQ MXFP4)
+├── docker-compose.tp2.yml    # Dual-GPU Tensor Parallelism (TP=2) orchestration file (64 GB pooled VRAM)
+├── docker-compose.pd.yml     # Dual-GPU Prefill/Decode Disaggregation (P/D 1+1) orchestration file
 ├── docker-compose.sglang.yml # Alternative orchestration file for SGLang
 ├── collect_amd_power.py      # High-frequency 250ms sysfs hwmon GPU power/telemetry collector
 ├── measure_power.py          # AMD-SMI power telemetry daemon
@@ -259,12 +264,14 @@ The project directory is structured as follows:
 ├── README.md                 # Comprehensive documentation (this file)
 ├── docs/                     # In-depth architectural & benchmark investigation reports
 │   ├── COMPREHENSIVE_BENCHMARK_REPORT.md # ROCm 10 FP8 vs. vLLM-MXFP4 Radiance & single-variable ablations
-│   └── CONCURRENCY_SWEEP_REPORT.md       # C = 1, 2, 4, 8, 16 concurrency matrix, marginal gains & SLOs
+│   ├── CONCURRENCY_SWEEP_REPORT.md       # C = 1, 2, 4, 8, 16 concurrency matrix, marginal gains & SLOs
+│   └── DUAL_R9700_EVALUATION_ARCHITECTURE.md # Dual R9700 TP=2 vs P/D disaggregation architecture & feasibility
 ├── models/                   # Directory holding GGUF model files (e.g. Qwen3.8-27B-Q4_K_M.gguf)
 ├── opencode-water-sim/       # Generated 2D water simulation benchmark demo directory
 ├── benchmark/                # Model benchmarking harness (SWE-bench & GPQA)
 │   ├── Dockerfile            # Containerized benchmark runner
 │   ├── requirements.txt      # Benchmark dependencies (openai, datasets, swebench)
+│   ├── pd_router.py          # Prefill/Decode Disaggregation router & phase latency tracker
 │   ├── run_benchmark.py      # SWE-bench software engineering evaluation script
 │   ├── run_gpqa.py           # GPQA graduate-level scientific reasoning script
 │   ├── compare_engines.sh    # Automated comparative benchmark suite (vLLM vs. llama.cpp vs. SGLang)
@@ -1828,6 +1835,12 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
 - **Service Tier Recommendations**:
   - **Interactive Agent SLA** ($p95\text{ TPOT} \le 50\text{ ms}$): Deploy at **$C=4$** ($p95\text{ TPOT} = 39.8\text{ ms}$, 91.5 tok/s).
   - **Asynchronous / Batch Agent Queue**: Deploy at **$C=8$** (138.7 tok/s, 0.455 tok/J).
+
+### 3. [Dual Radeon AI PRO R9700 Evaluation Architecture: TP=2 vs. P/D](docs/DUAL_R9700_EVALUATION_ARCHITECTURE.md)
+- **Architectural Trade-Off Space**: Formulates the fundamental divergence between Tensor Parallelism (TP=2) for pooled 64 GB capacity and Prefill/Decode Disaggregation (P/D 1+1) for tail-ITL phase isolation.
+- **Analytical PCIe KV Transfer Model**: Quantifies physical PCIe 5.0 x16 KV transfer times across context lengths ($2 \times L \times H_{kv} \times D \times S \times B$), proving that 8K FP8 KV handoff takes only **~5.16 ms** (<0.25% of prefill execution).
+- **In-Container Feasibility & Dependency Gating**: Empirical inspection of `local/vllm-mxfp4:gfx1201` demonstrates that while vLLM's `kv_connector` factory is present, `MoRIIOConnector` lacks `msgpack` and native ROCm `mori.io` libraries. TP=2 is validated as the immediate production baseline; P/D is structured as a prototype.
+- **Dual-Card Tooling & Infrastructure**: Includes [`docker-compose.tp2.yml`](docker-compose.tp2.yml) (TP=2 64GB pooled server), [`docker-compose.pd.yml`](docker-compose.pd.yml) (P/D prefill/decode/router stack), [`inspect_dual_gpu.py`](inspect_dual_gpu.py) (ROCm topology and KV connector diagnostic probe), and [`bench_dual_gpu.sh`](bench_dual_gpu.sh) (multi-mode evaluation suite).
 
 ---
 
