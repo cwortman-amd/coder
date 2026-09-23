@@ -1,0 +1,74 @@
+{
+  "timestamp": "20260923_174532",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "mode": "prefill",
+  "suites": {
+    "prefill": [
+      {
+        "case": "P1",
+        "input_tokens": 128,
+        "status": "PASS",
+        "prompt_tok_s": 1339.9,
+        "engine_prefill_s": 0.092,
+        "ttft_p50_ms": 95.53,
+        "ttft_p95_ms": 100.09,
+        "avg_power_w": 194.6,
+        "joules_per_tok": 0.14525
+      },
+      {
+        "case": "P2",
+        "input_tokens": 1024,
+        "status": "PASS",
+        "prompt_tok_s": 3319.6,
+        "engine_prefill_s": 0.304,
+        "ttft_p50_ms": 308.47,
+        "ttft_p95_ms": 310.74,
+        "avg_power_w": 273.7,
+        "joules_per_tok": 0.08245
+      },
+      {
+        "case": "P3",
+        "input_tokens": 4096,
+        "status": "PASS",
+        "prompt_tok_s": 3298.5,
+        "engine_prefill_s": 1.235,
+        "ttft_p50_ms": 1241.79,
+        "ttft_p95_ms": 1244.97,
+        "avg_power_w": 292.1,
+        "joules_per_tok": 0.08855
+      },
+      {
+        "case": "P4",
+        "input_tokens": 8192,
+        "status": "PASS",
+        "prompt_tok_s": 3151.2,
+        "engine_prefill_s": 2.589,
+        "ttft_p50_ms": 2599.63,
+        "ttft_p95_ms": 2605.11,
+        "avg_power_w": 295.9,
+        "joules_per_tok": 0.0939
+      },
+      {
+        "case": "P5",
+        "input_tokens": 12288,
+        "status": "BLOCKED (400 Capacity Limit)",
+        "prompt_tok_s": 0.0,
+        "ttft_p50_ms": 0.0,
+        "ttft_p95_ms": 0.0,
+        "avg_power_w": 0.0,
+        "joules_per_tok": 0.0
+      },
+      {
+        "case": "P6",
+        "input_tokens": 16384,
+        "status": "BLOCKED (400 Capacity Limit)",
+        "prompt_tok_s": 0.0,
+        "ttft_p50_ms": 0.0,
+        "ttft_p95_ms": 0.0,
+        "avg_power_w": 0.0,
+        "joules_per_tok": 0.0
+      }
+    ]
+  }
+}

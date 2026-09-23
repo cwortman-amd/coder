@@ -1,0 +1,13 @@
+{
+  "duration_s": 26.26,
+  "sample_count": 105,
+  "sample_interval_s": 0.25,
+  "avg_power_w": 291.06,
+  "max_power_w": 308.0,
+  "min_power_w": 19.0,
+  "total_energy_joules": 7640.25,
+  "avg_hotspot_c": 86.6,
+  "max_hotspot_c": 90.0,
+  "avg_mem_c": 72.8,
+  "max_mem_c": 78.0
+}

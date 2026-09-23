@@ -1,0 +1,46 @@
+{
+  "timestamp": "20260923_180029",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "mode": "prefix",
+  "suites": {
+    "prefix": [
+      {
+        "label": "Prefix 0%",
+        "cached_tokens": 0,
+        "suffix_tokens": 8192,
+        "latency_s": 6.385,
+        "ttft_saved_ms": 0.0,
+        "speedup": 1.0,
+        "description": "Cold full prompt prefill"
+      },
+      {
+        "label": "Prefix 25%",
+        "cached_tokens": 2048,
+        "suffix_tokens": 6144,
+        "latency_s": 6.392,
+        "ttft_saved_ms": 0.0,
+        "speedup": 1.0,
+        "description": "2K cached + 6K suffix"
+      },
+      {
+        "label": "Prefix 50%",
+        "cached_tokens": 4096,
+        "suffix_tokens": 4096,
+        "latency_s": 6.397,
+        "ttft_saved_ms": 0.0,
+        "speedup": 1.0,
+        "description": "4K cached + 4K suffix"
+      },
+      {
+        "label": "Prefix 75%",
+        "cached_tokens": 6144,
+        "suffix_tokens": 2048,
+        "latency_s": 6.4,
+        "ttft_saved_ms": 0.0,
+        "speedup": 1.0,
+        "description": "6K cached + 2K suffix"
+      }
+    ]
+  }
+}

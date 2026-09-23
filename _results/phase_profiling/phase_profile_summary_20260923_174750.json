@@ -1,0 +1,66 @@
+{
+  "timestamp": "20260923_174750",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "mode": "decode",
+  "suites": {
+    "decode": [
+      {
+        "case": "D1",
+        "prompt_tokens": 128,
+        "output_tokens": 1024,
+        "decode_tok_s": 34.12,
+        "tpot_p50_ms": 29.3,
+        "tpot_p95_ms": 29.33,
+        "itl_p50_ms": 29.28,
+        "itl_p95_ms": 29.92,
+        "itl_p99_ms": 30.32,
+        "ttft_p50_ms": 95.61,
+        "avg_power_w": 295.3,
+        "joules_per_decode_tok": 8.6537
+      },
+      {
+        "case": "D2",
+        "prompt_tokens": 1024,
+        "output_tokens": 1024,
+        "decode_tok_s": 33.9,
+        "tpot_p50_ms": 29.5,
+        "tpot_p95_ms": 29.51,
+        "itl_p50_ms": 29.46,
+        "itl_p95_ms": 30.08,
+        "itl_p99_ms": 30.55,
+        "ttft_p50_ms": 310.51,
+        "avg_power_w": 296.5,
+        "joules_per_decode_tok": 8.7466
+      },
+      {
+        "case": "D3",
+        "prompt_tokens": 4096,
+        "output_tokens": 1024,
+        "decode_tok_s": 33.73,
+        "tpot_p50_ms": 29.65,
+        "tpot_p95_ms": 29.65,
+        "itl_p50_ms": 29.62,
+        "itl_p95_ms": 30.22,
+        "itl_p99_ms": 30.53,
+        "ttft_p50_ms": 1251.25,
+        "avg_power_w": 297.2,
+        "joules_per_decode_tok": 8.8107
+      },
+      {
+        "case": "D4",
+        "prompt_tokens": 8192,
+        "output_tokens": 1024,
+        "decode_tok_s": 33.44,
+        "tpot_p50_ms": 29.9,
+        "tpot_p95_ms": 29.9,
+        "itl_p50_ms": 29.88,
+        "itl_p95_ms": 30.47,
+        "itl_p99_ms": 31.24,
+        "ttft_p50_ms": 2608.73,
+        "avg_power_w": 296.9,
+        "joules_per_decode_tok": 8.8792
+      }
+    ]
+  }
+}

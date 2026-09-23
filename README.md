@@ -266,12 +266,14 @@ The project directory is structured as follows:
 ├── docs/                     # In-depth architectural & benchmark investigation reports
 │   ├── COMPREHENSIVE_BENCHMARK_REPORT.md # ROCm 10 FP8 vs. vLLM-MXFP4 Radiance & single-variable ablations
 │   ├── CONCURRENCY_SWEEP_REPORT.md       # C = 1, 2, 4, 8, 16 concurrency matrix, marginal gains & SLOs
-│   └── DUAL_R9700_EVALUATION_ARCHITECTURE.md # Dual R9700 TP=2 vs P/D disaggregation architecture & feasibility
+│   ├── DUAL_R9700_EVALUATION_ARCHITECTURE.md # Dual R9700 TP=2 vs P/D disaggregation architecture & feasibility
+│   └── SINGLE_R9700_PHASE_PROFILING.md   # Isolated prefill, steady decode, contention jitter & cache characterization
 ├── models/                   # Directory holding GGUF model files (e.g. Qwen3.8-27B-Q4_K_M.gguf)
 ├── opencode-water-sim/       # Generated 2D water simulation benchmark demo directory
 ├── benchmark/                # Model benchmarking harness (SWE-bench & GPQA)
 │   ├── Dockerfile            # Containerized benchmark runner
 │   ├── requirements.txt      # Benchmark dependencies (openai, datasets, swebench)
+│   ├── bench_phases.py       # High-precision streaming phase profiler & contention tester
 │   ├── pd_router.py          # Prefill/Decode Disaggregation router & phase latency tracker
 │   ├── dp_router.py          # Data Parallelism (DP=2) round-robin load balancing proxy
 │   ├── run_benchmark.py      # SWE-bench software engineering evaluation script
@@ -1844,6 +1846,13 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
 - **Analytical PCIe KV Transfer Model**: Quantifies physical PCIe 5.0 x16 KV transfer times across context lengths ($\sum 2 \times H_{kv} \times D \times S \times B$), proving that 8K FP8 KV handoff has an ideal payload floor of **~5.16 ms** (<0.25% of prefill execution).
 - **In-Container Feasibility & Dependency Gating**: Empirical inspection of `local/vllm-mxfp4:gfx1201` demonstrates that while vLLM's `kv_connector` factory is present, `MoRIIOConnector` lacks `msgpack` and native ROCm `mori.io` libraries. TP=2 is validated as the immediate production baseline; P/D is structured as an experimental prototype.
 - **Dual-Card Tooling & Infrastructure**: Includes [`docker-compose.tp2.yml`](docker-compose.tp2.yml) (TP=2 64GB pooled server), [`docker-compose.dp2.yml`](docker-compose.dp2.yml) (DP=2 2x replica cluster with round-robin proxy), [`docker-compose.pd.yml`](docker-compose.pd.yml) (P/D prefill/decode/router stack), [`inspect_dual_gpu.py`](inspect_dual_gpu.py) (ROCm topology and KV connector diagnostic probe), and [`bench_dual_gpu.sh`](bench_dual_gpu.sh) (multi-mode evaluation suite with fail-fast hardware guard).
+
+### 4. [Single Radeon AI PRO R9700 Phase Profiling & Interference Analysis](docs/SINGLE_R9700_PHASE_PROFILING.md)
+- **Isolated Prefill Engine (P1–P6)**: Quantifies prompt ingestion scaling from 128 to 8,192 tokens. Prompt throughput plateaus at **3,150–3,320 tok/s** (8K TTFT = **2.599s**, 295.9 W). Context boundary strictly enforced at 12K (`--max-model-len 12288`).
+- **Isolated Decode Engine (D1–D4)**: Proves decode rate context-insensitivity: steady generation drops by only 2% (**34.12 tok/s $\to$ 33.44 tok/s**) from 128 to 8,192 context footprint, maintaining a tightly bounded **29.3–29.9 ms TPOT** floor and $<3\text{ ms}$ jitter.
+- **Contention & Interference Proof (J0–J3)**: Simulates the collocated interference that P/D removes. Shows decode streams under 8K prefill bombardment suffer a **1,354–1,365 ms maximum stall** (exactly matching the 4,096-token prefill chunk duration), yielding **45.59× $p95\text{ ITL}$ inflation** under continuous prefill saturation.
+- **Cache-Aware & L2 CPU Offload**: Demonstrates that enabling L1 GPU prefix caching recovers up to **~1.98s per request (4.23× speedup)** on 75% reusable prefixes. Models host CPU DRAM L2 offload: 268 MB PCIe 5.0 restore takes only **5.16 ms** ($<0.2\%$ of compute time), delivering a **+2.59s net saving** over full prompt recomputation.
+- **Phase Profiling Tooling**: Implemented in [`benchmark/bench_phases.py`](benchmark/bench_phases.py), providing streaming chunk timestamping, Prometheus metric deltas, and automated 250ms sysfs hwmon power telemetry.
 
 ---
 

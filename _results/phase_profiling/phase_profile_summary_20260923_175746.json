@@ -1,0 +1,62 @@
+{
+  "timestamp": "20260923_175746",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "mode": "contention",
+  "suites": {
+    "contention": [
+      {
+        "scenario": "J0",
+        "description": "Decode only baseline (Zero interference)",
+        "ttft_ms": 305.44,
+        "tpot_ms": 29.36,
+        "itl_p50_ms": 29.35,
+        "itl_p95_ms": 29.91,
+        "itl_p99_ms": 30.1,
+        "itl_max_ms": 32.0,
+        "delta_p95_ms": 0.0,
+        "itl_inflation_ratio": 1.0,
+        "avg_power_w": 271.7
+      },
+      {
+        "scenario": "J1",
+        "description": "Light contention: 1x 8K:1 prefill burst every 5.0 seconds",
+        "ttft_ms": 2883.86,
+        "tpot_ms": 39.38,
+        "itl_p50_ms": 29.37,
+        "itl_p95_ms": 30.01,
+        "itl_p99_ms": 51.27,
+        "itl_max_ms": 1354.11,
+        "delta_p95_ms": 0.11,
+        "itl_inflation_ratio": 1.0,
+        "avg_power_w": 281.5
+      },
+      {
+        "scenario": "J2",
+        "description": "Heavy contention: 1x 8K:1 prefill burst every 1.0 second",
+        "ttft_ms": 2900.29,
+        "tpot_ms": 89.58,
+        "itl_p50_ms": 29.45,
+        "itl_p95_ms": 69.03,
+        "itl_p99_ms": 1357.76,
+        "itl_max_ms": 1359.64,
+        "delta_p95_ms": 39.12,
+        "itl_inflation_ratio": 2.31,
+        "avg_power_w": 291.1
+      },
+      {
+        "scenario": "J3",
+        "description": "Continuous saturation: Concurrent 8K:1 prefill bursts",
+        "ttft_ms": 2396.81,
+        "tpot_ms": 401.92,
+        "itl_p50_ms": 43.46,
+        "itl_p95_ms": 1363.38,
+        "itl_p99_ms": 1363.93,
+        "itl_max_ms": 1365.81,
+        "delta_p95_ms": 1333.47,
+        "itl_inflation_ratio": 45.59,
+        "avg_power_w": 297.9
+      }
+    ]
+  }
+}
