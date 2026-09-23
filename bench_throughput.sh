@@ -64,17 +64,17 @@ usage() {
     cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
-vLLM, llama.cpp & SGLang Multi-Length Token Throughput Benchmarking Suite
+vLLM, vLLM-MXFP4, llama.cpp & SGLang Multi-Length Token Throughput Benchmarking Suite
 
 Options:
-  -e, --engine <engine>    Inference engine to benchmark ('vllm', 'llama.cpp', 'sglang', or 'all') (default: vllm)
-  --engines <list>         Comma-separated list of engines (e.g. 'vllm,llama.cpp,sglang' or 'all')
+  -e, --engine <engine>    Inference engine to benchmark ('vllm', 'mxfp4', 'llama.cpp', 'sglang', or 'all') (default: vllm)
+  --engines <list>         Comma-separated list of engines (e.g. 'vllm,mxfp4,llama.cpp,sglang' or 'all')
   -c, --concurrency <N>    Concurrency level (default: 1)
   -n, --num-prompts <N>    Override number of test prompts per slice (default: dynamic by OSL & CONC)
   --test-cases <cases>     Comma-separated I:O token pairs (default: '8192:1024')
   -q, --quick              Quick smoke test (1 prompt, 128:64) for rapid multi-engine validation
   -u, --server-url <URL>   Target server URL (default: http://127.0.0.1:8000)
-  --compare-engines        Compare throughput across all three engines (equivalent to -e all)
+  --compare-engines        Compare throughput across all engines (equivalent to -e all)
   -h, --help               Show this help message
 
 Dynamic Prompt Sizing:
@@ -130,7 +130,7 @@ done
 # Resolve list of engines to benchmark
 declare -a ENGINE_LIST=()
 if [ "$ENGINE" = "all" ] || [ "$ENGINE" = "compare" ]; then
-    ENGINE_LIST=("vllm" "llama.cpp" "sglang")
+    ENGINE_LIST=("vllm" "mxfp4" "llama.cpp" "sglang")
 elif [[ "$ENGINE" == *","* ]]; then
     IFS="," read -ra SPLIT_ENGINES <<< "$ENGINE"
     for E in "${SPLIT_ENGINES[@]}"; do
@@ -230,8 +230,30 @@ start_engine() {
             fi
             stop_container "rocm-llama-server"
             stop_container "rocm-sglang-server"
+            stop_container "rocm-mxfp4-server"
             docker compose -p coder-vllm -f "${ROOT_DIR}/docker-compose.yml" up -d inference
             wait_for_server 8000 90
+            ;;
+        mxfp4|vllm-mxfp4|radiance)
+            if docker ps --format '{{.Names}}' | grep -q "^rocm-mxfp4-server$" && curl -s -f "http://127.0.0.1:8000/health" >/dev/null 2>&1; then
+                echo "Using currently active vLLM MXFP4 container."
+                return 0
+            fi
+            stop_container "rocm-inference-server"
+            stop_container "rocm-llama-server"
+            stop_container "rocm-sglang-server"
+            local mxfp4_model="/models/Qwen3.8-27B-MXFP4-mtpfp8"
+            if [ -n "${MXFP4_MODEL_PATH:-}" ]; then
+                mxfp4_model="${MXFP4_MODEL_PATH}"
+            elif [ -d "${ROOT_DIR}/models/Qwen3.8-27B-MXFP4-mtpfp8" ]; then
+                mxfp4_model="/models/Qwen3.8-27B-MXFP4-mtpfp8"
+            elif [ -d "${ROOT_DIR}/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4" ]; then
+                mxfp4_model="/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4"
+            else
+                mxfp4_model="Qwen/Qwen3.8-27B-FP8"
+            fi
+            MODEL_PATH="${mxfp4_model}" docker compose -p coder-mxfp4 -f "${ROOT_DIR}/docker-compose.mxfp4.yml" up -d inference
+            wait_for_server 8000 120
             ;;
         llama.cpp|llamacpp|gguf)
             local gguf_model="Qwen3.8-27B-Q4_K_M.gguf"
@@ -252,6 +274,7 @@ start_engine() {
             fi
             stop_container "rocm-inference-server"
             stop_container "rocm-sglang-server"
+            stop_container "rocm-mxfp4-server"
             MODEL_FILE="${gguf_model}" MODEL_ALIAS="${gguf_model}" docker compose -p coder-llama -f "${ROOT_DIR}/docker-compose.gguf.yml" up -d inference
             wait_for_server 8000 60
             ;;
@@ -262,6 +285,7 @@ start_engine() {
             fi
             stop_container "rocm-inference-server"
             stop_container "rocm-llama-server"
+            stop_container "rocm-mxfp4-server"
             local sglang_model="/models/Qwen3.8-27B-Q4_K_M.gguf"
             local sglang_tok="Qwen/Qwen3.8-27B-FP8"
             if [ -f "${ROOT_DIR}/models/Qwen3.8-27B-Q4_K_M.gguf" ]; then
@@ -331,7 +355,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         CONTAINER_RES_DIR="/results"
         # Determine matching HF tokenizer for client-side token counting
         tok_args=()
-        if [[ "$MODEL_NAME" == *".gguf"* ]] || [[ "$MODEL_NAME" != *"/"* ]]; then
+        if [[ "$MODEL_NAME" == *".gguf"* ]] || [[ "$MODEL_NAME" != *"/"* ]] || [[ "$MODEL_NAME" == *"MXFP4"* ]]; then
             if [[ "$MODEL_NAME" == *"0.5b"* ]] || [[ "$MODEL_NAME" == *"0.5B"* ]]; then
                 tok_args=(--tokenizer "Qwen/Qwen2.5-0.5B-Instruct")
             else
@@ -340,8 +364,8 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         fi
 
         # Execute vllm bench serve
-        ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test)$" | head -n1 || true)
-        if [ "$CURR_ENGINE" = "vllm" ] && [ -n "$ACTIVE_VLLM" ]; then
+        ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test|rocm-mxfp4-server|qwen38-r9700-radiance)$" | head -n1 || true)
+        if { [ "$CURR_ENGINE" = "vllm" ] || [ "$CURR_ENGINE" = "mxfp4" ]; } && [ -n "$ACTIVE_VLLM" ]; then
             docker exec "$ACTIVE_VLLM" vllm bench serve \
               --backend openai-chat \
               --model "$MODEL_NAME" \

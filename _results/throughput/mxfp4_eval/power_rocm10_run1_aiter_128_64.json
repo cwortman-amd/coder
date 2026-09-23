@@ -1,0 +1,19 @@
+{
+  "benchmark_duration_s": 29.27,
+  "sample_count": 31,
+  "sample_interval_s": 1,
+  "avg_power_w": 188.48,
+  "peak_power_w": 300.0,
+  "min_power_w": 12.0,
+  "total_energy_joules": 5843.0,
+  "total_energy_wh": 1.6231,
+  "avg_hotspot_temp_c": 60.6,
+  "peak_hotspot_temp_c": 81.0,
+  "avg_mem_temp_c": 49.5,
+  "peak_mem_temp_c": 64.0,
+  "avg_gfx_util_pct": 62.6,
+  "total_output_tokens": 320,
+  "output_throughput_tok_per_s": 15.52,
+  "joules_per_token": 18.259,
+  "tokens_per_joule": 0.055
+}

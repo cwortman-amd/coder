@@ -66,6 +66,9 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Multi-Engine Comparative Benchmark (`compare_engines.sh`)](#multi-engine-comparative-benchmark-compare_enginessh)
   - [Empirical Benchmark Results on AMD Radeon AI PRO R9700](#empirical-benchmark-results-on-amd-radeon-ai-pro-r9700)
   - [Offline Benchmarking with `vllm bench throughput`](#offline-benchmarking-with-vllm-bench-throughput)
+- [Deep Architectural Benchmarks & Concurrency Reports (`docs/`)](#deep-architectural-benchmarks--concurrency-reports-docs)
+  - [Comprehensive Benchmark Report (ROCm 10 FP8 vs. vLLM-MXFP4 Radiance)](#1-comprehensive-benchmark-report)
+  - [Power-of-Two Concurrency Sweep Report (C = 1, 2, 4, 8, 16)](#2-power-of-two-concurrency-sweep-report-c--1-2-4-8-16)
 - [Centralized Results & Artifacts Logging (`_results/`)](#centralized-results--artifacts-logging-_results)
 - [Troubleshooting](#troubleshooting)
 - [Summary and Resources](#summary-and-resources)
@@ -237,18 +240,26 @@ The project directory is structured as follows:
 ├── check.sh                  # Automated health check & live prompt verification script
 ├── test.sh                   # Automated dual benchmark runner (SWE-bench & GPQA) & results summary
 ├── demo.sh                   # Industry-standard HTML5 water simulation coding challenge demo
-├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite (vLLM, llama.cpp, SGLang)
+├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite (vLLM, llama.cpp, SGLang, MXFP4)
 ├── download_model.sh         # Model downloader for Qwen3.8-27B-Q4_K_M.gguf (~16.8 GB) with resume
 ├── jev_gateway.py            # Open Jev TypeSafe semantic routing gateway (AMD R9700 + Claude)
 ├── Dockerfile.llamacpp-rocm-gfx1201 # Dedicated ROCm 7.x gfx1201 HIP image build for llama.cpp
+├── Dockerfile.vllm-mxfp4      # Radiance A-tiled GEMM & tuned AITER vLLM container for RDNA 4 gfx1201
 ├── docker-compose.yml        # Primary orchestration file (vLLM ROCm FP8/SafeTensors + OpenCode + Benchmark)
 ├── docker-compose.gguf.yml   # GGUF orchestration file (llama.cpp ROCm server for quantized models)
+├── docker-compose.mxfp4.yml  # Radiance MXFP4 W4A8 orchestration file (Qwen3.8-27B Quark AWQ MXFP4)
 ├── docker-compose.sglang.yml # Alternative orchestration file for SGLang
+├── collect_amd_power.py      # High-frequency 250ms sysfs hwmon GPU power/telemetry collector
+├── measure_power.py          # AMD-SMI power telemetry daemon
+├── run_concurrency_sweep.py  # Automated power-of-two concurrency sweeper (C = 1, 2, 4, 8, 16)
 ├── opencode.json             # Provider configuration for OpenCode client
 ├── qwen3_5.py                # Architecture override patch mounted into vLLM for Qwen3.5/3.8
 ├── .env.example              # Environment variables template
 ├── .gitignore                # Ignores local model weights, caches, logs, and .env
 ├── README.md                 # Comprehensive documentation (this file)
+├── docs/                     # In-depth architectural & benchmark investigation reports
+│   ├── COMPREHENSIVE_BENCHMARK_REPORT.md # ROCm 10 FP8 vs. vLLM-MXFP4 Radiance & single-variable ablations
+│   └── CONCURRENCY_SWEEP_REPORT.md       # C = 1, 2, 4, 8, 16 concurrency matrix, marginal gains & SLOs
 ├── models/                   # Directory holding GGUF model files (e.g. Qwen3.8-27B-Q4_K_M.gguf)
 ├── opencode-water-sim/       # Generated 2D water simulation benchmark demo directory
 ├── benchmark/                # Model benchmarking harness (SWE-bench & GPQA)
@@ -1797,6 +1808,26 @@ docker run --rm --ipc=host \
     --output-len 512 \
     --num-prompts 10
 ```
+
+---
+
+## Deep Architectural Benchmarks & Concurrency Reports (`docs/`)
+
+For in-depth architectural post-mortems, hardware-level failure analysis, and high-frequency power/energy telemetry on the AMD Radeon™ AI PRO R9700 (`gfx1201`), refer to the dedicated reports in the [`docs/`](docs/) directory:
+
+### 1. [Comprehensive Benchmark Report](docs/COMPREHENSIVE_BENCHMARK_REPORT.md)
+- **Official ROCm 10 FP8 Single-Variable Ablation Matrix**: Controlled experiments isolating why stock AITER Unified Attention crashes on RDNA 4 (66,048 B LDS requested vs 65,536 B hardware limit), how PyTorch Inductor epilogue autotuning triggers a 2.37 GiB allocator spike on 90% full VRAM, and why FP8 KV cache triggers an un-fused Triton fallback (`attn_block_size = 800`).
+- **`vllm-mxfp4` Radiance Acceleration**: Evaluates Quark AWQ MXFP4 (W4A8) delivering **30.59 tok/s** at single-stream 8K:1K (**2.34x faster** than ROCm 10 FP8 at 13.10 tok/s) and consuming **53.0% less energy** (9.97 J/tok vs 21.24 J/tok).
+- **Physical Bandwidth Roofline Validation**: Sustains **~469.4 GB/s effective memory bus throughput** (81.5% of the 576 GB/s physical GDDR6 bus ceiling).
+
+### 2. [Power-of-Two Concurrency Sweep Report (C = 1, 2, 4, 8, 16)](docs/CONCURRENCY_SWEEP_REPORT.md)
+- **Full Power-of-Two Concurrency Matrix ($C = 1, 2, 4, 8, 16$)**: Benchmarks 8,192 input : 1,024 output requests under continuous 250 ms power telemetry via sysfs hwmon / AMD-SMI.
+- **Plateau Criteria & Knee Identification**:
+  - **Throughput & Efficiency Knee ($C=8$)**: Peaks at **138.67 tok/s aggregate** and **0.4550 tok/J** (2.198 J/token), an +51.6% marginal throughput gain over $C=4$.
+  - **Capacity Plateau ($C=16$)**: Throughput plateaus and slightly contracts to **135.93 tok/s** (-2.0% marginal gain) as KV cache hits **99.1% capacity** and scheduler chunking stretches $p95$ TTFT to **42.1 seconds**.
+- **Service Tier Recommendations**:
+  - **Interactive Agent SLA** ($p95\text{ TPOT} \le 50\text{ ms}$): Deploy at **$C=4$** ($p95\text{ TPOT} = 39.8\text{ ms}$, 91.5 tok/s).
+  - **Asynchronous / Batch Agent Queue**: Deploy at **$C=8$** (138.7 tok/s, 0.455 tok/J).
 
 ---
 
