@@ -35,7 +35,7 @@ A two-card AMD Radeon™ AI PRO R9700 workstation provides **64 GB of physical G
 
 3. **Prefill/Decode Disaggregation (P/D 1+1) — Gated Phase Isolation Prototype**:
    - R9700 #0 is dedicated to compute-bound prompt prefill; R9700 #1 is dedicated to memory-bandwidth-bound decode.
-   - **Core Benefit**: Completely decouples prompt prefill bursts from continuous token streaming, eliminating tail inter-token latency (ITL) jitter.
+   - **Core Benefit**: Completely decouples prompt prefill bursts from continuous token streaming, eliminating tail inter-token latency (ITL) jitter (preventing the 1.35-second prefill-chunk stalls). It does **not** accelerate single-stream decode throughput (which is bounded at ~34 tok/s by serial dependency $x_{t+1}=f(x_{\leq t})$), but guarantees strict SLA predictability under mixed load.
    - **Core Limitation**: Requires two full model copies (limiting model size to $\le 32\text{ GB}$), adds PCIe KV transfer overhead, and requires an external request router.
    - **Feasibility on this Fork**: **Gated / Experimental**. In-container probing of `local/vllm-mxfp4:gfx1201` proves that while the `kv_connector` factory exists, `MoRIIOConnector` lacks `msgpack` and AMD's native C++ `mori.io` runtime.
 
@@ -71,7 +71,7 @@ A two-card AMD Radeon™ AI PRO R9700 workstation provides **64 GB of physical G
 | **Context Window Limit** | Bounded (8K–12K @ 27B) | Bounded (8K–12K) | **Extended (32K–64K @ 27B)**| Bounded (8K–12K) | Bounded (8K–12K) |
 | **Power Profile** | ~296 W under load | ~296 W under load | ~580 W combined continuous | ~590 W combined parallel | **Asymmetric: GPU0 bursty, GPU1 steady** |
 | **Thermodynamic Duty** | Cyclic thermal soak | Cyclic thermal soak | Symmetric thermal soak | Symmetric thermal soak | **GPU0: 14W $\leftrightarrow$ 296W; GPU1: 297W / 88°C GDDR6** |
-| **Energy Disparity** | 0.094 J/in, 8.87 J/out | 0.094 J/in, 8.87 J/out | ~0.08 J/in, ~7.5 J/out | 0.094 J/in, 8.87 J/out | **0.094 J/prefill tok vs 8.87 J/decode tok** |
+| **Energy Disparity** | 0.094 J/in, 8.88 J/out | 0.094 J/in, 8.88 J/out | ~0.08 J/in, ~7.5 J/out | 0.094 J/in, 8.88 J/out | **0.094 J/prefill tok vs 8.88 J/decode tok** |
 | **Implementation Maturity**| Production | Production | **Production Priority** | Production | **Gated Prototype** |
 
 ---
