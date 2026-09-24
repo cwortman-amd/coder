@@ -259,15 +259,19 @@ Probing `local/vllm-mxfp4:gfx1201` revealed the active status of upstream KV con
 
 | Connector Name | Implementation Class | Status in Container | Dependency Diagnostics |
 | :--- | :--- | :---: | :--- |
-| **MoRIIOConnector** | `vllm.distributed.kv_transfer...moriio_connector` | **MISSING DEP** | Missing Python module `msgpack`; native `mori.io` absent |
+| **MoRIIOConnector** | `vllm.distributed.kv_transfer...moriio_connector` | **PYTHON RESOLVED** | `msgpack-1.2.2` installed; Python classes import; native `mori.io` absent |
+| **SimpleCPUOffload** | `vllm.distributed.kv_transfer...simple_cpu_offload`| **AVAILABLE** | Host DRAM offload connector present (zero external C++ dependencies) |
+| **ExampleConnector** | `vllm.distributed.kv_transfer...example_connector` | **AVAILABLE** | Torch/safetensors DMA connector operational |
 | **LMCacheConnectorV1**| `vllm.distributed.kv_transfer...lmcache_connector` | **AVAILABLE** | Upstream Python modules resolved |
 | **NixlConnector** | `vllm.distributed.kv_transfer...nixl` | **AVAILABLE** | Configured with `UCX_RCACHE_MAX_UNRELEASED=1024` |
 | **MooncakeConnector** | `vllm.distributed.kv_transfer...mooncake_connector` | **AVAILABLE** | Requires external Mooncake store deployment |
-| **SimpleCPUOffload** | `vllm.distributed.kv_transfer...simple_cpu_offload`| **AVAILABLE** | Host DRAM offload connector present |
 
 ### 3. Concrete Action Plan for Dual-Card Arrival
 1. **Immediate Multi-Card Baseline**: Deploy **Tensor Parallelism (TP=2)** using [`docker-compose.tp2.yml`](../docker-compose.tp2.yml). TP=2 is fully qualified on ROCm RCCL, pools physical memory to **64 GB combined VRAM**, and extends context to 32K–64K without external connector dependencies.
-2. **P/D Dependency Resolution**: To activate `MoRIIOConnector`, rebuild the container with `pip install msgpack` and install AMD's native ROCm MoRI runtime extensions.
+2. **P/D Dependency Resolution & Container Hardening**:
+   - `msgpack-1.2.2` installed in running container and baked into [`Dockerfile.vllm-mxfp4`](../Dockerfile.vllm-mxfp4).
+   - If AMD's proprietary `mori.io` native C++ binary is not available, deploy zero-copy POSIX IPC via [`benchmark/pd_router.py`](../benchmark/pd_router.py) or `SimpleCPUOffloadConnector` / `ExampleConnector`.
+3. **Execution Under Master Test Plan**: Execute benchmarking according to [`TESTPLAN.md`](../TESTPLAN.md), measuring decode isolation efficiency ($E_{\text{decode isolation}} \ge 0.90$), phase-pool balance ($B$), and energy per qualified output token ($J/\text{token}_{\text{qual}}$).
 
 ---
 

@@ -236,7 +236,8 @@ Upon arrival and physical installation of the second Radeon AI PRO R9700 card:
 - Full telemetry captured: 250 ms power per GPU, junction/memory temperatures, and RCCL collective stability.
 
 ### P/D Acceptance Criteria
-- Upstream container re-built with `msgpack` and qualified ROCm `mori.io` extensions.
+- Python runtime dependency resolved: `msgpack` (installed and baked into `Dockerfile.vllm-mxfp4`).
+- Transport qualification: AMD native `mori.io` runtime integrated, or zero-copy POSIX IPC / PyTorch DMA fallback validated.
 - Passes all 7 functional validation gates above.
 - Demonstrates measurable tail-ITL smoothing under burst conditions justifying the loss of 64 GB pooled capacity.
 
@@ -249,7 +250,7 @@ Upon arrival and physical installation of the second Radeon AI PRO R9700 card:
   Step 2: Use current host for Single-R9700 baselines, Chunked Prefill tuning, and P/D Router API validation.
   Step 3: Deploy runnable DP=2 orchestration configuration ready for hardware arrival.
   Step 4: On arrival of second R9700: Verify PCIe Gen 5 link negotiation, P2P ACS, and validate TP=2 baseline.
-  Step 5: Gated P/D investigation: Rebuild container with MoRI-IO dependencies only if ITL tail isolation is required.
+  Step 5: Execute comprehensive dual-card benchmark matrix according to TESTPLAN.md.
 ```
 
 ---
@@ -270,4 +271,31 @@ For complete mathematical derivations, trace datasets, and full evaluation resul
    - P/D achieves **100.0% streaming SLO compliance**, delivering **24.11 to 39.01 SLO-qualified tok/s** compared to **<0.30 qualified tok/s** for DP=2.
 3. **KV Handoff Robustness**:
    - Sweeping handoff latency $H \in [5.16, 25.0, 50.0, 100.0, 250.0]\text{ ms}$ proves P/D retains over **99.5% of its qualified goodput** across the entire 5.16 to 100 ms range. P/D is **not fragile to connector latency**.
+
+---
+
+## 9. Master Test Plan & Evaluation Methodology (`TESTPLAN.md`)
+
+To standardize the empirical benchmarking of the dual-R9700 platform upon hardware arrival, the complete testing methodology has been codified in [`TESTPLAN.md`](../TESTPLAN.md) (and symlinked at [`docs/TESTPLAN.md`](TESTPLAN.md)).
+
+### Core Elements of the Test Plan
+1. **P/D as Goodput & Efficiency**: Evaluates whether separating phases recovers enough capacity otherwise lost to collocated prefill/decode interference to outweigh:
+   - The sacrificed second decode replica (halved decode concurrency).
+   - Duplicate model weights in VRAM (each GPU hosting a 15.7 GB model copy).
+   - Cross-GPU KV transfer overhead across PCIe Gen 5.0 x16.
+2. **Three-Stage Progressive Evaluation**:
+   - *Stage 1 — Single-R9700 Calibration*: Isolated prefill $P(S, C, h)$, isolated decode $D(K, C)$, and collocated mixed-load degradation ($\eta_{\text{collocated}}$).
+   - *Stage 2 — Two-R9700 A/B Testing*: Replaying deterministic JSONL traces across 5 workload families (Decode-Dominant Chat, Balanced Agent, Cold Long-Context, Warm Coding, and Ingest-Heavy RAG) comparing Single-Card, DP=2 Round-Robin, DP=2 Cache-Affine, TP=2, and P/D 1P1D.
+   - *Stage 3 — Efficiency & Goodput Analysis*: Measuring decode isolation efficiency ($E_{\text{decode isolation}} \ge 0.90$), recoverable interference efficiency ($E_{\text{recovery}}$), phase-pool balance ($B$), SLO-qualified goodput gain, and board-level energy efficiency ($J/\text{token}_{\text{qual}}$).
+3. **Explicit Pass/Fail Targets**:
+   - Decode Isolation Efficiency: $\ge 90\%$ of isolated decode rate.
+   - KV Handoff Latency ($p95$): $< 50\text{ ms}$ (stretch $< 100\text{ ms}$).
+   - $p95$ ITL under cold 8K bursts: $\ge 2\times$ better than DP=2 Cache-Affine.
+   - $p99$ ITL under cold 8K bursts: $\le 250\text{ ms}$ (Standard Interactive Tier ceiling).
+   - SLO-Qualified Goodput Gain: $\ge 1.20\times$ DP=2 Goodput.
+   - Energy per Qualified Output Token: $\le 1.15\times$ DP=2 Energy Rate.
+4. **Container Readiness Audit**:
+   - Container `local/vllm-mxfp4:gfx1201` verified: `msgpack-1.2.2` installed and baked into [`Dockerfile.vllm-mxfp4`](../Dockerfile.vllm-mxfp4).
+   - Python classes `MoRIIOConnector`, `MoRIIOConnectorScheduler`, `MoRIIOConnectorWorker` import cleanly.
+   - For environments lacking AMD proprietary `mori.io` C++ binaries, fallback to `SimpleCPUOffloadConnector`, `ExampleConnector` (PyTorch DMA), or [`benchmark/pd_router.py`](../benchmark/pd_router.py) with `/dev/shm` POSIX IPC ($< 8\text{ ms}$ transfer over PCIe 5.0).
 

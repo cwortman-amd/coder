@@ -310,3 +310,12 @@ All emulation code, deterministic traces, and raw JSON telemetry are fully track
   - Moderate Trace: [`_results/pd_emulator/traces/trace_moderate_20260923_202929.jsonl`](../_results/pd_emulator/traces/trace_moderate_20260923_202929.jsonl)
   - Saturated Trace: [`_results/pd_emulator/traces/trace_saturated_20260923_202929.jsonl`](../_results/pd_emulator/traces/trace_saturated_20260923_202929.jsonl)
   - J3 Sustained Trace: [`_results/pd_emulator/traces/trace_j3_sustained_20260923_202929.jsonl`](../_results/pd_emulator/traces/trace_j3_sustained_20260923_202929.jsonl)
+
+---
+
+## 9. Integration with Master Test Plan (`TESTPLAN.md`)
+
+The empirical findings and theorems developed in this counterfactual model provide the foundation for the dual-card evaluation methodology specified in [`TESTPLAN.md`](../TESTPLAN.md) (and [`docs/TESTPLAN.md`](TESTPLAN.md)):
+- **Baseline Calibration Curves**: The empirical single-card primitives measured here ($P(S, C, h)$, $D(K, C)$, and stall quanta $\eta_{\text{collocated}}$) serve as the formal Stage 1 calibration curves.
+- **Trace Architecture**: The JSONL deterministic trace format designed in `pd_capacity_emulator.py` is extended in `TESTPLAN.md` across five comprehensive workload families (Decode-Dominant Chat, Balanced Agent, Cold Long-Context, Warm Coding, and Ingest-Heavy RAG).
+- **Evaluation Criteria**: Sets the operational efficiency targets for Stage 3 dual-R9700 physical validation: Decode Isolation Efficiency $E_{\text{decode isolation}} \ge 0.90$, Recoverable Interference Efficiency $E_{\text{recovery}}$, Phase-Pool Balance $B$, and Energy per Qualified Output Token ($J/\text{token}_{\text{qual}}$).
