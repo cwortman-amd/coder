@@ -72,6 +72,7 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Dual Radeon AI PRO R9700 Architecture (TP=2 vs. Prefill/Decode Disaggregation)](#3-dual-radeon-ai-pro-r9700-evaluation-architecture-tp2-vs-pd)
   - [Single Radeon AI PRO R9700 Phase Profiling & Interference Analysis](#4-single-radeon-ai-pro-r9700-phase-profiling--interference-analysis)
   - [Optimization Tracks Empirical Report (Prefix Caching, Chunk Sweep, Interactive SLO & Dual-Card Readiness)](#5-optimization-tracks-empirical-report-prefix-caching-chunk-sweep-interactive-slo--dual-card-readiness)
+  - [Counterfactual Capacity & Interference Report: 1P1D vs. DP=2](#6-counterfactual-capacity--interference-report-1p1d-vs-dp2-on-radeon-ai-pro-r9700)
 - [Centralized Results & Artifacts Logging (`_results/`)](#centralized-results--artifacts-logging-_results)
 - [Troubleshooting](#troubleshooting)
 - [Summary and Resources](#summary-and-resources)
@@ -1863,6 +1864,13 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
 - **Track 3: Mixed Workload & Multi-Tier SLO Architecture**: Simulated 2 concurrent streaming decodes bombarded by Poisson 8K prefill arrivals ($\lambda = 0.2\text{ req/s}$). Proved that Chunk 2048 yields **only 3.45% violation of the 100 ms interactive SLO** (0.0% > 300 ms) while delivering **41.53 tok/s** aggregate decode throughput. Established operational tiers: Interactive Standard ($p95\text{ ITL} < 100\text{ ms}$, $C \le 2$), Premium Streaming ($p95\text{ ITL} < 50\text{ ms}$, $C = 1$ or P/D), and Batch Ingestion.
 - **Track 4: Dual-Card Readiness & P/D Container Dependencies**: Verified hardware preflight isolation between discrete R9700 dGPU and integrated 780M APU. Probed 16 registered connectors in `local/vllm-mxfp4:gfx1201`, isolating missing `msgpack` and native `mori.io` as the sole blocker for P/D, and confirmed PCIe 5.0 x16 payload bandwidth (5.16 ms for 8K FP8 KV handoff) is not gating.
 - **Optimization Tooling**: Implemented in [`benchmark/bench_chunk_and_slo.py`](benchmark/bench_chunk_and_slo.py) and [`inspect_dual_gpu.py`](inspect_dual_gpu.py).
+
+### 6. [Counterfactual Capacity & Interference Report: 1P1D vs. DP=2 on Radeon™ AI PRO R9700](docs/PD_CAPACITY_COUNTERFACTUAL_MODEL.md)
+- **Methodology & Single-Card Emulation**: Proves the capacity and goodput case for P/D on a single R9700 using discrete-event queue emulation (`benchmark/pd_capacity_emulator.py`) driven by empirical single-card primitives (prefill scaling, decode rates, collocated stall quanta, and explicit PCIe 5.0 KV transfer latency).
+- **The Raw Capacity Proof ($\eta < 0.5$)**: Formulates and validates the mathematical threshold: P/D exceeds DP=2 in raw output tok/s if and only if collocated decode degrades below $17.04\text{ tok/s}$ ($\eta < 0.5$). In the sustained prompt-saturation regime ($J3$, measured at **11.42 tok/s**), $\eta = 0.335 < 0.5$, proving that **1P1D beats DP=2 in raw throughput by 1.29× to 1.71×** (**29.55–39.21 tok/s** vs. **22.85–22.98 tok/s**).
+- **The SLO-Goodput Proof (Streaming QoS)**: Proves that in collocated DP=2, cold 8K prompt chunks inflict **609.7 ms forward stalls** on active decode streams, causing **0.0% streaming SLO compliance** on collided sessions (<0.30 qualified tok/s). In contrast, P/D achieves **100.0% streaming compliance**, delivering **24.11 to 39.01 SLO-qualified tok/s** (an 86×–150× gain in qualified streaming goodput).
+- **KV Handoff Robustness**: Sweeping handoff latency $H \in [5.16, 25.0, 50.0, 100.0, 250.0]\text{ ms}$ proves P/D retains over **99.5% of its qualified goodput** across the entire 5.16 to 100 ms range, proving the architecture is robust to connector latency and does not depend on theoretical PCIe floor performance.
+- **Emulation Tooling**: Implemented in [`benchmark/pd_capacity_emulator.py`](benchmark/pd_capacity_emulator.py) and runnable via `python3 benchmark/bench_phases.py --mode pd-capacity-emulator`.
 
 ---
 

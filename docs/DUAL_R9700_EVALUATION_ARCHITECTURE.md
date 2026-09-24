@@ -251,3 +251,23 @@ Upon arrival and physical installation of the second Radeon AI PRO R9700 card:
   Step 4: On arrival of second R9700: Verify PCIe Gen 5 link negotiation, P2P ACS, and validate TP=2 baseline.
   Step 5: Gated P/D investigation: Rebuild container with MoRI-IO dependencies only if ITL tail isolation is required.
 ```
+
+---
+
+## 8. Counterfactual Capacity & Interference Modeling (Single-Card Emulation)
+
+To rigorously evaluate the capacity case for P/D on a single Radeon AI PRO R9700 before card 2 arrives, a discrete-event pipeline emulator was developed in [`benchmark/pd_capacity_emulator.py`](../benchmark/pd_capacity_emulator.py) (callable via `python3 benchmark/bench_phases.py --mode pd-capacity-emulator`).
+
+For complete mathematical derivations, trace datasets, and full evaluation results, see the dedicated [Counterfactual Capacity & Interference Report](PD_CAPACITY_COUNTERFACTUAL_MODEL.md).
+
+### Key Architectural Findings
+1. **The Raw Capacity Proof ($\eta < 0.5$)**:
+   - P/D exceeds DP=2 in raw output tok/s **if and only if** collocated decode degrades below $17.04\text{ tok/s}$ ($\eta < 0.5$).
+   - In the $J3$ prompt-saturation regime (measured at **11.42 tok/s** per replica), $\eta = 0.335 < 0.5$.
+   - **Verdict**: P/D beats DP=2 in raw output tok/s by **1.29× to 1.71×** (**29.55–39.21 tok/s** vs. **22.85–22.98 tok/s**).
+2. **The SLO-Goodput Proof (Streaming Quality of Service)**:
+   - In collocated DP=2, incoming cold 8K prompt chunks schedule alongside active decode steps, inflicting **609.7 ms forward execution stalls** that cause **0.0% streaming SLO compliance** on collided decode streams.
+   - P/D achieves **100.0% streaming SLO compliance**, delivering **24.11 to 39.01 SLO-qualified tok/s** compared to **<0.30 qualified tok/s** for DP=2.
+3. **KV Handoff Robustness**:
+   - Sweeping handoff latency $H \in [5.16, 25.0, 50.0, 100.0, 250.0]\text{ ms}$ proves P/D retains over **99.5% of its qualified goodput** across the entire 5.16 to 100 ms range. P/D is **not fragile to connector latency**.
+

@@ -37,6 +37,10 @@ BASE_URL_DEFAULT = "http://127.0.0.1:8000"
 MODEL_DEFAULT = "Qwen3.8-27B-Quark-AWQ-MXFP4"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+if PROJECT_DIR not in sys.path:
+    sys.path.insert(0, PROJECT_DIR)
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 DEFAULT_RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "phase_profiling")
 
 
@@ -807,13 +811,20 @@ async def main():
     parser = argparse.ArgumentParser(description="Single R9700 Prefill & Decode Phase Profiler")
     parser.add_argument("--url", default=BASE_URL_DEFAULT, help="vLLM Base URL")
     parser.add_argument("--model", default=MODEL_DEFAULT, help="Model name")
-    parser.add_argument("--mode", default="all", choices=["prefill", "decode", "concurrency", "contention", "prefix", "all"],
+    parser.add_argument("--mode", default="all",
+                        choices=["prefill", "decode", "concurrency", "contention", "prefix", "pd-capacity-emulator", "all"],
                         help="Benchmark suite to execute")
     parser.add_argument("--trials", type=int, default=2, help="Trials per case for decode/concurrency (default: 2)")
     parser.add_argument("--prefill-trials", type=int, default=10, help="Trials for prefill suite (default: 10)")
     parser.add_argument("--output-tokens", type=int, default=1024, help="Output tokens for decode tests (default: 1024)")
     parser.add_argument("--contention-tokens", type=int, default=256, help="Output tokens for victim decode in contention tests (default: 256)")
     parser.add_argument("--results-dir", default=DEFAULT_RESULTS_DIR, help="Output directory")
+    parser.add_argument("--emulator-workloads", nargs="+", default=["light", "moderate", "saturated", "j3_sustained"],
+                        help="Workload traces for pd-capacity-emulator (default: light moderate saturated j3_sustained)")
+    parser.add_argument("--emulator-handoffs", nargs="+", type=float, default=[5.16, 25.0, 50.0, 100.0, 250.0],
+                        help="Handoff latencies in ms for pd-capacity-emulator")
+    parser.add_argument("--emulator-chunk-size", type=int, default=2048, choices=[512, 1024, 2048, 4096],
+                        help="Baseline prefill chunk size for pd-capacity-emulator (default: 2048)")
     args = parser.parse_args()
 
     os.makedirs(args.results_dir, exist_ok=True)
@@ -825,6 +836,25 @@ async def main():
         "mode": args.mode,
         "suites": {}
     }
+
+    # If running pd-capacity-emulator directly, server connection is optional / diagnostic
+    if args.mode == "pd-capacity-emulator":
+        from benchmark.pd_capacity_emulator import CounterfactualModelSuite
+        emulator_results_dir = os.path.join(PROJECT_DIR, "_results", "pd_emulator")
+        suite = CounterfactualModelSuite(
+            results_dir=emulator_results_dir,
+            chunk_size=args.emulator_chunk_size
+        )
+        res_emulator = suite.run_suite(
+            workload_types=args.emulator_workloads,
+            handoffs=args.emulator_handoffs
+        )
+        master_report["suites"]["pd_capacity_emulator"] = res_emulator
+        report_path = os.path.join(args.results_dir, f"phase_profile_summary_{timestamp}.json")
+        with open(report_path, "w") as f:
+            json.dump(master_report, f, indent=2)
+        logger.info(f"\n[DONE] Master report saved to: {report_path}")
+        return
 
     # Verify server health and discover model
     async with httpx.AsyncClient(timeout=5.0) as client:
@@ -866,6 +896,19 @@ async def main():
     if args.mode in ["prefix", "all"]:
         res_pref = await benchmark_prefix_cache(args.url, args.model, args.results_dir)
         master_report["suites"]["prefix"] = res_pref
+
+    if args.mode in ["all"]:
+        from benchmark.pd_capacity_emulator import CounterfactualModelSuite
+        emulator_results_dir = os.path.join(PROJECT_DIR, "_results", "pd_emulator")
+        suite = CounterfactualModelSuite(
+            results_dir=emulator_results_dir,
+            chunk_size=args.emulator_chunk_size
+        )
+        res_emulator = suite.run_suite(
+            workload_types=args.emulator_workloads,
+            handoffs=args.emulator_handoffs
+        )
+        master_report["suites"]["pd_capacity_emulator"] = res_emulator
 
     report_path = os.path.join(args.results_dir, f"phase_profile_summary_{timestamp}.json")
     with open(report_path, "w") as f:
