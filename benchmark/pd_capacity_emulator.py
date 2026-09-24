@@ -239,6 +239,17 @@ class EmpiricalServiceProfile:
             per_stream_rate = self.decode_rate_c8_agg / float(concurrency)
             return (output_tokens / per_stream_rate) * 1000.0
 
+    def get_step_tpot_ms(self, concurrency: int = 1) -> float:
+        """Returns calibrated per-step TPOT (step duration in ms) for given active stream count."""
+        if concurrency <= 1:
+            return self.tpot_c1_ms
+        elif concurrency == 2:
+            return self.tpot_c2_ms
+        elif concurrency <= 4:
+            return self.tpot_c4_ms
+        else:
+            return self.tpot_c8_ms
+
     @staticmethod
     async def fetch_live_vllm_counters(base_url: str = "http://127.0.0.1:8000") -> Dict[str, Any]:
         """
@@ -574,7 +585,7 @@ class PD1P1DPipelineEmulator:
                 req = event["req"]
                 t_d_start = current_time
                 d_q_wait = t_d_start - event["t_d_ready"]
-                tpot = self.profile.tpot_c2_ms if self.max_decode_concurrency > 1 else self.profile.tpot_c1_ms
+                tpot = self.profile.get_step_tpot_ms(self.max_decode_concurrency)
                 t_first_token = t_d_start + tpot
 
                 active_slots.append({
@@ -598,7 +609,7 @@ class PD1P1DPipelineEmulator:
 
             # Advance decode by 1 token step
             C = len(active_slots)
-            step_duration_ms = self.profile.tpot_c1_ms if C == 1 else self.profile.tpot_c2_ms
+            step_duration_ms = self.profile.get_step_tpot_ms(C)
             current_time += step_duration_ms
 
             completed_indices = []

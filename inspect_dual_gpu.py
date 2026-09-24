@@ -159,7 +159,11 @@ for name, mod_path, cls_name in connectors_to_test:
     try:
         mod = importlib.import_module(mod_path)
         cls_obj = getattr(mod, cls_name)
-        print(f"  [AVAILABLE]   {name}")
+        detail = ""
+        if name == "MoRIIOConnector":
+            is_avail = getattr(mod, "is_moriio_available", lambda: False)()
+            detail = " (Native C++ backend linked)" if is_avail else " (Python classes OK; mori.io C++ absent)"
+        print(f"  [AVAILABLE]   {name}{detail}")
     except ModuleNotFoundError as mnf:
         print(f"  [MISSING DEP] {name}: Missing Python module '{mnf.name}'")
     except Exception as ex:

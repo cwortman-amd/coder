@@ -22,6 +22,7 @@ import json
 import logging
 import time
 import uuid
+from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 import uvicorn
@@ -32,8 +33,6 @@ import httpx
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [P/D Router] %(message)s")
 logger = logging.getLogger("pd_router")
 
-app = FastAPI(title="vLLM Prefill/Decode Disaggregation Router", version="1.0.0")
-
 # Router State
 ROUTER_CONFIG = {
     "prefill_url": "http://127.0.0.1:8100/v1",
@@ -42,6 +41,34 @@ ROUTER_CONFIG = {
     "timeout_s": 120.0,
     "metrics_log": []
 }
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manages persistent connection pool for downstream vLLM prefill and decode workers."""
+    limits = httpx.Limits(max_keepalive_connections=50, max_connections=200)
+    timeout = httpx.Timeout(ROUTER_CONFIG["timeout_s"], connect=10.0)
+    app.state.client = httpx.AsyncClient(limits=limits, timeout=timeout)
+    logger.info("Initialized persistent HTTP client pool for P/D engines.")
+    yield
+    await app.state.client.aclose()
+    logger.info("Closed HTTP client pool.")
+
+
+app = FastAPI(
+    title="vLLM Prefill/Decode Disaggregation Router",
+    version="1.1.0",
+    lifespan=lifespan
+)
+
+
+def get_http_client(request: Optional[Request] = None) -> httpx.AsyncClient:
+    """Retrieves the pooled AsyncClient instance from app state, or creates fallback."""
+    if request and hasattr(request.app.state, "client"):
+        return request.app.state.client
+    if hasattr(app.state, "client"):
+        return app.state.client
+    return httpx.AsyncClient(timeout=ROUTER_CONFIG["timeout_s"])
 
 
 class PDMetrics:
@@ -91,29 +118,29 @@ class PDMetrics:
 
 
 @app.get("/health")
-async def health_check():
+async def health_check(request: Request):
     if ROUTER_CONFIG["mock_mode"]:
         return {"status": "healthy", "mode": "mock", "prefill": "mock", "decode": "mock"}
 
     status = {"status": "healthy", "prefill": "unknown", "decode": "unknown"}
-    async with httpx.AsyncClient(timeout=3.0) as client:
-        try:
-            r_p = await client.get(f"{ROUTER_CONFIG['prefill_url']}/models")
-            status["prefill"] = "online" if r_p.status_code == 200 else f"err_{r_p.status_code}"
-        except Exception as e:
-            status["prefill"] = f"unreachable ({e.__class__.__name__})"
+    client = get_http_client(request)
+    try:
+        r_p = await client.get(f"{ROUTER_CONFIG['prefill_url']}/models", timeout=3.0)
+        status["prefill"] = "online" if r_p.status_code == 200 else f"err_{r_p.status_code}"
+    except Exception as e:
+        status["prefill"] = f"unreachable ({e.__class__.__name__})"
 
-        try:
-            r_d = await client.get(f"{ROUTER_CONFIG['decode_url']}/models")
-            status["decode"] = "online" if r_d.status_code == 200 else f"err_{r_d.status_code}"
-        except Exception as e:
-            status["decode"] = f"unreachable ({e.__class__.__name__})"
+    try:
+        r_d = await client.get(f"{ROUTER_CONFIG['decode_url']}/models", timeout=3.0)
+        status["decode"] = "online" if r_d.status_code == 200 else f"err_{r_d.status_code}"
+    except Exception as e:
+        status["decode"] = f"unreachable ({e.__class__.__name__})"
 
     return status
 
 
 @app.get("/v1/models")
-async def list_models():
+async def list_models(request: Request):
     if ROUTER_CONFIG["mock_mode"]:
         return {
             "object": "list",
@@ -124,12 +151,12 @@ async def list_models():
                 "owned_by": "vllm-mxfp4-pd"
             }]
         }
-    async with httpx.AsyncClient(timeout=5.0) as client:
-        try:
-            r = await client.get(f"{ROUTER_CONFIG['decode_url']}/models")
-            return r.json()
-        except Exception:
-            return await health_check()
+    client = get_http_client(request)
+    try:
+        r = await client.get(f"{ROUTER_CONFIG['decode_url']}/models", timeout=5.0)
+        return r.json()
+    except Exception:
+        return await health_check(request)
 
 
 @app.get("/metrics/pd")
@@ -226,54 +253,58 @@ async def chat_completions(request: Request):
                 "pd_metrics": metrics.to_dict()
             }
 
-    # 2. Live P/D Choreography
-    async with httpx.AsyncClient(timeout=ROUTER_CONFIG["timeout_s"]) as client:
-        # Step A: Prefill on GPU 0
-        metrics.prefill_start = time.time()
-        prefill_payload = dict(body)
-        prefill_payload["max_tokens"] = 1
-        prefill_payload["stream"] = False
-        extra_body = prefill_payload.get("extra_body", {})
-        extra_body.update({
-            "return_token_ids": True,
-            "kv_transfer_params": {"do_remote_decode": True}
-        })
-        prefill_payload["extra_body"] = extra_body
+    # 2. Live P/D Choreography via persistent connection pool
+    client = get_http_client(request)
 
-        try:
-            prefill_resp = await client.post(
-                f"{ROUTER_CONFIG['prefill_url']}/chat/completions",
-                json=prefill_payload
-            )
-            metrics.prefill_end = time.time()
-            if prefill_resp.status_code != 200:
-                raise HTTPException(status_code=prefill_resp.status_code, detail=f"Prefill engine error: {prefill_resp.text}")
-            prefill_json = prefill_resp.json()
-        except Exception as e:
-            logger.error(f"[{req_id}] Prefill phase failed: {e}")
-            raise HTTPException(status_code=502, detail=f"Prefill engine unreachable: {str(e)}")
+    # Step A: Prefill on GPU 0
+    metrics.prefill_start = time.time()
+    prefill_payload = dict(body)
+    prefill_payload["max_tokens"] = 1
+    prefill_payload["stream"] = False
+    extra_body = prefill_payload.get("extra_body", {})
+    extra_body.update({
+        "return_token_ids": True,
+        "kv_transfer_params": {"do_remote_decode": True}
+    })
+    prefill_payload["extra_body"] = extra_body
 
-        prompt_token_ids = prefill_json.get("prompt_token_ids", [])
-        prompt_tokens_count = prefill_json.get("usage", {}).get("prompt_tokens", len(prompt_token_ids) or 100)
-        metrics.input_tokens = prompt_tokens_count
+    try:
+        prefill_resp = await client.post(
+            f"{ROUTER_CONFIG['prefill_url']}/chat/completions",
+            json=prefill_payload
+        )
+        metrics.prefill_end = time.time()
+        if prefill_resp.status_code != 200:
+            raise HTTPException(status_code=prefill_resp.status_code, detail=f"Prefill engine error: {prefill_resp.text}")
+        prefill_json = prefill_resp.json()
+    except Exception as e:
+        logger.error(f"[{req_id}] Prefill phase failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Prefill engine unreachable: {str(e)}")
 
-        # Step B: Decode on GPU 1
-        metrics.decode_start = time.time()
-        decode_payload = dict(body)
-        extra_body_decode = decode_payload.get("extra_body", {})
-        extra_body_decode.update({
-            "kv_transfer_params": {
-                "do_remote_prefill": True,
-                "prompt_token_ids": prompt_token_ids
-            }
-        })
-        decode_payload["extra_body"] = extra_body_decode
+    prompt_token_ids = prefill_json.get("prompt_token_ids", [])
+    prompt_tokens_count = prefill_json.get("usage", {}).get("prompt_tokens", len(prompt_token_ids) or 100)
+    metrics.input_tokens = prompt_tokens_count
 
-        if stream:
-            async def forward_stream():
+    # Step B: Decode on GPU 1
+    metrics.decode_start = time.time()
+    decode_payload = dict(body)
+    extra_body_decode = decode_payload.get("extra_body", {})
+    extra_body_decode.update({
+        "kv_transfer_params": {
+            "do_remote_prefill": True,
+            "prompt_token_ids": prompt_token_ids
+        }
+    })
+    decode_payload["extra_body"] = extra_body_decode
+
+    if stream:
+        async def forward_stream():
+            try:
                 async with client.stream("POST", f"{ROUTER_CONFIG['decode_url']}/chat/completions", json=decode_payload) as stream_resp:
                     if stream_resp.status_code != 200:
-                        yield f"data: {json.dumps({'error': 'Decode engine error'})}\n\n"
+                        err_body = await stream_resp.aread()
+                        err_text = err_body.decode(errors="ignore")
+                        yield f"data: {json.dumps({'error': f'Decode engine error ({stream_resp.status_code}): {err_text}'})}\n\n"
                         return
 
                     first_chunk = True
@@ -286,30 +317,30 @@ async def chat_completions(request: Request):
                         if line.startswith("data: ") and not line.endswith("[DONE]"):
                             metrics.output_tokens += 1
                         yield f"{line}\n\n"
-
+            finally:
                 metrics.end_time = time.time()
                 ROUTER_CONFIG["metrics_log"].append(metrics.to_dict())
                 logger.info(f"Req {req_id} Streaming Complete: Prefill={metrics.prefill_duration_ms:.1f}ms, KV-Handoff={metrics.kv_handoff_ms:.1f}ms, TPOT={metrics.decode_tpot_ms:.1f}ms, Total={metrics.total_e2e_ms:.1f}ms")
 
-            return StreamingResponse(forward_stream(), media_type="text/event-stream")
-        else:
-            try:
-                decode_resp = await client.post(
-                    f"{ROUTER_CONFIG['decode_url']}/chat/completions",
-                    json=decode_payload
-                )
-                metrics.end_time = time.time()
-                metrics.first_token_time = metrics.decode_start + 0.035
-                if decode_resp.status_code != 200:
-                    raise HTTPException(status_code=decode_resp.status_code, detail=f"Decode engine error: {decode_resp.text}")
-                decode_json = decode_resp.json()
-                metrics.output_tokens = decode_json.get("usage", {}).get("completion_tokens", max_tokens)
-                decode_json["pd_metrics"] = metrics.to_dict()
-                ROUTER_CONFIG["metrics_log"].append(metrics.to_dict())
-                return decode_json
-            except Exception as e:
-                logger.error(f"[{req_id}] Decode phase failed: {e}")
-                raise HTTPException(status_code=502, detail=f"Decode engine unreachable: {str(e)}")
+        return StreamingResponse(forward_stream(), media_type="text/event-stream")
+    else:
+        try:
+            decode_resp = await client.post(
+                f"{ROUTER_CONFIG['decode_url']}/chat/completions",
+                json=decode_payload
+            )
+            metrics.end_time = time.time()
+            metrics.first_token_time = metrics.decode_start + 0.035
+            if decode_resp.status_code != 200:
+                raise HTTPException(status_code=decode_resp.status_code, detail=f"Decode engine error: {decode_resp.text}")
+            decode_json = decode_resp.json()
+            metrics.output_tokens = decode_json.get("usage", {}).get("completion_tokens", max_tokens)
+            decode_json["pd_metrics"] = metrics.to_dict()
+            ROUTER_CONFIG["metrics_log"].append(metrics.to_dict())
+            return decode_json
+        except Exception as e:
+            logger.error(f"[{req_id}] Decode phase failed: {e}")
+            raise HTTPException(status_code=502, detail=f"Decode engine unreachable: {str(e)}")
 
 
 def main():
