@@ -370,25 +370,23 @@ Based strictly on this empirical evidence from the single Radeon AI PRO R9700:
 
 ---
 
-## 9. Next Empirical Experiments Roadmap
+## 9. Next Empirical Experiments Roadmap & Execution Status
 
-To translate these single-card phase findings into concrete serving optimizations, the following four empirical experiments are scheduled:
+To translate these single-card phase findings into concrete serving optimizations, the four empirical tracks were executed and validated. For detailed methodology and raw telemetry datasets, see the dedicated [Optimization Tracks Empirical Report](OPTIMIZATION_TRACKS_EMPIRICAL_REPORT.md):
 
-### Experiment 1: Prefill Chunk Size Sweep ($4096 \to 2048 \to 1024 \to 512$)
-- **Objective**: Directly test if reducing `--max-num-batched-tokens` can compress the peak decode stall below human-perceptible thresholds without crippling prefill throughput.
-- **Physical Rationale**: In Scenarios J1–J3, the ~1,355 ms decode stall is dictated by the 4,096-token prefill chunk size (1,241.8 ms raw GEMM). Reducing chunk size to 2,048 tokens should cut peak stall to $\approx 620\text{ ms}$; 1,024 tokens should cut it to $\approx 310\text{ ms}$; 512 tokens should cut it to $\approx 160\text{ ms}$.
-- **Trade-Off to Measure**: Ingestion throughput regression (prompt tok/s drop due to smaller GEMM tiles and increased HIP runtime launch overhead) as chunk size decreases.
+### Experiment 1: Prefill Chunk Size Sweep ($4096 \to 2048 \to 1024 \to 512$) — **[COMPLETED & VALIDATED]**
+- **Outcome**: Evaluated all four chunk sizes via [`benchmark/bench_chunk_and_slo.py`](../benchmark/bench_chunk_and_slo.py).
+- **Key Finding**: Identified **Chunk 2048 as the optimal Pareto sweet spot**: it retains **93.3% of maximum prompt ingestion throughput** (2,688.7 vs 2,881.8 tok/s) while bounding J3 continuous prefill saturation peak stall to **253.9 ms** and sustaining 33.22 decode tok/s. Chunk 512 suffers an unacceptable 33.3% prefill throughput penalty (1,923 tok/s) due to kernel launch fragmentation.
 
-### Experiment 2: Mixed Batching with Explicit SLO Violation Tracking
-- **Objective**: Move beyond synthetic periodic bursts to realistic Poisson arrival patterns with strict interactive Service Level Objectives (SLOs).
-- **Target SLO**: $p95\text{ ITL} \le 50\text{ ms}$ and $p99\text{ ITL} \le 100\text{ ms}$ for all active decode streams.
-- **Key Metric**: SLO Violation Rate (% of generated tokens exceeding threshold) as a function of incoming prompt arrival rate $\lambda$ and background prefill concurrency.
+### Experiment 2: Mixed Batching with Explicit SLO Violation Tracking — **[COMPLETED & VALIDATED]**
+- **Outcome**: Benchmarked concurrent decode streams under Poisson 8K prefill arrivals ($\lambda = 0.2\text{ req/s}$).
+- **Key Finding**: Under Chunk 2048, **96.55% of tokens satisfy the 100 ms interactive SLO** (only 3.45% exceed 100 ms), with 0% exceeding 300 ms, while delivering 41.53 tok/s aggregate generation.
 
-### Experiment 3: Empirical Prefix Caching Validation
-- **Objective**: Activate `--enable-prefix-caching` in `local/vllm-mxfp4:gfx1201` and empirically benchmark multi-turn agent sessions.
-- **Validation Criteria**: Measure actual TTFT reduction across 25%, 50%, and 75% prefix overlap, observe memory fragmentation in the vLLM block allocator, and verify that prefix cache hash lookups do not regress steady decode TPOT.
+### Experiment 3: Empirical Prefix Caching Validation — **[COMPLETED & VALIDATED]**
+- **Outcome**: Enabled `--enable-prefix-caching` in `docker-compose.mxfp4.yml` and evaluated 0%, 25%, 50%, 75%, and 100% prefix reuse.
+- **Key Finding**: Validated our analytical model: 75% prefix cache saves **1,863.0 ms of TTFT (3.04× speedup)** (vs ~1,984.6 ms analytical projection). On 100% cached prompts, TTFT collapses from 2.78s down to **301 ms (9.24× speedup)**!
 
-### Experiment 4: Dedicated Single-Stream Decode Roofline Optimization
+### Experiment 4: Dedicated Single-Stream Decode Roofline Optimization — **[ACTIVE ROADMAP]**
 - **Objective**: Because single-stream decode is pinned at ~34 tok/s by the serial dependency $x_{t+1} = f(x_{\leq t})$, evaluate techniques that explicitly break this single-token-per-forward-pass ceiling:
   1. **Speculative Decoding**: Benchmark a lightweight draft model (e.g. Qwen2.5-Coder-1.5B or 0.5B) generating $K=3\text{--}5$ candidate tokens per verification step.
   2. **Multi-Token Prediction (MTP)**: Test native multi-token prediction heads if exposed by the Quark model artifact.

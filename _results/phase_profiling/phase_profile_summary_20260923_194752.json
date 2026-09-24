@@ -1,0 +1,60 @@
+{
+  "timestamp": "20260923_194752",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "mode": "prefix",
+  "suites": {
+    "prefix": [
+      {
+        "label": "Prefix 0%",
+        "cached_tokens": 0,
+        "suffix_tokens": 8192,
+        "latency_s": 2.777,
+        "ttft_ms": 2776.9,
+        "ttft_saved_ms": 0.0,
+        "speedup": 1.0,
+        "description": "Cold full prompt prefill"
+      },
+      {
+        "label": "Prefix 25%",
+        "cached_tokens": 2048,
+        "suffix_tokens": 6144,
+        "latency_s": 2.222,
+        "ttft_ms": 2221.7,
+        "ttft_saved_ms": 555.2,
+        "speedup": 1.25,
+        "description": "2K cached + 6K suffix"
+      },
+      {
+        "label": "Prefix 50%",
+        "cached_tokens": 4096,
+        "suffix_tokens": 4096,
+        "latency_s": 1.758,
+        "ttft_ms": 1758.0,
+        "ttft_saved_ms": 1018.9,
+        "speedup": 1.58,
+        "description": "4K cached + 4K suffix"
+      },
+      {
+        "label": "Prefix 75%",
+        "cached_tokens": 6144,
+        "suffix_tokens": 2048,
+        "latency_s": 0.914,
+        "ttft_ms": 913.9,
+        "ttft_saved_ms": 1863.0,
+        "speedup": 3.04,
+        "description": "6K cached + 2K suffix"
+      },
+      {
+        "label": "Prefix 100%",
+        "cached_tokens": 8192,
+        "suffix_tokens": 0,
+        "latency_s": 0.301,
+        "ttft_ms": 300.5,
+        "ttft_saved_ms": 2476.4,
+        "speedup": 9.24,
+        "description": "8K fully cached prefix"
+      }
+    ]
+  }
+}

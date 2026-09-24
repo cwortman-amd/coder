@@ -707,18 +707,18 @@ async def benchmark_prefix_cache(
     model: str,
     results_dir: str,
     total_prompt_len: int = 8192,
-    output_len: int = 128
+    output_len: int = 1
 ) -> List[Dict[str, Any]]:
     print("\n" + "=" * 90)
     print("  SUITE 5: CACHE-AWARE PREFIX & INCREMENTAL PREFILL EVALUATION")
-    print(f"  Total Prompt: {total_prompt_len} tokens | Reusable Prefix Ratios: 0%, 25%, 50%, 75%")
+    print(f"  Total Prompt: {total_prompt_len} tokens | Reusable Prefix Ratios: 0%, 25%, 50%, 75%, 100%")
     print("=" * 90)
 
     # Check if server enabled prefix caching
     m_check = await fetch_vllm_metrics(base_url)
     prefix_enabled = False
     for k, v in m_check.items():
-        if "enable_prefix_caching=\"True\"" in k or "prefix_caching" in k:
+        if "enable_prefix_caching=\"True\"" in k or "prefix_caching" in k or "prefix_cache" in k:
             prefix_enabled = True
 
     logger.info(f"Server Prefix Caching Configuration: {'ENABLED' if prefix_enabled else 'DISABLED (Cold recompute default)'}")
@@ -731,6 +731,7 @@ async def benchmark_prefix_cache(
         ("Prefix 25%", int(total_prompt_len * 0.25), int(total_prompt_len * 0.75), "2K cached + 6K suffix"),
         ("Prefix 50%", int(total_prompt_len * 0.50), int(total_prompt_len * 0.50), "4K cached + 4K suffix"),
         ("Prefix 75%", int(total_prompt_len * 0.75), int(total_prompt_len * 0.25), "6K cached + 2K suffix"),
+        ("Prefix 100%", total_prompt_len, 0, "8K fully cached prefix"),
     ]
 
     summary_rows = []
@@ -743,21 +744,21 @@ async def benchmark_prefix_cache(
             f"{base_url}/v1/completions",
             json={"model": model, "prompt": base_tokens, "max_tokens": 1, "temperature": 0.0}
         )
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(0.5)
 
         for label, prefix_len, suffix_len, desc in cases:
-            # Construct prompt: first prefix_len from base_tokens, then suffix_len new unique tokens
-            if prefix_len == 0:
-                prompt = generate_token_prompt(total_prompt_len, start_token=80000)
-            else:
-                prefix = base_tokens[:prefix_len]
-                suffix = generate_token_prompt(suffix_len, start_token=90000)
-                prompt = prefix + suffix
-
-            # Measure 3 warm runs
-            ttfts = []
             durations = []
             for trial in range(3):
+                if prefix_len == 0:
+                    # Use unique tokens per trial to guarantee cold recompute
+                    prompt = generate_token_prompt(total_prompt_len, start_token=80000 + trial * 10000)
+                elif suffix_len == 0:
+                    prompt = base_tokens
+                else:
+                    prefix = base_tokens[:prefix_len]
+                    suffix = generate_token_prompt(suffix_len, start_token=90000 + trial * 5000)
+                    prompt = prefix + suffix
+
                 t0 = time.perf_counter()
                 r = await client.post(
                     f"{base_url}/v1/completions",
@@ -768,21 +769,24 @@ async def benchmark_prefix_cache(
                     durations.append(t1 - t0)
 
             median_dur = statistics.median(durations) if durations else 0.0
-            approx_ttft_ms = median_dur * 1000.0  # Approx for non-streaming
+            ttft_ms = median_dur * 1000.0
 
             if label == "Prefix 0%":
-                cold_ttft_ms = approx_ttft_ms
+                cold_ttft_ms = ttft_ms
                 saved_ms = 0.0
             else:
-                saved_ms = max(0.0, cold_ttft_ms - approx_ttft_ms)
+                saved_ms = max(0.0, cold_ttft_ms - ttft_ms)
+
+            speedup = (cold_ttft_ms / ttft_ms) if ttft_ms > 0 else 1.0
 
             summary_rows.append({
                 "label": label,
                 "cached_tokens": prefix_len,
                 "suffix_tokens": suffix_len,
                 "latency_s": round(median_dur, 3),
+                "ttft_ms": round(ttft_ms, 1),
                 "ttft_saved_ms": round(saved_ms, 1),
-                "speedup": round(cold_ttft_ms / approx_ttft_ms, 2) if approx_ttft_ms > 0 else 1.0,
+                "speedup": round(speedup, 2),
                 "description": desc
             })
 
@@ -822,13 +826,21 @@ async def main():
         "suites": {}
     }
 
-    # Verify server health
+    # Verify server health and discover model
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
             r = await client.get(f"{args.url}/health")
             if r.status_code != 200:
                 logger.error(f"Server health check failed: {r.status_code}")
                 sys.exit(1)
+            m_resp = await client.get(f"{args.url}/v1/models")
+            if m_resp.status_code == 200:
+                models_data = m_resp.json().get("data", [])
+                served_ids = [m["id"] for m in models_data]
+                if served_ids and args.model not in served_ids:
+                    logger.info(f"Model '{args.model}' not found in served models {served_ids}. Auto-selecting '{served_ids[0]}'")
+                    args.model = served_ids[0]
+                    master_report["model"] = args.model
         except Exception as e:
             logger.error(f"Cannot connect to {args.url}: {e}")
             sys.exit(1)

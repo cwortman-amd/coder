@@ -1,0 +1,149 @@
+{
+  "timestamp": "20260923_195203",
+  "chunks": {
+    "2048": {
+      "chunk_size": 2048,
+      "model": "Qwen/Qwen3.8-27B-FP8",
+      "isolated_prefill_8k": {
+        "duration_s": 3.047,
+        "prompt_tok_s": 2688.7,
+        "ttft_ms": 3046.9
+      },
+      "contention_j1": {
+        "decode_tok_s": 33.22,
+        "tpot_ms": 30.11,
+        "itl_p50_ms": 39.72,
+        "itl_p95_ms": 49.48,
+        "itl_p99_ms": 50.34,
+        "peak_itl_ms": 50.56
+      },
+      "contention_j3": {
+        "decode_tok_s": 10.03,
+        "tpot_ms": 99.74,
+        "itl_p50_ms": 45.24,
+        "itl_p95_ms": 233.06,
+        "itl_p99_ms": 249.76,
+        "peak_itl_ms": 253.93
+      },
+      "mixed_slo": {
+        "total_decode_tokens": 203,
+        "aggregate_decode_tok_s": 41.53,
+        "itl_p50_ms": 51.02,
+        "itl_p95_ms": 62.55,
+        "itl_p99_ms": 574.85,
+        "peak_itl_ms": 613.31,
+        "slo_violation_50ms_pct": 63.55,
+        "slo_violation_100ms_pct": 3.45,
+        "slo_violation_300ms_pct": 2.46
+      }
+    },
+    "1024": {
+      "chunk_size": 1024,
+      "model": "Qwen/Qwen3.8-27B-FP8",
+      "isolated_prefill_8k": {
+        "duration_s": 3.375,
+        "prompt_tok_s": 2427.0,
+        "ttft_ms": 3375.3
+      },
+      "contention_j1": {
+        "decode_tok_s": 18.68,
+        "tpot_ms": 53.53,
+        "itl_p50_ms": 51.22,
+        "itl_p95_ms": 56.37,
+        "itl_p99_ms": 71.58,
+        "peak_itl_ms": 293.8
+      },
+      "contention_j3": {
+        "decode_tok_s": 7.67,
+        "tpot_ms": 130.4,
+        "itl_p50_ms": 72.08,
+        "itl_p95_ms": 282.12,
+        "itl_p99_ms": 287.18,
+        "peak_itl_ms": 292.3
+      },
+      "mixed_slo": {
+        "total_decode_tokens": 203,
+        "aggregate_decode_tok_s": 30.93,
+        "itl_p50_ms": 50.92,
+        "itl_p95_ms": 261.63,
+        "itl_p99_ms": 348.42,
+        "peak_itl_ms": 364.48,
+        "slo_violation_50ms_pct": 58.13,
+        "slo_violation_100ms_pct": 5.91,
+        "slo_violation_300ms_pct": 4.43
+      }
+    },
+    "512": {
+      "chunk_size": 512,
+      "model": "Qwen/Qwen3.8-27B-FP8",
+      "isolated_prefill_8k": {
+        "duration_s": 4.26,
+        "prompt_tok_s": 1923.0,
+        "ttft_ms": 4260.0
+      },
+      "contention_j1": {
+        "decode_tok_s": 3.45,
+        "tpot_ms": 290.01,
+        "itl_p50_ms": 432.81,
+        "itl_p95_ms": 436.75,
+        "itl_p99_ms": 437.1,
+        "peak_itl_ms": 437.19
+      },
+      "contention_j3": {
+        "decode_tok_s": 10.09,
+        "tpot_ms": 99.07,
+        "itl_p50_ms": 71.1,
+        "itl_p95_ms": 210.58,
+        "itl_p99_ms": 222.97,
+        "peak_itl_ms": 226.07
+      },
+      "mixed_slo": {
+        "total_decode_tokens": 203,
+        "aggregate_decode_tok_s": 30.77,
+        "itl_p50_ms": 50.66,
+        "itl_p95_ms": 212.66,
+        "itl_p99_ms": 237.77,
+        "peak_itl_ms": 242.13,
+        "slo_violation_50ms_pct": 59.61,
+        "slo_violation_100ms_pct": 11.33,
+        "slo_violation_300ms_pct": 0.0
+      }
+    },
+    "4096": {
+      "chunk_size": 4096,
+      "model": "Qwen/Qwen3.8-27B-FP8",
+      "isolated_prefill_8k": {
+        "duration_s": 2.843,
+        "prompt_tok_s": 2881.8,
+        "ttft_ms": 2842.7
+      },
+      "contention_j1": {
+        "decode_tok_s": 31.37,
+        "tpot_ms": 31.88,
+        "itl_p50_ms": 42.2,
+        "itl_p95_ms": 52.29,
+        "itl_p99_ms": 53.18,
+        "peak_itl_ms": 53.41
+      },
+      "contention_j3": {
+        "decode_tok_s": 9.55,
+        "tpot_ms": 104.72,
+        "itl_p50_ms": 43.82,
+        "itl_p95_ms": 247.68,
+        "itl_p99_ms": 265.8,
+        "peak_itl_ms": 270.33
+      },
+      "mixed_slo": {
+        "total_decode_tokens": 203,
+        "aggregate_decode_tok_s": 48.61,
+        "itl_p50_ms": 51.97,
+        "itl_p95_ms": 57.09,
+        "itl_p99_ms": 58.6,
+        "peak_itl_ms": 59.52,
+        "slo_violation_50ms_pct": 79.8,
+        "slo_violation_100ms_pct": 0.0,
+        "slo_violation_300ms_pct": 0.0
+      }
+    }
+  }
+}
