@@ -1,0 +1,26 @@
+{
+  "model_name": "Qwen3.8-27B-Q4_K_M.gguf",
+  "benchmark": "GPQA",
+  "subset": "diamond",
+  "total_questions": 5,
+  "correct_answers": 3,
+  "accuracy_pct": 60.0,
+  "parsed_answers_pct": 60.0,
+  "average_throughput_tok_per_sec": 28.76,
+  "average_latency_sec": 54.62,
+  "total_tokens_generated": 7856,
+  "domain_breakdown": {
+    "Physics": {
+      "total": 4,
+      "correct": 3,
+      "accuracy_pct": 75.0
+    },
+    "Chemistry": {
+      "total": 1,
+      "correct": 0,
+      "accuracy_pct": 0.0
+    }
+  },
+  "timestamp": "20260924_064019",
+  "results_file": "/home/amd/workspace/coder/_results/gpqa/Qwen3.8-27B-Q4_K_M.gguf_20260924_064019/gpqa_detailed_results.jsonl"
+}

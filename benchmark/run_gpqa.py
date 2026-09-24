@@ -98,6 +98,15 @@ def load_gpqa_dataset(subset: str, split: str = "train", num_samples: int | None
             instances = instances[:num_samples]
         return instances
 
+    if subset in ("diamond", "gpqa_diamond"):
+        local_diamond = Path(__file__).parent / "gpqa_diamond.json"
+        if local_diamond.exists():
+            with open(local_diamond, "r", encoding="utf-8") as f:
+                instances = json.load(f)
+            if num_samples:
+                instances = instances[:num_samples]
+            return instances
+
     if subset.endswith(".json") or subset.endswith(".csv"):
         path = Path(subset)
         if not path.exists():
@@ -215,7 +224,7 @@ def run_gpqa_benchmark(args):
                     max_tokens=args.max_tokens,
                 )
                 elapsed = time.perf_counter() - start_time
-                content = response.choices[0].message.content or ""
+                content = response.choices[0].message.content or getattr(response.choices[0].message, "reasoning_content", "") or ""
 
                 usage = response.usage
                 completion_tokens = usage.completion_tokens if usage else len(content.split())

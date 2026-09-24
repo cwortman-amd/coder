@@ -191,7 +191,7 @@ def run_benchmark(args):
                     max_tokens=args.max_tokens,
                 )
                 elapsed = time.perf_counter() - start_time
-                content = response.choices[0].message.content or ""
+                content = response.choices[0].message.content or getattr(response.choices[0].message, "reasoning_content", "") or ""
                 
                 # Extract usage statistics
                 usage = response.usage

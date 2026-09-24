@@ -1,0 +1,5 @@
+{"instance_id": "astropy__astropy-12907", "model_patch": "", "model_name_or_path": "Qwen3.8-27B-Quark-AWQ-MXFP4"}
+{"instance_id": "astropy__astropy-14182", "model_patch": "", "model_name_or_path": "Qwen3.8-27B-Quark-AWQ-MXFP4"}
+{"instance_id": "astropy__astropy-14365", "model_patch": "", "model_name_or_path": "Qwen3.8-27B-Quark-AWQ-MXFP4"}
+{"instance_id": "astropy__astropy-14995", "model_patch": "", "model_name_or_path": "Qwen3.8-27B-Quark-AWQ-MXFP4"}
+{"instance_id": "astropy__astropy-6938", "model_patch": "--- a/astropy/io/fits/fitsrec.py\n+++ b/astropy/io/fits/fitsrec.py\n@@ -XXX,7 +XXX,7 @@\n         # Replace exponent separator in floating point numbers\n         if 'D' in format:\n-            output_field.replace(encode_ascii('E'), encode_ascii('D'))\n+            output_field = output_field.replace(encode_ascii('E'), encode_ascii('D'))\n```\n", "model_name_or_path": "Qwen3.8-27B-Quark-AWQ-MXFP4"}

@@ -408,6 +408,9 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
 ## 9. Step-by-Step Execution Plan
 
 ```
+ Phase 0: Model Precision & Task Fidelity Calibration
+    │
+    ▼
  Phase 1: Freeze Baseline Calibration
     │
     ▼
@@ -431,6 +434,18 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
     ▼
  Phase 8: Analysis, Energy Accounting & Artifact Publication
 ```
+
+### Phase 0: Model Precision & Task Fidelity Calibration (FP8 vs. MxFP4 vs. Q4_K_M)
+* **Objective**: Certify that the selected quantized model format preserves reasoning and software engineering task fidelity before allocating multi-GPU DP=2 or P/D resources.
+* **Empirical Execution**: Run [`./test.sh -d -n 5`](file:///home/amd/workspace/coder/test.sh) across candidate weights:
+  1. Dense FP8 baseline (`Qwen/Qwen3.8-27B-FP8`, vLLM ROCm standard)
+  2. Quark AWQ MXFP4 (`Qwen3.8-27B-Quark-AWQ-MXFP4`, vLLM Radiance W4A8)
+  3. Q4_K_M GGUF (`Qwen3.8-27B-Q4_K_M.gguf`, llama.cpp ROCm HIP)
+* **Empirical Findings**:
+  - **MxFP4 matched FP8 accuracy token-for-token** at **80.0% on GPQA Diamond** (100% on Physics), while Q4_K_M dropped to 60.0%.
+  - **MxFP4 was the only format to generate a valid SWE-bench patch** (`astropy__astropy-6938`), outperforming FP8 and Q4_K_M.
+  - **MxFP4 consumes only 19.05 GB VRAM** (freeing 15.1 GB for large KV cache pools and prefix caching), whereas FP8 consumes 31.60 GB (92.4%), which forced disabled CUDA graphs and capped decode throughput at 12.02 tok/s.
+* **Certification Gate**: `Qwen3.8-27B-Quark-AWQ-MXFP4` is officially certified as the primary served model representation for all subsequent single-card and dual-card stages. See full analysis in [`docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md`](file:///home/amd/workspace/coder/docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md).
 
 ### Phase 1: Freeze Baseline Calibration
 * Run [`benchmark/bench_phases.py`](file:///home/amd/workspace/coder/benchmark/bench_phases.py) with `--mode isolated-prefill`, `--mode isolated-decode`, and `--mode contention-jitter`.

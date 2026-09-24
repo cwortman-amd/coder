@@ -77,7 +77,7 @@ services:
     entrypoint: ["/opt/radiance_entrypoint.sh"]
     command: >
       ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
-      --served-model-name ${MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+      --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
       --host 0.0.0.0
       --port ${INFERENCE_PORT:-8000}
       --quantization quark

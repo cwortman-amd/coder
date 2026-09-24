@@ -1,0 +1,55 @@
+{
+  "model_name": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "dataset": "princeton-nlp/SWE-bench_Lite",
+  "total_instances": 5,
+  "valid_patches_generated": 1,
+  "patch_formatting_rate_pct": 20.0,
+  "total_tokens_generated": 20480,
+  "total_latency_seconds": 1071.81,
+  "avg_tokens_per_sec": 19.11,
+  "avg_latency_per_sample_sec": 214.36,
+  "predictions_file": "/app/_results/Qwen3.8-27B-Quark-AWQ-MXFP4_20260924_092547/predictions.jsonl",
+  "timestamp": "20260924_092547",
+  "results": [
+    {
+      "instance_id": "astropy__astropy-12907",
+      "latency_sec": 214.31,
+      "prompt_tokens": 528,
+      "completion_tokens": 4096,
+      "tokens_per_sec": 19.11,
+      "valid_patch_format": false
+    },
+    {
+      "instance_id": "astropy__astropy-14182",
+      "latency_sec": 213.81,
+      "prompt_tokens": 735,
+      "completion_tokens": 4096,
+      "tokens_per_sec": 19.16,
+      "valid_patch_format": false
+    },
+    {
+      "instance_id": "astropy__astropy-14365",
+      "latency_sec": 214.74,
+      "prompt_tokens": 1052,
+      "completion_tokens": 4096,
+      "tokens_per_sec": 19.07,
+      "valid_patch_format": false
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "latency_sec": 214.99,
+      "prompt_tokens": 2473,
+      "completion_tokens": 4096,
+      "tokens_per_sec": 19.05,
+      "valid_patch_format": false
+    },
+    {
+      "instance_id": "astropy__astropy-6938",
+      "latency_sec": 213.96,
+      "prompt_tokens": 406,
+      "completion_tokens": 4096,
+      "tokens_per_sec": 19.14,
+      "valid_patch_format": true
+    }
+  ]
+}
