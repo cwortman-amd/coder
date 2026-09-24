@@ -236,8 +236,8 @@ Upon arrival and physical installation of the second Radeon AI PRO R9700 card:
 - Full telemetry captured: 250 ms power per GPU, junction/memory temperatures, and RCCL collective stability.
 
 ### P/D Acceptance Criteria
-- Python runtime dependency resolved: `msgpack` (installed and baked into `Dockerfile.vllm-mxfp4`).
-- Transport qualification: AMD native `mori.io` runtime integrated, or zero-copy POSIX IPC / PyTorch DMA fallback validated.
+- Python runtime dependency resolved: `msgpack` (installed and verified in `local/vllm-mxfp4:gfx1201`).
+- Transport qualification: AMD native `mori.io` runtime integrated for direct P2P, or host-staged shared-memory (`/dev/shm` / `SimpleCPUOffloadConnector`) lifecycle harness validated.
 - Passes all 7 functional validation gates above.
 - Demonstrates measurable tail-ITL smoothing under burst conditions justifying the loss of 64 GB pooled capacity.
 
@@ -294,8 +294,8 @@ To standardize the empirical benchmarking of the dual-R9700 platform upon hardwa
    - $p99$ ITL under cold 8K bursts: $\le 250\text{ ms}$ (Standard Interactive Tier ceiling).
    - SLO-Qualified Goodput Gain: $\ge 1.20\times$ DP=2 Goodput.
    - Energy per Qualified Output Token: $\le 1.15\times$ DP=2 Energy Rate.
-4. **Container Readiness Audit**:
+4. **Container Readiness & 6-Stage Lifecycle Audit**:
    - Container `local/vllm-mxfp4:gfx1201` verified: `msgpack-1.2.2` installed and baked into [`Dockerfile.vllm-mxfp4`](../Dockerfile.vllm-mxfp4).
-   - Python classes `MoRIIOConnector`, `MoRIIOConnectorScheduler`, `MoRIIOConnectorWorker` import cleanly.
-   - For environments lacking AMD proprietary `mori.io` C++ binaries, fallback to `SimpleCPUOffloadConnector`, `ExampleConnector` (PyTorch DMA), or [`benchmark/pd_router.py`](../benchmark/pd_router.py) with `/dev/shm` POSIX IPC ($< 8\text{ ms}$ transfer over PCIe 5.0).
+   - Connector classification: `MoRIIOConnector` is `[NATIVE_RUNTIME_MISSING]` / `[NOT_READY]` due to absent `mori.io` C++ extension; `SimpleCPUOffloadConnector` and `ExampleConnector` are `[RUNTIME_READY]`.
+   - Host-staged `/dev/shm` fallback: Classified as a lifecycle and correctness harness ($T_{\text{D2H}} + T_{\text{metadata}} + T_{\text{sync}} + T_{\text{H2D}} + T_{\text{admission}}$ across two PCIe hops), not a zero-copy transport.
 

@@ -225,30 +225,68 @@ class EmpiricalServiceProfile:
         scale = input_tokens / 8192.0
         return base_8k_ms * scale
 
-    def get_decode_duration_ms(self, output_tokens: int, concurrency: int = 1) -> float:
-        """Calculates decode duration in isolation for given concurrency level."""
+    # Empirical Anchor Measurements: Concurrency C -> Aggregate Throughput in tok/s
+    # Measured on AMD Radeon AI PRO R9700 (gfx1201) with Qwen3.8-27B MXFP4
+    MEASURED_DECODE_AGG_RATES: Dict[int, float] = {
+        1: 34.07,   # Single-stream isolated baseline (D1-D4): 34.07 tok/s, 29.35ms TPOT
+        2: 41.53,   # Track 3 empirical continuous batching C=2: 41.53 tok/s aggregate, 48.16ms batch step
+        4: 91.46,   # Track 3 empirical continuous batching C=4: 91.46 tok/s aggregate, 43.73ms batch step
+        8: 138.67,  # Track 3 empirical continuous batching C=8: 138.67 tok/s aggregate, 57.70ms batch step
+    }
+
+    def get_aggregate_decode_rate(self, concurrency: int = 1) -> Tuple[float, str]:
+        """
+        Derives aggregate decode throughput D_agg(C) in tok/s across active concurrency C.
+        Uses piecewise-linear interpolation between measured anchors [1, 2, 4, 8].
+        Returns: (aggregate_rate_tok_s, provenance_tag).
+        """
         if concurrency <= 1:
-            return (output_tokens / self.decode_rate_c1) * 1000.0
-        elif concurrency == 2:
-            per_stream_rate = self.decode_rate_c2_agg / 2.0
-            return (output_tokens / per_stream_rate) * 1000.0
-        elif concurrency <= 4:
-            per_stream_rate = self.decode_rate_c4_agg / float(concurrency)
-            return (output_tokens / per_stream_rate) * 1000.0
-        else:
-            per_stream_rate = self.decode_rate_c8_agg / float(concurrency)
-            return (output_tokens / per_stream_rate) * 1000.0
+            return self.MEASURED_DECODE_AGG_RATES[1], "[MEASURED]"
+        if concurrency in self.MEASURED_DECODE_AGG_RATES:
+            return self.MEASURED_DECODE_AGG_RATES[concurrency], "[MEASURED]"
+
+        sorted_keys = sorted(self.MEASURED_DECODE_AGG_RATES.keys())
+        if concurrency < sorted_keys[-1]:
+            # Piecewise-linear interpolation between adjacent measured points
+            for i in range(len(sorted_keys) - 1):
+                c_low = sorted_keys[i]
+                c_high = sorted_keys[i + 1]
+                if c_low < concurrency < c_high:
+                    r_low = self.MEASURED_DECODE_AGG_RATES[c_low]
+                    r_high = self.MEASURED_DECODE_AGG_RATES[c_high]
+                    alpha = (concurrency - c_low) / float(c_high - c_low)
+                    r_interp = r_low + alpha * (r_high - r_low)
+                    return r_interp, "[INTERPOLATED]"
+
+        # Extrapolation beyond C=8 with diminishing returns bounded by compute roofline
+        c_max = sorted_keys[-1]
+        r_max = self.MEASURED_DECODE_AGG_RATES[c_max]
+        extra_c = concurrency - c_max
+        r_extrap = min(180.0, r_max + extra_c * 6.5)
+        return r_extrap, "[EXTRAPOLATED]"
+
+    def get_step_tpot_with_provenance(self, concurrency: int = 1) -> Tuple[float, str]:
+        """
+        Derives batch-step duration from aggregate service rate:
+        T_batch_step(C) = (C / D_agg(C)) * 1000.0 (in ms).
+        Returns: (step_duration_ms, provenance_tag).
+        """
+        agg_rate, provenance = self.get_aggregate_decode_rate(concurrency)
+        step_duration_ms = (concurrency / agg_rate) * 1000.0
+        return step_duration_ms, provenance
 
     def get_step_tpot_ms(self, concurrency: int = 1) -> float:
-        """Returns calibrated per-step TPOT (step duration in ms) for given active stream count."""
-        if concurrency <= 1:
-            return self.tpot_c1_ms
-        elif concurrency == 2:
-            return self.tpot_c2_ms
-        elif concurrency <= 4:
-            return self.tpot_c4_ms
-        else:
-            return self.tpot_c8_ms
+        """
+        Returns calibrated per-step TPOT (batch step duration in ms) for given active stream count C:
+        T_batch_step(C) = (C / D_agg(C)) * 1000.0.
+        """
+        step_duration_ms, _ = self.get_step_tpot_with_provenance(concurrency)
+        return step_duration_ms
+
+    def get_decode_duration_ms(self, output_tokens: int, concurrency: int = 1) -> float:
+        """Calculates decode duration in isolation for given concurrency level."""
+        step_duration_ms = self.get_step_tpot_ms(concurrency)
+        return output_tokens * step_duration_ms
 
     @staticmethod
     async def fetch_live_vllm_counters(base_url: str = "http://127.0.0.1:8000") -> Dict[str, Any]:
@@ -585,15 +623,12 @@ class PD1P1DPipelineEmulator:
                 req = event["req"]
                 t_d_start = current_time
                 d_q_wait = t_d_start - event["t_d_ready"]
-                tpot = self.profile.get_step_tpot_ms(self.max_decode_concurrency)
-                t_first_token = t_d_start + tpot
-
                 active_slots.append({
                     "event": event,
                     "req": req,
                     "t_d_start": t_d_start,
                     "d_q_wait_ms": d_q_wait,
-                    "t_first_token": t_first_token,
+                    "t_first_token": 0.0,
                     "remaining_tokens": req.output_tokens,
                     "total_tokens": req.output_tokens,
                     "itls": []
@@ -614,6 +649,8 @@ class PD1P1DPipelineEmulator:
 
             completed_indices = []
             for idx, slot in enumerate(active_slots):
+                if slot["t_first_token"] == 0.0:
+                    slot["t_first_token"] = current_time
                 slot["remaining_tokens"] -= 1
                 slot["itls"].append(step_duration_ms)
                 if slot["remaining_tokens"] <= 0:
@@ -1188,6 +1225,7 @@ class CounterfactualModelSuite:
         print("  Methodology: single-GPU-measured service times + simulated two-R9700 pipeline projection")
         print(f"  SLO Target: TTFT <= {self.slo_config.max_ttft_ms}ms | p95 ITL <= {self.slo_config.max_p95_itl_ms}ms | Peak ITL <= {self.slo_config.max_peak_itl_ms}ms")
         print("=" * 125)
+        self._print_service_provenance_table()
 
         for w_type in workload_types:
             logger.info(f"\n--- Generating Workload Trace: {w_type.upper()} ---")
@@ -1247,14 +1285,51 @@ class CounterfactualModelSuite:
 
         return master_results
 
+    def _print_service_provenance_table(self):
+        print("\n" + "-" * 125)
+        print("  EMPIRICAL SERVICE PRIMITIVES & PROVENANCE CLASSIFICATION (Radeon™ AI PRO R9700, gfx1201)")
+        print("-" * 125)
+        print(f"  {'Service Primitive':<26} | {'Operating Condition / Param':<32} | {'Value / Duration':<22} | {'Provenance Tag'}")
+        print("-" * 125)
+        print(f"  {'Prefill Ingestion':<26} | {'Cold 8K baseline (0% cache)':<32} | {'2,776.9 ms':<22} | [MEASURED] (Track 1 R9700)")
+        print(f"  {'Prefill Ingestion':<26} | {'25% prefix hit (2K hit + 6K)':<32} | {'2,221.7 ms':<22} | [MEASURED] (Track 1 R9700)")
+        print(f"  {'Prefill Ingestion':<26} | {'50% prefix hit (4K hit + 4K)':<32} | {'1,758.0 ms':<22} | [MEASURED] (Track 1 R9700)")
+        print(f"  {'Prefill Ingestion':<26} | {'75% prefix hit (6K hit + 2K)':<32} | {'913.9 ms':<22} | [MEASURED] (Track 1 R9700)")
+        print(f"  {'Prefill Ingestion':<26} | {'100% prefix hit (8K full reuse)':<32} | {'300.5 ms':<22} | [MEASURED] (Track 1 R9700)")
+        print(f"  {'Prefill Ingestion':<26} | {'Prompt length scaling (S/8192)':<32} | {'Linear scaled':<22} | [INTERPOLATED]")
+        print(f"  {'Decode Continuous Batch':<26} | {'C=1 Stream (T_step = 1/D)':<32} | {'29.35 ms (34.07 t/s)':<22} | [MEASURED] (D1-D4 isolated)")
+        print(f"  {'Decode Continuous Batch':<26} | {'C=2 Streams (T_step = 2/D)':<32} | {'48.16 ms (41.53 t/s)':<22} | [MEASURED] (Track 3 batching)")
+        print(f"  {'Decode Continuous Batch':<26} | {'C=4 Streams (T_step = 4/D)':<32} | {'43.73 ms (91.46 t/s)':<22} | [MEASURED] (Track 3 batching)")
+        print(f"  {'Decode Continuous Batch':<26} | {'C=8 Streams (T_step = 8/D)':<32} | {'57.69 ms (138.7 t/s)':<22} | [MEASURED] (Track 3 batching)")
+        print(f"  {'Decode Continuous Batch':<26} | {'C in [3, 5, 6, 7] (T_step = C/D)':<32} | {'Piecewise linear':<22} | [INTERPOLATED]")
+        print(f"  {'Decode Continuous Batch':<26} | {'C > 8 (T_step = C/D)':<32} | {'Diminishing slope':<22} | [EXTRAPOLATED]")
+        print(f"  {'Collocated Contention':<26} | {'Cold 2K chunk forward stall':<32} | {'609.7 ms':<22} | [MEASURED] (Track 2 J1-J3)")
+        print(f"  {'Collocated Contention':<26} | {'Warm prefix forward stall':<32} | {'253.9 ms':<22} | [MEASURED] (Track 2 J1-J3)")
+        print(f"  {'Collocated Contention':<26} | {'Degradation factor eta (J1)':<32} | {'eta = 0.916':<22} | [MEASURED] (Track 2 J1)")
+        print(f"  {'Collocated Contention':<26} | {'Degradation factor eta (J2)':<32} | {'eta = 0.670':<22} | [MEASURED] (Track 2 J2)")
+        print(f"  {'Collocated Contention':<26} | {'Degradation factor eta (J3)':<32} | {'eta = 0.335':<22} | [MEASURED] (Track 2 J3)")
+        print(f"  {'Cross-GPU KV Handoff':<26} | {'PCIe 5.0 x16 theoretical floor':<32} | {'5.16 ms':<22} | [ASSUMED - HW SPEC FLOOR]")
+        print(f"  {'Cross-GPU KV Handoff':<26} | {'Host-staged / IPC sweep range':<32} | {'25.0 to 250.0 ms':<22} | [ASSUMED - PARAMETRIC SWEEP]")
+        print("-" * 125 + "\n")
+
     def _print_workload_table(self, workload_name: str, summaries: List[SimulationSummary]):
         print(f"\n>>> WORKLOAD TRACE: {workload_name.upper()} <<<")
-        print("-" * 140)
-        print(f"{'Architecture':<22} | {'Handoff':<8} | {'Raw tok/s':<10} | {'Req/s':<7} | {'TTFT p95':<10} | {'ITL p95':<9} | {'Peak ITL':<10} | {'Stream SLO%':<12} | {'SLO tok/s':<10} | {'Verdict'}")
-        print("-" * 140)
+        print("-" * 148)
+        print(f"{'Architecture':<24} | {'Handoff':<18} | {'Raw tok/s':<10} | {'Req/s':<7} | {'TTFT p95':<10} | {'ITL p95':<9} | {'Peak ITL':<10} | {'Stream SLO%':<12} | {'SLO tok/s':<10} | {'Verdict'}")
+        print("-" * 148)
         for s in summaries:
-            h_str = f"{s.handoff_ms:.1f}ms" if s.handoff_ms > 0 else "N/A"
-            arch_str = f"{s.architecture} ({s.routing_policy[:10]})" if "DP" in s.architecture else s.architecture
+            if s.handoff_ms == 5.16:
+                h_str = "5.2ms [HW-SPEC]"
+            elif s.handoff_ms > 0:
+                h_str = f"{s.handoff_ms:.1f}ms [ASSUMED]"
+            else:
+                h_str = "N/A"
+
+            if "DP" in s.architecture:
+                arch_str = f"{s.architecture} ({s.routing_policy[:10]})"
+            else:
+                arch_str = f"{s.architecture}"
+
             if s.theorem_raw_claim_holds:
                 th_verdict = "RAW + SLO WIN"
             elif s.streaming_slo_compliance_pct >= 90.0:
@@ -1262,8 +1337,8 @@ class CounterfactualModelSuite:
             else:
                 th_verdict = "Contended Fail"
 
-            print(f"{arch_str:<22} | {h_str:<8} | {s.raw_output_tok_s:<10.2f} | {s.completed_req_s:<7.3f} | {s.ttft_p95_ms:<10.1f} | {s.itl_p95_ms:<9.2f} | {s.itl_max_ms:<10.1f} | {s.streaming_slo_compliance_pct:<11.1f}% | {s.slo_qualified_tok_s:<10.2f} | {th_verdict}")
-        print("-" * 140)
+            print(f"{arch_str:<24} | {h_str:<18} | {s.raw_output_tok_s:<10.2f} | {s.completed_req_s:<7.3f} | {s.ttft_p95_ms:<10.1f} | {s.itl_p95_ms:<9.2f} | {s.itl_max_ms:<10.1f} | {s.streaming_slo_compliance_pct:<11.1f}% | {s.slo_qualified_tok_s:<10.2f} | {th_verdict}")
+        print("-" * 148)
 
     def _generate_markdown_report(self, data: Dict[str, Any], output_path: str):
         lines = [
@@ -1292,6 +1367,28 @@ class CounterfactualModelSuite:
             "2. **The SLO-Goodput Claim (Streaming Quality of Service)**:",
             r"   - Under interactive streaming SLOs ($p95\text{ ITL} \le 100\text{ ms}$, $\text{Peak ITL} < 500\text{ ms}$, $\text{TTFT} \le 3.5\text{ s}$), **P/D dominates overwhelmingly across all workloads**.",
             "   - While DP=2 suffers **609.7 ms forward prefill stalls** that cause extensive streaming SLO violations (0% to 50% streaming compliance under prompt arrivals), P/D achieves **100% streaming SLO compliance** by completely isolating token generation on GPU 1.",
+            "",
+            "### 1.1 Service Primitives Provenance Classification",
+            "",
+            "| Primitive Category | Operating Condition / Parameter | Calibrated Value / Duration | Provenance Classification |",
+            "| :--- | :--- | :--- | :--- |",
+            "| **Prefill Ingestion** | Cold 8K baseline (0% cache hit) | 2,776.9 ms (2.95 kTok/s) | `[MEASURED]` (Track 1 empirical) |",
+            "| **Prefill Ingestion** | 25% prefix hit (2K hit + 6K suffix) | 2,221.7 ms (3.69 kTok/s) | `[MEASURED]` (Track 1 empirical) |",
+            "| **Prefill Ingestion** | 50% prefix hit (4K hit + 4K suffix) | 1,758.0 ms (4.66 kTok/s) | `[MEASURED]` (Track 1 empirical) |",
+            "| **Prefill Ingestion** | 75% prefix hit (6K hit + 2K suffix) | 913.9 ms (8.96 kTok/s) | `[MEASURED]` (Track 1 empirical) |",
+            "| **Prefill Ingestion** | 100% prefix hit (8K full reuse) | 300.5 ms (27.26 kTok/s) | `[MEASURED]` (Track 1 empirical) |",
+            "| **Prefill Ingestion** | Prompt length scaling ($S / 8192$) | Linear scaled duration | `[INTERPOLATED]` |",
+            "| **Continuous Batch Decode** | $C=1$ stream ($T_{\\text{step}} = 1/D$) | 29.35 ms / token (34.07 tok/s) | `[MEASURED]` (D1-D4 isolated) |",
+            "| **Continuous Batch Decode** | $C=2$ streams ($T_{\\text{step}} = 2/D$) | 48.16 ms batch step (41.53 tok/s agg) | `[MEASURED]` (Track 3 batching) |",
+            "| **Continuous Batch Decode** | $C=4$ streams ($T_{\\text{step}} = 4/D$) | 43.73 ms batch step (91.46 tok/s agg) | `[MEASURED]` (Track 3 batching) |",
+            "| **Continuous Batch Decode** | $C=8$ streams ($T_{\\text{step}} = 8/D$) | 57.69 ms batch step (138.67 tok/s agg) | `[MEASURED]` (Track 3 batching) |",
+            "| **Continuous Batch Decode** | $C \\in [3, 5, 6, 7]$ streams | Piecewise linear $T(C) = C/D_{\\text{agg}}(C)$ | `[INTERPOLATED]` |",
+            "| **Continuous Batch Decode** | $C > 8$ streams | Diminishing returns $T(C) = C/D_{\\text{agg}}(C)$ | `[EXTRAPOLATED]` |",
+            "| **Collocated Contention** | Cold 2K chunk forward stall | 609.7 ms stall quantum | `[MEASURED]` (Track 2 J1-J3) |",
+            "| **Collocated Contention** | Warm prefix forward stall | 253.9 ms stall quantum | `[MEASURED]` (Track 2 J1-J3) |",
+            "| **Collocated Contention** | Degradation factor $\\eta$ ($J1 / J2 / J3$) | 0.916 / 0.670 / 0.335 | `[MEASURED]` (Track 2 J1-J3) |",
+            "| **Cross-GPU KV Handoff** | PCIe 5.0 x16 theoretical floor | 5.16 ms (52.0 GB/s bandwidth) | `[ASSUMED - HW SPEC FLOOR]` |",
+            "| **Cross-GPU KV Handoff** | Host-staged / IPC sweep range | 25.0 to 250.0 ms | `[ASSUMED - PARAMETRIC SWEEP]` |",
             "",
             "---",
             "",

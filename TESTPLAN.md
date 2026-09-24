@@ -331,7 +331,7 @@ Success must be evaluated against predefined numeric gates:
 
 ## 8. Technical Runtime & Container Readiness Audit
 
-An audit of the production container (`local/vllm-mxfp4:gfx1201`) was conducted to establish exact runtime dependency status:
+An audit of the production container (`local/vllm-mxfp4:gfx1201`) was conducted to establish exact runtime dependency status across the inference stack:
 
 ```text
 ================================================================================
@@ -342,20 +342,66 @@ CONTAINER DEPENDENCY AUDIT (vLLM 0.27.1 / ROCm 7.14)
 • MXFP4 W4A8 FP8-WMMA    : radiance_mxfp4_fp8.so         [INSTALLED / OPERATIONAL]
 • Fast Serializer        : msgspec                       [INSTALLED / OPERATIONAL]
 • Network Control Plane  : pyzmq                         [INSTALLED / OPERATIONAL]
-• MessagePack Serializer : msgpack                       [MISSING: No module named 'msgpack']
-• MoRI-IO Native Engine  : mori.io                       [MISSING: No module named 'mori']
+• MessagePack Serializer : msgpack (1.2.2)               [INSTALLED / OPERATIONAL]
+• MoRI-IO Native Engine  : mori.io C++ backend           [MISSING: No module named 'mori']
 ================================================================================
 ```
 
-### 8.1 Resolution of Native P/D Connector Dependencies
-1. **Missing `msgpack` Dependency:**
-   * `vllm.distributed.kv_transfer.kv_connector.v1.moriio.moriio_connector` imports `msgpack` for metadata transport.
-   * **Fix:** Update [`Dockerfile.vllm-mxfp4`](file:///home/amd/workspace/coder/Dockerfile.vllm-mxfp4) to execute `pip install --no-cache-dir msgpack`.
-2. **MoRI Native Extension Status:**
-   * vLLM's `MoRIIOConnector` requires AMD's proprietary or specialized `mori.io` native C++ library (`IOEngine`, `XgmiBackendConfig`).
-   * **Dual Deployment Strategy:**
-     * **Strategy A (Primary Native):** If AMD provides the compiled `mori-io-rocm` `.whl` or shared library, bake it into the container.
-     * **Strategy B (Zero-Copy POSIX IPC / PyTorch Direct DMA):** If `mori.io` is unavailable, utilize vLLM's `SimpleCPUOffloadConnector` or deploy [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_router.py) with POSIX shared-memory IPC (`torch.multiprocessing` / `/dev/shm`), which achieves $< 8\text{ ms}$ transfer over PCIe 5.0.
+### 8.1 Six-Stage Connector Readiness Classification
+
+To avoid conflating registry visibility or Python class importability with operational multi-GPU transport capability, connector qualification follows a 6-stage lifecycle model:
+
+$$\text{REGISTERED} \longrightarrow \text{PYTHON\_IMPORTABLE} \longrightarrow \text{NATIVE\_RUNTIME\_MISSING} \longrightarrow \text{RUNTIME\_READY} \longrightarrow \text{TRANSFER\_VALIDATED} \longrightarrow \text{PERF\_VALIDATED}$$
+
+| Stage | Lifecycle State | Verification Criteria | Container Status (`local/vllm-mxfp4:gfx1201`) |
+| :---: | :--- | :--- | :--- |
+| **1** | `REGISTERED` | Class name registered in `KVConnectorFactory._registry`. | `MoRIIOConnector`, `SimpleCPUOffloadConnector`, `ExampleConnector`, `LMCacheConnectorV1`, `NixlConnector`, `MooncakeConnector` |
+| **2** | `PYTHON_IMPORTABLE` | Python module loads without `ModuleNotFoundError`. | All registered connectors import cleanly. |
+| **3** | `NATIVE_RUNTIME_MISSING` | Python class exists, but native C++ shared library (`.so`) is absent. | **`MoRIIOConnector`** (`mori.io` native C++ absent $\implies$ `[NOT_READY]` for live P/D). |
+| **4** | `RUNTIME_READY` | Python module and all required native runtimes are present and linked. | **`SimpleCPUOffloadConnector`**, **`ExampleConnector`** (PyTorch CPU DMA; zero external native C++ dependency). |
+| **5** | `TRANSFER_VALIDATED` | Producer/consumer smoke test completes; KV blocks accepted without prompt recomputation. | Pending hardware arrival (Gate 2). |
+| **6** | `PERF_VALIDATED` | Measured cross-GPU handoff latency satisfies PCIe 5.0 bounds ($p95 < 50\text{ ms}$). | Pending dual R9700 physical benchmark (Phase 5). |
+
+### 8.2 KV Handoff Transport Architectures: Direct P2P vs. Host-Staged Fallback
+
+When deploying Prefill/Decode Disaggregation, the physical KV transport mechanism dictates end-to-end handoff latency:
+
+1. **Direct Peer-to-Peer PCIe DMA (`MoRIIOConnector`):**
+   * Operates via direct GPU-to-GPU PCIe peer-to-peer DMA over the host PCIe 5.0 root complex:
+     $$T_{\text{direct P2P}} = T_{\text{serialize}} + T_{\text{control plane}} + T_{\text{buffer ready}} + T_{\text{data movement}} + T_{\text{decode admission}}$$
+   * Ideal payload-copy floor for 8,192 tokens of Qwen3.8-27B FP8 KV cache is **5.16 ms** (at empirical 52.0 GB/s PCIe 5.0 x16). Total handoff is expected at 15–35 ms.
+   * **Gating blocker:** Requires AMD's native `mori.io` C++ library to be compiled into the ROCm container.
+
+2. **Host-Staged Shared-Memory Prototype (`/dev/shm` & `SimpleCPUOffloadConnector`):**
+   * When native P2P transport is unavailable, a host-staged shared-memory IPC harness (`torch.multiprocessing`, POSIX `/dev/shm`, or `SimpleCPUOffloadConnector`) is used for correctness, choreography, and lifecycle validation.
+   * **Physical Transport Reality:** POSIX `/dev/shm` is host DRAM, not GPU VRAM. Transferring KV cache between GPUs via host shared memory requires two separate PCIe bus traversals:
+     $$T_{\text{shm handoff}} = T_{\text{D2H}} + T_{\text{metadata}} + T_{\text{shm sync}} + T_{\text{H2D}} + T_{\text{decode admission}}$$
+     * Step 1: Device-to-Host DMA transfer (GPU 0 VRAM $\to$ Host RAM pinned buffer).
+     * Step 2: Inter-process POSIX synchronization fence and memory barrier.
+     * Step 3: Host-to-Device DMA transfer (Host RAM pinned buffer $\to$ GPU 1 VRAM).
+   * **Methodological Scope:** The `/dev/shm` mechanism is explicitly defined as a **correctness, lifecycle, and router validation harness**. It must **not** be characterized as "zero-copy" or assumed to achieve sub-8 ms handoff without empirical measurement of the dual DMA hops.
+
+### 8.3 Production Router & Load Balancing Architecture
+
+Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_router.py) and [`benchmark/dp_router.py`](file:///home/amd/workspace/coder/benchmark/dp_router.py) have been hardened for production stability:
+
+1. **Persistent Connection Pool Management:**
+   * Downstream vLLM engines are accessed via a persistent `httpx.AsyncClient` managed in the FastAPI application `lifespan`.
+   * Connection limits: `httpx.Limits(max_keepalive_connections=50, max_connections=200)`.
+   * Timeout configuration: `connect=5.0s, pool=5.0s, write=30.0s, read=None` (unbounded read timeout allows long-duration autoregressive generation streams to proceed without premature connection abort).
+
+2. **Application-Level Idle-Stream Watchdog:**
+   * Active generation streams are guarded by an application-level idle chunk watchdog (`IDLE_STREAM_TIMEOUT_S = 60.0`). If an upstream decode worker halts token emission for $>60\text{ s}$, the watchdog cleanly tears down the stream, emits an SSE error frame, and updates telemetry counters.
+
+3. **Defensive Telemetry Finalization:**
+   * Request and stream completion metrics are finalized inside defensive `finally` blocks, ensuring that client disconnects (`asyncio.CancelledError`, `GeneratorExit`) or upstream exceptions never leave uncollected metrics or mask primary exceptions.
+   * Real-time metrics and connection pool health are exposed via `/metrics/pd` and `/metrics/dp`.
+
+4. **Namespaced Cache-Affine DP Routing:**
+   * To prevent plain round-robin from alternating multi-turn agent conversations across GPUs (which destroys prefix cache hit rates by causing ~50% artificial cache misses), `dp_router.py` implements CRC32 cache-affine replica pinning using namespaced session keys:
+     $$\text{Session Key} = \text{tenant\_id} : \text{user\_id} : \text{conversation\_id}$$
+   * Extraction precedence: (1) HTTP headers (`x-tenant-id`, `x-user-id`, `x-session-id`, `session-id`), (2) JSON body metadata, (3) prompt-derived SHA-256 hash fallback (`default:default:{hash}`).
+   * Observability metrics track affinity hits, affinity misses, active streams, and per-replica request distributions.
 
 ---
 

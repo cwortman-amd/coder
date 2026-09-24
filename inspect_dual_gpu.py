@@ -135,6 +135,7 @@ import vllm
 print(f"vLLM Runtime Version: {vllm.__version__}")
 
 # Check KV Connector Factory
+registered = []
 try:
     from vllm.distributed.kv_transfer.kv_connector.factory import KVConnectorFactory
     registered = list(KVConnectorFactory._registry.keys())
@@ -144,37 +145,42 @@ try:
 except Exception as e:
     print(f"KVConnectorFactory inspection failed: {e}")
 
-# Detailed import probe for key connectors
 connectors_to_test = [
-    ("MoRIIOConnector", "vllm.distributed.kv_transfer.kv_connector.v1.moriio.moriio_connector", "MoRIIOConnector"),
-    ("LMCacheConnectorV1", "vllm.distributed.kv_transfer.kv_connector.v1.lmcache_connector", "LMCacheConnectorV1"),
-    ("NixlConnector", "vllm.distributed.kv_transfer.kv_connector.v1.nixl", "NixlConnector"),
-    ("MooncakeConnector", "vllm.distributed.kv_transfer.kv_connector.v1.mooncake.mooncake_connector", "MooncakeConnector"),
-    ("SimpleCPUOffloadConnector", "vllm.distributed.kv_transfer.kv_connector.v1.simple_cpu_offload_connector", "SimpleCPUOffloadConnector"),
-    ("ExampleConnector", "vllm.distributed.kv_transfer.kv_connector.v1.example_connector", "ExampleConnector"),
+    ("MoRIIOConnector", "vllm.distributed.kv_transfer.kv_connector.v1.moriio.moriio_connector", "MoRIIOConnector", True),
+    ("SimpleCPUOffloadConnector", "vllm.distributed.kv_transfer.kv_connector.v1.simple_cpu_offload_connector", "SimpleCPUOffloadConnector", False),
+    ("ExampleConnector", "vllm.distributed.kv_transfer.kv_connector.v1.example_connector", "ExampleConnector", False),
+    ("LMCacheConnectorV1", "vllm.distributed.kv_transfer.kv_connector.v1.lmcache_connector", "LMCacheConnectorV1", False),
+    ("NixlConnector", "vllm.distributed.kv_transfer.kv_connector.v1.nixl", "NixlConnector", True),
+    ("MooncakeConnector", "vllm.distributed.kv_transfer.kv_connector.v1.mooncake.mooncake_connector", "MooncakeConnector", True),
 ]
 
-print("\\nConnector Import Status & Dependency Diagnosis:")
-for name, mod_path, cls_name in connectors_to_test:
+print("\\nConnector Lifecycle Classification (Registered -> Python Importable -> Native Ready -> Validated):")
+for name, mod_path, cls_name, requires_native in connectors_to_test:
     try:
         mod = importlib.import_module(mod_path)
         cls_obj = getattr(mod, cls_name)
-        detail = ""
         if name == "MoRIIOConnector":
             is_avail = getattr(mod, "is_moriio_available", lambda: False)()
-            detail = " (Native C++ backend linked)" if is_avail else " (Python classes OK; mori.io C++ absent)"
-        print(f"  [AVAILABLE]   {name}{detail}")
+            if is_avail:
+                print(f"  [RUNTIME_READY]          {name}: Python module and native mori.io backend verified.")
+            else:
+                print(f"  [NATIVE_RUNTIME_MISSING] {name}: Python module importable, but native C++ mori.io library is NOT installed.")
+                print(f"                           => [NOT_READY] Ineligible for live P/D benchmark until MoRI-IO is compiled.")
+        elif name in ("SimpleCPUOffloadConnector", "ExampleConnector"):
+            print(f"  [RUNTIME_READY]          {name}: Python module verified; zero external native C++ dependency.")
+        else:
+            print(f"  [PYTHON_IMPORTABLE]      {name}: Python module importable (external backend qualification required).")
     except ModuleNotFoundError as mnf:
-        print(f"  [MISSING DEP] {name}: Missing Python module '{mnf.name}'")
+        print(f"  [MISSING_PYTHON_DEP]     {name}: Missing Python module '{mnf.name}'")
     except Exception as ex:
-        print(f"  [FAILED]      {name}: {repr(ex)}")
+        print(f"  [FAILED]                 {name}: {repr(ex)}")
 
 # Test MORI native library probe
 try:
     import mori.io
-    print("  [NATIVE MORI] Found native mori.io library in container.")
+    print("\\nNative MoRI Status: [INSTALLED] Found native mori.io library in container.")
 except ImportError:
-    print("  [NATIVE MORI] mori.io C++ / Python extension is NOT installed.")
+    print("\\nNative MoRI Status: [MISSING] mori.io C++ / Python extension is NOT installed in container.")
 """
 
     try:
@@ -199,7 +205,9 @@ def calculate_analytical_kv_transfer(total_layers=64, attn_layers=16, kv_heads=8
     print(f"  • Analytical Summation: KV_bytes = sum_{{l in Attn}} (2 * H_kv * D * S * B)")
     print("\nPCIe Bus Reference: PCIe 5.0 x16 ~ 52.0 GB/s empirical | PCIe 4.0 x16 ~ 26.0 GB/s empirical")
     print("NOTE: Values below represent the IDEAL PAYLOAD-COPY FLOOR (T_data-movement).")
-    print("      Total handoff latency = T_serialize + T_control-plane + T_buffer-ready + T_data-movement + T_decode-admission\n")
+    print("      Total Direct P2P Handoff Latency  = T_serialize + T_control-plane + T_buffer-ready + T_data-movement + T_decode-admission")
+    print("      Host-Staged Shared-Memory Latency = T_D2H + T_metadata + T_shm-sync + T_H2D + T_decode-admission (2x bulk transfers)")
+    print("      Host-staged /dev/shm is a correctness & lifecycle harness, NOT a zero-copy transport.\n")
 
     print(f"{'Context Length (Tokens)':<24} | {'Precision':<10} | {'KV Size (16 Attn)':<18} | {'PCIe 4.0 Floor':<18} | {'PCIe 5.0 Floor':<18}")
     print("-" * 96)
