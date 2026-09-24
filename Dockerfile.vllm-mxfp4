@@ -55,6 +55,9 @@ COPY --from=r4d_builder /src/libr4d/r4d.so \
 
 ENV SP=/opt/vllm/lib/python3.12/site-packages
 
+# Runtime dependencies for P/D disaggregated KV transfer connectors
+RUN /opt/vllm/bin/pip install --no-cache-dir msgpack
+
 # Apply the patch chain
 RUN set -e; cd /build; \
   python3 patch_quark_mxfp4.py; \

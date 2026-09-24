@@ -73,6 +73,7 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Single Radeon AI PRO R9700 Phase Profiling & Interference Analysis](#4-single-radeon-ai-pro-r9700-phase-profiling--interference-analysis)
   - [Optimization Tracks Empirical Report (Prefix Caching, Chunk Sweep, Interactive SLO & Dual-Card Readiness)](#5-optimization-tracks-empirical-report-prefix-caching-chunk-sweep-interactive-slo--dual-card-readiness)
   - [Counterfactual Capacity & Interference Report: 1P1D vs. DP=2](#6-counterfactual-capacity--interference-report-1p1d-vs-dp2-on-radeon-ai-pro-r9700)
+  - [Performance & Disaggregation Test Plan (Goodput & Efficiency Architecture)](#7-performance--disaggregation-test-plan-goodput--efficiency-architecture)
 - [Centralized Results & Artifacts Logging (`_results/`)](#centralized-results--artifacts-logging-_results)
 - [Troubleshooting](#troubleshooting)
 - [Summary and Resources](#summary-and-resources)
@@ -1871,6 +1872,15 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
 - **The SLO-Goodput Proof (Streaming QoS)**: Proves that in collocated DP=2, cold 8K prompt chunks inflict **609.7 ms forward stalls** on active decode streams, causing **0.0% streaming SLO compliance** on collided sessions (<0.30 qualified tok/s). In contrast, P/D achieves **100.0% streaming compliance**, delivering **24.11 to 39.01 SLO-qualified tok/s** (an 86×–150× gain in qualified streaming goodput).
 - **KV Handoff Robustness**: Sweeping handoff latency $H \in [5.16, 25.0, 50.0, 100.0, 250.0]\text{ ms}$ proves P/D retains over **99.5% of its qualified goodput** across the entire 5.16 to 100 ms range, proving the architecture is robust to connector latency and does not depend on theoretical PCIe floor performance.
 - **Emulation Tooling**: Implemented in [`benchmark/pd_capacity_emulator.py`](benchmark/pd_capacity_emulator.py) and runnable via `python3 benchmark/bench_phases.py --mode pd-capacity-emulator`.
+
+### 7. [Performance & Disaggregation Test Plan (Goodput & Efficiency Architecture)](TESTPLAN.md)
+- **Architectural Thesis**: Establishes evaluation of Prefill/Decode Disaggregation (P/D 1+1) as a **goodput-and-efficiency architecture**, demonstrating that phase separation recovers enough capacity lost to collocated interference to outweigh a sacrificed decode replica, duplicate model weights, and KV handoff latency.
+- **Three-Stage Progression**:
+  1. *Single-R9700 Calibration*: Parameterizes isolated prefill $P(S, C, h)$, isolated decode $D(K, C)$, and mixed-load degradation $\eta_{\text{collocated}}$.
+  2. *Two-R9700 A/B Testing*: Replays standardized deterministic JSONL traces across 5 workload families (Decode-Dominant, Balanced, Cold Long-Context, Warm Coding, and Ingest-Heavy RAG) comparing Single-Card, DP=2 Round-Robin, DP=2 Cache-Affine, TP=2, and P/D 1P1D.
+  3. *Efficiency & Goodput Analysis*: Measures decode isolation efficiency ($E_{\text{decode isolation}} \ge 0.90$), recoverable interference efficiency ($E_{\text{recovery}}$), phase-pool balance ($B$), SLO-qualified goodput gain, and board-level energy efficiency ($J/\text{token}_{\text{qual}}$).
+- **Runtime Dependency Audit**: Audits vLLM `0.27.1` on ROCm 7.14, identifies and validates `msgpack` integration, and specifies the deployment path for native MoRI-IO vs. POSIX IPC / PyTorch DMA fallback connectors.
+- **Master Specification**: See full test methodology, formulas, and criteria in [`TESTPLAN.md`](TESTPLAN.md) and [`docs/TESTPLAN.md`](docs/TESTPLAN.md).
 
 ---
 
