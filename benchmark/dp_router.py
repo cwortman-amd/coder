@@ -20,6 +20,7 @@ from contextlib import asynccontextmanager
 import hashlib
 import json
 import logging
+import os
 from typing import Any, Dict, List, Optional, Tuple
 import zlib
 
@@ -142,13 +143,14 @@ async def get_target_endpoint(request: Request, body: Dict[str, Any]) -> Tuple[s
         return CONFIG["endpoints"][0], 0, session_key
 
     if CONFIG["routing_policy"] == "cache-affine":
-        idx = zlib.crc32(session_key.encode("utf-8")) % num_replicas
-        target = CONFIG["endpoints"][idx]
         if session_key in SESSION_AFFINITY_MAP:
+            idx = SESSION_AFFINITY_MAP[session_key]
             ROUTER_TELEMETRY["affinity_hits"] += 1
         else:
-            ROUTER_TELEMETRY["affinity_misses"] += 1
+            idx = zlib.crc32(session_key.encode("utf-8")) % num_replicas
             SESSION_AFFINITY_MAP[session_key] = idx
+            ROUTER_TELEMETRY["affinity_misses"] += 1
+        target = CONFIG["endpoints"][idx]
         logger.debug(f"[Cache-Affine] Key '{session_key}' pinned to Replica {idx} ({target})")
         return target, idx, session_key
     else:
@@ -274,7 +276,7 @@ async def chat_completions(request: Request):
 
 def main():
     parser = argparse.ArgumentParser(description="DP=2 Load Balancing Proxy")
-    parser.add_argument("--host", default="0.0.0.0", help="Proxy listen host")
+    parser.add_argument("--host", default=os.environ.get("ROUTER_BIND_HOST", "127.0.0.1"), help="Proxy listen host")
     parser.add_argument("--port", type=int, default=8000, help="Proxy listen port")
     parser.add_argument("--replica-0", default="http://127.0.0.1:8001/v1", help="Replica 0 URL")
     parser.add_argument("--replica-1", default="http://127.0.0.1:8002/v1", help="Replica 1 URL")

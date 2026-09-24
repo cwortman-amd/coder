@@ -77,8 +77,13 @@ from .qwen3_next import (
     Qwen3NextModel,
     Qwen3NextSparseMoeBlock,
     QwenNextMixtureOfExperts,
-    _is_shared_expert_fse_compatible,
 )
+
+try:
+    from .qwen3_next import _is_shared_expert_fse_compatible
+except ImportError:  # vLLM 0.30 image does not export this helper
+    def _is_shared_expert_fse_compatible(*_args, **_kwargs):
+        return False
 from .qwen3_vl import (
     Qwen3_VisionTransformer,
     Qwen3VLDummyInputsBuilder,
@@ -279,7 +284,10 @@ class Qwen3_5Model(Qwen3NextModel):
                 n_shared_experts=1,
                 ckpt_prefix="mlp.shared_expert",
             )
-        loader = AutoWeightsLoader(self)
+        loader = AutoWeightsLoader(
+            self,
+            skip_prefixes=["visual.", "model.visual.", "mtp."],
+        )
         return loader.load_weights(weights, mapper=self.hf_to_vllm_mapper)
 
 
@@ -301,6 +309,10 @@ class Qwen3_5ForCausalLMBase(
         # GDN fused projections.
         "in_proj_qkvz": ["in_proj_qkv", "in_proj_z"],
         "in_proj_ba": ["in_proj_b", "in_proj_a"],
+    }
+    embedding_modules = {
+        "embed_tokens": "input_embeddings",
+        "lm_head": "output_embeddings",
     }
 
     def __init__(self, *, vllm_config: VllmConfig, prefix: str = ""):
@@ -325,15 +337,14 @@ class Qwen3_5ForCausalLMBase(
         )
 
         if get_pp_group().is_last_rank:
+            self.lm_head = ParallelLMHead(
+                config.vocab_size,
+                config.hidden_size,
+                quant_config=self.quant_config,
+                prefix=maybe_prefix(prefix, "lm_head"),
+            )
             if config.tie_word_embeddings:
-                self.lm_head = self.model.embed_tokens
-            else:
-                self.lm_head = ParallelLMHead(
-                    config.vocab_size,
-                    config.hidden_size,
-                    quant_config=self.quant_config,
-                    prefix=maybe_prefix(prefix, "lm_head"),
-                )
+                self.lm_head = self.lm_head.tie_weights(self.model.embed_tokens)
         else:
             self.lm_head = PPMissingLayer()
 
@@ -410,6 +421,23 @@ class Qwen3_5ForCausalLMBase(
         hidden_states: torch.Tensor,
     ) -> torch.Tensor | None:
         return self.logits_processor(self.lm_head, hidden_states)
+
+    def compute_logits_local(
+        self,
+        hidden_states: torch.Tensor,
+    ) -> torch.Tensor:
+        try:
+            return self.logits_processor(self.lm_head, hidden_states, skip_gather=True)
+        except TypeError:
+            return self.logits_processor(self.lm_head, hidden_states)
+
+    def get_mrope_input_positions(
+        self,
+        input_tokens: list[int],
+        mm_features: list[object],
+    ) -> tuple[torch.Tensor, int]:
+        positions = torch.arange(len(input_tokens), dtype=torch.long)
+        return positions.unsqueeze(0).expand(3, -1), 0
 
     hf_to_vllm_mapper = WeightsMapper(
         orig_to_new_prefix={
@@ -571,6 +599,9 @@ class Qwen3_5ForConditionalGeneration(Qwen3VLForConditionalGeneration, IsHybrid)
         )
 
         return hidden_states
+
+    def compute_logits_local(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        return self.language_model.compute_logits_local(hidden_states)
 
     def load_weights(self, weights: Iterable[tuple[str, torch.Tensor]]) -> set[str]:
         loader = AutoWeightsLoader(

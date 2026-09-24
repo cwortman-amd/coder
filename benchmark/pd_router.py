@@ -20,6 +20,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -308,7 +309,12 @@ async def chat_completions(request: Request):
             logger.error(f"[{req_id}] Prefill phase failed: {e}")
             raise HTTPException(status_code=502, detail=f"Prefill engine unreachable: {str(e)}")
 
-        prompt_token_ids = prefill_json.get("prompt_token_ids", [])
+        prompt_token_ids = prefill_json.get("prompt_token_ids") or []
+        if not prompt_token_ids:
+            raise HTTPException(
+                status_code=502,
+                detail="Prefill engine did not return prompt_token_ids; cannot hand off KV to decode",
+            )
         prompt_tokens_count = prefill_json.get("usage", {}).get("prompt_tokens", len(prompt_token_ids) or 100)
         metrics.input_tokens = prompt_tokens_count
 
@@ -335,7 +341,7 @@ async def chat_completions(request: Request):
                             yield f"data: {json.dumps({'error': f'Decode engine error ({stream_resp.status_code}): {err_text}'})}\n\n"
                             return
 
-                        first_chunk = True
+                        first_content = True
                         iterator = stream_resp.aiter_lines()
                         while True:
                             try:
@@ -350,10 +356,25 @@ async def chat_completions(request: Request):
 
                             if not line:
                                 continue
-                            if first_chunk:
-                                metrics.first_token_time = time.time()
-                                first_chunk = False
-                            if line.startswith("data: ") and not line.endswith("[DONE]"):
+                            payload = line[5:].strip() if line.startswith("data:") else ""
+                            if payload == "[DONE]":
+                                yield f"{line}\n\n"
+                                continue
+                            has_content = False
+                            try:
+                                obj = json.loads(payload) if payload else {}
+                                choices = obj.get("choices") or []
+                                if choices:
+                                    ch = choices[0]
+                                    delta = ch.get("delta") or {}
+                                    text = ch.get("text") or delta.get("content") or ""
+                                    has_content = bool(text)
+                            except json.JSONDecodeError:
+                                has_content = False
+                            if has_content:
+                                if first_content:
+                                    metrics.first_token_time = time.time()
+                                    first_content = False
                                 metrics.output_tokens += 1
                             yield f"{line}\n\n"
                 except (asyncio.CancelledError, GeneratorExit):
@@ -383,11 +404,17 @@ async def chat_completions(request: Request):
                     json=decode_payload
                 )
                 metrics.end_time = time.time()
-                metrics.first_token_time = metrics.decode_start + 0.035
+                usage = {}
+                decode_json = {}
                 if decode_resp.status_code != 200:
                     raise HTTPException(status_code=decode_resp.status_code, detail=f"Decode engine error: {decode_resp.text}")
                 decode_json = decode_resp.json()
-                metrics.output_tokens = decode_json.get("usage", {}).get("completion_tokens", max_tokens)
+                usage = decode_json.get("usage") or {}
+                metrics.output_tokens = usage.get("completion_tokens", max_tokens)
+                if usage.get("completion_tokens"):
+                    metrics.first_token_time = metrics.decode_start
+                else:
+                    metrics.first_token_time = metrics.decode_start
                 decode_json["pd_metrics"] = metrics.to_dict()
                 try:
                     ROUTER_CONFIG["metrics_log"].append(metrics.to_dict())
@@ -410,7 +437,7 @@ async def chat_completions(request: Request):
 
 def main():
     parser = argparse.ArgumentParser(description="P/D Disaggregation Router")
-    parser.add_argument("--host", default="0.0.0.0", help="Router host")
+    parser.add_argument("--host", default=os.environ.get("ROUTER_BIND_HOST", "127.0.0.1"), help="Router host")
     parser.add_argument("--port", type=int, default=8000, help="Router listen port")
     parser.add_argument("--prefill-url", default="http://127.0.0.1:8100/v1", help="Prefill vLLM URL (GPU 0)")
     parser.add_argument("--decode-url", default="http://127.0.0.1:8200/v1", help="Decode vLLM URL (GPU 1)")

@@ -44,7 +44,7 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
 - [Recommended Models for Radeon AI PRO R9700 (32 GB VRAM)](#recommended-models-for-radeon-ai-pro-r9700-32-gb-vram)
 - [ROCm and RDNA 4 Optimization Tuning](#rocm-and-rdna-4-optimization-tuning)
 - [Benchmarking Models with SWE-bench](#benchmarking-models-with-swe-bench)
-  - [Automated Dual-Benchmark Suite (`test.sh`)](#automated-dual-benchmark-suite-testsh)
+  - [Accuracy Benchmark Suite (`accuracy.sh`) and Unified Runner (`test.sh`)](#accuracy-benchmark-suite-accuracysh-and-unified-runner-testsh)
   - [SWE-bench Dataset Variants](#swe-bench-dataset-variants)
   - [Benchmark Harness Architecture](#benchmark-harness-architecture)
   - [Quickstart: Standalone SWE-bench Smoke Benchmark](#quickstart-standalone-swe-bench-smoke-benchmark)
@@ -59,11 +59,11 @@ Every prompt, code file, git diff, and execution trace remains strictly on your 
   - [Quickstart: GPQA Smoke Benchmark](#quickstart-gpqa-smoke-benchmark)
   - [Evaluating GPQA Diamond & Main from Hugging Face](#evaluating-gpqa-diamond--main-from-hugging-face)
   - [GPQA Benchmark Results on AMD Radeon AI PRO R9700](#gpqa-benchmark-results-on-amd-radeon-ai-pro-r9700)
-- [Throughput & Multi-Engine Benchmarking (`bench_throughput.sh`)](#throughput--multi-engine-benchmarking-bench_throughputsh)
+- [Throughput & Multi-Engine Benchmarking (`throughput.sh`)](#throughput--multi-engine-benchmarking-throughputsh)
   - [Overview & Methodology](#overview--methodology)
   - [Recommended Deployment Matrix](#recommended-deployment-matrix)
   - [Input/Output Token Matrix Configurations](#inputoutput-token-matrix-configurations)
-  - [Running the Live Serving Benchmark (`bench_throughput.sh`)](#running-the-live-serving-benchmark-bench_throughputsh)
+  - [Running the Live Serving Benchmark (`throughput.sh`)](#running-the-live-serving-benchmark-throughputsh)
   - [Multi-Engine Comparative Benchmark (`compare_engines.sh`)](#multi-engine-comparative-benchmark-compare_enginessh)
   - [Empirical Benchmark Results on AMD Radeon AI PRO R9700](#empirical-benchmark-results-on-amd-radeon-ai-pro-r9700)
   - [Offline Benchmarking with `vllm bench throughput`](#offline-benchmarking-with-vllm-bench-throughput)
@@ -245,9 +245,11 @@ The project directory is structured as follows:
 /home/amd/workspace/coder/
 ├── setup.sh                  # Quickstart helper to launch ROCm inference container (auto-routes vLLM or GGUF)
 ├── check.sh                  # Automated health check & live prompt verification script
-├── test.sh                   # Automated dual benchmark runner (SWE-bench & GPQA) & results summary
+├── test.sh                   # Unified accuracy + throughput dispatcher
+├── accuracy.sh               # SWE-bench and GPQA accuracy runner
+├── throughput.sh             # Primary throughput benchmark entrypoint
 ├── demo.sh                   # Industry-standard HTML5 water simulation coding challenge demo
-├── bench_throughput.sh       # Multi-length token throughput & latency benchmarking suite (vLLM, llama.cpp, SGLang, MXFP4)
+├── bench_throughput.sh       # Throughput implementation (compatibility entrypoint)
 ├── bench_dual_gpu.sh         # Dual-GPU multi-mode evaluation suite (TP=2, P/D, DP=2, single)
 ├── inspect_dual_gpu.py       # Dual R9700 hardware topology, in-container KV connector probe, & analytical model
 ├── download_model.sh         # Model downloader for Qwen3.8-27B-Q4_K_M.gguf (~16.8 GB) with resume
@@ -540,7 +542,7 @@ services:
 - **Standard OpenAI API**: Exposes `/v1/chat/completions` on port 8000, seamlessly interchanging with vLLM or SGLang.
 
 > [!TIP]
-> **Tokenizer Decoupling for Benchmark Clients**: When evaluating llama.cpp with OpenAI benchmark clients (e.g. `vllm bench serve`), the server model alias (e.g. `Qwen3.8-27B-Q4_K_M.gguf`) is not a valid Hugging Face repository. Always pass `--tokenizer Qwen/Qwen3.8-27B-FP8` so the client resolves tokenization metadata from the local Hugging Face cache. The included `bench_throughput.sh` script does this automatically.
+> **Tokenizer Decoupling for Benchmark Clients**: When evaluating llama.cpp with OpenAI benchmark clients (e.g. `vllm bench serve`), the server model alias (e.g. `Qwen3.8-27B-Q4_K_M.gguf`) is not a valid Hugging Face repository. Always pass `--tokenizer Qwen/Qwen3.8-27B-FP8` so the client resolves tokenization metadata from the local Hugging Face cache. The included `throughput.sh` script does this automatically.
 
 ---
 
@@ -604,7 +606,7 @@ for output in outputs:
 | **Prefix Caching** | Native automatic prefix caching (`--enable-prefix-caching`) | Prompt cache save/restore to disk | Native Radix tree prefix caching across arbitrary prompt prefixes |
 | **Multi-Turn Agents** | High cache hit rate on shared system prefixes | Re-computes or relies on disk-cached states | **Maximum cache reuse** across complex multi-branch agent traces |
 | **Quantization Formats** | FP8, SafeTensors, AWQ, GPTQ, GGUF (via plugin) | GGUF (Q4_K_M, Q5_K_M, Q8_0, etc.) | FP8, SafeTensors, AWQ, GPTQ, GGUF (`--load-format gguf`) |
-| **Benchmarking Tool** | Integrated in `./test.sh` & `./bench_throughput.sh` | Integrated via `--compare-engines` | Integrated via `--compare-engines` |
+| **Benchmarking Tool** | `./accuracy.sh`, `./throughput.sh`, or unified `./test.sh` | Integrated via `--compare-engines` | Integrated via `--compare-engines` |
 
 #### Recommended Deployment Matrix (Single 32 GB R9700 vs. Dual R9700)
 
@@ -1294,34 +1296,37 @@ The benchmark harness operates in two distinct phases:
 
 ---
 
-### Automated Dual-Benchmark Suite (`test.sh`)
+### Accuracy Benchmark Suite (`accuracy.sh`) and Unified Runner (`test.sh`)
 
-To execute both benchmarks consecutively and generate an automated comparative summary table and Markdown report with one command:
+Use `accuracy.sh` for SWE-bench and GPQA. The unified `test.sh` runs both
+accuracy and throughput by default. GPU selection defaults to `auto`.
 
 ```bash
 # Default: Offline smoke test (3 SWE-bench problems + 3 GPQA questions)
-./test.sh
+./accuracy.sh
 
 # Diamond / Lite Tier: SWE-bench Lite (300 problems) + GPQA Diamond (198 questions)
-./test.sh -d
+./accuracy.sh -d
 
 # Main / Verified Tier: SWE-bench Verified (500 problems) + GPQA Main (448 questions)
-./test.sh -m
+./accuracy.sh -m
 
 # All Tests: Full SWE-bench (2,294 problems) + GPQA Extended (546 questions)
-./test.sh -a
+./accuracy.sh -a
 
 # Quick sample limits (e.g., test first 5 questions of Diamond/Lite tier)
-./test.sh -d -n 5
+./accuracy.sh -d -n 5
 
 # Benchmark a specific engine (defaults to vLLM)
-./test.sh -e vllm
-./test.sh -e llama.cpp
+./accuracy.sh -e vllm
+./accuracy.sh -e llama.cpp
 
-# Run comparative benchmark comparing vLLM vs. llama.cpp head-to-head
-./test.sh --compare-engines
-# Or invoke the comparative runner directly:
-./benchmark/compare_engines.sh --dataset sample --num-samples 3
+# Run both suites using automatic GPU detection
+./test.sh -q
+
+# Run only one suite through the dispatcher
+./test.sh --accuracy -d --accuracy-limit 5
+./test.sh --throughput -e vllm -c 8
 ```
 
 #### Inference Engine & Comparative Options:
@@ -1474,7 +1479,7 @@ Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (
 
 ### Quantization Accuracy & Throughput Comparison (FP8 vs. MxFP4 vs. Q4_K_M)
 
-To determine the optimal model format on the **AMD Radeon™ AI PRO R9700** (`gfx1201`, 32 GB VRAM), the **Qwen3.8-27B** family was evaluated across three primary quantization representations using identical tasks via `./test.sh -d -n 5` (5 SWE-bench Lite problems and 5 GPQA Diamond reasoning questions):
+To determine the optimal model format on the **AMD Radeon™ AI PRO R9700** (`gfx1201`, 32 GB VRAM), the **Qwen3.8-27B** family was evaluated across three primary quantization representations using identical tasks via `./accuracy.sh -d -n 5` (5 SWE-bench Lite problems and 5 GPQA Diamond reasoning questions):
 
 1. **FP8 (`Qwen/Qwen3.8-27B-FP8`)**: Official vLLM ROCm 0.27.0 stack ([`docker-compose.yml`](file:///home/amd/workspace/coder/docker-compose.yml)).
 2. **MxFP4 (`Qwen3.8-27B-Quark-AWQ-MXFP4`)**: vLLM Radiance 0.27.1 stack with W4A8 WMMA GEMM and AITER unified attention ([`docker-compose.mxfp4.yml`](file:///home/amd/workspace/coder/docker-compose.mxfp4.yml)).
@@ -1693,7 +1698,7 @@ Empirical baseline scientific reasoning measured on the **AMD Radeon™ AI PRO R
 
 ---
 
-## Throughput & Multi-Engine Benchmarking (`bench_throughput.sh`)
+## Throughput & Multi-Engine Benchmarking (`throughput.sh`)
 
 To evaluate real-world token generation performance across varying context windows, generation horizons, and inference engines (**vLLM**, **llama.cpp**, and **SGLang**), this repository provides an automated throughput benchmarking suite based on the official [vLLM Benchmark Suite](https://docs.vllm.ai/en/latest/cli/bench/throughput/).
 
@@ -1718,31 +1723,31 @@ The suite supports standard Input:Output (I:O) ratio archetypes, with **`8192:10
 
 ---
 
-### Running the Live Serving Benchmark (`bench_throughput.sh`)
+### Running the Live Serving Benchmark (`throughput.sh`)
 
 When an inference container is active, run the automated suite directly from the host:
 
 ```bash
-# Default benchmark against active server (ISL=8192, OSL=1024, CONC=1):
-./bench_throughput.sh
+# Default comprehensive matrix: 8192:1024, 1024:8192, and 1024:1024
+./throughput.sh
 
 # Target specific engine:
-./bench_throughput.sh -e vllm
-./bench_throughput.sh -e llama.cpp
-./bench_throughput.sh -e sglang
+./throughput.sh -e vllm
+./throughput.sh -e llama.cpp
+./throughput.sh -e sglang
 
 # Run sequential comparative benchmark across all engines:
-./bench_throughput.sh --all-engines
+./throughput.sh --compare-engines
 
 # Custom concurrency (e.g. CONC=2 or CONC=4):
-./bench_throughput.sh -c 2
+./throughput.sh -c 2
 
-# Full 6-workload matrix evaluation:
-./bench_throughput.sh --matrix
+# Explicit workload matrix:
+./throughput.sh --test-cases 8192:1024,1024:8192,1024:1024
 ```
 
 #### Dynamic Prompt Sizing Strategy
-To balance statistical validity with execution runtime, `bench_throughput.sh` dynamically sizes evaluation request counts (`NUM_PROMPTS`) according to the output sequence length (`OSL`) and concurrency (`CONC`):
+To balance statistical validity with execution runtime, `throughput.sh` dynamically sizes evaluation request counts (`NUM_PROMPTS`) according to the output sequence length (`OSL`) and concurrency (`CONC`):
 ```bash
 if [[ "$OSL" == "8192" ]]; then
   export NUM_PROMPTS=$(( CONC * 20 ))
@@ -1754,7 +1759,7 @@ fi
 - **When `OSL != 8192` (Standard Decode)**: Evaluates `CONC * 50` requests.
 
 #### Automatic Tokenizer Resolution for GGUF Models
-When querying llama.cpp endpoints serving `.gguf` models, OpenAI benchmark clients fail if they attempt to load tokenizer configuration from Hugging Face using the GGUF model alias. `bench_throughput.sh` automatically resolves and passes `--tokenizer Qwen/Qwen3.8-27B-FP8`, resolving tokenizer configuration directly from the local Hugging Face cache (`~/.cache/huggingface`).
+When querying llama.cpp endpoints serving `.gguf` models, OpenAI benchmark clients fail if they attempt to load tokenizer configuration from Hugging Face using the GGUF model alias. `throughput.sh` automatically resolves and passes `--tokenizer Qwen/Qwen3.8-27B-FP8`, resolving tokenizer configuration directly from the local Hugging Face cache (`~/.cache/huggingface`).
 
 ---
 
@@ -1923,7 +1928,7 @@ For in-depth architectural post-mortems, hardware-level failure analysis, and hi
 - **Master Specification**: See full test methodology, formulas, and criteria in [`TESTPLAN.md`](TESTPLAN.md) and [`docs/TESTPLAN.md`](docs/TESTPLAN.md).
 
 ### 8. [Model Quantization Accuracy & Task Fidelity Report (FP8 vs. MxFP4 vs. Q4_K_M)](docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md)
-- **Empirical Accuracy & Precision Retention Analysis**: Benchmarks Qwen3.8-27B across FP8 (vLLM ROCm standard), MxFP4 (vLLM Radiance W4A8 WMMA), and Q4_K_M (llama.cpp ROCm HIP) using `./test.sh -d -n 5` across SWE-bench Lite and GPQA Diamond.
+- **Empirical Accuracy & Precision Retention Analysis**: Benchmarks Qwen3.8-27B across FP8 (vLLM ROCm standard), MxFP4 (vLLM Radiance W4A8 WMMA), and Q4_K_M (llama.cpp ROCm HIP) using `./accuracy.sh -d -n 5` across SWE-bench Lite and GPQA Diamond.
 - **Zero Scientific Accuracy Loss**: Proves MxFP4 achieves an identical **80.0% accuracy on GPQA Diamond** (and **100% on Physics**), matching dense FP8 precision token-for-token while requiring only 19.05 GB VRAM.
 - **Code Patch Synthesis**: Documents that MxFP4 was the only format to synthesize a valid, logically correct unified git diff patch for `astropy__astropy-6938`, outperforming FP8 and Q4_K_M which exhausted token budgets before patch closure.
 - **Hardware Roofline & Allocator Dynamics**: Explains why FP8 is severely throughput-limited (**12.02 tok/s**) on a 32 GB GPU due to disabling CUDA graphs to prevent 2.37 GB Inductor allocator crashes, while MxFP4 enables full graph replay and delivers **19.11 tok/s (+59% faster)** with **15.1 GB of VRAM headroom**.
@@ -2071,7 +2076,7 @@ _results/
   huggingface_hub.utils._errors.RepositoryNotFoundError: 404 Client Error ... Repository Not Found for url: https://huggingface.co/api/models/Qwen3.8-27B-Q4_K_M.gguf
   ```
 - **Cause**: GGUF endpoints expose the model alias as `Qwen3.8-27B-Q4_K_M.gguf`. Benchmark clients infer the tokenizer name from the server model name, attempting to query Hugging Face for a non-existent repo `Qwen3.8-27B-Q4_K_M.gguf`.
-- **Remedy**: Decouple the tokenizer from the server model alias by explicitly passing `--tokenizer Qwen/Qwen3.8-27B-FP8`. The client will load tokenizer metadata from the local Hugging Face cache without network 404 lookups. The included [bench_throughput.sh](file:///home/amd/workspace/coder/bench_throughput.sh) script handles this decoupling automatically.
+- **Remedy**: Decouple the tokenizer from the server model alias by explicitly passing `--tokenizer Qwen/Qwen3.8-27B-FP8`. The client will load tokenizer metadata from the local Hugging Face cache without network 404 lookups. The included [throughput.sh](file:///home/amd/workspace/coder/throughput.sh) script handles this decoupling automatically.
 
 ---
 

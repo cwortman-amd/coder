@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
 """
-Single AMD Radeon™ AI PRO R9700 Phase Profiling & Interference Benchmarking Suite.
-
-Rigorously evaluates and isolates:
-1. Prefill-Dominant Performance (P1-P6: Long input, 1 output token)
-2. Decode-Dominant Performance (D1-D4: Context footprint, 1024 output tokens)
-3. Concurrency Scaling (C = 1, 2, 4, 8, 16 on 8K:1K anchor)
-4. Contention & ITL Jitter (J0-J3: Long decode stream bombarded by 8K prefill bursts)
-5. Cache-Aware Prefix Evaluation (0%, 25%, 50%, 75% reusable prefixes)
-
-Captures:
-- Direct client-observed streaming TTFT, TPOT, and per-token ITL (p50, p95, p99)
-- vLLM engine-internal phase metrics via Prometheus /metrics
-- High-frequency 250ms sysfs hwmon GPU power, thermals, and energy (Joules/token)
+Phase profiling for AMD Radeon AI PRO R9700 (gfx1201) and Instinct MI350P (gfx950).
 """
 
 import argparse
@@ -42,6 +30,22 @@ if PROJECT_DIR not in sys.path:
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 DEFAULT_RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "phase_profiling")
+
+from benchmark.sse_util import sse_has_content  # noqa: E402
+
+
+def energy_from_pwr(pwr_data: Dict[str, Any], duration_s: float) -> float:
+    for key in ("total_energy_joules", "energy_joules"):
+        val = pwr_data.get(key)
+        if val:
+            return float(val)
+    return float(pwr_data.get("avg_power_w", 0.0) or 0.0) * duration_s
+
+
+def kv_usage_pct(raw: float) -> float:
+    if raw is None:
+        return 0.0
+    return raw * 100.0 if raw <= 1.0 else raw
 
 
 def calculate_percentiles(values: List[float]) -> Dict[str, float]:
@@ -195,7 +199,7 @@ async def run_single_streaming_request(
                 return {"success": False, "status_code": response.status_code, "error": body.decode("utf-8", "ignore")}
 
             async for line in response.aiter_lines():
-                if line.startswith("data: ") and line != "data: [DONE]":
+                if sse_has_content(line):
                     t_chunk = time.perf_counter()
                     chunk_times.append(t_chunk)
 
@@ -347,7 +351,7 @@ async def benchmark_prefill(
         engine_prefill_s = (prefill_sum_delta / prefill_cnt_delta) if prefill_cnt_delta > 0 else median_dur
 
         avg_power = pwr_data.get("avg_power_w", 0.0)
-        energy_per_req = avg_power * median_dur
+        energy_per_req = energy_from_pwr(pwr_data, median_dur * max(1, len(ttfts_ms))) / max(1, len(ttfts_ms))
         joules_per_tok = energy_per_req / in_len if in_len > 0 else 0.0
 
         row = {
@@ -545,9 +549,9 @@ async def benchmark_concurrency(
         pct_tpot = calculate_percentiles(tpots)
 
         avg_power = pwr_data.get("avg_power_w", 0.0)
-        total_energy_j = pwr_data.get("energy_joules", avg_power * total_duration)
+        total_energy_j = energy_from_pwr(pwr_data, total_duration)
         joules_per_tok = total_energy_j / (total_gen_tokens + (len(successful) * prompt_len)) if total_gen_tokens > 0 else 0.0
-        kv_usage = m_after.get("vllm:kv_cache_usage_perc", 0.0) * 100.0
+        kv_usage = kv_usage_pct(m_after.get("vllm:kv_cache_usage_perc", 0.0))
 
         row = {
             "concurrency": C,

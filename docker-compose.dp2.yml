@@ -1,52 +1,47 @@
-# =========================================================================
-# TARGET ARCHITECTURE NOTICE: DUAL HOMOGENEOUS RADEON AI PRO R9700 ONLY
-#
-# DO NOT RUN ON SINGLE-CARD HOSTS (1x R9700 + 1x 780M APU):
-# Data Parallelism (DP=2) hosts two complete model replicas, requiring two
-# dedicated 32 GB gfx1201 GPUs. The 780M APU cannot host a 27B model replica.
-# =========================================================================
+# Dual homogeneous dGPUs: 2x Radeon AI PRO R9700 (gfx1201) or 2x Instinct MI350P (gfx950).
+# Do not mix a discrete card with an iGPU/APU. Set GPU_PROFILE=r9700|mi350p.
 services:
-  # =========================================================================
-  # Replica 0 pinned to Radeon AI PRO R9700 (GPU 0)
-  # Full independent model replica serving port 8001
-  # =========================================================================
   replica_0:
-    image: local/vllm-mxfp4:gfx1201
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
     container_name: rocm-mxfp4-dp2-replica0
     ipc: host
     network_mode: host
     shm_size: 16g
     security_opt:
-      - seccomp:unconfined
+      - seccomp=unconfined
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
       - video
-      - "44"
-      - "109"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     environment:
-      - HIP_VISIBLE_DEVICES=0
-      - ROCR_VISIBLE_DEVICES=0
-      - PYTORCH_ROCM_ARCH=gfx1201
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_0:-0}
+      - ROCR_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_0:-0}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
       - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
       - RADIANCE_MXFP4=1
       - RADIANCE_MXFP4_W4A8=1
       - RADIANCE_FP8_KV=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
     volumes:
-      - /home/amd/models:/models:ro
-      - /home/amd/.cache/huggingface:/root/.cache/huggingface
-      - /home/amd/workspace/coder/_results:/results
+      - ${MODELS_DIR:-./models}:/models:ro
+      - ${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}:/root/.cache/huggingface
+      - ./_results:/results
     command: >
-      /models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4
-        --served-model-name Qwen3.8-27B-Quark-AWQ-MXFP4
+      ${MODEL_PATH:-/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
         --quantization quark
         --kv-cache-dtype fp8
         --attention-backend ROCM_AITER_UNIFIED_ATTN
         --mamba-cache-dtype bfloat16
         --mamba-ssm-cache-dtype float16
-        --max-model-len 12288
-        --gpu-memory-utilization 0.88
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
         --max-num-seqs 16
         --max-num-batched-tokens 4096
         --host 0.0.0.0
@@ -59,47 +54,47 @@ services:
       retries: 20
       start_period: 40s
 
-  # =========================================================================
-  # Replica 1 pinned to Radeon AI PRO R9700 (GPU 1)
-  # Full independent model replica serving port 8002
-  # =========================================================================
   replica_1:
-    image: local/vllm-mxfp4:gfx1201
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
     container_name: rocm-mxfp4-dp2-replica1
     ipc: host
     network_mode: host
     shm_size: 16g
     security_opt:
-      - seccomp:unconfined
+      - seccomp=unconfined
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
       - video
-      - "44"
-      - "109"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     environment:
-      - HIP_VISIBLE_DEVICES=1
-      - ROCR_VISIBLE_DEVICES=1
-      - PYTORCH_ROCM_ARCH=gfx1201
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_1:-1}
+      - ROCR_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_1:-1}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
       - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
       - RADIANCE_MXFP4=1
       - RADIANCE_MXFP4_W4A8=1
       - RADIANCE_FP8_KV=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
     volumes:
-      - /home/amd/models:/models:ro
-      - /home/amd/.cache/huggingface:/root/.cache/huggingface
-      - /home/amd/workspace/coder/_results:/results
+      - ${MODELS_DIR:-./models}:/models:ro
+      - ${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}:/root/.cache/huggingface
+      - ./_results:/results
     command: >
-      /models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4
-        --served-model-name Qwen3.8-27B-Quark-AWQ-MXFP4
+      ${MODEL_PATH:-/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
         --quantization quark
         --kv-cache-dtype fp8
         --attention-backend ROCM_AITER_UNIFIED_ATTN
         --mamba-cache-dtype bfloat16
         --mamba-ssm-cache-dtype float16
-        --max-model-len 12288
-        --gpu-memory-utilization 0.88
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
         --max-num-seqs 16
         --max-num-batched-tokens 4096
         --host 0.0.0.0
@@ -112,12 +107,8 @@ services:
       retries: 20
       start_period: 40s
 
-  # =========================================================================
-  # Role 3: DP=2 Round-Robin Load Balancer (Port 8000)
-  # Dispatches incoming requests across Replica 0 (8001) and Replica 1 (8002)
-  # =========================================================================
   lb:
-    image: local/vllm-mxfp4:gfx1201
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
     container_name: rocm-mxfp4-dp2-lb
     network_mode: host
     entrypoint: ["python3"]
@@ -127,15 +118,12 @@ services:
       replica_1:
         condition: service_healthy
     volumes:
-      - /home/amd/workspace/coder/benchmark/dp_router.py:/app/dp_router.py:ro
-    command: /app/dp_router.py --port 8000 --replica-0 http://127.0.0.1:8001/v1 --replica-1 http://127.0.0.1:8002/v1
+      - ./benchmark/dp_router.py:/app/dp_router.py:ro
+    command: /app/dp_router.py --host ${ROUTER_BIND_HOST:-127.0.0.1} --port 8000 --replica-0 http://127.0.0.1:8001/v1 --replica-1 http://127.0.0.1:8002/v1
     restart: unless-stopped
 
-  # =========================================================================
-  # OpenCode Client Container
-  # =========================================================================
   opencode:
-    image: ghcr.io/anomalyco/opencode:latest
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
     container_name: opencode-client-dp2
     depends_on:
       - lb
@@ -144,8 +132,8 @@ services:
       - OPENCODE_CONFIG=/config/opencode.json
       - TERM=xterm-256color
     volumes:
-      - /home/amd/workspace/coder/opencode.json:/config/opencode.json:ro
-      - /home/amd/workspace/coder:/workspace
+      - ./opencode.json:/config/opencode.json:ro
+      - .:/workspace
       - opencode-data:/root/.local/share/opencode
     stdin_open: true
     tty: true

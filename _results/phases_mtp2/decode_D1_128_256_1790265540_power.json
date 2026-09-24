@@ -1,0 +1,17 @@
+{
+  "duration_s": 3.5,
+  "sample_count": 14,
+  "sample_interval_s": 0.25,
+  "gpu_index": 0,
+  "gpu_profile": "mi350p",
+  "hwmon_dir": null,
+  "avg_power_w": 0.0,
+  "max_power_w": 0.0,
+  "min_power_w": 0.0,
+  "total_energy_joules": 0.0,
+  "energy_joules": 0.0,
+  "avg_hotspot_c": 0.0,
+  "max_hotspot_c": 0.0,
+  "avg_mem_c": 0.0,
+  "max_mem_c": 0.0
+}

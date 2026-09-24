@@ -20,6 +20,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/gpu_profile.sh"
 
 # 1. Load user environment (~/.env) if present to pull in HF_TOKEN
 if [ -f "$HOME/.env" ]; then
@@ -33,14 +35,16 @@ fi
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"
     fi
 fi
 export HF_TOKEN="${HF_TOKEN:-}"
+apply_gpu_profile
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
 
 # ANSI Colors
 GREEN='\033[0;32m'
@@ -219,7 +223,7 @@ if [ "$INTERACTIVE_MODE" = true ]; then
         cd "$TARGET_DIR"
         "$OPENCODE_BIN" -m "$OPENCODE_MODEL_ARG"
     else
-        docker compose exec -it -w /workspace/opencode-water-sim opencode opencode -m "$OPENCODE_MODEL_ARG"
+        docker compose -f "$COMPOSE_FILE" exec -it -w /workspace/opencode-water-sim opencode opencode -m "$OPENCODE_MODEL_ARG"
     fi
     exit 0
 fi
@@ -235,7 +239,7 @@ if [ -n "$OPENCODE_BIN" ]; then
     }
 else
     # Execute containerized via Docker Compose
-    docker compose exec -T -w /workspace/opencode-water-sim opencode opencode run --auto -m "$OPENCODE_MODEL_ARG" "$STANDARD_PROMPT" || {
+    docker compose -f "$COMPOSE_FILE" exec -T -w /workspace/opencode-water-sim opencode opencode run --auto -m "$OPENCODE_MODEL_ARG" "$STANDARD_PROMPT" || {
         echo -e "${YELLOW}Container OpenCode exited. Checking if output file was written...${NC}"
     }
 fi

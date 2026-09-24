@@ -437,7 +437,7 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
 
 ### Phase 0: Model Precision & Task Fidelity Calibration (FP8 vs. MxFP4 vs. Q4_K_M)
 * **Objective**: Certify that the selected quantized model format preserves reasoning and software engineering task fidelity before allocating multi-GPU DP=2 or P/D resources.
-* **Empirical Execution**: Run [`./test.sh -d -n 5`](file:///home/amd/workspace/coder/test.sh) across candidate weights:
+* **Empirical Execution**: Run [`./accuracy.sh -d -n 5`](file:///home/amd/workspace/coder/accuracy.sh) across candidate weights:
   1. Dense FP8 baseline (`Qwen/Qwen3.8-27B-FP8`, vLLM ROCm standard)
   2. Quark AWQ MXFP4 (`Qwen3.8-27B-Quark-AWQ-MXFP4`, vLLM Radiance W4A8)
   3. Q4_K_M GGUF (`Qwen3.8-27B-Q4_K_M.gguf`, llama.cpp ROCm HIP)

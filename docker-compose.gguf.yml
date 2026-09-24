@@ -12,8 +12,8 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - "44"
-      - "109"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
@@ -96,7 +96,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
     entrypoint: ["python3"]
-    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:${INFERENCE_PORT:-8000}/v1", "--dataset", "sample"]
 
 volumes:
   opencode-data:

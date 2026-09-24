@@ -5,7 +5,7 @@
 **Hardware Under Test**: AMD Radeon™ AI PRO R9700 (Navi 48 / `gfx1201`, 32 GB GDDR6, 256-bit bus, 64 CUs, 300 W TBP)  
 **Host Environment**: Linux Ubuntu 24.04 LTS (Kernel `6.8.0-71-generic`), ROCm KFD Driver 31.50  
 **Target Model Family**: Qwen3.8-27B (Hybrid Architecture: 48 Gated DeltaNet Linear Attention Layers + 16 Full Softmax Attention Layers)  
-**Evaluation Protocol**: Dual Benchmark Suite via [`test.sh -d -n 5`](file:///home/amd/workspace/coder/test.sh) (5 SWE-bench Lite problems + 5 GPQA Diamond graduate-level scientific reasoning questions)
+**Evaluation Protocol**: Accuracy Suite via [`accuracy.sh -d -n 5`](file:///home/amd/workspace/coder/accuracy.sh) (5 SWE-bench Lite problems + 5 GPQA Diamond graduate-level scientific reasoning questions)
 
 ---
 

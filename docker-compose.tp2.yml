@@ -1,82 +1,67 @@
-# =========================================================================
-# TARGET ARCHITECTURE NOTICE: DUAL HOMOGENEOUS RADEON AI PRO R9700 ONLY
-#
-# DO NOT RUN ON SINGLE-CARD HOSTS (1x R9700 + 1x 780M APU):
-# Running --tensor-parallel-size 2 across gfx1201 and gfx1103 causes fatal
-# memory allocator and kernel compilation failures.
-# This compose file requires 2x physical homogeneous gfx1201 R9700 cards.
-# =========================================================================
+# Dual homogeneous dGPUs: 2x Radeon AI PRO R9700 (gfx1201) or 2x Instinct MI350P (gfx950).
+# Tensor parallel requires matching ISA. Set GPU_PROFILE=r9700|mi350p.
 services:
-  # =========================================================================
-  # Dual-GPU Tensor Parallelism (TP=2) vLLM MXFP4 Inference Server
-  # Shards every model layer across GPU 0 and GPU 1 via ROCm RCCL collectives
-  # Enables 64 GB combined VRAM, supporting up to 32K context on Qwen3.8-27B
-  # =========================================================================
   inference:
-    image: local/vllm-mxfp4:gfx1201
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
     container_name: rocm-mxfp4-tp2-server
     ipc: host
     network_mode: host
     shm_size: 32g
     security_opt:
-      - seccomp:unconfined
+      - seccomp=unconfined
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
       - video
-      - "44"
-      - "109"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     environment:
-      # Expose both dedicated Radeon AI PRO R9700 cards
-      - HIP_VISIBLE_DEVICES=0,1
-      - ROCR_VISIBLE_DEVICES=0,1
-      - PYTORCH_ROCM_ARCH=gfx1201
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0,1}
+      - ROCR_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0,1}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
       - HF_HOME=/root/.cache/huggingface
-      # Radiance RDNA 4 A-tiled GEMM optimizations
+      - HF_TOKEN=${HF_TOKEN:-}
       - RADIANCE_MXFP4=1
       - RADIANCE_MXFP4_W4A8=1
       - RADIANCE_MXFP4_MIN_M=0
       - RADIANCE_MXFP4_DECODE_MAX_M=64
       - RADIANCE_FP8_KV=1
-      # ROCm RCCL tuning for PCIe 5.0 P2P transfers
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
       - NCCL_DEBUG=INFO
       - NCCL_P2P_DISABLE=0
       - NCCL_IB_DISABLE=1
     volumes:
-      - /home/amd/models:/models:ro
-      - /home/amd/.cache/huggingface:/root/.cache/huggingface
-      - /home/amd/workspace/coder/_results:/results
+      - ${MODELS_DIR:-./models}:/models:ro
+      - ${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}:/root/.cache/huggingface
+      - ./_results:/results
     command: >
-      /models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4
-        --served-model-name Qwen3.8-27B-Quark-AWQ-MXFP4
+      ${MODEL_PATH:-/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
         --tensor-parallel-size 2
         --quantization quark
         --kv-cache-dtype fp8
         --attention-backend ROCM_AITER_UNIFIED_ATTN
         --mamba-cache-dtype bfloat16
         --mamba-ssm-cache-dtype float16
-        --max-model-len 32768
-        --gpu-memory-utilization 0.88
+        --max-model-len ${MAX_MODEL_LEN:-32768}
+        --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
         --max-num-seqs 16
         --max-num-batched-tokens 8192
         --host 0.0.0.0
-        --port 8000
+        --port ${INFERENCE_PORT:-8000}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 20
       start_period: 45s
 
-  # =========================================================================
-  # OpenCode Client Container
-  # Terminal-based agentic coding assistant connected to TP=2 inference engine
-  # =========================================================================
   opencode:
-    image: ghcr.io/anomalyco/opencode:latest
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
     container_name: opencode-client-tp2
     depends_on:
       inference:
@@ -86,8 +71,8 @@ services:
       - OPENCODE_CONFIG=/config/opencode.json
       - TERM=xterm-256color
     volumes:
-      - /home/amd/workspace/coder/opencode.json:/config/opencode.json:ro
-      - /home/amd/workspace/coder:/workspace
+      - ./opencode.json:/config/opencode.json:ro
+      - .:/workspace
       - opencode-data:/root/.local/share/opencode
     stdin_open: true
     tty: true

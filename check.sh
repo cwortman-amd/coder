@@ -26,10 +26,9 @@ fi
 # Load .env if present
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
-    # Export non-comment variables
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"

@@ -17,6 +17,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 cd "$SCRIPT_DIR"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/gpu_profile.sh"
 
 # 1. Load user environment (~/.env) if present to pull in HF_TOKEN
 if [ -f "$HOME/.env" ]; then
@@ -30,8 +32,8 @@ fi
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"
@@ -39,6 +41,10 @@ if [ -f "${SCRIPT_DIR}/.env" ]; then
 fi
 export HF_TOKEN="${HF_TOKEN:-}"
 export HF_HOME="${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}"
+# The public throughput.sh entrypoint sets this to auto unless explicitly
+# overridden. Reapply it after .env so stale host-specific settings do not win.
+GPU_PROFILE="${GPU_PROFILE_OVERRIDE:-${GPU_PROFILE:-auto}}"
+apply_gpu_profile
 
 # ANSI Colors
 GREEN='\033[0;32m'
@@ -122,7 +128,9 @@ while [[ $# -gt 0 ]]; do
             usage
             ;;
         *)
-            shift
+            echo "Unknown option: $1" >&2
+            echo "Use --help for usage." >&2
+            exit 1
             ;;
     esac
 done
@@ -160,9 +168,9 @@ else
 fi
 
 echo -e "${BLUE}${BOLD}======================================================================${NC}"
-echo -e "${BLUE}${BOLD}   Inference Model Throughput Benchmark Suite (Radeon AI PRO R9700)   ${NC}"
+echo -e "${BLUE}${BOLD}            AMD GPU Inference Throughput Benchmark Suite              ${NC}"
 echo -e "${BLUE}${BOLD}======================================================================${NC}"
-echo -e "Hardware Platform : ${BOLD}AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB VRAM)${NC}"
+echo -e "Hardware Platform : ${BOLD}${GPU_LABEL}${NC}"
 echo -e "Target Engines    : ${CYAN}${BOLD}${ENGINE_LIST[*]}${NC}"
 echo -e "Concurrency (CONC): ${BOLD}${CONC}${NC}"
 if [ -n "${NUM_PROMPTS_OVERRIDE:-}" ]; then
@@ -250,7 +258,9 @@ start_engine() {
             elif [ -d "${ROOT_DIR}/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4" ]; then
                 mxfp4_model="/models/amd/Qwen3.8-27B-Quark-AWQ-MXFP4"
             else
-                mxfp4_model="Qwen/Qwen3.8-27B-FP8"
+                echo -e "${RED}MXFP4 weights not found under ${ROOT_DIR}/models. Refusing to start FP8 with --quantization quark.${NC}" >&2
+                echo "Set MXFP4_MODEL_PATH or place Qwen3.8-27B-MXFP4-mtpfp8 or amd/Qwen3.8-27B-Quark-AWQ-MXFP4 in MODELS_DIR." >&2
+                return 1
             fi
             MODEL_PATH="${mxfp4_model}" docker compose -p coder-mxfp4 -f "${ROOT_DIR}/docker-compose.mxfp4.yml" up -d inference
             wait_for_server 8000 120
@@ -307,6 +317,7 @@ start_engine() {
 
 # Summary tracking table
 declare -a TABLE_ROWS=()
+BENCH_FAILURES=0
 
 for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
     echo ""
@@ -316,6 +327,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
 
     if ! start_engine "$CURR_ENGINE"; then
         echo -e "${YELLOW}Skipping throughput run for ${CURR_ENGINE} (engine unavailable).${NC}"
+        BENCH_FAILURES=$((BENCH_FAILURES + 1))
         for TC in "${TEST_CASES[@]}"; do
             IFS=":" read -r IN_LEN OUT_LEN <<< "$TC"
             TABLE_ROWS+=("${CURR_ENGINE}|${IN_LEN}|${OUT_LEN}|N/A|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE")
@@ -388,7 +400,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
             # Standalone containerized benchmark client targeting http://127.0.0.1:8000
             docker run --rm --network host \
               --device /dev/kfd --device /dev/dri \
-              --group-add 44 --group-add 109 \
+              --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
               --security-opt seccomp=unconfined \
               --security-opt apparmor=unconfined \
               -e HIP_VISIBLE_DEVICES=0 \
@@ -428,6 +440,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         else
             echo -e "    ${RED}✗ Benchmark failed for ${CURR_ENGINE} on ${ISL}:${OSL}${NC}"
             TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|ERROR|ERROR|ERROR|ERROR|ERROR")
+            BENCH_FAILURES=$((BENCH_FAILURES + 1))
         fi
         echo ""
     done
@@ -442,7 +455,7 @@ if [ "${#ENGINE_LIST[@]}" -gt 1 ] || [ "${ENGINE_LIST[0]}" != "vllm" ]; then
 fi
 
 # Ensure results directory permissions
-chmod -R ugo+rwX "$RESULTS_DIR" 2>/dev/null || true
+chmod -R u+rwX,g+rwX "$RESULTS_DIR" 2>/dev/null || true
 
 # ------------------------------------------------------------------------------
 # Terminal Formatted Results Table
@@ -461,7 +474,7 @@ for ROW in "${TABLE_ROWS[@]}"; do
 done
 
 echo "---------------------------------------------------------------------------------------------------------------"
-echo -e "Hardware Device : AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6)"
+echo -e "Hardware Device : ${GPU_LABEL}"
 echo -e "Concurrency     : ${BOLD}${CONC}${NC}"
 echo -e "Metrics Folder  : ${RESULTS_DIR}"
 
@@ -472,7 +485,9 @@ REPORT_FILE="${RESULTS_DIR}/throughput_benchmark_report.md"
 cat << EOF > "$REPORT_FILE"
 # Multi-Engine Throughput Benchmark Performance Report
 
-- **Target Hardware**: AMD Radeon™ AI PRO R9700 (\`gfx1201\`, 32 GB GDDR6 VRAM)
+- **Target Hardware**: ${GPU_LABEL}
+- **GPU Profile**: \`${GPU_PROFILE}\`
+- **ROCm ISA**: \`${PYTORCH_ROCM_ARCH}\`
 - **Engines Tested**: \`${ENGINE_LIST[*]}\`
 - **Benchmark Suite**: vLLM Throughput Matrix (\`vllm bench serve\`)
 - **Reference**: [vLLM Throughput CLI Docs](https://docs.vllm.ai/en/latest/cli/bench/throughput/)
@@ -512,3 +527,8 @@ EOF
 echo ""
 echo -e "${GREEN}${BOLD}✓ Archival Markdown Report Saved:${NC} ${REPORT_FILE}"
 echo -e "${BLUE}===============================================================================================================${NC}"
+
+if [ "$BENCH_FAILURES" -gt 0 ]; then
+    echo -e "${RED}${BENCH_FAILURES} throughput benchmark slice(s) failed or were unavailable.${NC}" >&2
+    exit 1
+fi

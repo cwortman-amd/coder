@@ -16,6 +16,8 @@ import re
 import subprocess
 import sys
 
+from gpu_profile import classify_gpu, homogeneous_target_gpus, normalize_profile, profile_info
+
 
 def print_banner(title: str):
     print("\n" + "=" * 80)
@@ -23,73 +25,44 @@ def print_banner(title: str):
     print("=" * 80)
 
 
-def check_dual_r9700_preflight() -> tuple[bool, int, list[dict]]:
-    """
-    Scans the system for homogeneous Radeon AI PRO R9700 (gfx1201) devices.
-    Returns: (passed: bool, count: int, devices: list)
-    """
-    devices = []
-    try:
-        res = subprocess.run(["rocminfo"], capture_output=True, text=True, check=True)
-        current_agent = {}
-        for line in res.stdout.splitlines():
-            line_str = line.strip()
-            if line_str.startswith("Agent "):
-                if current_agent.get("device_type") == "GPU":
-                    devices.append(current_agent)
-                current_agent = {"agent_id": line_str}
-            elif "Device Type:" in line_str:
-                current_agent["device_type"] = line_str.split(":")[-1].strip()
-            elif "Marketing Name:" in line_str:
-                current_agent["marketing_name"] = line_str.split(":")[-1].strip()
-            elif "Name:" in line_str and "Marketing Name" not in line_str:
-                current_agent["gfx"] = line_str.split(":")[-1].strip()
-            elif "Compute Unit:" in line_str:
-                current_agent["cu"] = line_str.split(":")[-1].strip()
-        if current_agent.get("device_type") == "GPU":
-            devices.append(current_agent)
-    except Exception as e:
-        print(f"Preflight error querying rocminfo: {e}")
-
-    # Filter for homogeneous R9700 gfx1201 devices
-    r9700_devices = [
-        d for d in devices
-        if "gfx1201" in d.get("gfx", "") or "R9700" in d.get("marketing_name", "")
-    ]
-
-    passed = (len(r9700_devices) >= 2)
-    return passed, len(r9700_devices), devices
+def check_dual_target_preflight(profile: str) -> tuple[bool, int, list[dict]]:
+    """Require two homogeneous target dGPUs for the selected profile (r9700 or mi350p)."""
+    passed, count, devices = homogeneous_target_gpus(profile)
+    return passed, count, devices
 
 
-def probe_host_topology():
+def probe_host_topology(profile: str):
     print_banner("1. HOST ROCM HARDWARE & TOPOLOGY PROBE")
+    info = profile_info(profile)
+    passed, target_count, all_gpus = check_dual_target_preflight(profile)
 
-    passed, r9700_count, all_gpus = check_dual_r9700_preflight()
-
+    print(f"Active GPU profile : {info['profile']} ({info['label']})")
     print(f"Detected {len(all_gpus)} GPU Agent(s) via ROCm KFD:")
     for idx, g in enumerate(all_gpus):
-        name = g.get('marketing_name', 'Unknown')
-        gfx = g.get('gfx', 'N/A')
-        cu = g.get('cu', 'N/A')
-        is_r9700 = "R9700" in name or "gfx1201" in gfx
-        marker = " [TARGET R9700 dGPU]" if is_r9700 else " [INTEGRATED APU - EXCLUDE]"
+        name = g.get("marketing_name", "Unknown")
+        gfx = g.get("gfx", "N/A")
+        cu = g.get("cu", "N/A")
+        kind = classify_gpu(g)
+        if kind == info["profile"]:
+            marker = f" [TARGET {info['marketing']}]"
+        elif kind:
+            marker = f" [OTHER TARGET PROFILE: {kind}]"
+        else:
+            marker = " [NON-TARGET / iGPU - EXCLUDE]"
         print(f"  • GPU [{idx}]: {name} ({gfx}), CUs: {cu}{marker}")
 
     print("\n--------------------------------------------------------------------------------")
-    print("  DUAL-R9700 HOMOGENEOUS PREFLIGHT STATUS")
+    print(f"  DUAL-{info['profile'].upper()} HOMOGENEOUS PREFLIGHT STATUS")
     print("--------------------------------------------------------------------------------")
     if passed:
-        print(f"  [STATUS: PASSED] Detected {r9700_count} matching Radeon AI PRO R9700 (gfx1201) GPUs.")
-        print("  System is fully qualified for TP=2, DP=2, and P/D multi-GPU benchmarking.")
+        print(f"  [STATUS: PASSED] Detected {target_count} matching {info['marketing']} ({info['isa']}) GPUs.")
+        print("  System is qualified for TP=2, DP=2, and P/D multi-GPU benchmarking.")
     else:
-        print(f"  [STATUS: HARDWARE GATE BLOCKED] Detected {r9700_count} Radeon AI PRO R9700 (Expected: 2).")
-        print("  The current host contains 1x Radeon AI PRO R9700 dGPU + 1x Radeon 780M iGPU.")
-        print("  Heterogeneous execution across gfx1201 and gfx1103 is strictly prohibited.")
-        print("  Multi-GPU TP=2, DP=2, and P/D remain in 'Target Architecture' staging until card 2 is installed.")
-        print("  Single-GPU baselines, chunked prefill, and router mock testing remain operational.")
+        print(f"  [STATUS: HARDWARE GATE BLOCKED] Detected {target_count} matching cards (Expected: 2).")
+        print("  Dual-GPU modes require two homogeneous dGPUs of the same ISA (do not mix R9700 with MI350P or iGPU).")
+        print("  Single-GPU baselines and router mock testing remain operational.")
     print("--------------------------------------------------------------------------------")
 
-    # rocm-smi topology
     try:
         res = subprocess.run(["rocm-smi", "--showtopo", "--showproductname"], capture_output=True, text=True, check=True)
         print("\nROCm-SMI Inter-GPU Topology & Product Details:")
@@ -99,16 +72,24 @@ def probe_host_topology():
     except Exception as e:
         print(f"Warning: rocm-smi topology query failed: {e}")
 
-    # PCIe link speed check via lspci
     try:
         res = subprocess.run(["lspci", "-vvv"], capture_output=True, text=True)
-        navi_blocks = re.findall(r"((\w+:\w+\.\w+).*?Navi 48.*?LnkSta:.*?)(?=\n\n|\Z)", res.stdout, re.DOTALL)
-        if navi_blocks:
-            print("\nPCIe Link Status for Navi 48 (Radeon AI PRO R9700):")
-            for block, bdf in navi_blocks:
+        patterns = (
+            r"((\w+:\w+\.\w+).*?Navi 48.*?LnkSta:.*?)",
+            r"((\w+:\w+\.\w+).*?Instinct.*?LnkSta:.*?)",
+            r"((\w+:\w+\.\w+).*?MI350.*?LnkSta:.*?)",
+        )
+        print("\nPCIe Link Status (compute GPUs):")
+        found = False
+        for pat in patterns:
+            blocks = re.findall(pat + r"(?=\n\n|\Z)", res.stdout, re.DOTALL | re.IGNORECASE)
+            for block, bdf in blocks:
                 lnksta = re.search(r"LnkSta:\s+(Speed\s+[^,]+,\s+Width\s+[^,\n]+)", block)
                 if lnksta:
+                    found = True
                     print(f"  • Device {bdf}: {lnksta.group(1)}")
+        if not found:
+            print("  (no matching lspci blocks; check rocminfo / amd-smi)")
     except Exception:
         pass
 
@@ -231,30 +212,32 @@ def calculate_analytical_kv_transfer(total_layers=64, attn_layers=16, kv_heads=8
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Dual R9700 Hardware & P/D Diagnostics")
+    parser = argparse.ArgumentParser(description="Dual homogeneous dGPU hardware & P/D diagnostics (R9700 or MI350P)")
     parser.add_argument("--container", default="rocm-mxfp4-server", help="vLLM container to inspect")
     parser.add_argument("--skip-container", action="store_true", help="Skip container probe")
-    parser.add_argument("--check-preflight", action="store_true", help="Fail-fast check returning exit code 0 if 2x R9700 present, 1 otherwise")
+    parser.add_argument("--gpu-profile", default=os.environ.get("GPU_PROFILE", "auto"), help="r9700 | mi350p | auto")
+    parser.add_argument("--check-preflight", action="store_true", help="Exit 0 if 2 matching target dGPUs are present")
     args = parser.parse_args()
+    profile = normalize_profile(args.gpu_profile)
+    info = profile_info(profile)
 
     if args.check_preflight:
-        passed, count, _ = check_dual_r9700_preflight()
+        passed, count, _ = check_dual_target_preflight(profile)
         if not passed:
-            print(f"PREFLIGHT FAILED: Found {count} Radeon AI PRO R9700 devices (Required: 2).", file=sys.stderr)
+            print(f"PREFLIGHT FAILED: Found {count} {info['marketing']} devices (Required: 2).", file=sys.stderr)
             sys.exit(1)
-        print(f"PREFLIGHT OK: Found {count} homogeneous Radeon AI PRO R9700 devices.")
+        print(f"PREFLIGHT OK: Found {count} homogeneous {info['marketing']} devices.")
         sys.exit(0)
 
-    probe_host_topology()
+    probe_host_topology(profile)
     if not args.skip_container:
         probe_container_connectors(args.container)
     calculate_analytical_kv_transfer()
 
     print_banner("SUMMARY VERDICT")
-    print("• Target Architecture: Dual homogeneous AMD Radeon AI PRO R9700 (gfx1201).")
-    print("• Current Host Reality: 1x R9700 dGPU + 1x 780M iGPU (Heterogeneous execution blocked).")
-    print("• TP=2 (Tensor Parallelism): Immediate priority for 2x homogeneous R9700 hardware.")
-    print("• P/D (Prefill/Decode Disaggregation): Requires MoRI-IO runtime compilation; raw PCIe bandwidth is not gating.")
+    print(f"• Target Architecture: Dual homogeneous {info['label']}.")
+    print("• Dual-GPU TP=2 / DP=2 / P/D require two cards of the same ISA (gfx1201 or gfx950), never mixed with iGPU.")
+    print("• Cross-card A/B: run the same traces twice with GPU_PROFILE=r9700 then GPU_PROFILE=mi350p.")
 
 
 if __name__ == "__main__":

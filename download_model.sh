@@ -22,8 +22,8 @@ fi
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"
@@ -140,7 +140,7 @@ except Exception:
 # Method 2: Download from inside Docker container with persistent HF_HOME mount
 elif command -v docker &>/dev/null; then
     echo -e "${GREEN}Using Docker container with persistent HF_HOME mount to download...${NC}"
-    DOCKER_IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
+    DOCKER_IMAGE="${VLLM_IMAGE:-rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0}"
     if docker run --rm \
         -e HF_TOKEN="${HF_TOKEN:-}" \
         -e HF_HOME=/root/.cache/huggingface \

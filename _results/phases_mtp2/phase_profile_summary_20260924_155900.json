@@ -1,0 +1,66 @@
+{
+  "timestamp": "20260924_155900",
+  "base_url": "http://127.0.0.1:8000",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "mode": "decode",
+  "suites": {
+    "decode": [
+      {
+        "case": "D1",
+        "prompt_tokens": 128,
+        "output_tokens": 256,
+        "decode_tok_s": 46.74,
+        "tpot_p50_ms": 21.39,
+        "tpot_p95_ms": 21.39,
+        "itl_p50_ms": 20.33,
+        "itl_p95_ms": 40.09,
+        "itl_p99_ms": 40.9,
+        "ttft_p50_ms": 724.64,
+        "avg_power_w": 0.0,
+        "joules_per_decode_tok": 0.0
+      },
+      {
+        "case": "D2",
+        "prompt_tokens": 1024,
+        "output_tokens": 256,
+        "decode_tok_s": 43.76,
+        "tpot_p50_ms": 22.85,
+        "tpot_p95_ms": 22.85,
+        "itl_p50_ms": 23.17,
+        "itl_p95_ms": 23.52,
+        "itl_p99_ms": 23.63,
+        "ttft_p50_ms": 403.84,
+        "avg_power_w": 0.0,
+        "joules_per_decode_tok": 0.0
+      },
+      {
+        "case": "D3",
+        "prompt_tokens": 4096,
+        "output_tokens": 256,
+        "decode_tok_s": 31.68,
+        "tpot_p50_ms": 31.57,
+        "tpot_p95_ms": 31.57,
+        "itl_p50_ms": 32.13,
+        "itl_p95_ms": 32.51,
+        "itl_p99_ms": 32.62,
+        "ttft_p50_ms": 1436.87,
+        "avg_power_w": 0.0,
+        "joules_per_decode_tok": 0.0
+      },
+      {
+        "case": "D4",
+        "prompt_tokens": 8192,
+        "output_tokens": 256,
+        "decode_tok_s": 23.05,
+        "tpot_p50_ms": 43.38,
+        "tpot_p95_ms": 43.38,
+        "itl_p50_ms": 44.07,
+        "itl_p95_ms": 44.47,
+        "itl_p99_ms": 44.56,
+        "ttft_p50_ms": 1698.53,
+        "avg_power_w": 0.0,
+        "joules_per_decode_tok": 0.0
+      }
+    ]
+  }
+}

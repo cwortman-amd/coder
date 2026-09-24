@@ -4,7 +4,7 @@
   "provider": {
     "rocm-local": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "ROCm Local (AMD Radeon AI PRO R9700)",
+      "name": "ROCm Local (AMD GPU)",
       "options": {
         "baseURL": "http://127.0.0.1:8000/v1"
       },
@@ -12,8 +12,11 @@
         "Qwen3.8-27B": {
           "name": "Qwen 3.8 27B"
         },
-        "Qwen/Qwen3.8-27B-FP8": {
-          "name": "Qwen 3.8 27B (FP8)"
+        "Qwen3.8-27B-Quark-AWQ-MXFP4": {
+          "name": "Qwen 3.8 27B (Quark AWQ MXFP4)"
+        },
+        "Qwen3.8-27B-MXFP4": {
+          "name": "Qwen 3.8 27B (MXFP4 alias)"
         },
         "Qwen3.8-27B-Q4_K_M.gguf": {
           "name": "Qwen 3.8 27B (Q4_K_M GGUF)"

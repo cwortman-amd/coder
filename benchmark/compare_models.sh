@@ -21,8 +21,8 @@ fi
 if [ -f "${ROOT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${ROOT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${ROOT_DIR}/.env"
     set +a
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"

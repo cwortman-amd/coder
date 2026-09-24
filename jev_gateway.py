@@ -24,6 +24,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
+from contextlib import asynccontextmanager
 
 # ==============================================================================
 # Configuration
@@ -35,17 +36,33 @@ CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-latest")
 GATEWAY_PORT = int(os.getenv("GATEWAY_PORT", "8000"))
 MAX_LOCAL_PROMPT_CHARS = int(os.getenv("MAX_LOCAL_PROMPT_CHARS", "45000"))
+GATEWAY_HOST = os.getenv("GATEWAY_HOST", "127.0.0.1")
+GPU_LABEL = os.getenv("GPU_LABEL", "AMD GPU (R9700 gfx1201 or MI350P gfx950)")
+
+http_client: Optional[httpx.AsyncClient] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_client
+    http_client = httpx.AsyncClient(timeout=120.0)
+    yield
+    if http_client:
+        await http_client.aclose()
+        http_client = None
+
 
 app = FastAPI(
     title="Open Jev Semantic Routing Gateway",
-    description="TypeSafe local decision router between AMD Radeon AI PRO R9700 (Qwen 3.8 27B) and Cloud Claude",
-    version="1.0.0"
+    description="TypeSafe local decision router between local ROCm Qwen 3.8 27B and Cloud Claude",
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=os.getenv("GATEWAY_CORS_ORIGINS", "http://127.0.0.1:4096,http://localhost:4096").split(","),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -79,23 +96,24 @@ def open_jev_decision_engine(messages: List[Message]) -> str:
       "local_qwen"          -> Route to local AMD Radeon AI PRO R9700
       "claude_subscription" -> Route to Anthropic Claude 3.5 Sonnet
     """
-    user_nodes = [
-        str(m.content) for m in messages if m.role == "user"
-    ]
+    user_nodes = [str(m.content) for m in messages]
     if not user_nodes:
         return "local_qwen"
 
-    target_prompt = user_nodes[-1]
+    combined = "\n".join(user_nodes)
+    target_prompt = next((str(m.content) for m in reversed(messages) if m.role == "user"), combined)
     prompt_len = len(target_prompt)
-    target_lower = target_prompt.lower()
+    scan_lower = combined.lower()
 
     # Rule 1: Privacy Boundary (Absolute Priority - Never leak secrets to cloud)
     privacy_signals = [
-        "private_key", "internal_db", "api_key", "secret_key", 
+        "private_key", "internal_db", "api_key", "secret_key",
         "passwd", "password", ".env", "bearer", "credentials", "confidential"
     ]
-    if any(sig in target_lower for sig in privacy_signals):
+    if any(sig in scan_lower for sig in privacy_signals):
         return "local_qwen"
+
+    target_lower = target_prompt.lower()
 
     # Rule 2: High complexity markers or broad architectural requests scale to Claude
     cloud_signals = [
@@ -222,7 +240,7 @@ async def health_check():
         "router": "open-jev",
         "local_qwen_online": local_ok,
         "claude_available": bool(CLAUDE_API_KEY),
-        "target_hardware": "AMD Radeon AI PRO R9700 (gfx1201, 32GB VRAM)"
+        "target_hardware": GPU_LABEL
     }
 
 @app.get("/v1/models")
@@ -259,7 +277,8 @@ async def route_request(request: ChatRequest):
     # 1. Execute TypeSafe Jev Routing Logic
     target_backend = open_jev_decision_engine(request.messages)
 
-    client = httpx.AsyncClient()
+    client = http_client or httpx.AsyncClient()
+    close_after = http_client is None
 
     # Route A: Local Qwen 3.8 27B on AMD Radeon AI PRO R9700
     if target_backend == "local_qwen":
@@ -274,10 +293,12 @@ async def route_request(request: ChatRequest):
         else:
             try:
                 resp = await client.post(LOCAL_QWEN_URL, json=payload, timeout=120.0)
-                await client.aclose()
+                if close_after:
+                    await client.aclose()
                 return JSONResponse(status_code=resp.status_code, content=resp.json())
             except Exception as e:
-                await client.aclose()
+                if close_after:
+                    await client.aclose()
                 raise HTTPException(status_code=502, detail=f"Local llama.cpp server error: {str(e)}")
 
     # Route B: Anthropic Claude Subscription
@@ -290,7 +311,8 @@ async def route_request(request: ChatRequest):
                 return StreamingResponse(stream_local_qwen(client, payload), media_type="text/event-stream")
             else:
                 resp = await client.post(LOCAL_QWEN_URL, json=payload, timeout=120.0)
-                await client.aclose()
+                if close_after:
+                    await client.aclose()
                 return JSONResponse(status_code=resp.status_code, content=resp.json())
 
         # Translate OpenAI messages into Anthropic Messages format
@@ -324,7 +346,8 @@ async def route_request(request: ChatRequest):
         else:
             try:
                 resp = await client.post(CLAUDE_API_URL, headers=headers, json=anthropic_payload, timeout=90.0)
-                await client.aclose()
+                if close_after:
+                    await client.aclose()
                 if resp.status_code != 200:
                     raise HTTPException(status_code=resp.status_code, detail=resp.text)
                 anthropic_resp = resp.json()
@@ -351,7 +374,8 @@ async def route_request(request: ChatRequest):
                 }
                 return JSONResponse(status_code=200, content=openai_formatted)
             except Exception as e:
-                await client.aclose()
+                if close_after:
+                    await client.aclose()
                 raise HTTPException(status_code=502, detail=f"Claude forwarding error: {str(e)}")
 
 # ==============================================================================
@@ -362,4 +386,4 @@ if __name__ == "__main__":
     print(f"[*] Starting Open Jev Decision Gateway on http://127.0.0.1:{GATEWAY_PORT}")
     print(f"[*] Local Qwen backend: {LOCAL_QWEN_URL}")
     print(f"[*] Cloud Claude backend: {CLAUDE_API_URL} ({'ENABLED' if CLAUDE_API_KEY else 'DISABLED (No Key)'})")
-    uvicorn.run(app, host="127.0.0.1", port=GATEWAY_PORT)
+    uvicorn.run(app, host=GATEWAY_HOST, port=GATEWAY_PORT)

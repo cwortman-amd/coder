@@ -13,8 +13,8 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - "44"
-      - "109"
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
@@ -23,8 +23,10 @@ services:
       - SYS_NICE
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
       - ROCP_TOOL_ATTACH=1
-      - PYTORCH_ROCM_ARCH=gfx1201
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
       - HF_HOME=/root/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
@@ -45,9 +47,9 @@ services:
       - VLLM_ROCM_USE_AITER_FP4BMM=0
       - VLLM_ROCM_USE_AITER_RMSNORM=0
       - NCCL_PROTO=Simple
-      - R4D_ATTN_FP8=3
+      - R4D_ATTN_FP8=${RADIANCE_R4D_ATTN_FP8:-3}
       - RADIANCE_R4D_REPORT=1
-      - RADIANCE_USE_R4D=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
       - RADIANCE_MXFP4=1
       - RADIANCE_MXFP4_W4A8=1
       - RADIANCE_MXFP4_W4A8_MIN_M=0
@@ -68,9 +70,9 @@ services:
       - AITER_ROOT_DIR=/cache/aiter
     volumes:
       - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
-      - /home/amd/models:/models:ro
+      - ${MODELS_DIR:-./models}:/models:ro
       - ${MODELS_DIR:-./models}:/workspace/models:ro
-      - /home/amd/.cache/vllm-radiance:/cache
+      - ${VLLM_CACHE_DIR:-${HOME}/.cache/vllm-radiance}:/cache
       - .:/workspace
       - ./_results:/results
       - ./_results:/workspace/_results
@@ -114,7 +116,7 @@ services:
     environment:
       - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
       - OPENAI_API_KEY=dummy-local-key
-      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B-MXFP4}
+      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
       - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - .:/workspace
@@ -150,7 +152,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
     entrypoint: ["python3"]
-    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:${INFERENCE_PORT:-8000}/v1", "--dataset", "sample"]
 
 volumes:
   opencode-data:

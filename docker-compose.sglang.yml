@@ -1,6 +1,8 @@
 services:
   # ============================================================================
-  # Inference Engine: SGLang for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
+  # Inference Engine: SGLang for AMD ROCm
+  # R9700 (gfx1201): coder-sglang:latest
+  # MI350P (gfx950):  rocm/sgl-dev:v0.5.15.post1-ubuntu24.04-py3.14-rocm10.0.0
   # ============================================================================
   inference:
     image: ${SGLANG_IMAGE:-coder-sglang:latest}
@@ -12,52 +14,100 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     group_add:
-      - video
-      - render
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
       - label=disable
-    shm_size: 16g
+    shm_size: 64g
     environment:
       - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
-      - PYTORCH_ROCM_ARCH=gfx1201
-      - HSA_OVERRIDE_GFX_VERSION=12.0.1
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_ARCHS=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
       - HF_HOME=/root/.cache/huggingface
       - HF_TOKEN=${HF_TOKEN:-}
       - SAFETENSORS_FAST_GPU=1
+      - HIP_FORCE_DEV_KERNARG=1
+      - TOKENIZERS_PARALLELISM=false
+      - PYTHONUNBUFFERED=1
+      - ROCM_USE_AITER=${ROCM_USE_AITER:-1}
       - SGLANG_MODEL_PATH=${SGLANG_MODEL_PATH:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}
       - SGLANG_TOKENIZER_PATH=${SGLANG_TOKENIZER_PATH:-}
       - SGLANG_LOAD_FORMAT=${SGLANG_LOAD_FORMAT:-auto}
+      - SGLANG_SERVED_MODEL_NAME=${SGLANG_SERVED_MODEL_NAME:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}
       - INFERENCE_PORT=${INFERENCE_PORT:-8000}
       - GPU_MEM_UTIL=${GPU_MEM_UTIL:-0.85}
-      - SGLANG_TOOL_PARSER=${SGLANG_TOOL_PARSER:-qwen25}
+      - SGLANG_TOOL_PARSER=${SGLANG_TOOL_PARSER:-qwen3_coder}
+      - SGLANG_REASONING_PARSER=${SGLANG_REASONING_PARSER:-qwen3}
+      - SGLANG_ATTENTION_BACKEND=${SGLANG_ATTENTION_BACKEND:-aiter}
+      - SGLANG_CONTEXT_LENGTH=${SGLANG_CONTEXT_LENGTH:-131072}
+      - SGLANG_CHUNKED_PREFILL=${SGLANG_CHUNKED_PREFILL:-16384}
+      - SGLANG_PAGE_SIZE=${SGLANG_PAGE_SIZE:-1}
+      - SGLANG_KV_CACHE_DTYPE=${SGLANG_KV_CACHE_DTYPE:-auto}
+      - SGLANG_MAMBA_RADIX=${SGLANG_MAMBA_RADIX:-no_buffer}
+      - SGLANG_DISABLE_OVERLAP=${SGLANG_DISABLE_OVERLAP:-1}
+      - SGLANG_CUDA_GRAPH_MAX_BS=${SGLANG_CUDA_GRAPH_MAX_BS:-8}
+      - SGLANG_EXTRA_ARGS=${SGLANG_EXTRA_ARGS:-}
     volumes:
       - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
-      - ./models:/models
+      - ${MODELS_DIR:-./models}:/models
       - ./_results:/results
     entrypoint: ["/bin/bash", "-c"]
-    command: >
-      '
-        CMD_ARGS="--model-path $${SGLANG_MODEL_PATH} --host 0.0.0.0 --port $${INFERENCE_PORT} --tp 1 --mem-fraction-static $${GPU_MEM_UTIL} --trust-remote-code"
+    command:
+      - |
+        set -euo pipefail
+        # Image bake can leave stale AITER ninja locks that hang graph capture.
+        find /sgl-workspace/aiter/aiter/jit \( -name 'lock*' -o -name '.ninja_lock' \) -delete 2>/dev/null || true
+        CMD_ARGS="--model-path $${SGLANG_MODEL_PATH} --served-model-name $${SGLANG_SERVED_MODEL_NAME} --host 0.0.0.0 --port $${INFERENCE_PORT} --tp-size 1 --mem-fraction-static $${GPU_MEM_UTIL} --trust-remote-code --enable-metrics"
         if [ -n "$${SGLANG_TOKENIZER_PATH}" ]; then
           CMD_ARGS="$$CMD_ARGS --tokenizer-path $${SGLANG_TOKENIZER_PATH}"
         fi
         if [ "$${SGLANG_LOAD_FORMAT}" = "gguf" ] || [[ "$${SGLANG_MODEL_PATH}" == *.gguf ]]; then
           CMD_ARGS="$$CMD_ARGS --load-format gguf"
         fi
+        if [ -n "$${SGLANG_ATTENTION_BACKEND}" ]; then
+          CMD_ARGS="$$CMD_ARGS --attention-backend $${SGLANG_ATTENTION_BACKEND}"
+        fi
+        if [ -n "$${SGLANG_CONTEXT_LENGTH}" ]; then
+          CMD_ARGS="$$CMD_ARGS --context-length $${SGLANG_CONTEXT_LENGTH}"
+        fi
+        if [ -n "$${SGLANG_CHUNKED_PREFILL}" ]; then
+          CMD_ARGS="$$CMD_ARGS --chunked-prefill-size $${SGLANG_CHUNKED_PREFILL}"
+        fi
+        if [ -n "$${SGLANG_PAGE_SIZE}" ]; then
+          CMD_ARGS="$$CMD_ARGS --page-size $${SGLANG_PAGE_SIZE}"
+        fi
+        if [ -n "$${SGLANG_KV_CACHE_DTYPE}" ]; then
+          CMD_ARGS="$$CMD_ARGS --kv-cache-dtype $${SGLANG_KV_CACHE_DTYPE}"
+        fi
+        if [ -n "$${SGLANG_REASONING_PARSER}" ]; then
+          CMD_ARGS="$$CMD_ARGS --reasoning-parser $${SGLANG_REASONING_PARSER}"
+        fi
         if [ -n "$${SGLANG_TOOL_PARSER}" ]; then
           CMD_ARGS="$$CMD_ARGS --tool-call-parser $${SGLANG_TOOL_PARSER}"
         fi
+        if [ -n "$${SGLANG_MAMBA_RADIX}" ]; then
+          CMD_ARGS="$$CMD_ARGS --mamba-radix-cache-strategy $${SGLANG_MAMBA_RADIX}"
+        fi
+        if [ "$${SGLANG_DISABLE_OVERLAP}" = "1" ]; then
+          CMD_ARGS="$$CMD_ARGS --disable-overlap-schedule"
+        fi
+        if [ -n "$${SGLANG_CUDA_GRAPH_MAX_BS}" ]; then
+          CMD_ARGS="$$CMD_ARGS --cuda-graph-max-bs-decode $${SGLANG_CUDA_GRAPH_MAX_BS}"
+        fi
+        if [ -n "$${SGLANG_EXTRA_ARGS}" ]; then
+          CMD_ARGS="$$CMD_ARGS $${SGLANG_EXTRA_ARGS}"
+        fi
         echo "Launching SGLang: python3 -m sglang.launch_server $$CMD_ARGS"
         exec python3 -m sglang.launch_server $$CMD_ARGS
-      '
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/v1/models || exit 1"]
       interval: 15s
       timeout: 10s
-      retries: 20
-      start_period: 60s
+      retries: 40
+      start_period: 180s
 
   # ============================================================================
   # Client Agent: OpenCode CLI (ghcr.io/anomalyco/opencode)
@@ -84,7 +134,6 @@ services:
       - ./opencode.json:/root/.config/opencode/opencode.json:ro
       - opencode-data:/root/.local/share/opencode
     working_dir: /workspace
-    # Automatically launches the OpenCode Web UI on port 4096 for interactive demos
     command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "0.0.0.0"]
 
   # ============================================================================
@@ -112,7 +161,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HF_HOME:-${HF_CACHE_DIR:-/home/amd/.cache/huggingface}}:/root/.cache/huggingface
     entrypoint: ["python3"]
-    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:8000/v1", "--dataset", "sample"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:${INFERENCE_PORT:-8000}/v1", "--dataset", "sample"]
 
 volumes:
   opencode-data:

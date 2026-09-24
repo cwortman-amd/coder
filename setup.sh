@@ -10,6 +10,8 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/gpu_profile.sh"
 
 # ANSI Colors
 GREEN='\033[0;32m'
@@ -31,10 +33,9 @@ fi
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     PREV_HF_TOKEN="${HF_TOKEN:-}"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
-    # Retain HF_TOKEN from ~/.env if .env did not define it or had it empty
     if [ -z "${HF_TOKEN:-}" ] && [ -n "${PREV_HF_TOKEN}" ]; then
         export HF_TOKEN="${PREV_HF_TOKEN}"
     fi
@@ -42,20 +43,14 @@ elif [ -f "${SCRIPT_DIR}/.env.example" ]; then
     echo -e "${YELLOW}Notice: .env not found. Initializing from .env.example...${NC}"
     cp "${SCRIPT_DIR}/.env.example" "${SCRIPT_DIR}/.env"
     set -a
-    # shellcheck disable=SC1090
-    source <(grep -v '^[[:space:]]*#' "${SCRIPT_DIR}/.env" | grep -v '^[[:space:]]*$')
+    # shellcheck disable=SC1091
+    source "${SCRIPT_DIR}/.env"
     set +a
 fi
 
 # 3. Synchronize HF_TOKEN into .env so Docker Compose picks it up natively
 if [ -n "${HF_TOKEN:-}" ] && [ -f "${SCRIPT_DIR}/.env" ]; then
-    if grep -q '^[[:space:]]*HF_TOKEN=' "${SCRIPT_DIR}/.env"; then
-        if grep -q '^[[:space:]]*HF_TOKEN=[[:space:]]*$' "${SCRIPT_DIR}/.env"; then
-            sed -i "s|^[[:space:]]*HF_TOKEN=.*|HF_TOKEN=${HF_TOKEN}|" "${SCRIPT_DIR}/.env"
-        fi
-    else
-        printf "\n# Hugging Face Access Token (auto-loaded from ~/.env during setup)\nHF_TOKEN=%s\n" "${HF_TOKEN}" >> "${SCRIPT_DIR}/.env"
-    fi
+    fill_empty_env_var "HF_TOKEN" "$HF_TOKEN" "${SCRIPT_DIR}/.env"
 fi
 
 export HF_TOKEN="${HF_TOKEN:-}"
@@ -86,22 +81,31 @@ while [[ $# -gt 0 ]]; do
             OPENCODE_PORT="$2"
             shift 2
             ;;
+        -g|--gpu-profile)
+            GPU_PROFILE="$2"
+            shift 2
+            ;;
         -h|--help)
             echo "Usage: ./setup.sh [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  -e, --engine <vllm|llama.cpp|sglang>  Inference engine (default: vllm)"
+            echo "  -e, --engine <vllm|llama.cpp|sglang|mxfp4>  Inference engine (default: vllm)"
             echo "  -m, --model <name>                   Model name or HF repository ID"
             echo "  -p, --port <port>                    Inference API port (default: 8000)"
             echo "  --opencode-port <port>               OpenCode Web UI port (default: 4096)"
+            echo "  -g, --gpu-profile <r9700|mi350p|auto>  Target GPU (default: auto)"
             echo "  -h, --help                           Show this help message"
             (return 0 2>/dev/null) && return 0 || exit 0
             ;;
         *)
-            shift
+            echo "Unknown option: $1" >&2
+            echo "Run ./setup.sh --help for usage." >&2
+            (return 0 2>/dev/null) && return 1 || exit 1
             ;;
     esac
 done
+
+apply_gpu_profile
 
 ENGINE="${ENGINE,,}" # Lowercase
 if [ "$ENGINE" = "llama.cpp" ] || [ "$ENGINE" = "gguf" ]; then
@@ -114,25 +118,44 @@ elif [ "$ENGINE" = "sglang" ]; then
     COMPOSE_FILE="docker-compose.sglang.yml"
     ENGINE_LABEL="SGLang ROCm Server"
     MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}"
-else
-    # Default: vLLM
+elif [ "$ENGINE" = "mxfp4" ]; then
+    ENGINE="mxfp4"
+    COMPOSE_FILE="docker-compose.mxfp4.yml"
+    ENGINE_LABEL="vLLM MXFP4 / Radiance"
+    MODEL="${MODEL_OVERRIDE:-${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
+elif [ "$ENGINE" = "vllm" ]; then
     ENGINE="vllm"
     COMPOSE_FILE="docker-compose.yml"
     ENGINE_LABEL="vLLM ROCm Server (Default)"
     MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}"
-    # Normalize model alias to full repo ID for vLLM
     if [ "$MODEL" = "Qwen3.8-27B" ]; then
         MODEL="Qwen/Qwen3.8-27B-FP8"
     fi
+else
+    echo -e "${RED}Unknown inference engine: ${ENGINE}${NC}" >&2
+    echo "Supported: vllm, llama.cpp, sglang, mxfp4" >&2
+    (return 0 2>/dev/null) && return 1 || exit 1
 fi
 export MODEL_NAME="$MODEL"
 export INFERENCE_ENGINE="$ENGINE"
+export INFERENCE_PORT OPENCODE_PORT COMPOSE_FILE GPU_PROFILE PYTORCH_ROCM_ARCH
+export HIP_VISIBLE_DEVICES VIDEO_GID RENDER_GID VLLM_IMAGE GGUF_IMAGE MXFP4_IMAGE
+export MAX_MODEL_LEN GPU_MEM_UTIL KV_CACHE_MEMORY_BYTES VLLM_COMPILATION_CONFIG
+export HSA_OVERRIDE_GFX_VERSION VLLM_ROCM_FP8_PADDING RADIANCE_USE_R4D RADIANCE_R4D_ATTN_FP8
+export GPU_LABEL MODELS_DIR HF_HOME HF_CACHE_DIR ROUTER_BIND_HOST
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    upsert_env_var "COMPOSE_FILE" "$COMPOSE_FILE" "${SCRIPT_DIR}/.env"
+    upsert_env_var "INFERENCE_ENGINE" "$ENGINE" "${SCRIPT_DIR}/.env"
+    upsert_env_var "GPU_PROFILE" "$GPU_PROFILE" "${SCRIPT_DIR}/.env"
+    upsert_env_var "INFERENCE_PORT" "$INFERENCE_PORT" "${SCRIPT_DIR}/.env"
+    upsert_env_var "OPENCODE_PORT" "$OPENCODE_PORT" "${SCRIPT_DIR}/.env"
+fi
 
 echo -e "${BLUE}${BOLD}============================================================${NC}"
 echo -e "${BLUE}${BOLD}   Starting AMD ROCm Inference & OpenCode Stack             ${NC}"
 echo -e "${BLUE}${BOLD}============================================================${NC}"
 echo -e "Inference Engine   : ${GREEN}${BOLD}${ENGINE_LABEL}${NC}"
-echo -e "GPU Compute Target : ${BOLD}AMD Radeon™ AI PRO R9700 (gfx1201)${NC}"
+echo -e "GPU Compute Target : ${BOLD}${GPU_LABEL}${NC}"
 echo -e "Configured Model   : ${BOLD}${MODEL}${NC}"
 echo -e "Inference API Port : ${BOLD}http://localhost:${INFERENCE_PORT}/v1${NC}"
 echo -e "OpenCode Web Port  : ${BOLD}http://localhost:${OPENCODE_PORT}${NC}"
@@ -208,6 +231,9 @@ if p and isinstance(p, str) and os.path.exists(p):
         GGUF_BASENAME=$(basename "$TARGET_GGUF")
         export SGLANG_MODEL_PATH="/models/${GGUF_BASENAME}"
         export SGLANG_TOKENIZER_PATH="${SGLANG_TOKENIZER_PATH:-Qwen/Qwen3.8-27B}"
+        case "${SGLANG_TOKENIZER_PATH}" in
+            *Qwen2.5*) export SGLANG_TOKENIZER_PATH="Qwen/Qwen3.8-27B" ;;
+        esac
         export SGLANG_LOAD_FORMAT="gguf"
         echo -e "SGLang Model Path  : ${GREEN}${SGLANG_MODEL_PATH}${NC}"
         echo -e "SGLang Tokenizer   : ${GREEN}${SGLANG_TOKENIZER_PATH}${NC}"
@@ -247,15 +273,17 @@ echo -e "  1. ${BOLD}Verify server readiness & live response:${NC}"
 echo -e "     ${YELLOW}./check.sh --wait 60${NC}"
 echo ""
 echo -e "  2. ${BOLD}Monitor model loading & kernel compilation logs:${NC}"
-echo -e "     ${YELLOW}docker compose logs -f inference${NC}"
+echo -e "     ${YELLOW}docker compose -f ${COMPOSE_FILE} logs -f inference${NC}"
 echo ""
 echo -e "  3. ${BOLD}Interact with OpenCode:${NC}"
 echo -e "     - Web UI:      Navigate to ${GREEN}http://localhost:${OPENCODE_PORT}${NC} in your browser"
-echo -e "     - Terminal TUI: Run ${YELLOW}docker compose exec -it opencode opencode${NC}"
+echo -e "     - Terminal TUI: Run ${YELLOW}docker compose -f ${COMPOSE_FILE} exec -it opencode opencode${NC}"
 echo -e "     - Host Shell:   Run ${YELLOW}opencode${NC} (if installed locally on host)"
 echo ""
 echo -e "  4. ${BOLD}Run Benchmarks & Generate Summary Report:${NC}"
-echo -e "     - Run both tests & summary: ${YELLOW}./test.sh${NC} (Supports: -s sample, -d diamond, -m main, -a all)"
-echo -e "     - SWE-bench only:           ${YELLOW}docker compose run --rm --no-deps benchmark${NC}"
+echo -e "     - Accuracy + throughput:    ${YELLOW}./test.sh -q${NC}"
+echo -e "     - Accuracy only:            ${YELLOW}./accuracy.sh -s${NC}"
+echo -e "     - Throughput only:          ${YELLOW}./throughput.sh -q${NC}"
+echo -e "     - SWE-bench only:           ${YELLOW}docker compose -f ${COMPOSE_FILE} run --rm --no-deps benchmark${NC}"
 echo -e "     - GPQA only:                ${YELLOW}python3 benchmark/run_gpqa.py --dataset sample${NC}"
 echo -e "${BLUE}============================================================${NC}"

@@ -31,6 +31,9 @@ logger = logging.getLogger("chunk_slo_bench")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+if PROJECT_DIR not in sys.path:
+    sys.path.insert(0, PROJECT_DIR)
+from benchmark.sse_util import sse_has_content  # noqa: E402
 RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "chunk_sweep")
 COMPOSE_FILE = os.path.join(PROJECT_DIR, "docker-compose.mxfp4.yml")
 
@@ -88,13 +91,28 @@ def restart_server_with_chunk_size(chunk_size: int):
     logger.info(f"\n=======================================================")
     logger.info(f"  RECONFIGURING SERVER: --max-num-batched-tokens {chunk_size}")
     logger.info(f"=======================================================")
-    cmd_stop = "docker stop rocm-mxfp4-server && docker rm rocm-mxfp4-server"
-    subprocess.run(cmd_stop, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(
+        ["docker", "stop", "rocm-mxfp4-server"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    subprocess.run(
+        ["docker", "rm", "rocm-mxfp4-server"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
 
     env = os.environ.copy()
     env["MAX_NUM_BATCHED_TOKENS"] = str(chunk_size)
-    cmd_up = f"MAX_NUM_BATCHED_TOKENS={chunk_size} docker compose -f {COMPOSE_FILE} up -d inference"
-    res = subprocess.run(cmd_up, shell=True, env=env, capture_output=True, text=True)
+    res = subprocess.run(
+        ["docker", "compose", "-f", COMPOSE_FILE, "up", "-d", "inference"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     if res.returncode != 0:
         logger.error(f"Failed to start container: {res.stderr}")
         raise RuntimeError("Failed to restart container")
@@ -128,7 +146,7 @@ async def run_streaming_request(
                 if not line:
                     continue
                 t_arr = time.perf_counter()
-                if line.startswith("data: "):
+                if sse_has_content(line):
                     chunk_times.append(t_arr)
 
         if not chunk_times:

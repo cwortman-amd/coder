@@ -18,10 +18,10 @@ import sys
 import time
 from datetime import datetime
 
-RESULTS_DIR = "/home/amd/workspace/coder/_results/r9700_mxfp4_concurrency"
-TELEMETRY_DIR = "/home/amd/workspace/coder/_results/telemetry"
-DOCS_DIR = "/home/amd/workspace/coder/docs"
-DOCKER_RESULTS_DIR = "/results/r9700_mxfp4_concurrency"
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "concurrency_sweep")
+TELEMETRY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "telemetry")
+DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
+DOCKER_RESULTS_DIR = "/results/concurrency_sweep"
 
 PROMPT_COUNTS = {
     1: 50,
@@ -175,9 +175,9 @@ def main():
             agg_tok_s = bench_data.get("output_throughput", 0.0)
             total_output_tokens = bench_data.get("total_output_tokens", completed_prompts * args.output_len)
             ttft_p50 = bench_data.get("median_ttft_ms", 0.0)
-            ttft_p95 = bench_data.get("p99_ttft_ms", 0.0)
+            ttft_p95 = bench_data.get("p95_ttft_ms", bench_data.get("p99_ttft_ms", 0.0))
             tpot_p50 = bench_data.get("median_tpot_ms", 0.0)
-            tpot_p95 = bench_data.get("p99_tpot_ms", 0.0)
+            tpot_p95 = bench_data.get("p95_tpot_ms", bench_data.get("p99_tpot_ms", 0.0))
             avg_power = pwr_data.get("avg_power_w", 0.0)
             max_power = pwr_data.get("max_power_w", 0.0)
             total_energy = pwr_data.get("total_energy_joules", 0.0)
