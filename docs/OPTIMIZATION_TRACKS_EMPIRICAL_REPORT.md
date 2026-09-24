@@ -128,15 +128,56 @@ To pinpoint the exact Pareto-optimal chunk size, all four configurations were ev
 ### Key Technical Findings from Chunk Sweep
 1. **The 2048 Chunk Pareto Optimum**:
    - Dropping chunk size from 4096 to 2048 imposes only a **minor 6.7% throughput penalty** on prompt ingestion (2,688.7 tok/s vs 2,881.8 tok/s).
-   - Under J1 burst prefill conditions, Chunk 2048 delivers **33.22 decode tok/s** (higher than 4096's 31.37 tok/s), and bounds peak stall to **50.6 ms** with $p95\text{ ITL} = 49.5\text{ ms}$.
-   - Under continuous J3 saturation, peak stall is bounded to **253.9 ms**.
-2. **The Chunk 512 Breakdown**:
+   - In the measured continuous-burst workload with prefix caching active, a 2,048-token setting limited the maximum recorded token interval to **253.9 ms**, while retaining 93.3% of the peak 8K prompt-ingestion rate.
+2. **The Non-Monotonic Response (The Chunk 512 Breakdown)**:
+   - Chunk sizing has a **non-monotonic response**. Below a runtime-specific granularity threshold, fragmentation and scheduler/Inductor overhead can become worse than the contention being mitigated.
    - Reducing chunk size to 512 degrades prompt ingestion by **33.3%** (TTFT inflates from 2.84s to 4.26s).
-   - More critically, in J1 burst mode, generating decode tokens drops to an unviable **3.45 tok/s** (TPOT inflates to 290 ms). This occurs because breaking an 8K prompt into 16 separate 512-token chunks causes continuous kernel launch, dispatch synchronization, and Inductor boundary thrashing, preventing the decode stream from advancing smoothly.
+   - In J1 burst mode, generating decode tokens drops to an unviable **3.45 tok/s** (TPOT inflates to 290 ms) because breaking an 8K prompt into 16 separate 512-token chunks causes continuous kernel launch, dispatch synchronization, and Inductor boundary thrashing.
 
 ---
 
-## 3. Track 3: Mixed Workload & Interactive SLO Benchmark
+## 3. Reconciling the Stall Numbers: Cold vs. Warm Prefill Quanta
+
+A critical technical question arises when comparing the initial phase profiling against the chunk sweep:
+- In [`SINGLE_R9700_PHASE_PROFILING.md`](SINGLE_R9700_PHASE_PROFILING.md), J1–J3 contention reported **~1,354–1,365 ms stalls**.
+- In the initial chunk sweep table, Chunk 4096 reported **53.4 ms (J1)** and **270.3 ms (J3)**.
+
+### Experimental Methodology Specification
+To eliminate ambiguity, the experimental parameters for both configurations are explicitly specified:
+
+```text
+Server image digest:        local/vllm-mxfp4:gfx1201 (vllm 0.27.1-3bc24877)
+Model & Quantization:       Qwen/Qwen3.8-27B-FP8 (Quark AWQ MXFP4 W4A8, FP8 KV cache, AITER Unified Attention)
+ROCm/runtime version:       ROCm 7.14.0 / Driver 31.50
+max-model-len:              9,600 tokens
+max-num-batched-tokens:     4096 vs. 2048 vs. 1024 vs. 512
+prefix caching:             DISABLED (initial baseline) vs. ENABLED (sweep)
+prefix cache state:         Cold (100% uncached, unique tokens) vs. Warm (L1 cached exact token prefix)
+victim stream input/output: 1,024 prompt tokens / 150–256 output tokens
+burst stream input/output:  8,192 prompt tokens / 1 output token
+arrival distribution:       Synthetic deterministic burst (J1/J3) vs. Poisson lambda=0.2 req/s (Mixed SLO)
+ITL definition:             t_{i} - t_{i-1} measured from SSE streaming arrival chunks
+peak-stall definition:      max(ITL) across the active generation stream
+```
+
+### Empirical Root-Cause Reconciliation: Cold vs. Warm Bursts
+Targeted A/B experiments were executed against both Chunk 4096 and Chunk 2048 to isolate the exact impact of **Cold (100% Uncached)** vs. **Warm (L1 Prefix-Cached)** 8K burst prefills during active streaming decode:
+
+| Chunk Size | Background Prompt State | Measured 8K Ingestion Time | Max ITL Decode Stall | Scheduling & Forward Execution Mechanism |
+| :---: | :---: | :---: | :---: | :--- |
+| **4096** | **Cold (100% Uncached)** | **2.79 s** | **1,108.5 ms** | Serialized 4K forward chunk blocks decode (~1.1–1.35s raw GEMM) |
+| **4096** | **Warm (Prefix Cached)** | **0.30 s** | **229.7 ms** | 9.24× prompt speedup bypasses GEMM execution; minimal delay |
+| **2048** | **Cold (100% Uncached)** | **3.03 s** | **609.7 ms** | **Halves cold peak stall**: 2K chunk GEMM executes in ~600 ms |
+| **2048** | **Warm (Prefix Cached)** | **0.30 s** | **274.3 ms** | Bounded forward quantum with warm prefix reuse |
+
+### Technical Explanation
+1. **The Initial Baseline (~1.35s stall)**: In `SINGLE_R9700_PHASE_PROFILING.md`, `--enable-prefix-caching` was **disabled**. Every background prefill was a 100% cold recomputation, forcing the scheduler to execute full 4,096-token GEMM chunks that locked the GPU forward loop for **~1.11 to 1.35 seconds**.
+2. **The Sweep Lower Numbers (53–270 ms)**: In `bench_chunk_and_slo.py`, `--enable-prefix-caching` was **active**, and the background attacker used repeated prompt tokens. After the initial burst, subsequent prompts hit the L1 prefix cache, completing in **~300 ms** ($9.24\times$ speedup) and compressing the observed stall.
+3. **The Chunk 2048 Cold Guarantee**: When a completely cold, uncached 8K prompt arrives, **Chunk 2048 cuts the peak forward execution stall directly in half (from 1,108.5 ms down to 609.7 ms)** because each prefill execution quantum is bounded to 2,048 tokens.
+
+---
+
+## 4. Track 3: Mixed Workload & Interactive SLO Benchmark
 
 ### Methodology
 To simulate production agent workloads, the benchmark exercised:
@@ -169,14 +210,34 @@ To simulate production agent workloads, the benchmark exercised:
                 Chunk 4096      Chunk 2048      Chunk 1024       Chunk 512
 ```
 
-### Analysis of SLO Results
-1. **The 50 ms Threshold Reality**: At concurrency $C=2$, base decode TPOT naturally sits around ~50–51 ms ($2 \times 25\text{--}26\text{ ms}$). Consequently, a 50 ms SLO is slightly too aggressive for multi-sequence decode on a single card; 58% to 80% of tokens hover just above 50 ms.
-2. **The 100 ms Streaming SLO**: Under Chunk 4096, **0.0% of tokens exceeded 100 ms**, with peak ITL bounded at 59.5 ms. Under Chunk 2048, **96.55% of tokens satisfied the 100 ms SLO**.
-3. **Throughput Efficiency**: Chunk 4096 delivered the highest aggregate decode rate (**48.61 tok/s**), while Chunk 2048 delivered **41.53 tok/s**. Chunks 1024 and 512 dropped to ~30 tok/s due to scheduling overhead.
+### Analysis & Service Tier Architecture
+1. **The 50 ms Threshold Reality**: At concurrency $C=2$, base decode TPOT naturally sits around ~51 ms ($2 \times 25.5\text{ ms}$). Consequently, a 50 ms SLO is **structurally incompatible with two active decode streams on a single card**; 63.55% of tokens exceed 50 ms at Chunk 2048.
+2. **The 100 ms Streaming SLO**: Under Chunk 2048, **96.55% of output-token intervals were below 100 ms**, with 41.53 aggregate output tokens/s.
+3. **Multi-Tier Service Architecture**:
+
+| Service Tier | Target Latency SLO | Operational Policy & Routing |
+| :--- | :--- | :--- |
+| **Interactive Standard** | $p95\text{ ITL} < 100\text{ ms}$ | 2K chunk, prefix caching enabled, admission control at $C \le 2$ |
+| **Premium Streaming** | $p95\text{ ITL} < 50\text{ ms}$ | 1 active decode stream ($C=1$) per R9700, or dedicated decode GPU via P/D |
+| **Batch / Long-Context Ingest**| Throughput & completion time | 4K chunk, asynchronous queue, lower scheduling priority |
+| **Repeated Agent/Coding Session**| Warm-prefix TTFT (<350ms) | Session routing affinity, GPU KV cache retention protection |
 
 ---
 
-## 4. Track 4: Dual-Card Readiness & P/D Container Dependencies
+## 5. Production Guardrails & Operational Policy
+
+To achieve the measured latency and throughput characteristics in production, the following operational guardrails must be enforced:
+
+1. **Session Routing Affinity**: Route all subsequent turns of an agentic session to the same vLLM engine instance to preserve GPU-resident L1 prefix blocks.
+2. **Prompt & Template Canonicalization**: Canonicalize chat templates, system prompts, tool definitions, and repository context so that prefixes remain strictly bit-identical.
+3. **KV Cache Retention & Eviction Protection**: Configure high-priority retention for active sessions to prevent large cold prefills from evicting warm agent context.
+4. **Admission Control on Cold Prefills**: Implement token-bucket rate limiting on incoming cold prompts; Poisson $\lambda = 0.2\text{ req/s}$ is sustainable, but higher arrival bursts will degrade interactive streams without admission control.
+5. **Dedicated Ingestion Queue**: Direct repository indexing, large code ingestion, and cold document summaries to an asynchronous lower-priority queue.
+6. **Telemetry & SLO Monitoring**: Export vLLM's `vllm:time_to_first_token_seconds` and `vllm:inter_token_latency_seconds` Prometheus histograms to alert when $p95\text{ ITL}$ breaches 100 ms.
+
+---
+
+## 6. Track 4: Dual-Card Readiness & P/D Container Dependencies
 
 ### 1. Hardware Topology & Preflight Gate Verification
 Running [`inspect_dual_gpu.py`](../inspect_dual_gpu.py) verified the physical configuration of the current development workstation:
@@ -210,7 +271,7 @@ Probing `local/vllm-mxfp4:gfx1201` revealed the active status of upstream KV con
 
 ---
 
-## 5. Master Recommended Production Configuration
+## 7. Master Recommended Production Configuration
 
 Based on the empirical findings across all four tracks, the optimal production configurations for the AMD Radeon AI PRO R9700 are:
 
@@ -241,7 +302,7 @@ command: >
 
 ---
 
-### Artifacts & Summary Dataset
+## 8. Artifacts & Summary Dataset
 All raw metrics, logs, and telemetry are persisted in the centralized results directory:
 - Master Chunk Sweep & SLO Summary: [`_results/chunk_sweep/chunk_sweep_summary_20260923_195203.json`](../_results/chunk_sweep/chunk_sweep_summary_20260923_195203.json)
 - Prefix Caching Summary: [`_results/phase_profiling/phase_profile_summary_20260923_194752.json`](../_results/phase_profiling/phase_profile_summary_20260923_194752.json)

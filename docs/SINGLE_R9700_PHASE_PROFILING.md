@@ -375,16 +375,16 @@ Based strictly on this empirical evidence from the single Radeon AI PRO R9700:
 To translate these single-card phase findings into concrete serving optimizations, the four empirical tracks were executed and validated. For detailed methodology and raw telemetry datasets, see the dedicated [Optimization Tracks Empirical Report](OPTIMIZATION_TRACKS_EMPIRICAL_REPORT.md):
 
 ### Experiment 1: Prefill Chunk Size Sweep ($4096 \to 2048 \to 1024 \to 512$) — **[COMPLETED & VALIDATED]**
-- **Outcome**: Evaluated all four chunk sizes via [`benchmark/bench_chunk_and_slo.py`](../benchmark/bench_chunk_and_slo.py).
-- **Key Finding**: Identified **Chunk 2048 as the optimal Pareto sweet spot**: it retains **93.3% of maximum prompt ingestion throughput** (2,688.7 vs 2,881.8 tok/s) while bounding J3 continuous prefill saturation peak stall to **253.9 ms** and sustaining 33.22 decode tok/s. Chunk 512 suffers an unacceptable 33.3% prefill throughput penalty (1,923 tok/s) due to kernel launch fragmentation.
+- **Outcome**: Evaluated all four chunk sizes via [`benchmark/bench_chunk_and_slo.py`](../benchmark/bench_chunk_and_slo.py) and reconciled the cold vs. warm stall mechanisms.
+- **Key Finding**: Identified **Chunk 2048 as the optimal Pareto sweet spot**: it retains **93.3% of maximum prompt ingestion throughput** (2,688.7 vs 2,881.8 tok/s). On cold (100% uncached) 8K prefill bursts, Chunk 2048 **halves the peak forward decode stall from 1,108.5 ms down to 609.7 ms**. Under warm prefix caching, J3 continuous prefill saturation peak stall is bounded to **253.9 ms** while sustaining 33.22 decode tok/s. Chunk 512 suffers an unacceptable 33.3% prefill throughput penalty (1,923 tok/s) and collapses burst decode to 3.45 tok/s due to Inductor kernel launch fragmentation.
 
 ### Experiment 2: Mixed Batching with Explicit SLO Violation Tracking — **[COMPLETED & VALIDATED]**
-- **Outcome**: Benchmarked concurrent decode streams under Poisson 8K prefill arrivals ($\lambda = 0.2\text{ req/s}$).
-- **Key Finding**: Under Chunk 2048, **96.55% of tokens satisfy the 100 ms interactive SLO** (only 3.45% exceed 100 ms), with 0% exceeding 300 ms, while delivering 41.53 tok/s aggregate generation.
+- **Outcome**: Benchmarked concurrent decode streams ($C=2$) under Poisson 8K prefill arrivals ($\lambda = 0.2\text{ req/s}$).
+- **Key Finding**: Because base decode TPOT at $C=2$ is ~51 ms, a 50 ms SLO is structurally unachievable on a single GPU. For a 100 ms streaming SLO, Chunk 2048 achieved **96.55% compliance (only 3.45% > 100 ms)** and 0% > 300 ms, with 41.53 tok/s aggregate throughput. Formulated the multi-tier service architecture (Interactive Standard $<100\text{ ms}$ at $C \le 2$; Premium Streaming $<50\text{ ms}$ at $C=1$ or P/D; Batch 4K chunk).
 
 ### Experiment 3: Empirical Prefix Caching Validation — **[COMPLETED & VALIDATED]**
 - **Outcome**: Enabled `--enable-prefix-caching` in `docker-compose.mxfp4.yml` and evaluated 0%, 25%, 50%, 75%, and 100% prefix reuse.
-- **Key Finding**: Validated our analytical model: 75% prefix cache saves **1,863.0 ms of TTFT (3.04× speedup)** (vs ~1,984.6 ms analytical projection). On 100% cached prompts, TTFT collapses from 2.78s down to **301 ms (9.24× speedup)**!
+- **Key Finding**: Validated our analytical model: 75% prefix cache saves **1,863.0 ms of TTFT (3.04× speedup)** (vs ~1,984.6 ms analytical projection). On 100% cached prompts, TTFT collapses from 2.78s down to **301 ms (9.24× speedup)**! Reconciled baseline: warm cache hits compress prefill execution from ~2.79s down to ~0.30s, explaining why warm-prompt burst stalls drop to ~230–274 ms compared to ~1.11–1.35s cold stalls.
 
 ### Experiment 4: Dedicated Single-Stream Decode Roofline Optimization — **[ACTIVE ROADMAP]**
 - **Objective**: Because single-stream decode is pinned at ~34 tok/s by the serial dependency $x_{t+1} = f(x_{\leq t})$, evaluate techniques that explicitly break this single-token-per-forward-pass ceiling:
