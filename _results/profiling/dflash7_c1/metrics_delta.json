@@ -1,0 +1,132 @@
+{
+  "counters": {
+    "vllm:prompt_tokens_total": {
+      "before": 1048.0,
+      "after": 5180.0,
+      "delta": 4132.0
+    },
+    "vllm:generation_tokens_total": {
+      "before": 72.0,
+      "after": 4168.0,
+      "delta": 4096.0
+    },
+    "vllm:e2e_request_latency_seconds_count": {
+      "before": 2.0,
+      "after": 6.0,
+      "delta": 4.0
+    },
+    "vllm:e2e_request_latency_seconds_sum": {
+      "before": 2.7539565563201904,
+      "after": 42.704596757888794,
+      "delta": 39.9506402015686
+    },
+    "vllm:time_to_first_token_seconds_count": {
+      "before": 2.0,
+      "after": 6.0,
+      "delta": 4.0
+    },
+    "vllm:time_to_first_token_seconds_sum": {
+      "before": 1.4928348064422607,
+      "after": 2.0509607791900635,
+      "delta": 0.5581259727478027
+    },
+    "vllm:inter_token_latency_seconds_count": {
+      "before": 51.0,
+      "after": 1871.0,
+      "delta": 1820.0
+    },
+    "vllm:inter_token_latency_seconds_sum": {
+      "before": 1.2626086200034479,
+      "after": 40.656654990998504,
+      "delta": 39.394046370995056
+    },
+    "vllm:request_queue_time_seconds_count": {
+      "before": 2.0,
+      "after": 6.0,
+      "delta": 4.0
+    },
+    "vllm:request_queue_time_seconds_sum": {
+      "before": 0.0002091249989462085,
+      "after": 0.00024344200210180134,
+      "delta": 3.431700315559283e-05
+    },
+    "vllm:request_prefill_time_seconds_count": {
+      "before": 2.0,
+      "after": 6.0,
+      "delta": 4.0
+    },
+    "vllm:request_prefill_time_seconds_sum": {
+      "before": 1.460946047998732,
+      "after": 1.947575678001158,
+      "delta": 0.486629630002426
+    },
+    "vllm:request_decode_time_seconds_count": {
+      "before": 2.0,
+      "after": 6.0,
+      "delta": 4.0
+    },
+    "vllm:request_decode_time_seconds_sum": {
+      "before": 1.2626086200034479,
+      "after": 40.656654990998504,
+      "delta": 39.394046370995056
+    },
+    "vllm:spec_decode_num_drafts_total": {
+      "before": 51.0,
+      "after": 1871.0,
+      "delta": 1820.0
+    },
+    "vllm:spec_decode_num_draft_tokens_total": {
+      "before": 357.0,
+      "after": 13097.0,
+      "delta": 12740.0
+    },
+    "vllm:spec_decode_num_accepted_tokens_total": {
+      "before": 20.0,
+      "after": 2296.0,
+      "delta": 2276.0
+    },
+    "vllm:spec_decode_num_emitted_tokens_total": {
+      "before": 0,
+      "after": 0,
+      "delta": 0
+    }
+  },
+  "gauges_end": {
+    "vllm:num_requests_running": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:num_requests_waiting": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:kv_cache_usage_perc": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:spec_decode_draft_acceptance_rate": {
+      "before": 0,
+      "after": 0
+    },
+    "vllm:spec_decode_efficiency": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "derived": {
+    "draft_acceptance": 0.17864992150706435,
+    "accepted_per_draft_step": 1.2505494505494505,
+    "mean_acceptance_length_if_drafts_are_verifies": 2.2505494505494505,
+    "mean_ttft_s": 0.13953149318695068,
+    "mean_itl_s": 0.021645080423623658
+  },
+  "accepted_per_pos_delta": {
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"0\"}": 1344.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"1\"}": 932.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"2\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"3\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"4\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"5\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"6\"}": 0.0
+  }
+}

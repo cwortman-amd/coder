@@ -1,0 +1,36 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "awq-mxfp4-dflash2",
+  "input_len": 1024,
+  "output_len": 1024,
+  "num_prompts": 3,
+  "concurrency": 3,
+  "successful": 3,
+  "failed": 0,
+  "duration": 12.520154169003945,
+  "total_prompt_tokens": 3099,
+  "total_generated_tokens": 3072,
+  "output_throughput": 245.36439076807284,
+  "total_token_throughput": 492.8853045018807,
+  "mean_latency_s": 12.373180581669052,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 12.155488944001263,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 12.445725569006754,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 12.518327231999137,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    }
+  ]
+}

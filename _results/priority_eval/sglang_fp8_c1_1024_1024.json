@@ -1,0 +1,42 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "input_len": 1024,
+  "output_len": 1024,
+  "num_prompts": 4,
+  "concurrency": 1,
+  "successful": 4,
+  "failed": 0,
+  "duration": 154.09643837199837,
+  "total_prompt_tokens": 4132,
+  "total_generated_tokens": 4096,
+  "output_throughput": 26.580757110764633,
+  "total_token_throughput": 53.395134157073095,
+  "mean_latency_s": 38.523834043501665,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 38.84471364199999,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 38.451587236002524,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 38.38226195600146,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 38.41677334000269,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    }
+  ]
+}

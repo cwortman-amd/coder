@@ -1,0 +1,42 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "input_len": 1024,
+  "output_len": 1024,
+  "num_prompts": 4,
+  "concurrency": 1,
+  "successful": 4,
+  "failed": 0,
+  "duration": 238.3487464619975,
+  "total_prompt_tokens": 4132,
+  "total_generated_tokens": 4096,
+  "output_throughput": 17.184902630285364,
+  "total_token_throughput": 34.520844443844716,
+  "mean_latency_s": 59.586903600998994,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 61.336992250995536,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 58.72622584599594,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 59.08901356199931,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 59.19538274500519,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    }
+  ]
+}

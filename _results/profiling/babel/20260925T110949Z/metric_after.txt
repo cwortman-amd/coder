@@ -1,0 +1,213 @@
+GPU: 0
+    USAGE:
+        GFX_ACTIVITY: 0 %
+        UMC_ACTIVITY: 0 %
+        MM_ACTIVITY: N/A
+        VCN_ACTIVITY: [N/A, N/A, N/A, N/A]
+        JPEG_ACTIVITY: [N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A]
+        GFX_BUSY_INST:
+            XCP_0: [0 %, 0 %, 0 %, 0 %, N/A, N/A, N/A, N/A]
+        JPEG_BUSY:
+            XCP_0: [0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, 0 %, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A]
+        VCN_BUSY:
+            XCP_0: [0 %, 0 %, N/A, N/A]
+    POWER:
+        SOCKET_POWER: 102 W
+        GFX_VOLTAGE: N/A
+        SOC_VOLTAGE: N/A
+        MEM_VOLTAGE: N/A
+        THROTTLE_STATUS: N/A
+        POWER_MANAGEMENT: ENABLED
+        UBB_POWER: N/A
+    CLOCK:
+        GFX_0:
+            CLK: 145 MHz
+            MIN_CLK: 500 MHz
+            MAX_CLK: 2200 MHz
+            CLK_LOCKED: DISABLED
+            DEEP_SLEEP: ENABLED
+        GFX_1:
+            CLK: 146 MHz
+            MIN_CLK: 500 MHz
+            MAX_CLK: 2200 MHz
+            CLK_LOCKED: DISABLED
+            DEEP_SLEEP: ENABLED
+        GFX_2:
+            CLK: 145 MHz
+            MIN_CLK: 500 MHz
+            MAX_CLK: 2200 MHz
+            CLK_LOCKED: DISABLED
+            DEEP_SLEEP: ENABLED
+        GFX_3:
+            CLK: 146 MHz
+            MIN_CLK: 500 MHz
+            MAX_CLK: 2200 MHz
+            CLK_LOCKED: DISABLED
+            DEEP_SLEEP: ENABLED
+        MEM_0:
+            CLK: 2000 MHz
+            MIN_CLK: 2000 MHz
+            MAX_CLK: 2000 MHz
+            DEEP_SLEEP: DISABLED
+        VCLK_0:
+            CLK: 59 MHz
+            MIN_CLK: 1900 MHz
+            MAX_CLK: 1900 MHz
+            DEEP_SLEEP: ENABLED
+        VCLK_1:
+            CLK: 59 MHz
+            MIN_CLK: 1900 MHz
+            MAX_CLK: 1900 MHz
+            DEEP_SLEEP: ENABLED
+        DCLK_0:
+            CLK: 48 MHz
+            MIN_CLK: 1520 MHz
+            MAX_CLK: 1520 MHz
+            DEEP_SLEEP: ENABLED
+        DCLK_1:
+            CLK: 48 MHz
+            MIN_CLK: 1520 MHz
+            MAX_CLK: 1520 MHz
+            DEEP_SLEEP: ENABLED
+        FCLK_0:
+            CLK: 1500 MHz
+            MIN_CLK: 1220 MHz
+            MAX_CLK: 1500 MHz
+            DEEP_SLEEP: DISABLED
+        SOCCLK_0:
+            CLK: 40 MHz
+            MIN_CLK: 1200 MHz
+            MAX_CLK: 1200 MHz
+            DEEP_SLEEP: ENABLED
+    TEMPERATURE:
+        EDGE: N/A
+        HOTSPOT: 44 °C
+        MEM: 45 °C
+        HBM_STACKS: [N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A]
+        MID: [N/A, N/A]
+        AID: [N/A, N/A]
+        XCD:
+            XCP_0: [N/A, N/A, N/A, N/A, N/A, N/A, N/A, N/A]
+    PCIE:
+        WIDTH: 16
+        SPEED: 32 GT/s
+        BANDWIDTH: 23 Mb/s
+        REPLAY_COUNT: 0
+        L0_TO_RECOVERY_COUNT: 0
+        REPLAY_ROLL_OVER_COUNT: 0
+        NAK_SENT_COUNT: 0
+        NAK_RECEIVED_COUNT: 0
+        CURRENT_BANDWIDTH_SENT: N/A
+        CURRENT_BANDWIDTH_RECEIVED: N/A
+        MAX_PACKET_SIZE: N/A
+        LC_PERF_OTHER_END_RECOVERY_COUNT: 0
+    ECC:
+        TOTAL_CORRECTABLE_COUNT: 0
+        TOTAL_UNCORRECTABLE_COUNT: 0
+        TOTAL_DEFERRED_COUNT: 0
+        CACHE_CORRECTABLE_COUNT: 0
+        CACHE_UNCORRECTABLE_COUNT: 0
+    ECC_BLOCKS:
+        UMC:
+            CORRECTABLE_COUNT: 0
+            UNCORRECTABLE_COUNT: 0
+            DEFERRED_COUNT: 0
+        SDMA:
+            CORRECTABLE_COUNT: 0
+            UNCORRECTABLE_COUNT: 0
+            DEFERRED_COUNT: 0
+        GFX:
+            CORRECTABLE_COUNT: 0
+            UNCORRECTABLE_COUNT: 0
+            DEFERRED_COUNT: 0
+        MMHUB:
+            CORRECTABLE_COUNT: 0
+            UNCORRECTABLE_COUNT: 0
+            DEFERRED_COUNT: 0
+        PCIE_BIF:
+            CORRECTABLE_COUNT: N/A
+            UNCORRECTABLE_COUNT: N/A
+            DEFERRED_COUNT: N/A
+        HDP:
+            CORRECTABLE_COUNT: N/A
+            UNCORRECTABLE_COUNT: N/A
+            DEFERRED_COUNT: N/A
+        XGMI_WAFL:
+            CORRECTABLE_COUNT: N/A
+            UNCORRECTABLE_COUNT: N/A
+            DEFERRED_COUNT: N/A
+    FAN:
+        SPEED: N/A
+        MAX: N/A
+        RPM: N/A
+        USAGE: N/A
+    VOLTAGE_CURVE:
+        POINT_0_FREQUENCY: N/A
+        POINT_0_VOLTAGE: N/A
+        POINT_1_FREQUENCY: N/A
+        POINT_1_VOLTAGE: N/A
+        POINT_2_FREQUENCY: N/A
+        POINT_2_VOLTAGE: N/A
+    OVERDRIVE: N/A
+    MEM_OVERDRIVE: N/A
+    PERF_LEVEL: AMDSMI_DEV_PERF_LEVEL_AUTO
+    XGMI_ERR: N/A
+    VOLTAGE:
+        VDDBOARD: N/A
+    ENERGY:
+        TOTAL_ENERGY_CONSUMPTION: 6456341.557 J
+    MEM_USAGE:
+        TOTAL_VRAM: 147440 MB
+        USED_VRAM: 282 MB
+        FREE_VRAM: 147158 MB
+        TOTAL_VISIBLE_VRAM: 147440 MB
+        USED_VISIBLE_VRAM: 282 MB
+        FREE_VISIBLE_VRAM: 147158 MB
+        TOTAL_GTT: 15721 MB
+        USED_GTT: 19 MB
+        FREE_GTT: 15702 MB
+    THROTTLE:
+        ACCUMULATION_COUNTER: 43457636
+        PROCHOT_ACCUMULATED: 0
+        PPT_ACCUMULATED: 65167
+        SOCKET_THERMAL_ACCUMULATED: 0
+        VR_THERMAL_ACCUMULATED: 0
+        HBM_THERMAL_ACCUMULATED: 0
+        GFX_CLK_BELOW_HOST_LIMIT_ACCUMULATED: N/A
+        GFX_CLK_BELOW_HOST_LIMIT_POWER_ACCUMULATED:
+            XCP_0: [0, 0, 0, 0, N/A, N/A, N/A, N/A]
+        GFX_CLK_BELOW_HOST_LIMIT_THERMAL_ACCUMULATED:
+            XCP_0: [0, 0, 0, 0, N/A, N/A, N/A, N/A]
+        TOTAL_GFX_CLK_BELOW_HOST_LIMIT_ACCUMULATED:
+            XCP_0: [7918417, 7960557, 7960754, 7960843, N/A, N/A, N/A, N/A]
+        LOW_UTILIZATION_ACCUMULATED:
+            XCP_0: [7918417, 7960557, 7960754, 7960843, N/A, N/A, N/A, N/A]
+        PROCHOT_VIOLATION_STATUS: NOT ACTIVE
+        PPT_VIOLATION_STATUS: NOT ACTIVE
+        SOCKET_THERMAL_VIOLATION_STATUS: NOT ACTIVE
+        VR_THERMAL_VIOLATION_STATUS: NOT ACTIVE
+        HBM_THERMAL_VIOLATION_STATUS: NOT ACTIVE
+        GFX_CLK_BELOW_HOST_LIMIT_VIOLATION_STATUS: N/A
+        GFX_CLK_BELOW_HOST_LIMIT_POWER_VIOLATION_STATUS:
+            XCP_0: [NOT ACTIVE, NOT ACTIVE, NOT ACTIVE, NOT ACTIVE, N/A, N/A, N/A, N/A]
+        GFX_CLK_BELOW_HOST_LIMIT_THERMAL_VIOLATION_STATUS:
+            XCP_0: [NOT ACTIVE, NOT ACTIVE, NOT ACTIVE, NOT ACTIVE, N/A, N/A, N/A, N/A]
+        TOTAL_GFX_CLK_BELOW_HOST_LIMIT_VIOLATION_STATUS:
+            XCP_0: [ACTIVE, ACTIVE, ACTIVE, ACTIVE, N/A, N/A, N/A, N/A]
+        LOW_UTILIZATION_VIOLATION_STATUS:
+            XCP_0: [ACTIVE, ACTIVE, ACTIVE, ACTIVE, N/A, N/A, N/A, N/A]
+        PROCHOT_VIOLATION_ACTIVITY: 0 %
+        PPT_VIOLATION_ACTIVITY: 0 %
+        SOCKET_THERMAL_VIOLATION_ACTIVITY: 0 %
+        VR_THERMAL_VIOLATION_ACTIVITY: 0 %
+        HBM_THERMAL_VIOLATION_ACTIVITY: 0 %
+        GFX_CLK_BELOW_HOST_LIMIT_VIOLATION_ACTIVITY: N/A
+        GFX_CLK_BELOW_HOST_LIMIT_POWER_VIOLATION_ACTIVITY:
+            XCP_0: [0 %, 0 %, 0 %, 0 %, N/A, N/A, N/A, N/A]
+        GFX_CLK_BELOW_HOST_LIMIT_THERMAL_VIOLATION_ACTIVITY:
+            XCP_0: [0 %, 0 %, 0 %, 0 %, N/A, N/A, N/A, N/A]
+        TOTAL_GFX_CLK_BELOW_HOST_LIMIT_VIOLATION_ACTIVITY:
+            XCP_0: [100 %, 100 %, 100 %, 100 %, N/A, N/A, N/A, N/A]
+        LOW_UTILIZATION_VIOLATION_ACTIVITY:
+            XCP_0: [100 %, 100 %, 100 %, 100 %, N/A, N/A, N/A, N/A]
+

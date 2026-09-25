@@ -1,0 +1,136 @@
+{
+  "profile": "dflash7",
+  "rows": [
+    {
+      "prompt": "Reply with exactly: MI350P READY",
+      "content": "MI350P READY",
+      "token_ids": [
+        9481,
+        18,
+        20,
+        15,
+        47,
+        82385,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 22,
+        "total_tokens": 29,
+        "completion_tokens": 7,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    },
+    {
+      "prompt": "Compute 37 * 41. Give only the integer.",
+      "content": "1517",
+      "token_ids": [
+        16,
+        20,
+        16,
+        22,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 26,
+        "total_tokens": 31,
+        "completion_tokens": 5,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    },
+    {
+      "prompt": "Write a Python function named square that returns the square of its argument. Return only code.",
+      "content": "```python\ndef square(x):\n    return x * x\n```",
+      "token_ids": [
+        71093,
+        12305,
+        198,
+        727,
+        9057,
+        2007,
+        1590,
+        198,
+        262,
+        460,
+        830,
+        348,
+        830,
+        198,
+        71093,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 30,
+        "total_tokens": 46,
+        "completion_tokens": 16,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    },
+    {
+      "prompt": "Return a compact JSON object with keys status and count, values ok and 3. Return JSON only.",
+      "content": "{\"status\":\"ok\",\"count\":3}",
+      "token_ids": [
+        4754,
+        2738,
+        3147,
+        547,
+        2129,
+        1767,
+        763,
+        18,
+        92,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 33,
+        "total_tokens": 43,
+        "completion_tokens": 10,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    },
+    {
+      "prompt": "Translate \"The system is ready\" into French. Return only the translation.",
+      "content": "Le système est prêt.",
+      "token_ids": [
+        2229,
+        69073,
+        1725,
+        182623,
+        13,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 27,
+        "total_tokens": 33,
+        "completion_tokens": 6,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    },
+    {
+      "prompt": "What is the capital of Japan? Answer with only the city name.",
+      "content": "Tokyo",
+      "token_ids": [
+        51076,
+        15560,
+        248046
+      ],
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 26,
+        "total_tokens": 29,
+        "completion_tokens": 3,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": null
+      }
+    }
+  ]
+}

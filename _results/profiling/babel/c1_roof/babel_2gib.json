@@ -1,0 +1,44 @@
+{
+"version":"1.0",
+"babel":{
+
+  "babel-2gib":[
+
+{
+    "gpu_id" : "64724",
+    "gpu_index" : "0",
+    "Array size" : "2048.000000",
+    "Total size" : "6144.000000",
+    "Iterations" : "10"
+  },
+{
+    "gpu_id" : "64724",
+    "gpu_index" : "0",
+    "Function" : "Read",
+    "MiBytes/sec" : "3660770.942631",
+    "Max_MiBytes/sec" : "3660770.942631",
+    "Min_MiBytes/sec" : "3588003.314698",
+    "Avg_MiBytes/sec" : "3623114.337248",
+    "pass" : "true"
+  },
+{
+    "gpu_id" : "64724",
+    "gpu_index" : "0",
+    "Function" : "Copy",
+    "MiBytes/sec" : "3193829.421750",
+    "Max_MiBytes/sec" : "3193829.421750",
+    "Min_MiBytes/sec" : "3077755.402603",
+    "Avg_MiBytes/sec" : "3128639.056438",
+    "pass" : "true"
+  },
+{
+    "gpu_id" : "64724",
+    "gpu_index" : "0",
+    "Function" : "Triad",
+    "MiBytes/sec" : "3090795.125156",
+    "Max_MiBytes/sec" : "3090795.125156",
+    "Min_MiBytes/sec" : "3007426.051534",
+    "Avg_MiBytes/sec" : "3055188.823499",
+    "pass" : "true"
+  }  ]    }
+}

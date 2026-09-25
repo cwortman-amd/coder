@@ -1,0 +1,28 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "awq",
+  "input_len": 1024,
+  "output_len": 64,
+  "num_prompts": 1,
+  "concurrency": 1,
+  "temperature": 0.0,
+  "top_p": null,
+  "top_k": null,
+  "enable_thinking": false,
+  "successful": 1,
+  "failed": 0,
+  "duration": 1.1314966049976647,
+  "total_prompt_tokens": 1033,
+  "total_generated_tokens": 64,
+  "output_throughput": 56.562255438788604,
+  "total_token_throughput": 969.5124096304859,
+  "mean_latency_s": 1.1308573599962983,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 1.1308573599962983,
+      "prompt_tokens": 1033,
+      "completion_tokens": 64
+    }
+  ]
+}

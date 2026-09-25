@@ -1,0 +1,58 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "awq-mxfp4-dflash2",
+  "input_len": 1024,
+  "output_len": 1024,
+  "num_prompts": 6,
+  "concurrency": 6,
+  "temperature": 0.0,
+  "top_p": null,
+  "top_k": null,
+  "enable_thinking": false,
+  "successful": 6,
+  "failed": 0,
+  "duration": 14.750843308000185,
+  "total_prompt_tokens": 6198,
+  "total_generated_tokens": 6144,
+  "output_throughput": 416.518559089281,
+  "total_token_throughput": 836.6979258268076,
+  "mean_latency_s": 14.19444510916704,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 13.679482619001647,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 13.847353006000048,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 13.848064578996855,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 14.465917779001757,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 14.577087454003049,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    },
+    {
+      "ok": true,
+      "dt": 14.74876521799888,
+      "prompt_tokens": 1033,
+      "completion_tokens": 1024
+    }
+  ]
+}

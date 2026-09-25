@@ -1,0 +1,6 @@
+Read: median 3796.3 GB/s (min 3791.0, max 3822.6, n=4)
+Copy: median 3281.8 GB/s (min 3280.4, max 3298.0, n=4)
+Triad: median 3208.6 GB/s (min 3193.5, max 3223.2, n=4)
+Read / spec 4096 GB/s = 92.7%
+RVS BABEL Read sustained 3796.3 GB/s on AMD Instinct MI350P gfx950, using 2.00 GiB per array (~6.00 GiB triad set), 3 repetitions, 10 kernel iterations.
+Conditional C1 decode roof (Read / 17.91 GiB/token) ≈ 197.4 tok/s. This is synthetic bandwidth ÷ assumed full-weight stream, not measured vLLM DRAM traffic.

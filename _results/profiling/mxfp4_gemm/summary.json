@@ -1,0 +1,780 @@
+{
+  "utc": "2026-09-25T14:25:22Z",
+  "use_asm_gemm": false,
+  "babel_read_gbs": 3793.4139104873675,
+  "spec_gbs": 4096.0,
+  "warmup": 50,
+  "iters": 200,
+  "rows": [
+    {
+      "layer": "mlp.gate_proj",
+      "m": 1,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10100099563598633,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 10240,
+      "y_bytes": 34816,
+      "weight_gbs": 468.8048835741322,
+      "traffic_gbs": 469.2509781865297,
+      "weight_gbs_over_babel": 0.12358389952598171,
+      "weight_gbs_over_spec": 0.11445431727884087
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 2,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.09948271751403809,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 20480,
+      "y_bytes": 69632,
+      "weight_gbs": 475.9596559404244,
+      "traffic_gbs": 476.8654615140134,
+      "weight_gbs_over_babel": 0.1254700033193252,
+      "weight_gbs_over_spec": 0.11620108787608018
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 4,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.09998516082763671,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 40960,
+      "y_bytes": 139264,
+      "weight_gbs": 473.56787355301367,
+      "traffic_gbs": 475.37038103020507,
+      "weight_gbs_over_babel": 0.12483949411472764,
+      "weight_gbs_over_spec": 0.11561715662915373
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 8,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10030277252197266,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 81920,
+      "y_bytes": 278528,
+      "weight_gbs": 472.06830688182026,
+      "traffic_gbs": 475.66190644977877,
+      "weight_gbs_over_babel": 0.124444186166115,
+      "weight_gbs_over_spec": 0.1152510514848194
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 16,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07634523868560791,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 163840,
+      "y_bytes": 557056,
+      "weight_gbs": 620.2058021586362,
+      "traffic_gbs": 629.6483818454805,
+      "weight_gbs_over_babel": 0.1634954204296029,
+      "weight_gbs_over_spec": 0.15141743216763578
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 32,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07573020935058594,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 327680,
+      "y_bytes": 1114112,
+      "weight_gbs": 625.2426925270826,
+      "traffic_gbs": 644.281224341056,
+      "weight_gbs_over_babel": 0.16482321921120205,
+      "weight_gbs_over_spec": 0.15264714173024477
+    },
+    {
+      "layer": "mlp.gate_proj",
+      "m": 64,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07446874141693115,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 655360,
+      "y_bytes": 2228224,
+      "weight_gbs": 635.8340304813396,
+      "traffic_gbs": 674.5561029258779,
+      "weight_gbs_over_babel": 0.16761525251001397,
+      "weight_gbs_over_spec": 0.1552329175979833
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 1,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10288971900939942,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 10240,
+      "y_bytes": 34816,
+      "weight_gbs": 460.1991380273319,
+      "traffic_gbs": 460.6370437815102,
+      "weight_gbs_over_babel": 0.12131529774672196,
+      "weight_gbs_over_spec": 0.11235330518245408
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 2,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10260470390319824,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 20480,
+      "y_bytes": 69632,
+      "weight_gbs": 461.47747811515376,
+      "traffic_gbs": 462.35572245066703,
+      "weight_gbs_over_babel": 0.12165228709668131,
+      "weight_gbs_over_spec": 0.11266539993045746
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 4,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10338555335998535,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 40960,
+      "y_bytes": 139264,
+      "weight_gbs": 457.99203526173113,
+      "traffic_gbs": 459.73525754127405,
+      "weight_gbs_over_babel": 0.1207334728212903,
+      "weight_gbs_over_spec": 0.11181446173382108
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 8,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.10173066139221192,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 81920,
+      "y_bytes": 278528,
+      "weight_gbs": 465.4423686232409,
+      "traffic_gbs": 468.985528522795,
+      "weight_gbs_over_babel": 0.12269749086343233,
+      "weight_gbs_over_spec": 0.11363339077715842
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 16,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07635104656219482,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 163840,
+      "y_bytes": 557056,
+      "weight_gbs": 620.1586243016243,
+      "traffic_gbs": 629.6004857096766,
+      "weight_gbs_over_babel": 0.16348298364887578,
+      "weight_gbs_over_spec": 0.15140591413613874
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 32,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07775392055511475,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 327680,
+      "y_bytes": 1114112,
+      "weight_gbs": 608.9694212452838,
+      "traffic_gbs": 627.5124347641713,
+      "weight_gbs_over_babel": 0.16053334426852595,
+      "weight_gbs_over_spec": 0.14867417510871186
+    },
+    {
+      "layer": "mlp.up_proj",
+      "m": 64,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.07504716873168946,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 655360,
+      "y_bytes": 2228224,
+      "weight_gbs": 630.9333290012055,
+      "traffic_gbs": 669.3569504213481,
+      "weight_gbs_over_babel": 0.16632335513319846,
+      "weight_gbs_over_spec": 0.15403645727568493
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 1,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.09985054969787598,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 34816,
+      "y_bytes": 10240,
+      "weight_gbs": 474.2063027521542,
+      "traffic_gbs": 474.65753712328524,
+      "weight_gbs_over_babel": 0.12500779349207097,
+      "weight_gbs_over_spec": 0.11577302313285015
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 2,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.09933411598205566,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 69632,
+      "y_bytes": 20480,
+      "weight_gbs": 476.6716805387744,
+      "traffic_gbs": 477.57884117647797,
+      "weight_gbs_over_babel": 0.125657703532155,
+      "weight_gbs_over_spec": 0.11637492200653672
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 4,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.10057079315185546,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 139264,
+      "y_bytes": 40960,
+      "weight_gbs": 470.810247349893,
+      "traffic_gbs": 472.602258671986,
+      "weight_gbs_over_babel": 0.12411254307057798,
+      "weight_gbs_over_spec": 0.11494390804440748
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 8,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.10095461845397949,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 278528,
+      "y_bytes": 81920,
+      "weight_gbs": 469.02024617709344,
+      "traffic_gbs": 472.5906425147737,
+      "weight_gbs_over_babel": 0.1236406722926882,
+      "weight_gbs_over_spec": 0.11450689603932945
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 16,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.0741459321975708,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 557056,
+      "y_bytes": 163840,
+      "weight_gbs": 638.6022617374456,
+      "traffic_gbs": 648.3249259299879,
+      "weight_gbs_over_babel": 0.16834499920294743,
+      "weight_gbs_over_spec": 0.15590875530699355
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 32,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.07566881656646729,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 1114112,
+      "y_bytes": 327680,
+      "weight_gbs": 625.749974012189,
+      "traffic_gbs": 644.803952459619,
+      "weight_gbs_over_babel": 0.1649569461118453,
+      "weight_gbs_over_spec": 0.15277098974906958
+    },
+    {
+      "layer": "mlp.down_proj",
+      "m": 64,
+      "n": 5120,
+      "k": 17408,
+      "weight_shape": [
+        5120,
+        8704
+      ],
+      "scale_shape": [
+        544,
+        5120
+      ],
+      "ms": 0.07476675987243653,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 2228224,
+      "y_bytes": 655360,
+      "weight_gbs": 633.2996117631136,
+      "traffic_gbs": 671.8673389846734,
+      "weight_gbs_over_babel": 0.16694714225945068,
+      "weight_gbs_over_spec": 0.1546141630281039
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 1,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.09819005966186524,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 12288,
+      "y_bytes": 10240,
+      "weight_gbs": 170.19726902651462,
+      "traffic_gbs": 170.42670161956505,
+      "weight_gbs_over_babel": 0.04486651682169008,
+      "weight_gbs_over_spec": 0.04155206763342642
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 2,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.09804164886474609,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 24576,
+      "y_bytes": 20480,
+      "weight_gbs": 170.45490557849237,
+      "traffic_gbs": 170.91446537294422,
+      "weight_gbs_over_babel": 0.044934433626462024,
+      "weight_gbs_over_spec": 0.041614967182249114
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 4,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.09915512084960937,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 49152,
+      "y_bytes": 40960,
+      "weight_gbs": 168.540765790069,
+      "traffic_gbs": 169.44956403697623,
+      "weight_gbs_over_babel": 0.04442983807385663,
+      "weight_gbs_over_spec": 0.041147647897966065
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 8,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.09851287841796875,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 98304,
+      "y_bytes": 81920,
+      "weight_gbs": 169.63954630475794,
+      "traffic_gbs": 171.46899239235827,
+      "weight_gbs_over_babel": 0.04471949286519148,
+      "weight_gbs_over_spec": 0.041415904859560045
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 16,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.07586482048034668,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 196608,
+      "y_bytes": 163840,
+      "weight_gbs": 220.28233763934472,
+      "traffic_gbs": 225.03352531391883,
+      "weight_gbs_over_babel": 0.058069681515730893,
+      "weight_gbs_over_spec": 0.053779867587730644
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 32,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.07606823444366455,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 393216,
+      "y_bytes": 327680,
+      "weight_gbs": 219.69328093682154,
+      "traffic_gbs": 229.17024599684132,
+      "weight_gbs_over_babel": 0.057914397458566795,
+      "weight_gbs_over_spec": 0.053636054916216196
+    },
+    {
+      "layer": "linear_attn.out_proj",
+      "m": 64,
+      "n": 5120,
+      "k": 6144,
+      "weight_shape": [
+        5120,
+        3072
+      ],
+      "scale_shape": [
+        192,
+        5120
+      ],
+      "ms": 0.07478535652160645,
+      "weight_scale_bytes": 16711680,
+      "x_bytes": 786432,
+      "y_bytes": 655360,
+      "weight_gbs": 223.46192860860108,
+      "traffic_gbs": 242.74099695914705,
+      "weight_gbs_over_babel": 0.05890786871182515,
+      "weight_gbs_over_spec": 0.05455613491420925
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 1,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.10059920310974121,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 10240,
+      "y_bytes": 20480,
+      "weight_gbs": 276.8689923877037,
+      "traffic_gbs": 277.1743625998961,
+      "weight_gbs_over_babel": 0.07298676045402394,
+      "weight_gbs_over_spec": 0.06759496884465423
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 2,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.10095842361450195,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 20480,
+      "y_bytes": 40960,
+      "weight_gbs": 275.883863899784,
+      "traffic_gbs": 276.4924312466218,
+      "weight_gbs_over_babel": 0.0727270660175175,
+      "weight_gbs_over_spec": 0.0673544589599082
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 4,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.10069540023803711,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 40960,
+      "y_bytes": 81920,
+      "weight_gbs": 276.6044917062534,
+      "traffic_gbs": 277.8248056402515,
+      "weight_gbs_over_babel": 0.07291703416322318,
+      "weight_gbs_over_spec": 0.06753039348297202
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 8,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.10063139915466308,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 81920,
+      "y_bytes": 163840,
+      "weight_gbs": 276.780410825773,
+      "traffic_gbs": 279.22259092129457,
+      "weight_gbs_over_babel": 0.07296340904444383,
+      "weight_gbs_over_spec": 0.06757334248676099
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 16,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.07551180362701417,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 163840,
+      "y_bytes": 327680,
+      "weight_gbs": 368.8535919175917,
+      "traffic_gbs": 375.3627729514315,
+      "weight_gbs_over_babel": 0.09723526106598855,
+      "weight_gbs_over_spec": 0.09005214646425579
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 32,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.07508158206939697,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 327680,
+      "y_bytes": 655360,
+      "weight_gbs": 370.96714310383084,
+      "traffic_gbs": 384.0601010957307,
+      "weight_gbs_over_babel": 0.09779242441175368,
+      "weight_gbs_over_spec": 0.0905681501718337
+    },
+    {
+      "layer": "linear_attn.in_proj_qkv",
+      "m": 64,
+      "n": 10240,
+      "k": 5120,
+      "weight_shape": [
+        10240,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        10240
+      ],
+      "ms": 0.07462935447692871,
+      "weight_scale_bytes": 27852800,
+      "x_bytes": 655360,
+      "y_bytes": 1310720,
+      "weight_gbs": 373.21507328072295,
+      "traffic_gbs": 399.559666688774,
+      "weight_gbs_over_babel": 0.0983850120465165,
+      "weight_gbs_over_spec": 0.0911169612501765
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "utc": "2026-09-25T14:25:51Z",
+  "use_asm_gemm": false,
+  "babel_read_gbs": 3793.4139104873675,
+  "spec_gbs": 4096.0,
+  "warmup": 10,
+  "iters": 40,
+  "rows": [
+    {
+      "layer": "mlp.gate_proj",
+      "m": 1,
+      "n": 17408,
+      "k": 5120,
+      "weight_shape": [
+        17408,
+        2560
+      ],
+      "scale_shape": [
+        160,
+        17408
+      ],
+      "ms": 0.16098692417144775,
+      "weight_scale_bytes": 47349760,
+      "x_bytes": 10240,
+      "y_bytes": 34816,
+      "weight_gbs": 294.12177568889683,
+      "traffic_gbs": 294.40164935088455,
+      "weight_gbs_over_babel": 0.07753484924905252,
+      "weight_gbs_over_spec": 0.07180707414279708
+    }
+  ]
+}

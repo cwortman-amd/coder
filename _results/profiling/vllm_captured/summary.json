@@ -1,0 +1,113 @@
+{
+  "utc": "2026-09-25T17:18:27Z",
+  "status": "completed",
+  "preflight": {
+    "hostname": "faede00001328os",
+    "server_8000_healthy": false,
+    "gpu_memory": {
+      "free_bytes": 154264403968,
+      "total_bytes": 154602045440,
+      "free_gib": 143.67,
+      "total_gib": 143.98
+    }
+  },
+  "frozen_control": {
+    "VLLM_ROCM_USE_AITER": null,
+    "AITER_AFP4_DEFAULT_JSON": null,
+    "config_path": "/usr/local/lib/python3.12/dist-packages/aiter/ops/triton/configs/gfx950/triton/gemm/gemm_afp4wfp4/DEFAULT.json",
+    "stock_expected": {
+      "BLOCK_SIZE_M": 8,
+      "BLOCK_SIZE_N": 64,
+      "BLOCK_SIZE_K": 512,
+      "GROUP_SIZE_M": 1,
+      "num_warps": 4,
+      "num_stages": 2,
+      "waves_per_eu": 2,
+      "matrix_instr_nonkdim": 32,
+      "cache_modifier": ".cg",
+      "NUM_KSPLIT": 4
+    },
+    "sha256": "e07276ee4b5fe403d96dc5d74ff90aa1f371205cc141513f1188d3d979c3eeb0",
+    "observed_m_leq_8": {
+      "BLOCK_SIZE_M": 8,
+      "BLOCK_SIZE_N": 64,
+      "BLOCK_SIZE_K": 512,
+      "GROUP_SIZE_M": 1,
+      "num_warps": 4,
+      "num_stages": 2,
+      "waves_per_eu": 2,
+      "matrix_instr_nonkdim": 32,
+      "cache_modifier": ".cg",
+      "NUM_KSPLIT": 4
+    },
+    "stock_m_leq_8": true
+  },
+  "vllm_config": {
+    "compilation_mode": 3,
+    "compile_level_name": "O2 / VLLM_COMPILE",
+    "cudagraph_mode": "FULL_AND_PIECEWISE",
+    "cudagraph_capture_sizes": [
+      1,
+      8
+    ]
+  },
+  "decode": [
+    {
+      "m": 1,
+      "requested_decode_steps": 16,
+      "generated_tokens": 16,
+      "wall_ms": 246.22667500807438,
+      "steady_decode_window_ms": 246.22667500807438,
+      "steady_decode_tokens": 15,
+      "steady_decode_tokens_per_s": 60.9194759239961,
+      "note": "Steady window excludes first-token prefill using RequestMetrics."
+    },
+    {
+      "m": 8,
+      "requested_decode_steps": 16,
+      "generated_tokens": 128,
+      "wall_ms": 914.060988012352,
+      "steady_decode_window_ms": 914.060988012352,
+      "steady_decode_tokens": 120,
+      "steady_decode_tokens_per_s": 131.2822684413465,
+      "note": "Steady window excludes first-token prefill using RequestMetrics."
+    }
+  ],
+  "projection_ranking": [
+    {
+      "projection": "lm_head",
+      "gpu_ms": 38.03847799999999,
+      "evidence": "capture shape + profiler external-id kernel correlation"
+    },
+    {
+      "projection": "mlp.gate_proj",
+      "gpu_ms": 9.040602999999992,
+      "evidence": "shared fused gate_up_proj; values are not additive"
+    },
+    {
+      "projection": "mlp.up_proj",
+      "gpu_ms": 9.040602999999992,
+      "evidence": "shared fused gate_up_proj; values are not additive"
+    },
+    {
+      "projection": "mlp.down_proj",
+      "gpu_ms": null,
+      "evidence": "unavailable: no projection-to-replay-kernel correlation"
+    },
+    {
+      "projection": "attention.projections",
+      "gpu_ms": null,
+      "evidence": "unavailable: no projection-to-replay-kernel correlation"
+    }
+  ],
+  "profile_files": [
+    "torch_profiles/decode_m1_rank0.1790356686506930367.pt.trace.json.gz",
+    "torch_profiles/decode_m1_rank0.1790356690301868834.pt.trace.json.gz",
+    "torch_profiles/profiler_out_0.txt"
+  ],
+  "limitations": [
+    "This is an intermediate captured-decode screen, not the unprofiled serving promotion gate.",
+    "PyTorch module hooks do not execute during full-graph replay. Projection ranking therefore requires capture-shape/external-id correlation; the script reports unavailable if ROCm omits it."
+  ],
+  "message": "vLLM captured M=1 and M=8 decode windows completed."
+}

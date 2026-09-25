@@ -44,7 +44,7 @@ if [ -f "${SCRIPT_DIR}/.env" ]; then
 fi
 export HF_TOKEN="${HF_TOKEN:-}"
 apply_gpu_profile
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker/docker-compose.yml}"
 
 # ANSI Colors
 GREEN='\033[0;32m'

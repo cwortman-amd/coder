@@ -60,7 +60,7 @@ To isolate the causal factors governing performance and stability on the RDNA 4 
   │ ROCm 10 FP8 Run 0 (Base)    ███████ 13.10 tok/s                                                  │
   │ ROCm 10 FP8 Run 2 (Eager)   ██ 4.40 tok/s                                                        │
   │ ROCm 10 FP8 Run 3 (FP8 KV)  ██ 4.22 tok/s                                                        │
-  │ ROCm 10 FP8 Run 1 (AITER)   💥 CRASH (LDS OutOfResources: 66,048 B requested > 65,536 B limit)    │
+  │ ROCm 10 FP8 Run 1 (AITER)    CRASH (LDS OutOfResources: 66,048 B requested > 65,536 B limit)    │
   └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 

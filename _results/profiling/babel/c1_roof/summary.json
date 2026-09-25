@@ -1,0 +1,62 @@
+{
+  "gpu_name": "AMD Instinct MI350P",
+  "arch": "gfx950",
+  "array_size_elements": 268435456,
+  "approx_one_array_gib": 2.0,
+  "approx_triad_working_set_gib": 6.0,
+  "num_iter": 10,
+  "repeats": 3,
+  "bandwidth_decimal_gbs": {
+    "Copy": {
+      "n": 4,
+      "min_gbs": 3280.4145379409924,
+      "median_gbs": 3281.7945509888004,
+      "max_gbs": 3297.9680902512646,
+      "mean_gbs": 3285.4929325424646,
+      "samples_gbs": [
+        3280.615826784256,
+        3280.4145379409924,
+        3282.9732751933443,
+        3297.9680902512646
+      ]
+    },
+    "Mul": null,
+    "Add": null,
+    "Triad": {
+      "n": 4,
+      "min_gbs": 3193.4594070609924,
+      "median_gbs": 3208.567913971712,
+      "max_gbs": 3223.156680556544,
+      "mean_gbs": 3208.43797889024,
+      "samples_gbs": [
+        3203.597675266048,
+        3193.4594070609924,
+        3213.5381526773763,
+        3223.156680556544
+      ]
+    },
+    "Dot": null,
+    "Read": {
+      "n": 4,
+      "min_gbs": 3791.038082711552,
+      "median_gbs": 3796.26232479744,
+      "max_gbs": 3822.6008620400644,
+      "mean_gbs": 3801.5408985866243,
+      "samples_gbs": [
+        3799.110739034112,
+        3822.6008620400644,
+        3793.4139105607683,
+        3791.038082711552
+      ]
+    },
+    "Write": null
+  },
+  "spec_peak_gbs": 4096.0,
+  "assumed_weight_gib_per_token": 17.91,
+  "conditional_decode_tok_s": {
+    "from_read_median": 197.4061866134056,
+    "from_copy_median": 170.653788419092,
+    "from_triad_median": 166.84599276765775
+  },
+  "parser": "MiBytes/sec table Avg column, fallback unit regex; never treat pebb/pbqt as this roof"
+}

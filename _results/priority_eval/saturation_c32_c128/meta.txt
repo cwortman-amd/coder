@@ -1,0 +1,5 @@
+utc=2026-09-25T17:23:39Z
+base=http://127.0.0.1:8000 model=awq input=1024 output=256
+graph_note=HF control O2 FULL_AND_PIECEWISE; VLLM_ROCM_USE_AITER must stay unset
+health=ok
+VLLM_ROCM_USE_AITER None

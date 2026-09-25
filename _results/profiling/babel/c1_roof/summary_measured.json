@@ -1,0 +1,51 @@
+{
+  "units_note": "RVS MiBytes/sec with mibibytes:true converted to decimal GB/s via MiB/s * 2^20 / 1e9",
+  "spec_gbs": 4096,
+  "working_set": "2.0 GiB per array, 6.0 GiB triad total, 10 iterations, double, GPU 0 MI350P",
+  "ops": {
+    "Read": {
+      "n": 3,
+      "avg_mib_s": [
+        3645516.2642,
+        3617681.41793,
+        3615415.652168
+      ],
+      "median_gbs": 3793.4139104873675,
+      "min_gbs": 3791.038082887713,
+      "max_gbs": 3822.6008622497793
+    },
+    "Copy": {
+      "n": 3,
+      "avg_mib_s": [
+        3128447.092294,
+        3130887.293663,
+        3145187.463889
+      ],
+      "median_gbs": 3282.9732748399742,
+      "min_gbs": 3280.4145382492734,
+      "max_gbs": 3297.968090134872
+    },
+    "Triad": {
+      "n": 3,
+      "avg_mib_s": [
+        3045520.216888,
+        3064668.801449,
+        3073841.743511
+      ],
+      "median_gbs": 3213.5381531481867,
+      "min_gbs": 3193.459406943551,
+      "max_gbs": 3223.1566800437904
+    }
+  },
+  "smoke_0p5_gib_read_gbs": 3630.3971633070078,
+  "size_1gib_read_gbs": 3700.6538073702404,
+  "size_2gib_read_gbs": 3799.1107390341117,
+  "weight_gib": 17.91,
+  "weight_decimal_gb": 19.230696,
+  "spec_c1_roof_tok_s": 212.99,
+  "babel_read_c1_roof_tok_s": 197.26,
+  "unprofiled_c1_tok_s": 79.53457613743595,
+  "c1_over_spec": 0.3734,
+  "c1_over_babel_read": 0.4032,
+  "implied_c1_weight_tb_s": 1.529
+}

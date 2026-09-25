@@ -1,0 +1,8 @@
+utc=20260925T110949Z
+host=faede00001328os
+rvs=1.5.122
+rocm=7.14.0
+Linux faede00001328os 6.8.0-142-generic #142-Ubuntu SMP PREEMPT_DYNAMIC Wed Sep  2 14:24:27 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+src_conf=/opt/rocm/share/rocm-validation-suite/conf/MI350P-600W/babel_single.conf
+stopping rocm-inference-server so BABEL owns GPU HBM/GDDR
+running BABEL on AMD Instinct MI350P rvs_index=2 array_size=536870912 num_iter=50 repeats=1

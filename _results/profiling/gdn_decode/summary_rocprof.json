@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-25T15:41:23Z",
+  "note": "FLA packed decode; not fused CUDA; not AITER Qwen3-Next path",
+  "rows": [
+    {
+      "m": 1,
+      "ok": true,
+      "conv_ms": 0.031553417444229126,
+      "recurrent_ms": 0.03344516704479853,
+      "pair_ms": 0.06614366670449574,
+      "pair_48_layers_ms": 3.174896001815796,
+      "c1_tok_s_if_gdn_only": 314.97094689970226
+    }
+  ]
+}

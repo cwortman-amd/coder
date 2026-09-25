@@ -1,0 +1,127 @@
+{
+  "counters": {
+    "vllm:prompt_tokens_total": {
+      "before": 8264.0,
+      "after": 40287.0,
+      "delta": 32023.0
+    },
+    "vllm:generation_tokens_total": {
+      "before": 8192.0,
+      "after": 33792.0,
+      "delta": 25600.0
+    },
+    "vllm:e2e_request_latency_seconds_count": {
+      "before": 8.0,
+      "after": 39.0,
+      "delta": 31.0
+    },
+    "vllm:e2e_request_latency_seconds_sum": {
+      "before": 149.58735990524292,
+      "after": 496.82874369621277,
+      "delta": 347.24138379096985
+    },
+    "vllm:time_to_first_token_seconds_count": {
+      "before": 8.0,
+      "after": 39.0,
+      "delta": 31.0
+    },
+    "vllm:time_to_first_token_seconds_sum": {
+      "before": 28.110458374023438,
+      "after": 40.3357367515564,
+      "delta": 12.225278377532959
+    },
+    "vllm:inter_token_latency_seconds_count": {
+      "before": 4022.0,
+      "after": 16877.0,
+      "delta": 12855.0
+    },
+    "vllm:inter_token_latency_seconds_sum": {
+      "before": 121.48003341498406,
+      "after": 456.5034094900184,
+      "delta": 335.0233760750343
+    },
+    "vllm:request_queue_time_seconds_count": {
+      "before": 8.0,
+      "after": 39.0,
+      "delta": 31.0
+    },
+    "vllm:request_queue_time_seconds_sum": {
+      "before": 0.00028357999690342695,
+      "after": 0.0005871129978913814,
+      "delta": 0.00030353300098795444
+    },
+    "vllm:request_prefill_time_seconds_count": {
+      "before": 8.0,
+      "after": 39.0,
+      "delta": 31.0
+    },
+    "vllm:request_prefill_time_seconds_sum": {
+      "before": 23.05634134500724,
+      "after": 33.88912984997296,
+      "delta": 10.83278850496572
+    },
+    "vllm:request_decode_time_seconds_count": {
+      "before": 8.0,
+      "after": 39.0,
+      "delta": 31.0
+    },
+    "vllm:request_decode_time_seconds_sum": {
+      "before": 121.48003341498406,
+      "after": 456.5034094900184,
+      "delta": 335.0233760750343
+    },
+    "vllm:spec_decode_num_drafts_total": {
+      "before": 4022.0,
+      "after": 16877.0,
+      "delta": 12855.0
+    },
+    "vllm:spec_decode_num_draft_tokens_total": {
+      "before": 8044.0,
+      "after": 33754.0,
+      "delta": 25710.0
+    },
+    "vllm:spec_decode_num_accepted_tokens_total": {
+      "before": 4163.0,
+      "after": 16892.0,
+      "delta": 12729.0
+    },
+    "vllm:spec_decode_num_emitted_tokens_total": {
+      "before": 0,
+      "after": 0,
+      "delta": 0
+    }
+  },
+  "gauges_end": {
+    "vllm:num_requests_running": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:num_requests_waiting": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:kv_cache_usage_perc": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:spec_decode_draft_acceptance_rate": {
+      "before": 0,
+      "after": 0
+    },
+    "vllm:spec_decode_efficiency": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "derived": {
+    "draft_acceptance": 0.49509918319719953,
+    "accepted_per_draft_step": 0.9901983663943991,
+    "mean_acceptance_length_if_drafts_are_verifies": 1.9914430182808245,
+    "mean_ttft_s": 0.39436381863009545,
+    "mean_itl_s": 0.026061717314277272
+  },
+  "accepted_per_pos_delta": {
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"0\"}": 7985.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"1\"}": 4744.0
+  }
+}

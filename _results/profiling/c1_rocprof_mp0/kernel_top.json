@@ -1,0 +1,89 @@
+{
+  "files": [
+    "_results/profiling/c1_rocprof_mp0/rocprof/timed_domain_stats.csv",
+    "_results/profiling/c1_rocprof_mp0/rocprof/timed_hip_api_stats.csv"
+  ],
+  "columns": [
+    "Name",
+    "Calls",
+    "TotalDurationNs",
+    "AverageNs",
+    "Percentage",
+    "MinNs",
+    "MaxNs",
+    "StdDev"
+  ],
+  "total_duration_ns": 263460770.0,
+  "groups": {
+    "other": {
+      "count": 7,
+      "sum_ns": 263460770.0,
+      "share": 1.0
+    }
+  },
+  "top_kernels": [
+    {
+      "kernel": "HIP_API",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 131730385.0,
+      "mean_ns": 131730385.0,
+      "max_ns": 131730385.0,
+      "share": 0.5
+    },
+    {
+      "kernel": "hipDriverGetVersion",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 131377514.0,
+      "mean_ns": 131377514.0,
+      "max_ns": 131377514.0,
+      "share": 0.49866063171378416
+    },
+    {
+      "kernel": "hipGetProcAddress",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 335750.0,
+      "mean_ns": 335750.0,
+      "max_ns": 335750.0,
+      "share": 0.001274383279150061
+    },
+    {
+      "kernel": "hipGetDevicePropertiesR0600",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 7619.0,
+      "mean_ns": 7619.0,
+      "max_ns": 7619.0,
+      "share": 2.8918916467146133e-05
+    },
+    {
+      "kernel": "hipGetDeviceCount",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 5938.0,
+      "mean_ns": 5938.0,
+      "max_ns": 5938.0,
+      "share": 2.2538459900500556e-05
+    },
+    {
+      "kernel": "hipDevicePrimaryCtxGetState",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 1962.0,
+      "mean_ns": 1962.0,
+      "max_ns": 1962.0,
+      "share": 7.4470290206773475e-06
+    },
+    {
+      "kernel": "hipGetDevice",
+      "group": "other",
+      "count": 1,
+      "sum_ns": 1602.0,
+      "mean_ns": 1602.0,
+      "max_ns": 1602.0,
+      "share": 6.080601677433798e-06
+    }
+  ]
+}

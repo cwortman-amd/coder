@@ -121,7 +121,7 @@ In `astropy-6938`, string formatting in FITS ASCII records failed because `outpu
 @@ -XXX,7 +XXX,7 @@
          # Replace exponent separator in floating point numbers
          if 'D' in format:
--            output_field.replace(encode_ascii('E'), encode_ascii('D'))
+- output_field.replace(encode_ascii('E'), encode_ascii('D'))
 +            output_field = output_field.replace(encode_ascii('E'), encode_ascii('D'))
 ```
 Neither FP8 nor Q4_K_M produced a closed git diff block before their output horizon, instead generating conversational explanations or inline Python snippets without unified diff headers.

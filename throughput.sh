@@ -68,4 +68,4 @@ fi
 
 export GPU_PROFILE_OVERRIDE
 export GPU_PROFILE="$GPU_PROFILE_OVERRIDE"
-exec "${SCRIPT_DIR}/bench_throughput.sh" "${FORWARD_ARGS[@]}"
+exec "${SCRIPT_DIR}/scripts/bench_throughput.sh" "${FORWARD_ARGS[@]}"

@@ -1,0 +1,143 @@
+# Dual homogeneous dGPUs: 2x Radeon AI PRO R9700 (gfx1201) or 2x Instinct MI350P (gfx950).
+# Prefill/decode disaggregation requires two matching ISA cards. Set GPU_PROFILE=r9700|mi350p.
+services:
+  prefill:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-mxfp4-pd-prefill
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_0:-0}
+      - ROCR_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_0:-0}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_MXFP4_W4A8=1
+      - RADIANCE_FP8_KV=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}:/root/.cache/huggingface
+      - ../_results:/results
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --mamba-cache-dtype bfloat16
+        --mamba-ssm-cache-dtype float16
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
+        --max-num-seqs 8
+        --max-num-batched-tokens 8192
+        --host ${INFERENCE_BIND_HOST:-127.0.0.1}
+        --port 8100
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8100/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 40s
+
+  decode:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-mxfp4-pd-decode
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_1:-1}
+      - ROCR_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES_1:-1}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_MXFP4_W4A8=1
+      - RADIANCE_FP8_KV=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}:/root/.cache/huggingface
+      - ../_results:/results
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --mamba-cache-dtype bfloat16
+        --mamba-ssm-cache-dtype float16
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
+        --max-num-seqs 16
+        --max-num-batched-tokens 2048
+        --host ${INFERENCE_BIND_HOST:-127.0.0.1}
+        --port 8200
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8200/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 40s
+
+  router:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-mxfp4-pd-router
+    network_mode: host
+    entrypoint: ["python3"]
+    depends_on:
+      prefill:
+        condition: service_healthy
+      decode:
+        condition: service_healthy
+    volumes:
+      - ../benchmark/pd_router.py:/app/pd_router.py:ro
+    command: /app/pd_router.py --host ${ROUTER_BIND_HOST:-127.0.0.1} --port 8000 --prefill-url http://127.0.0.1:8100/v1 --decode-url http://127.0.0.1:8200/v1
+    restart: unless-stopped
+
+  opencode:
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
+    container_name: opencode-client-pd
+    depends_on:
+      - router
+    network_mode: host
+    environment:
+      - OPENCODE_CONFIG=/config/opencode.json
+      - TERM=xterm-256color
+    volumes:
+      - ../opencode.json:/config/opencode.json:ro
+      - ..:/workspace
+      - opencode-data:/root/.local/share/opencode
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+volumes:
+  opencode-data:

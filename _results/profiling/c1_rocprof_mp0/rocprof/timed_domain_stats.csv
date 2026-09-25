@@ -1,0 +1,2 @@
+"Name","Calls","TotalDurationNs","AverageNs","Percentage","MinNs","MaxNs","StdDev"
+"HIP_API",25,131730385,5269215.400000,100.00,90,131377514,26272644.779032

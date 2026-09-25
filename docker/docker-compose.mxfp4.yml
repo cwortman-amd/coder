@@ -1,0 +1,157 @@
+services:
+  # ============================================================================
+  # Inference Engine: vLLM Radiance MXFP4 (RDNA4 / gfx1201 Optimized)
+  # Repo: https://github.com/GGZ14/vllm-mxfp4
+  # ============================================================================
+  inference:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-mxfp4-server
+    restart: unless-stopped
+    ipc: host
+    network_mode: host
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_PTRACE
+      - SYS_NICE
+    environment:
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - ROCP_TOOL_ATTACH=1
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION:-}
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
+      - SAFETENSORS_FAST_GPU=1
+      - HIP_FORCE_DEV_KERNARG=1
+      - HSA_ENABLE_INTERRUPT=0
+      - TOKENIZERS_PARALLELISM=false
+      - PYTHONUNBUFFERED=1
+      - VLLM_LOGGING_LEVEL=INFO
+      - VLLM_NO_USAGE_STATS=1
+      - VLLM_ROCM_USE_AITER=1
+      - VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION=1
+      - VLLM_ROCM_USE_AITER_MHA=0
+      - VLLM_ROCM_USE_AITER_MLA=0
+      - VLLM_ROCM_USE_AITER_MOE=0
+      - VLLM_ROCM_USE_AITER_LINEAR=0
+      - VLLM_ROCM_USE_AITER_FP8BMM=0
+      - VLLM_ROCM_USE_AITER_FP4BMM=0
+      - VLLM_ROCM_USE_AITER_RMSNORM=0
+      - NCCL_PROTO=Simple
+      - R4D_ATTN_FP8=${RADIANCE_R4D_ATTN_FP8:-3}
+      - RADIANCE_R4D_REPORT=1
+      - RADIANCE_USE_R4D=${RADIANCE_USE_R4D:-1}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_MXFP4_W4A8=1
+      - RADIANCE_MXFP4_W4A8_MIN_M=0
+      - RADIANCE_MXFP4_WPERM=1
+      - RADIANCE_MXFP4_EPIFAST=1
+      - RADIANCE_FP8_STREAM=1
+      - RADIANCE_FP8_STREAM_TP1=1
+      - RADIANCE_GDN_MERGE_INPROJ=1
+      - RADIANCE_GDN_NORM_QUANT=1
+      - RADIANCE_DYNAMIC_WIDTH=1
+      - RADIANCE_FAST_DRAFT=1
+      - RADIANCE_VERIFY_HEAD=1
+      - RADIANCE_SKINNY_GEMM=1
+      - SINGLE_GPU_PROFILE=1
+      - VLLM_CACHE_ROOT=/cache/vllm
+      - TORCHINDUCTOR_CACHE_DIR=/cache/inductor
+      - TRITON_CACHE_DIR=/cache/triton
+      - AITER_ROOT_DIR=/cache/aiter
+    volumes:
+      - ${HF_HOME:-${HF_CACHE_DIR:-${HOME}/.cache/huggingface}}:/root/.cache/huggingface
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${MODELS_DIR:-../models}:/workspace/models:ro
+      - ${VLLM_CACHE_DIR:-${HOME}/.cache/vllm-radiance}:/cache
+      - ../_results:/results
+    entrypoint: ["/opt/radiance_entrypoint.sh"]
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+      --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+      --host ${INFERENCE_BIND_HOST:-127.0.0.1}
+      --port ${INFERENCE_PORT:-8000}
+      --quantization quark
+      --dtype auto
+      --kv-cache-dtype fp8
+      --attention-backend ROCM_AITER_UNIFIED_ATTN
+      --mamba-cache-dtype bfloat16
+      --mamba-ssm-cache-dtype float16
+      --max-model-len ${MAX_MODEL_LEN:-12288}
+      --max-num-seqs ${MAX_NUM_SEQS:-4}
+      --max-num-batched-tokens ${MAX_NUM_BATCHED_TOKENS:-4096}
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}
+      --enable-prefix-caching
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+
+  # ============================================================================
+  # Client Agent: OpenCode CLI (ghcr.io/anomalyco/opencode)
+  # ============================================================================
+  opencode:
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
+    container_name: opencode-client
+    restart: unless-stopped
+    network_mode: host
+    stdin_open: true
+    tty: true
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
+      - OPENAI_API_KEY=dummy-local-key
+      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+    volumes:
+      - ..:/workspace
+      - ../_results:/results
+      - ../_results:/workspace/_results
+      - ../opencode.json:/root/.config/opencode/opencode.json:ro
+      - opencode-data:/root/.local/share/opencode
+    working_dir: /workspace
+    command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "${OPENCODE_BIND_HOST:-127.0.0.1}"]
+
+  # ============================================================================
+  # Benchmark Suite: SWE-bench Runner for Model Evaluation
+  # ============================================================================
+  benchmark:
+    build:
+      context: ../benchmark
+      dockerfile: Dockerfile
+    container_name: swebench-runner
+    profiles:
+      - benchmark
+    network_mode: host
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - ../benchmark:/app
+      - ../_results:/app/_results
+      - ../_results:/results
+      - ../_results:/app/benchmark_results
+      # Required only for swebench.harness --eval. Opt-in via --profile benchmark.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HF_HOME:-${HF_CACHE_DIR:-${HOME}/.cache/huggingface}}:/root/.cache/huggingface
+    entrypoint: ["python3"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:${INFERENCE_PORT:-8000}/v1", "--dataset", "sample"]
+
+volumes:
+  opencode-data:
+    name: opencode-data

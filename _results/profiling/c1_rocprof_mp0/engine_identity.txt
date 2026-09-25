@@ -1,0 +1,14 @@
+===== processes =====
+      1       0 vllm            /usr/bin/python /usr/local/bin/vllm serve /models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded --served-model-name awq-profile-control --trust-remote-code --tensor-parallel-size 1 --max-model-len 16384 --host 127.0.0.1 --port 8001 --kv-cache-memory-bytes 103223724237
+    383       1 VLLM::EngineCor VLLM::EngineCore
+===== kfd/dri fds =====
+===== PID 1 =====
+lrwx------ 1 root root 64 Sep 25 14:07 13 -> /dev/kfd
+lrwx------ 1 root root 64 Sep 25 14:07 17 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 Sep 25 14:07 18 -> /dev/dri/renderD136
+===== PID 383 =====
+lrwx------ 1 root root 64 Sep 25 14:07 12 -> /dev/kfd
+lrwx------ 1 root root 64 Sep 25 14:07 16 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 Sep 25 14:07 17 -> /dev/dri/renderD136
+===== PID 660 =====
+===== PID 668 =====

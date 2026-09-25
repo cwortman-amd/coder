@@ -1,0 +1,13 @@
+{
+"version":"1.0",
+"babel":{
+
+  "babel-double-4gib":[
+
+{
+    "gpu_id" : "64724",
+    "gpu_index" : "0",
+    "Array size" : "4096.000000",
+    "Total size" : "12288.000000",
+    "Iterations" : "50"
+  }

@@ -1,0 +1,19 @@
+vLLM 0.30 MXFP4 + native MTP failed at draft load (independent of num_speculative_tokens).
+
+Command added only:
+  --speculative-config '{"method":"mtp","num_speculative_tokens":1}'
+  served-model-name remained awq (not yet awq-mxfp4-mtp)
+
+EngineCore:
+  Resolved architecture: Qwen3_5MTP
+  speculative_config=SpeculativeConfig(method='mtp', model=<same MXFP4 shard dir>, num_spec_tokens=1)
+  quantization=quark
+  AiterMxfp4LinearKernel (target)
+
+Failure:
+  File vllm/model_executor/models/qwen3_5_mtp.py load_weights
+  -> parameter.py load_column_parallel_weight
+  -> assert self.data.shape == loaded_weight.shape
+  AssertionError
+
+Interpretation: Quark-packed MTP tensors do not match the Qwen3_5MTP column-parallel parameter layout in this ROCm vLLM 0.30 wheel. Do not sweep MTP-2..5 until this load path is fixed; depth does not affect this assert.

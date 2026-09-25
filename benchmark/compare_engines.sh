@@ -258,7 +258,7 @@ if [[ "$TARGET_ENGINES" == *"vllm"* ]] || [ "$TARGET_ENGINES" = "all" ]; then
         echo "Launching vLLM stack via docker-compose.yml..."
         stop_container "rocm-llama-server"
         stop_container "rocm-sglang-server"
-        docker compose -p coder-vllm -f "${ROOT_DIR}/docker-compose.yml" up -d inference
+        docker compose -p coder-vllm -f "${ROOT_DIR}/docker/docker-compose.yml" up -d inference
     fi
 
     if wait_for_server 8000 90; then
@@ -285,13 +285,13 @@ if [[ "$TARGET_ENGINES" == *"llama"* ]] || [ "$TARGET_ENGINES" = "all" ]; then
     TARGET_GGUF="${ROOT_DIR}/models/Qwen3.8-27B-Q4_K_M.gguf"
     if [ ! -f "$TARGET_GGUF" ]; then
         echo -e "${YELLOW}Notice: GGUF model weights not present at ${TARGET_GGUF}.${NC}"
-        echo "To benchmark llama.cpp, first download GGUF weights via ./download_model.sh"
+        echo "To benchmark llama.cpp, first download GGUF weights via ./scripts/download_model.sh"
         LLAMA_STATUS="NO_MODEL"
     else
-        echo "Switching inference server to llama.cpp via docker-compose.gguf.yml..."
+        echo "Switching inference server to llama.cpp via docker/docker-compose.gguf.yml..."
         stop_container "rocm-inference-server"
         stop_container "rocm-sglang-server"
-        MODEL_FILE="Qwen3.8-27B-Q4_K_M.gguf" MODEL_ALIAS="Qwen3.8-27B-Q4_K_M.gguf" docker compose -p coder-llama -f "${ROOT_DIR}/docker-compose.gguf.yml" up -d inference
+        MODEL_FILE="Qwen3.8-27B-Q4_K_M.gguf" MODEL_ALIAS="Qwen3.8-27B-Q4_K_M.gguf" docker compose -p coder-llama -f "${ROOT_DIR}/docker/docker-compose.gguf.yml" up -d inference
 
         if wait_for_server 8000 60; then
             LLAMA_VRAM=$(get_vram_usage)
@@ -318,12 +318,12 @@ fi
 if [[ "$TARGET_ENGINES" == *"sglang"* ]] || [ "$TARGET_ENGINES" = "all" ]; then
     echo ""
     echo -e "${CYAN}${BOLD}>>> [3/3] Benchmarking Engine: SGLang (RadixAttention)...${NC}"
-    if [ -f "${ROOT_DIR}/docker-compose.sglang.yml" ]; then
-        echo "Switching inference server to SGLang via docker-compose.sglang.yml..."
+    if [ -f "${ROOT_DIR}/docker/docker-compose.sglang.yml" ]; then
+        echo "Switching inference server to SGLang via docker/docker-compose.sglang.yml..."
         stop_container "rocm-inference-server"
         stop_container "rocm-llama-server"
 
-        if docker compose -p coder-sglang -f "${ROOT_DIR}/docker-compose.sglang.yml" up -d inference 2>/dev/null; then
+        if docker compose -p coder-sglang -f "${ROOT_DIR}/docker/docker-compose.sglang.yml" up -d inference 2>/dev/null; then
             if wait_for_server 8000 90; then
                 SGLANG_VRAM=$(get_vram_usage)
                 benchmark_endpoint 8000 "sglang"
@@ -352,7 +352,7 @@ echo ""
 echo -e "${CYAN}Restoring default engine: vLLM...${NC}"
 stop_container "rocm-llama-server"
 stop_container "rocm-sglang-server"
-docker compose -p coder-vllm -f "${ROOT_DIR}/docker-compose.yml" up -d inference >/dev/null 2>&1 || true
+docker compose -p coder-vllm -f "${ROOT_DIR}/docker/docker-compose.yml" up -d inference >/dev/null 2>&1 || true
 
 # ==============================================================================
 # Generate Comparative Summary Table & Report

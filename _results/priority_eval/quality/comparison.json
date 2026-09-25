@@ -1,0 +1,155 @@
+{
+  "cases": 6,
+  "exact_content_matches": 6,
+  "exact_token_matches": 6,
+  "comparisons": [
+    {
+      "prompt": "Reply with exactly: MI350P READY",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        9481,
+        18,
+        20,
+        15,
+        47,
+        82385,
+        248046
+      ],
+      "dflash_tokens": [
+        9481,
+        18,
+        20,
+        15,
+        47,
+        82385,
+        248046
+      ]
+    },
+    {
+      "prompt": "Compute 37 * 41. Give only the integer.",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        16,
+        20,
+        16,
+        22,
+        248046
+      ],
+      "dflash_tokens": [
+        16,
+        20,
+        16,
+        22,
+        248046
+      ]
+    },
+    {
+      "prompt": "Write a Python function named square that returns the square of its argument. Return only code.",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        71093,
+        12305,
+        198,
+        727,
+        9057,
+        2007,
+        1590,
+        198,
+        262,
+        460,
+        830,
+        348,
+        830,
+        198,
+        71093,
+        248046
+      ],
+      "dflash_tokens": [
+        71093,
+        12305,
+        198,
+        727,
+        9057,
+        2007,
+        1590,
+        198,
+        262,
+        460,
+        830,
+        348,
+        830,
+        198,
+        71093,
+        248046
+      ]
+    },
+    {
+      "prompt": "Return a compact JSON object with keys status and count, values ok and 3. Return JSON only.",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        4754,
+        2738,
+        3147,
+        547,
+        2129,
+        1767,
+        763,
+        18,
+        92,
+        248046
+      ],
+      "dflash_tokens": [
+        4754,
+        2738,
+        3147,
+        547,
+        2129,
+        1767,
+        763,
+        18,
+        92,
+        248046
+      ]
+    },
+    {
+      "prompt": "Translate \"The system is ready\" into French. Return only the translation.",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        2229,
+        69073,
+        1725,
+        182623,
+        13,
+        248046
+      ],
+      "dflash_tokens": [
+        2229,
+        69073,
+        1725,
+        182623,
+        13,
+        248046
+      ]
+    },
+    {
+      "prompt": "What is the capital of Japan? Answer with only the city name.",
+      "content_equal": true,
+      "token_ids_equal": true,
+      "baseline_tokens": [
+        51076,
+        15560,
+        248046
+      ],
+      "dflash_tokens": [
+        51076,
+        15560,
+        248046
+      ]
+    }
+  ]
+}

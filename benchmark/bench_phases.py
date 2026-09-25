@@ -78,7 +78,7 @@ class TelemetryCollector:
         self.proc: Optional[subprocess.Popen] = None
 
     def start(self):
-        script = os.path.join(PROJECT_DIR, "collect_amd_power.py")
+        script = os.path.join(PROJECT_DIR, "scripts", "collect_amd_power.py")
         if not os.path.exists(script):
             logger.warning(f"Power telemetry script not found at {script}, skipping.")
             return

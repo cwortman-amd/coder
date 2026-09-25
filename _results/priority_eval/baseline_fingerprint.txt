@@ -1,0 +1,53 @@
+date=2026-09-25T05:46:34+00:00
+vllm_image=sha256:2e7da1ad1c66836802072588adea75f9f4991da5f9545b4318e91d422c22ce6a [vllm/vllm-openai-rocm@sha256:2e7da1ad1c66836802072588adea75f9f4991da5f9545b4318e91d422c22ce6a]
+vllm 0.30.0
+rocm_smi=
+
+============================ ROCm System Management Interface ============================
+============================== Version of System Component ===============================
+Driver version: 6.19.14.31400000
+==========================================================================================
+=========================================== ID ===========================================
+GPU[0]		: get_name, Error when calling libdrm
+GPU[0]		: Device Name: 		N/A
+GPU[0]		: Device ID: 		0x75a8
+GPU[0]		: Device Rev: 		0x00
+GPU[0]		: Subsystem ID: 	0x75a8
+GPU[0]		: GUID: 		64724
+GPU[1]		: get_name, Error when calling libdrm
+GPU[1]		: Device Name: 		N/A
+GPU[1]		: Device ID: 		0x75a8
+GPU[1]		: Device Rev: 		0x00
+GPU[1]		: Subsystem ID: 	0x75a8
+GPU[1]		: GUID: 		40125
+==========================================================================================
+====================================== Product Info ======================================
+GPU[0]		: get_name, Error when calling libdrm
+GPU[0]		: Card Series: 		N/A
+GPU[0]		: Card Model: 		0x75a8
+GPU[0]		: Card Vendor: 		Advanced Micro Devices, Inc. [AMD/ATI]
+GPU[0]		: Card SKU: 		N/A
+GPU[0]		: Subsystem ID: 	0x75a8
+GPU[0]		: Device Rev: 		0x00
+GPU[0]		: Node ID: 		2
+GPU[0]		: GUID: 		64724
+GPU[0]		: GFX Version: 		gfx950
+GPU[1]		: get_name, Error when calling libdrm
+GPU[1]		: Card Series: 		N/A
+GPU[1]		: Card Model: 		0x75a8
+GPU[1]		: Card Vendor: 		Advanced Micro Devices, Inc. [AMD/ATI]
+GPU[1]		: Card SKU: 		N/A
+GPU[1]		: Subsystem ID: 	0x75a8
+GPU[1]		: Device Rev: 		0x00
+GPU[1]		: Node ID: 		3
+GPU[1]		: GUID: 		40125
+lspci=
+uname=Linux faede00001328os 6.8.0-142-generic #142-Ubuntu SMP PREEMPT_DYNAMIC Wed Sep  2 14:24:27 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+mem=MemTotal:       32198108 kB
+MemAvailable:    8060336 kB
+SwapTotal:      58720248 kB
+SwapFree:       53681864 kB
+model_rev=amd/Qwen3.8-27B-Quark-AWQ-MXFP4 local sharded
+orig=/home/amd/workspace/coder/models/Qwen3.8-27B-Quark-AWQ-MXFP4/model.safetensors 19798196184
+shards=39
+shard_bytes=19821308841

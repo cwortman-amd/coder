@@ -82,7 +82,7 @@ for MODEL in "${MODELS[@]}"; do
   fi
 
   # Start/recreate inference container with target model
-  MODEL_NAME="${MODEL}" TOOL_PARSER="${TOOL_PARSER}" docker compose -f "${ROOT_DIR}/docker-compose.yml" up -d --force-recreate inference
+  MODEL_NAME="${MODEL}" TOOL_PARSER="${TOOL_PARSER}" docker compose -f "${ROOT_DIR}/docker/docker-compose.yml" up -d --force-recreate inference
 
   # Wait for server to load weights and report healthy
   wait_for_server 8000

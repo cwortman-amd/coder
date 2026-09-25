@@ -1,0 +1,24 @@
+
+
+============================ ROCm System Management Interface ============================
+=============================== Current clock frequencies ================================
+GPU[0]		: fclk clock level: 1: (1500Mhz)
+GPU[0]		: mclk clock level: 0: (2000Mhz)
+GPU[0]		: sclk clock level: 1: (2200Mhz)
+GPU[0]		: socclk clock level: S: (47Mhz)
+GPU[1]		: fclk clock level: 1: (1500Mhz)
+GPU[1]		: mclk clock level: 0: (2000Mhz)
+GPU[1]		: sclk clock level: S: (95Mhz)
+GPU[1]		: socclk clock level: S: (38Mhz)
+==========================================================================================
+=================================== Power Consumption ====================================
+GPU[0]		: Current Socket Graphics Package Power (W): 177.0
+GPU[1]		: Current Socket Graphics Package Power (W): 92.0
+==========================================================================================
+================================== Memory Usage (Bytes) ==================================
+GPU[0]		: VRAM Total Memory (B): 154602045440
+GPU[0]		: VRAM Total Used Memory (B): 133912424448
+GPU[1]		: VRAM Total Memory (B): 154602045440
+GPU[1]		: VRAM Total Used Memory (B): 297816064
+==========================================================================================
+================================== End of ROCm SMI Log ===================================

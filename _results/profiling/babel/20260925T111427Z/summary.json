@@ -1,0 +1,26 @@
+{
+  "gpu_name": "AMD Instinct MI350P",
+  "arch": "gfx950",
+  "array_size_elements": 536870912,
+  "approx_one_array_gib": 4.0,
+  "approx_triad_working_set_gib": 12.0,
+  "num_iter": 50,
+  "repeats": 1,
+  "bandwidth_decimal_gbs": {
+    "Copy": null,
+    "Mul": null,
+    "Add": null,
+    "Triad": null,
+    "Dot": null,
+    "Read": null,
+    "Write": null
+  },
+  "spec_peak_gbs": 4096.0,
+  "assumed_weight_gib_per_token": 17.91,
+  "conditional_decode_tok_s": {
+    "from_read_median": null,
+    "from_copy_median": null,
+    "from_triad_median": null
+  },
+  "note": "BABEL measures synthetic HIP streaming of GPU global memory, not vLLM AITER MXFP4 weight bytes/token. Use Read as the weight-read hypothesis reference. Converted GiB/s\u2192decimal GB/s. pebb/pbqt are not this roof."
+}

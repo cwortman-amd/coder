@@ -1,0 +1,7 @@
+utc=20260925T133024Z
+host=faede00001328os
+rvs=1.5.122
+rocm=7.14.0
+Linux faede00001328os 6.8.0-142-generic #142-Ubuntu SMP PREEMPT_DYNAMIC Wed Sep  2 14:24:27 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+src_conf=_results/profiling/babel/c1_roof/babel_read.conf
+running BABEL on AMD Instinct MI350P kfd_id=64724 device_index=0 array_size=536870912 num_iter=40 repeats=2

@@ -1,0 +1,128 @@
+services:
+  # ============================================================================
+  # Inference Engine: vLLM for AMD ROCm (Radeon AI PRO R9700 / gfx1201)
+  # ============================================================================
+  inference:
+    image: ${VLLM_IMAGE:-rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0}
+    container_name: rocm-inference-server
+    restart: unless-stopped
+    ipc: host
+    shm_size: 64g
+    network_mode: host # Allows direct, low-latency access and seamless ROCm IPC
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    environment:
+      # Target the discrete Radeon AI PRO R9700 (GPU 0), ignoring integrated iGPU
+      - HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-0}
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_ARCHS=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - HF_HOME=/root/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
+      - SAFETENSORS_FAST_GPU=1
+      - HIP_FORCE_DEV_KERNARG=1
+      - TOKENIZERS_PARALLELISM=false
+      - PYTHONUNBUFFERED=1
+      - VLLM_ROCM_FP8_PADDING=${VLLM_ROCM_FP8_PADDING:-0}
+      - VLLM_ROCM_USE_AITER=${VLLM_ROCM_USE_AITER:-0}
+      - VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION=${VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION:-0}
+    volumes:
+      # Persist downloaded Hugging Face model weights on host
+      - ${HF_HOME:-${HF_CACHE_DIR:-${HOME}/.cache/huggingface}}:/root/.cache/huggingface
+      - ${VLLM_CACHE_DIR:-${HOME}/.cache/vllm}:/root/.cache/vllm
+      - ${TRITON_CACHE_DIR:-${HOME}/.cache/triton}:/root/.triton
+      - ../_results:/results
+      - ${MODELS_DIR:-../models}:/models
+      - ../patches/qwen3_5_vllm030.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen3_5.py:ro
+      - ../scripts/qwen3_5_rocm10.py:/opt/python/lib/python3.14/site-packages/vllm/model_executor/models/qwen3_5.py:ro
+    entrypoint: ["vllm", "serve"]
+    command: >
+      ${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
+      --host ${INFERENCE_BIND_HOST:-127.0.0.1}
+      --port ${INFERENCE_PORT:-8000}
+      --max-model-len ${MAX_MODEL_LEN:-9600}
+      --max-num-seqs ${MAX_NUM_SEQS:-16}
+      --max-num-batched-tokens ${MAX_NUM_BATCHED_TOKENS:-2048}
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.90}
+      --enable-auto-tool-choice
+      --tool-call-parser ${TOOL_PARSER:-hermes}
+      --hf-overrides '{"architectures": ["Qwen3_5ForCausalLM"]}'
+      --compilation-config='${VLLM_COMPILATION_CONFIG}'
+      --kv-cache-memory-bytes ${KV_CACHE_MEMORY_BYTES:-1073741824}
+      ${EXTRA_SERVE_ARGS:-}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 300s
+
+  # ============================================================================
+  # Client Agent: OpenCode CLI (ghcr.io/anomalyco/opencode)
+  # ============================================================================
+  opencode:
+    image: ${OPENCODE_IMAGE:-ghcr.io/anomalyco/opencode:latest}
+    container_name: opencode-client
+    restart: unless-stopped
+    network_mode: host # Connect directly to inference server on 127.0.0.1:8000
+    stdin_open: true
+    tty: true
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - OPENAI_BASE_URL=http://127.0.0.1:${INFERENCE_PORT:-8000}/v1
+      - OPENAI_API_KEY=dummy-local-key
+      - OPENCODE_MODEL=rocm-local/${MODEL_NAME:-Qwen3.8-27B}
+    volumes:
+      # Mount current workspace into container working directory
+      - ..:/workspace
+      - ../_results:/results
+      - ../_results:/workspace/_results
+      # Mount OpenCode provider configuration
+      - ../opencode.json:/root/.config/opencode/opencode.json:ro
+      # Persist OpenCode session history and state
+      - opencode-data:/root/.local/share/opencode
+    working_dir: /workspace
+    # Loopback by default; set OPENCODE_BIND_HOST=0.0.0.0 for LAN demos
+    command: ["web", "--port", "${OPENCODE_PORT:-4096}", "--hostname", "${OPENCODE_BIND_HOST:-127.0.0.1}"]
+
+  # ============================================================================
+  # Benchmark Suite: SWE-bench Runner for Model Evaluation
+  # ============================================================================
+  benchmark:
+    build:
+      context: ../benchmark
+      dockerfile: Dockerfile
+    container_name: swebench-runner
+    profiles:
+      - benchmark
+    network_mode: host
+    depends_on:
+      inference:
+        condition: service_healthy
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_HOME=/root/.cache/huggingface
+    volumes:
+      - ../benchmark:/app
+      - ../_results:/app/_results
+      - ../_results:/results
+      - ../_results:/app/benchmark_results
+      # Required only for swebench.harness --eval (host Docker). Opt-in via --profile benchmark.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HF_HOME:-${HF_CACHE_DIR:-${HOME}/.cache/huggingface}}:/root/.cache/huggingface
+    entrypoint: ["python3"]
+    command: ["run_benchmark.py", "--base-url", "http://127.0.0.1:${INFERENCE_PORT:-8000}/v1", "--dataset", "sample"]
+
+volumes:
+  opencode-data:
+    name: opencode-data

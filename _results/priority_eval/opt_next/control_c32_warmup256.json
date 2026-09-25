@@ -1,0 +1,214 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "awq",
+  "input_len": 1024,
+  "output_len": 256,
+  "num_prompts": 32,
+  "concurrency": 32,
+  "temperature": 0.0,
+  "top_p": null,
+  "top_k": null,
+  "enable_thinking": false,
+  "successful": 32,
+  "failed": 0,
+  "duration": 6.1660493110030075,
+  "total_prompt_tokens": 33056,
+  "total_generated_tokens": 8192,
+  "output_throughput": 1328.5654374157834,
+  "total_token_throughput": 6689.534565738065,
+  "mean_latency_s": 6.148272343938288,
+  "rows": [
+    {
+      "ok": true,
+      "dt": 6.1207498959993245,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.140000948005763,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.1367372349996,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.141217351003434,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.144896329999028,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.134627580002416,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.143689219999942,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.140133267996134,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.136580029997276,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.138673141002073,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.1383724699990125,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.139076313003898,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.136505447997479,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.134495870996034,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.156164977001026,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.1579942680036766,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.146656707998773,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.162005132006016,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.152417504003097,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.159353545997874,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.162683860005927,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.1535686569986865,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.160842182005581,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.154209563996119,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.161791450002056,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.155491427001834,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.160635569001897,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.149316563998582,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.156451558999834,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.152421389000665,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.158611122002185,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    },
+    {
+      "ok": true,
+      "dt": 6.1583444269999745,
+      "prompt_tokens": 1033,
+      "completion_tokens": 256
+    }
+  ]
+}

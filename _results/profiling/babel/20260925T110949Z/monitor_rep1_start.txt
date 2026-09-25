@@ -1,0 +1,1 @@
+amdsmi_cli_exceptions.AmdSmiInvalidParameterException: Parameter '1' is invalid. Run 'amd-smi monitor -h' for more info. Error code: -2

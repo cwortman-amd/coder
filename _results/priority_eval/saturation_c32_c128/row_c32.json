@@ -1,0 +1,13 @@
+{
+  "concurrency": 32,
+  "output_tok_s": 1276.7469763787806,
+  "mean_latency_s": 6.401683215186949,
+  "successful": 32,
+  "failed": 0,
+  "prom_mean_itl_s": 0.019774530486860134,
+  "prom_mean_ttft_s": 0.8205828070640564,
+  "kv_cache_usage_perc_after": 0.0,
+  "power_w": "169",
+  "gfx_clk": null,
+  "mem_clk": null
+}

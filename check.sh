@@ -96,14 +96,55 @@ if ! command -v jq &>/dev/null; then
 fi
 
 # ------------------------------------------------------------------------------
-# 1. Health Check
+# 1. AMD GPU driver (amdgpu / KFD)
 # ------------------------------------------------------------------------------
-echo -n "1. Checking server health status... "
+echo -n "1. Checking AMD GPU driver (amdgpu / KFD)... "
+AMDGPU_LOADED=false
+if [ -d /sys/module/amdgpu ] || lsmod 2>/dev/null | awk '{print $1}' | grep -qx 'amdgpu'; then
+    AMDGPU_LOADED=true
+fi
+KFD_PRESENT=false
+if [ -e /dev/kfd ]; then
+    KFD_PRESENT=true
+fi
+
+if [ "$AMDGPU_LOADED" != true ] || [ "$KFD_PRESENT" != true ]; then
+    echo -e "${RED}${BOLD}[FAIL]${NC}"
+    if [ "$AMDGPU_LOADED" != true ]; then
+        echo -e "${RED}The amdgpu kernel module is not loaded. ROCm inference cannot start.${NC}"
+    fi
+    if [ "$KFD_PRESENT" != true ]; then
+        echo -e "${RED}/dev/kfd is missing. Docker cannot attach the GPU (devices: /dev/kfd).${NC}"
+    fi
+    echo -e "${YELLOW}This check talks to http://${HOST}:${PORT}; that port stays closed until the driver and a running container are up.${NC}"
+    echo -e "${YELLOW}Recover:${NC}"
+    echo -e "${YELLOW}  lsmod | grep amdgpu${NC}"
+    echo -e "${YELLOW}  ls -l /dev/kfd /dev/dri${NC}"
+    echo -e "${YELLOW}  rocminfo   # expect 'ROCk module is NOT loaded' until amdgpu is active${NC}"
+    echo -e "${YELLOW}  sudo dmesg | grep -iE 'amdgpu|amdkfd'${NC}"
+    echo -e "${YELLOW}  sudo modprobe amdgpu   # or reboot after installing the AMD GPU driver${NC}"
+    if command -v docker >/dev/null 2>&1; then
+        INF_ERR="$(docker inspect --format '{{.State.Error}}' rocm-inference-server 2>/dev/null || true)"
+        if echo "${INF_ERR}" | grep -q '/dev/kfd'; then
+            echo -e "${YELLOW}Docker already failed to start rocm-inference-server: ${INF_ERR}${NC}"
+        fi
+    fi
+    exit 1
+fi
+echo -e "${GREEN}${BOLD}[OK]${NC}"
+echo -e "   - amdgpu module:  loaded"
+echo -e "   - /dev/kfd:       present"
+
+# ------------------------------------------------------------------------------
+# 2. Health Check
+# ------------------------------------------------------------------------------
+echo -n "2. Checking server health status... "
 START_TIME=$(date +%s)
 HEALTH_HTTP_CODE="000"
 
 while true; do
-    HEALTH_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "${BASE_URL}/health" 2>/dev/null || echo "000")
+    HEALTH_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "${BASE_URL}/health" 2>/dev/null || true)
+    HEALTH_HTTP_CODE="${HEALTH_HTTP_CODE:-000}"
     if [ "$HEALTH_HTTP_CODE" = "200" ]; then
         echo -e "${GREEN}${BOLD}[HEALTHY (HTTP 200)]${NC}"
         break
@@ -116,6 +157,16 @@ while true; do
         echo -e "${YELLOW}Tip: If the container was recently started, models may still be downloading/compiling.${NC}"
         echo -e "${YELLOW}     Check logs: docker compose logs -f inference${NC}"
         echo -e "${YELLOW}     Or retry with wait: ./check.sh --wait 60${NC}"
+        if command -v docker >/dev/null 2>&1; then
+            INF_STATUS="$(docker inspect --format '{{.State.Status}}' rocm-inference-server 2>/dev/null || true)"
+            INF_ERR="$(docker inspect --format '{{.State.Error}}' rocm-inference-server 2>/dev/null || true)"
+            if [ -n "${INF_STATUS}" ]; then
+                echo -e "${YELLOW}     Container rocm-inference-server status: ${INF_STATUS}${NC}"
+            fi
+            if [ -n "${INF_ERR}" ]; then
+                echo -e "${YELLOW}     Docker error: ${INF_ERR}${NC}"
+            fi
+        fi
         exit 1
     fi
 
@@ -123,9 +174,9 @@ while true; do
 done
 
 # ------------------------------------------------------------------------------
-# 2. Query Loaded Model Registry
+# 3. Query Loaded Model Registry
 # ------------------------------------------------------------------------------
-echo -n "2. Querying loaded model registry... "
+echo -n "3. Querying loaded model registry... "
 MODELS_RESPONSE=$(curl -s --connect-timeout 5 "${BASE_URL}/v1/models" 2>/dev/null || echo "{}")
 ACTIVE_MODEL=$(echo "$MODELS_RESPONSE" | jq -r '.data[0].id // empty' 2>/dev/null || true)
 
@@ -142,9 +193,9 @@ echo -e "   - Model ID:       ${GREEN}${BOLD}${ACTIVE_MODEL}${NC}"
 echo -e "   - Total Models:   ${MODEL_COUNT}"
 
 # ------------------------------------------------------------------------------
-# 3. Hello World Prompt Verification
+# 4. Hello World Prompt Verification
 # ------------------------------------------------------------------------------
-echo -n "3. Sending 'Hello World' verification prompt... "
+echo -n "4. Sending 'Hello World' verification prompt... "
 
 PROMPT_PAYLOAD=$(jq -n \
   --arg model "$ACTIVE_MODEL" \

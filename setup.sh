@@ -48,6 +48,10 @@ elif [ -f "${SCRIPT_DIR}/.env.example" ]; then
     set +a
 fi
 
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    chmod 600 "${SCRIPT_DIR}/.env" 2>/dev/null || true
+fi
+
 # 3. Synchronize HF_TOKEN into .env so Docker Compose picks it up natively
 if [ -n "${HF_TOKEN:-}" ] && [ -f "${SCRIPT_DIR}/.env" ]; then
     fill_empty_env_var "HF_TOKEN" "$HF_TOKEN" "${SCRIPT_DIR}/.env"
@@ -61,6 +65,7 @@ OPENCODE_PORT="${OPENCODE_PORT:-4096}"
 INFERENCE_PORT="${INFERENCE_PORT:-8000}"
 ENGINE="${INFERENCE_ENGINE:-vllm}"
 MODEL_OVERRIDE=""
+TOPOLOGY="single"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -85,15 +90,27 @@ while [[ $# -gt 0 ]]; do
             GPU_PROFILE="$2"
             shift 2
             ;;
+        --topology)
+            TOPOLOGY="$2"
+            shift 2
+            ;;
+        --bind)
+            INFERENCE_BIND_HOST="$2"
+            OPENCODE_BIND_HOST="$2"
+            ROUTER_BIND_HOST="$2"
+            shift 2
+            ;;
         -h|--help)
             echo "Usage: ./setup.sh [OPTIONS]"
             echo ""
             echo "Options:"
             echo "  -e, --engine <vllm|llama.cpp|sglang|mxfp4>  Inference engine (default: vllm)"
+            echo "  --topology <single|tp2|dp2|pd|pd.vllm>     Multi-GPU layout (default: single)"
             echo "  -m, --model <name>                   Model name or HF repository ID"
             echo "  -p, --port <port>                    Inference API port (default: 8000)"
             echo "  --opencode-port <port>               OpenCode Web UI port (default: 4096)"
             echo "  -g, --gpu-profile <r9700|mi350p|auto>  Target GPU (default: auto)"
+            echo "  --bind <127.0.0.1|0.0.0.0>           Bind inference, OpenCode, and routers"
             echo "  -h, --help                           Show this help message"
             (return 0 2>/dev/null) && return 0 || exit 0
             ;;
@@ -110,22 +127,22 @@ apply_gpu_profile
 ENGINE="${ENGINE,,}" # Lowercase
 if [ "$ENGINE" = "llama.cpp" ] || [ "$ENGINE" = "gguf" ]; then
     ENGINE="llama.cpp"
-    COMPOSE_FILE="docker-compose.gguf.yml"
+    COMPOSE_FILE="docker/docker-compose.gguf.yml"
     ENGINE_LABEL="llama.cpp ROCm Server (GGUF)"
     MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen3.8-27B}}"
 elif [ "$ENGINE" = "sglang" ]; then
     ENGINE="sglang"
-    COMPOSE_FILE="docker-compose.sglang.yml"
+    COMPOSE_FILE="docker/docker-compose.sglang.yml"
     ENGINE_LABEL="SGLang ROCm Server"
     MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}"
 elif [ "$ENGINE" = "mxfp4" ]; then
     ENGINE="mxfp4"
-    COMPOSE_FILE="docker-compose.mxfp4.yml"
+    COMPOSE_FILE="docker/docker-compose.mxfp4.yml"
     ENGINE_LABEL="vLLM MXFP4 / Radiance"
     MODEL="${MODEL_OVERRIDE:-${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
 elif [ "$ENGINE" = "vllm" ]; then
     ENGINE="vllm"
-    COMPOSE_FILE="docker-compose.yml"
+    COMPOSE_FILE="docker/docker-compose.yml"
     ENGINE_LABEL="vLLM ROCm Server (Default)"
     MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}"
     if [ "$MODEL" = "Qwen3.8-27B" ]; then
@@ -136,19 +153,62 @@ else
     echo "Supported: vllm, llama.cpp, sglang, mxfp4" >&2
     (return 0 2>/dev/null) && return 1 || exit 1
 fi
+
+TOPOLOGY="${TOPOLOGY,,}"
+case "$TOPOLOGY" in
+    single|"")
+        TOPOLOGY="single"
+        ;;
+    tp2)
+        ENGINE="mxfp4"
+        COMPOSE_FILE="docker/docker-compose.tp2.yml"
+        ENGINE_LABEL="vLLM MXFP4 tensor-parallel (TP=2)"
+        MODEL="${MODEL_OVERRIDE:-${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
+        if [ "${HIP_VISIBLE_DEVICES:-0}" = "0" ]; then HIP_VISIBLE_DEVICES="0,1"; fi
+        ;;
+    dp2)
+        ENGINE="mxfp4"
+        COMPOSE_FILE="docker/docker-compose.dp2.yml"
+        ENGINE_LABEL="vLLM MXFP4 data-parallel (DP=2)"
+        MODEL="${MODEL_OVERRIDE:-${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
+        ;;
+    pd)
+        ENGINE="mxfp4"
+        COMPOSE_FILE="docker/docker-compose.pd.yml"
+        ENGINE_LABEL="vLLM MXFP4 prefill/decode"
+        MODEL="${MODEL_OVERRIDE:-${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
+        ;;
+    pd.vllm|pd-vllm)
+        ENGINE="vllm"
+        COMPOSE_FILE="docker/docker-compose.pd.vllm.yml"
+        ENGINE_LABEL="vLLM FP8 prefill/decode"
+        MODEL="${MODEL_OVERRIDE:-${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}}"
+        if [ "$MODEL" = "Qwen3.8-27B" ]; then
+            MODEL="Qwen/Qwen3.8-27B-FP8"
+        fi
+        ;;
+    *)
+        echo -e "${RED}Unknown topology: ${TOPOLOGY}${NC}" >&2
+        echo "Supported: single, tp2, dp2, pd, pd.vllm" >&2
+        (return 0 2>/dev/null) && return 1 || exit 1
+        ;;
+esac
+
 export MODEL_NAME="$MODEL"
 export INFERENCE_ENGINE="$ENGINE"
 export INFERENCE_PORT OPENCODE_PORT COMPOSE_FILE GPU_PROFILE PYTORCH_ROCM_ARCH
 export HIP_VISIBLE_DEVICES VIDEO_GID RENDER_GID VLLM_IMAGE GGUF_IMAGE MXFP4_IMAGE
 export MAX_MODEL_LEN GPU_MEM_UTIL KV_CACHE_MEMORY_BYTES VLLM_COMPILATION_CONFIG
 export HSA_OVERRIDE_GFX_VERSION VLLM_ROCM_FP8_PADDING RADIANCE_USE_R4D RADIANCE_R4D_ATTN_FP8
-export GPU_LABEL MODELS_DIR HF_HOME HF_CACHE_DIR ROUTER_BIND_HOST
+export GPU_LABEL MODELS_DIR HF_HOME HF_CACHE_DIR VLLM_CACHE_DIR TRITON_CACHE_DIR
+export ROUTER_BIND_HOST INFERENCE_BIND_HOST OPENCODE_BIND_HOST MODEL_PATH
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     upsert_env_var "COMPOSE_FILE" "$COMPOSE_FILE" "${SCRIPT_DIR}/.env"
     upsert_env_var "INFERENCE_ENGINE" "$ENGINE" "${SCRIPT_DIR}/.env"
     upsert_env_var "GPU_PROFILE" "$GPU_PROFILE" "${SCRIPT_DIR}/.env"
     upsert_env_var "INFERENCE_PORT" "$INFERENCE_PORT" "${SCRIPT_DIR}/.env"
     upsert_env_var "OPENCODE_PORT" "$OPENCODE_PORT" "${SCRIPT_DIR}/.env"
+    chmod 600 "${SCRIPT_DIR}/.env" 2>/dev/null || true
 fi
 
 echo -e "${BLUE}${BOLD}============================================================${NC}"
@@ -158,6 +218,7 @@ echo -e "Inference Engine   : ${GREEN}${BOLD}${ENGINE_LABEL}${NC}"
 echo -e "GPU Compute Target : ${BOLD}${GPU_LABEL}${NC}"
 echo -e "Configured Model   : ${BOLD}${MODEL}${NC}"
 echo -e "Inference API Port : ${BOLD}http://localhost:${INFERENCE_PORT}/v1${NC}"
+echo -e "Bind address       : ${BOLD}${INFERENCE_BIND_HOST:-127.0.0.1}${NC}"
 echo -e "OpenCode Web Port  : ${BOLD}http://localhost:${OPENCODE_PORT}${NC}"
 if [ -n "${HF_TOKEN:-}" ]; then
     echo -e "Hugging Face Token : ${GREEN}Loaded (HF_TOKEN configured)${NC}"
@@ -213,16 +274,16 @@ if p and isinstance(p, str) and os.path.exists(p):
 
     if [ ! -f "$TARGET_GGUF" ] || [ ! -s "$TARGET_GGUF" ]; then
         echo -e "${YELLOW}[Notice] GGUF model file not found at: ${TARGET_GGUF}${NC}"
-        echo -e "${YELLOW}Run './download_model.sh' to download ${MODEL} (~16.8 GB) before starting.${NC}"
+        echo -e "${YELLOW}Run './scripts/download_model.sh' to download ${MODEL} (~16.8 GB) before starting.${NC}"
         echo ""
         read -r -p "Would you like to download it now? [y/N]: " CHOICE || CHOICE="n"
         if [[ "$CHOICE" =~ ^[Yy]$ ]]; then
-            if ! "${SCRIPT_DIR}/download_model.sh"; then
+            if ! "${SCRIPT_DIR}/scripts/download_model.sh"; then
                 echo -e "${RED}Model download failed. Please check your connection or HF_HOME and try again.${NC}"
                 (return 0 2>/dev/null) && return 1 || exit 1
             fi
         else
-            echo -e "${YELLOW}Download skipped. Run ./download_model.sh when ready and re-run setup.sh${NC}"
+            echo -e "${YELLOW}Download skipped. Run ./scripts/download_model.sh when ready and re-run setup.sh${NC}"
             (return 0 2>/dev/null) && return 0 || exit 0
         fi
     fi
@@ -261,10 +322,12 @@ echo ""
 echo -e "${GREEN}${BOLD}✓ Containers started in detached mode!${NC}"
 echo ""
 echo -e "${BOLD}Web Interface Access:${NC}"
-echo -e "  👉 ${GREEN}${BOLD}http://localhost:${OPENCODE_PORT}${NC}"
-LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
-if [ -n "$LOCAL_IP" ] && [ "$LOCAL_IP" != "127.0.0.1" ]; then
-    echo -e "  👉 ${GREEN}${BOLD}http://${LOCAL_IP}:${OPENCODE_PORT}${NC} (from other machines on local network)"
+echo -e "  ${GREEN}${BOLD}http://localhost:${OPENCODE_PORT}${NC}"
+if [ "${OPENCODE_BIND_HOST:-127.0.0.1}" = "0.0.0.0" ]; then
+    LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
+    if [ -n "$LOCAL_IP" ] && [ "$LOCAL_IP" != "127.0.0.1" ]; then
+        echo -e "  ${GREEN}${BOLD}http://${LOCAL_IP}:${OPENCODE_PORT}${NC} (LAN; OPENCODE_BIND_HOST=0.0.0.0)"
+    fi
 fi
 
 echo ""

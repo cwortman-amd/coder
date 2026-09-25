@@ -1,0 +1,180 @@
+GPU: 0
+    ASIC:
+        MARKET_NAME: AMD Instinct MI350P
+        VENDOR_ID: 0x1002
+        VENDOR_NAME: Advanced Micro Devices Inc. [AMD/ATI]
+        SUBVENDOR_ID: 0x1002
+        DEVICE_ID: 0x75a8
+        SUBSYSTEM_ID: 0x75a8
+        REV_ID: 0x00
+        ASIC_SERIAL: 0x95A88A7BA205B5E7
+        OAM_ID: N/A
+        NUM_COMPUTE_UNITS: 128
+        TARGET_GRAPHICS_VERSION: gfx950
+        FLAGS: 16
+    BUS:
+        BDF: 0000:8b:00.0
+        MAX_PCIE_WIDTH: 16
+        MAX_PCIE_SPEED: 32 GT/s
+        PCIE_LEVELS: N/A
+        PCIE_INTERFACE_VERSION: Gen 5
+        SLOT_TYPE: CEM
+    IFWI:
+        NAME: AMD 2
+        BUILD_DATE: 2026/06/12 03:11
+        PART_NUMBER: 113-350P-01-1K1-000A
+        VERSION: 00189939
+    LIMIT:
+        PPT0:
+            MAX_POWER_LIMIT: 600 W
+            MIN_POWER_LIMIT: 0 W
+            SOCKET_POWER_LIMIT: 600 W
+        PPT1:
+            MAX_POWER_LIMIT: N/A
+            MIN_POWER_LIMIT: N/A
+            SOCKET_POWER_LIMIT: N/A
+        SLOWDOWN_EDGE_TEMPERATURE: N/A
+        SLOWDOWN_HOTSPOT_TEMPERATURE: 100 °C
+        SLOWDOWN_VRAM_TEMPERATURE: 115 °C
+        SHUTDOWN_EDGE_TEMPERATURE: N/A
+        SHUTDOWN_HOTSPOT_TEMPERATURE: 112 °C
+        SHUTDOWN_VRAM_TEMPERATURE: 125 °C
+        PTL_STATE: N/A
+        PTL_FORMAT: N/A
+    DRIVER:
+        NAME: amdgpu
+        VERSION: 6.19.14.31400000
+        OS_KERNEL_VERSION: 6.8.0-142-generic
+    BOARD:
+        MODEL_NUMBER: 100-300000211H
+        PRODUCT_SERIAL: 692631002239
+        FRU_ID: N/A
+        PRODUCT_NAME: AMD Instinct MI350P
+        MANUFACTURER_NAME: AMD
+    RAS:
+        EEPROM_VERSION: 0x40000
+        BAD_PAGE_THRESHOLD: 128
+        BAD_PAGE_THRESHOLD_EXCEEDED: False
+        PARITY_SCHEMA: DISABLED
+        SINGLE_BIT_SCHEMA: DISABLED
+        DOUBLE_BIT_SCHEMA: DISABLED
+        POISON_SCHEMA: ENABLED
+        ECC_BLOCK_STATE:
+            UMC: ENABLED
+            SDMA: ENABLED
+            GFX: ENABLED
+            MMHUB: ENABLED
+            ATHUB: ENABLED
+            PCIE_BIF: ENABLED
+            HDP: ENABLED
+            XGMI_WAFL: ENABLED
+            DF: ENABLED
+            SMN: ENABLED
+            SEM: DISABLED
+            MP0: ENABLED
+            MP1: ENABLED
+            FUSE: DISABLED
+            MCA: ENABLED
+            VCN: ENABLED
+            JPEG: ENABLED
+            IH: ENABLED
+            MPIO: ENABLED
+    SOC_PSTATE: N/A
+    XGMI_PLPD: N/A
+    PROFILE: AMDSMI_STATUS_NOT_SUPPORTED - Feature not supported
+    PROCESS_ISOLATION: Disabled
+    NUMA:
+        NODE: 0
+        AFFINITY: 0
+        CPU_AFFINITY:
+            CPU_LIST_0:
+                BITMASK: 0000000000FF00FF
+                CPU_CORES_AFFINITY: 0-23
+        SOCKET_AFFINITY:
+            CPU_LIST_0:
+                BITMASK: 0000000000FF00FF
+                CPU_CORES_AFFINITY: 0-23
+    VRAM:
+        TYPE: HBM3E
+        VENDOR: SAMSUNG
+        SIZE: 147440 MB
+        BIT_WIDTH: 4096
+        MAX_BANDWIDTH: 4096 GB/s
+    CACHE_INFO:
+        CACHE_0:
+            CACHE_PROPERTIES: DATA_CACHE, SIMD_CACHE
+            CACHE_SIZE: 32 KB
+            CACHE_LEVEL: 1
+            MAX_NUM_CU_SHARED: 1
+            NUM_CACHE_INSTANCE: 128
+        CACHE_1:
+            CACHE_PROPERTIES: INST_CACHE, SIMD_CACHE
+            CACHE_SIZE: 64 KB
+            CACHE_LEVEL: 1
+            MAX_NUM_CU_SHARED: 2
+            NUM_CACHE_INSTANCE: 56
+        CACHE_2:
+            CACHE_PROPERTIES: INST_CACHE, SIMD_CACHE
+            CACHE_SIZE: 64 KB
+            CACHE_LEVEL: 1
+            MAX_NUM_CU_SHARED: 1
+            NUM_CACHE_INSTANCE: 16
+        CACHE_3:
+            CACHE_PROPERTIES: DATA_CACHE, SIMD_CACHE
+            CACHE_SIZE: 16 KB
+            CACHE_LEVEL: 1
+            MAX_NUM_CU_SHARED: 2
+            NUM_CACHE_INSTANCE: 56
+        CACHE_4:
+            CACHE_PROPERTIES: DATA_CACHE, SIMD_CACHE
+            CACHE_SIZE: 16 KB
+            CACHE_LEVEL: 1
+            MAX_NUM_CU_SHARED: 1
+            NUM_CACHE_INSTANCE: 16
+        CACHE_5:
+            CACHE_PROPERTIES: DATA_CACHE, SIMD_CACHE
+            CACHE_SIZE: 4096 KB
+            CACHE_LEVEL: 2
+            MAX_NUM_CU_SHARED: 128
+            NUM_CACHE_INSTANCE: 1
+        CACHE_6:
+            CACHE_PROPERTIES: DATA_CACHE, SIMD_CACHE
+            CACHE_SIZE: 131072 KB
+            CACHE_LEVEL: 3
+            MAX_NUM_CU_SHARED: 128
+            NUM_CACHE_INSTANCE: 1
+    MEM_CARVEOUT: N/A (UMA carveout is not supported on this ASIC/VBIOS)
+    CLOCK:
+        SYS:
+            CURRENT_LEVEL: 1
+            FREQUENCY_LEVELS:
+                LEVEL 0: 500 MHz
+                LEVEL 1: 2200 MHz
+        MEM:
+            CURRENT_LEVEL: 0
+            FREQUENCY_LEVELS:
+                LEVEL 0: 2000 MHz
+        DF:
+            CURRENT_LEVEL: 1
+            FREQUENCY_LEVELS:
+                LEVEL 0: 1220 MHz
+                LEVEL 1: 1500 MHz
+        SOC:
+            CURRENT_LEVEL: 0
+            FREQUENCY_LEVELS:
+                LEVEL 0: 56 MHz
+                LEVEL 1: 1200 MHz
+        DCEF: N/A
+        VCLK0:
+            CURRENT_LEVEL: 0
+            FREQUENCY_LEVELS:
+                LEVEL 0: 59 MHz
+                LEVEL 1: 1900 MHz
+        VCLK1: N/A
+        DCLK0:
+            CURRENT_LEVEL: 0
+            FREQUENCY_LEVELS:
+                LEVEL 0: 48 MHz
+                LEVEL 1: 1520 MHz
+        DCLK1: N/A
+

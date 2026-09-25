@@ -35,7 +35,7 @@ if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 from benchmark.sse_util import sse_has_content  # noqa: E402
 RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "chunk_sweep")
-COMPOSE_FILE = os.path.join(PROJECT_DIR, "docker-compose.mxfp4.yml")
+COMPOSE_FILE = os.path.join(PROJECT_DIR, "docker", "docker-compose.mxfp4.yml")
 
 
 def calculate_percentiles(values: List[float]) -> Dict[str, float]:

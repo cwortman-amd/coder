@@ -1,0 +1,6 @@
+
+ROCm Validation Suite (version 1.5.122)
+
+Supported GPUs available:
+0000:8b:00.0 - GPU[ 2 - 64724] AMD Instinct MI350P (Device 30120)
+0001:c7:00.0 - GPU[ 3 - 40125] AMD Instinct MI350P (Device 30120)

@@ -1,0 +1,38 @@
+===== ps =====
+      1       0       1 Ssl  vllm            /usr/bin/python /usr/local/bin/vllm serve /models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded --served-model-name awq --trust-remote-code --tensor-parallel-size 1 --max-model-len 16384 --host 127.0.0.1 --port 8000 --kv-cache-memory-bytes 103223724237
+    276       1       1 S    python          /usr/bin/python -c from multiprocessing.resource_tracker import main;main(35)
+    277       1       1 Sl   VLLM::EngineCor VLLM::EngineCore
+   2343       0    2343 Rsl  python3         python3 -
+===== kfd/dri =====
+PID 1 comm=vllm kfd=yes
+lrwx------ 1 root root 64 Sep 25 17:12 13 -> /dev/kfd
+lrwx------ 1 root root 64 Sep 25 17:12 17 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 Sep 25 17:12 18 -> /dev/dri/renderD136
+PID 2343 comm=python3 kfd=yes
+lrwx------ 1 root root 64 Sep 25 17:12 3 -> /dev/kfd
+lrwx------ 1 root root 64 Sep 25 17:12 7 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 Sep 25 17:12 8 -> /dev/dri/renderD136
+PID 277 comm=VLLM::EngineCor kfd=yes
+lrwx------ 1 root root 64 Sep 25 17:08 12 -> /dev/kfd
+lrwx------ 1 root root 64 Sep 25 17:08 16 -> /dev/dri/renderD128
+lrwx------ 1 root root 64 Sep 25 17:08 17 -> /dev/dri/renderD136
+===== EngineCore env (rocprof) =====
+enginecore_nspid=277
+AITER_ASM_DIR=/usr/local/lib/python3.12/dist-packages/aiter_meta/hsa/
+AITER_GPU_ARCHS=gfx950
+AITER_ROCM_ARCH=gfx942;gfx950
+FLYDSL_RUNTIME_CACHE_DIR=/usr/local/lib/python3.12/dist-packages/aiter/jit/flydsl_cache
+HSA_TOOLS_ROCPROFILER_V1_TOOLS=0
+OPUS_GEN_CO_DIR=/usr/local/lib/python3.12/dist-packages/aiter_meta/csrc/opus_gemm/gen_co
+ROCPROFILER_QUEUE_INTERPOSITION=0
+ROCPROFILER_REGISTER_LIBRARY=/opt/rocm-7.2.3/lib/librocprofiler-sdk.so.1.3.2
+===== threads named attach/rocprof =====
+(no rocprof/attach thread names)
+===== maps attach libs =====
+(librocprofiler-sdk-attach not mapped)
+===== docker top (host PIDs) =====
+PID                 PPID                STAT                CMD
+511098              511074              Ssl                 /usr/bin/python /usr/local/bin/vllm serve /models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded --served-model-name awq --trust-remote-code --tensor-parallel-size 1 --max-model-len 16384 --host 127.0.0.1 --port 8000 --kv-cache-memory-bytes 103223724237
+511909              511098              S                   /usr/bin/python -c from multiprocessing.resource_tracker import main;main(35)
+511910              511098              Sl                  VLLM::EngineCore
+524661              511074              Rsl                 python3 -

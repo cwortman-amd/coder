@@ -1,0 +1,132 @@
+{
+  "counters": {
+    "vllm:prompt_tokens_total": {
+      "before": 13459.0,
+      "after": 29987.0,
+      "delta": 16528.0
+    },
+    "vllm:generation_tokens_total": {
+      "before": 4688.0,
+      "after": 21072.0,
+      "delta": 16384.0
+    },
+    "vllm:e2e_request_latency_seconds_count": {
+      "before": 15.0,
+      "after": 31.0,
+      "delta": 16.0
+    },
+    "vllm:e2e_request_latency_seconds_sum": {
+      "before": 79.39458441734314,
+      "after": 386.354439496994,
+      "delta": 306.9598550796509
+    },
+    "vllm:time_to_first_token_seconds_count": {
+      "before": 15.0,
+      "after": 31.0,
+      "delta": 16.0
+    },
+    "vllm:time_to_first_token_seconds_sum": {
+      "before": 25.745195388793945,
+      "after": 33.90925598144531,
+      "delta": 8.164060592651367
+    },
+    "vllm:inter_token_latency_seconds_count": {
+      "before": 2232.0,
+      "after": 9617.0,
+      "delta": 7385.0
+    },
+    "vllm:inter_token_latency_seconds_sum": {
+      "before": 53.65945324196218,
+      "after": 352.4578732869559,
+      "delta": 298.7984200449937
+    },
+    "vllm:request_queue_time_seconds_count": {
+      "before": 15.0,
+      "after": 31.0,
+      "delta": 16.0
+    },
+    "vllm:request_queue_time_seconds_sum": {
+      "before": 0.00038621999556198716,
+      "after": 0.0005581550067290664,
+      "delta": 0.0001719350111670792
+    },
+    "vllm:request_prefill_time_seconds_count": {
+      "before": 15.0,
+      "after": 31.0,
+      "delta": 16.0
+    },
+    "vllm:request_prefill_time_seconds_sum": {
+      "before": 25.058723090041894,
+      "after": 32.22643933202198,
+      "delta": 7.167716241980088
+    },
+    "vllm:request_decode_time_seconds_count": {
+      "before": 15.0,
+      "after": 31.0,
+      "delta": 16.0
+    },
+    "vllm:request_decode_time_seconds_sum": {
+      "before": 53.65945324196218,
+      "after": 352.4578732869559,
+      "delta": 298.7984200449937
+    },
+    "vllm:spec_decode_num_drafts_total": {
+      "before": 2232.0,
+      "after": 9617.0,
+      "delta": 7385.0
+    },
+    "vllm:spec_decode_num_draft_tokens_total": {
+      "before": 15624.0,
+      "after": 67319.0,
+      "delta": 51695.0
+    },
+    "vllm:spec_decode_num_accepted_tokens_total": {
+      "before": 2454.0,
+      "after": 11453.0,
+      "delta": 8999.0
+    },
+    "vllm:spec_decode_num_emitted_tokens_total": {
+      "before": 0,
+      "after": 0,
+      "delta": 0
+    }
+  },
+  "gauges_end": {
+    "vllm:num_requests_running": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:num_requests_waiting": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:kv_cache_usage_perc": {
+      "before": 0.0,
+      "after": 0.0
+    },
+    "vllm:spec_decode_draft_acceptance_rate": {
+      "before": 0,
+      "after": 0
+    },
+    "vllm:spec_decode_efficiency": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "derived": {
+    "draft_acceptance": 0.17407873101847374,
+    "accepted_per_draft_step": 1.2185511171293162,
+    "mean_acceptance_length_if_drafts_are_verifies": 2.218551117129316,
+    "mean_ttft_s": 0.5102537870407104,
+    "mean_itl_s": 0.04046017874678317
+  },
+  "accepted_per_pos_delta": {
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"0\"}": 5376.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"1\"}": 3623.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"2\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"3\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"4\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"5\"}": 0.0,
+    "vllm:spec_decode_num_accepted_tokens_per_pos_total{engine=\"0\",model_name=\"awq-mxfp4-dflash2\",position=\"6\"}": 0.0
+  }
+}

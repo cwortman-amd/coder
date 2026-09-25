@@ -1,0 +1,4 @@
+utc=20260925T140246Z port=8001 conc=1 isl=1024 osl=128 dflash=none
+ptrace_scope=1
+started rocm-inference-profile on :8001
+healthy after 126 iterations

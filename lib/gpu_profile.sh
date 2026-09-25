@@ -102,10 +102,15 @@ apply_gpu_profile() {
     export INFERENCE_ENGINE="${INFERENCE_ENGINE:-vllm}"
     export INFERENCE_PORT="${INFERENCE_PORT:-8000}"
     export OPENCODE_PORT="${OPENCODE_PORT:-4096}"
+    export INFERENCE_BIND_HOST="${INFERENCE_BIND_HOST:-127.0.0.1}"
+    export OPENCODE_BIND_HOST="${OPENCODE_BIND_HOST:-127.0.0.1}"
     export ROUTER_BIND_HOST="${ROUTER_BIND_HOST:-127.0.0.1}"
-    export MODELS_DIR="${MODELS_DIR:-${SCRIPT_DIR:-.}/models}"
+    export MODELS_DIR="${MODELS_DIR:-${ROOT_DIR:-${SCRIPT_DIR:-.}}/models}"
+    export MODEL_PATH="${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}"
     export HF_HOME="${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}"
     export HF_CACHE_DIR="${HF_CACHE_DIR:-$HF_HOME}"
+    export VLLM_CACHE_DIR="${VLLM_CACHE_DIR:-$HOME/.cache/vllm}"
+    export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-$HOME/.cache/triton}"
 }
 
 compose_file_for_engine() {
@@ -118,6 +123,7 @@ compose_file_for_engine() {
         tp2) echo "docker-compose.tp2.yml" ;;
         dp2) echo "docker-compose.dp2.yml" ;;
         pd) echo "docker-compose.pd.yml" ;;
+        pd.vllm|pd-vllm) echo "docker-compose.pd.vllm.yml" ;;
         vllm|*) echo "docker-compose.yml" ;;
     esac
 }

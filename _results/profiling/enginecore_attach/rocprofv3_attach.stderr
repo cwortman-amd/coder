@@ -1,0 +1,12 @@
+E0925 17:09:37.588942    1820 rocattach.cpp:233] [rocprofiler-sdk-rocattach] Could not find 'rocp-bg-attach' thread in /proc/277/task
+E0925 17:09:37.589061    1820 rocattach.cpp:264] [rocprofiler-sdk-rocattach] Cannot attach to process 277: 'rocp-bg-attach' thread not found. The target process does not appear to have attach support enabled. Start the target with ROCP_TOOL_ATTACH=1, or use a rocprofiler-register build configured with ROCPROFILER_REGISTER_BUILD_DEFAULT_ATTACHMENT=ON.
+E0925 17:09:37.589068    1820 rocattach.cpp:531] [rocprofiler-sdk-rocattach] rocattach_attach failed with error code 1
+Traceback (most recent call last):
+  File "/opt/rocm-7.2.3/bin/rocprof-attach", line 218, in <module>
+    ec = main(sys.argv[1:])
+         ^^^^^^^^^^^^^^^^^^
+  File "/opt/rocm-7.2.3/bin/rocprof-attach", line 207, in main
+    attach(
+  File "/opt/rocm-7.2.3/bin/rocprof-attach", line 161, in attach
+    raise RuntimeError(
+RuntimeError: Calling attach in /opt/rocm-7.2.3/lib/librocprofiler-sdk-rocattach.so returned non-zero status 1
