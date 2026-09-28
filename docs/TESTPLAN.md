@@ -445,7 +445,7 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
   - **MxFP4 matched FP8 accuracy token-for-token** at **80.0% on GPQA Diamond** (100% on Physics), while Q4_K_M dropped to 60.0%.
   - **MxFP4 was the only format to generate a valid SWE-bench patch** (`astropy__astropy-6938`), outperforming FP8 and Q4_K_M.
   - **MxFP4 consumes only 19.05 GB VRAM** (freeing 15.1 GB for large KV cache pools and prefix caching), whereas FP8 consumes 31.60 GB (92.4%), which forced disabled CUDA graphs and capped decode throughput at 12.02 tok/s.
-* **Certification Gate**: `Qwen3.8-27B-Quark-AWQ-MXFP4` is officially certified as the primary served model representation for all subsequent single-card and dual-card stages. See full analysis in [`docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md`](file:///home/amd/workspace/coder/docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md).
+* **Certification Gate**: `Qwen3.8-27B-Quark-AWQ-MXFP4` is officially certified as the primary served model representation for all subsequent single-card and dual-card stages. See full analysis in [R9700.md](R9700.md).
 
 ### Phase 1: Freeze Baseline Calibration
 * Run [`benchmark/bench_phases.py`](file:///home/amd/workspace/coder/benchmark/bench_phases.py) with `--mode isolated-prefill`, `--mode isolated-decode`, and `--mode contention-jitter`.
@@ -487,4 +487,4 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
 
 ### Phase 8: Comprehensive Analysis & Publication
 * Calculate $E_{\text{decode isolation}}$, $E_{\text{recovery}}$, Phase Balance $B$, Qualified Goodput Gain, and Joules/Qualified Token.
-* Compile final report into `docs/DUAL_R9700_EMPIRICAL_EVALUATION.md` and commit all JSON traces to version control.
+* Compile the final dual-card report into [R9700-PD.md](R9700-PD.md) and commit all JSON traces to version control.

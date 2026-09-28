@@ -293,28 +293,6 @@ Switch inference engines at startup:
 
 ---
 
-## Documentation Sitemap (`docs/`)
+## Documentation
 
-For in-depth architectural analysis, benchmark datasets, container build specifications, and operational manuals, see the documentation in [`docs/`](docs/):
-
-- **[MI350P vLLM Quark MXFP4 evaluation](docs/MI350P_MXFP4_VLLM_EVAL.md)**  
-  Reproducible 25 Sep Instinct campaign: freeze HF MXFP4 control **79.35 C1 / 553.58 C8**; Babel Read **3793 GB/s**; C1 **40%** of that *conditional* roof. Isolated ASM/ksplit=1 GEMM wins **regressed serving**. DFLASH-3 is opt-in long-output only (101/116 greedy; TTFT/ITL p95 regress). Lab: `_results/priority_eval/EVAL.md`.
-
-- **[Docker Compose & Container Specification Guide](docs/DOCKER_COMPOSE_GUIDE.md)**  
-  Full Docker Compose file specifications, environment variables, `Dockerfile` build scripts, and plugin instructions.
-- **[SWE-bench & GPQA Benchmarking Harness Guide](docs/BENCHMARKING_HARNESS.md)**  
-  Complete benchmark harness setup, dataset splits, offline testing, and comparative evaluation scripts (`compare_engines.sh`, `compare_models.sh`).
-- **[Troubleshooting & Operational Guide](docs/TROUBLESHOOTING.md)**  
-  Resolutions for permission issues, iGPU collisions, OOM error tuning, kernel panics, and legacy ROCm image traps.
-- **[Comprehensive Benchmark & Ablation Report](docs/COMPREHENSIVE_BENCHMARK_REPORT.md)**  
-  Single-variable controlled ablations comparing ROCm 10 FP8 vs. vLLM-MXFP4 Radiance and llama.cpp HIP.
-- **[Optimization Tracks Empirical Report](docs/OPTIMIZATION_TRACKS_EMPIRICAL_REPORT.md)**  
-  Empirical results for prefix caching speedup (9.24× gain), chunk size sweep (2048 sweet spot), and interactive SLO pass rates.
-- **[Dual R9700 Evaluation & P/D Architecture Report](docs/DUAL_R9700_EVALUATION_ARCHITECTURE.md)**  
-  Dual-card hardware topology, Tensor Parallelism (TP=2) vs. Data Parallelism (DP=2), and Prefill/Decode Disaggregation analysis.
-- **[Single R9700 Phase Profiling & Interference Report](docs/SINGLE_R9700_PHASE_PROFILING.md)**  
-  Isolated prefill vs. steady decode, thermodynamic power profiles, and contention jitter analysis.
-- **[Quantization Accuracy & Task Fidelity Report](docs/QUANTIZATION_ACCURACY_COMPARISON_REPORT.md)**  
-  Accuracy breakdown across FP8, MxFP4, and Q4_K_M on SWE-bench and GPQA Diamond.
-- **[Master Testplan Specification](docs/TESTPLAN.md)**  
-  Standardized test methodology, formulas, efficiency criteria, and 6-stage connector readiness model.
+The index is [docs/README.md](docs/README.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). Server cost and tokens per dollar: [docs/TCO.md](docs/TCO.md).

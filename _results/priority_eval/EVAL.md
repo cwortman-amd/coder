@@ -1,6 +1,6 @@
 # MI350P MXFP4 control + graph/batch ablations (2026-09-25)
 
-Canonical write-up for reports: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md). This file is the lab ledger (JSON paths, per-run notes).
+Canonical write-up for reports: [`docs/MI350P.md`](../../docs/MI350P.md). This file is the lab ledger (JSON paths, per-run notes).
 
 **Production conclusion:** freeze the published HF Quark MXFP4 recipe (`VLLM_ROCM_USE_AITER` unset, stock `M_LEQ_8`). Do not enable global AITER ASM or a `NUM_KSPLIT=1` overlay: both improved isolated M=1 GEMM and **did not** improve graph-enabled serving (C1 **71.40** / **75.93** vs **79.53**). Promotion gate is unprofiled C1/C8 vs **79.35 ± 0.57 / 553.58 ± 2.97**. Babel Read **3793 GB/s**; C1 **40%** of that *conditional* full-weight roof — unused 60% is **not** assigned to one operator. **DFLASH-3** is the strongest optional C1 throughput cell (**113.75 tok/s**) but fails strict equality (**101/116**) and interactive latency (TTFT p95 **2.18×**, ITL p95 **+56%**); opt-in long-output only. Details: `_results/profiling/C1_BABEL_ROOFLINE.md`, `_results/profiling/mxfp4_gemm/GEMM.md`.
 
@@ -32,6 +32,20 @@ One extra flag per restart. GRAPH-DEFAULT ≡ O2 (HF recipe).
 O3 is O2 within noise. O1 loses ~5% at C8. Eager is the negative control: graphs are worth **~5.7× C1** and **~5.1× C8** on this MXFP4 path. Do not ship `--enforce-eager`.
 
 GRAPH-DEFAULT 8K/1K (discriminator): **C1 39.19** / **C8 287.08** output tok/s (prefill-heavy; not comparable to 1K decode).
+
+## Shape sweep, 28 Sep (same HF recipe, `bench_openai_chat.py`)
+
+One wave per cell (`num_prompts = concurrency`), except C1 which is four sequential prompts, matching the 8K discriminator. Artifacts: `tco_mi350p/`. Dollars are in [`docs/TCO.md`](../../docs/TCO.md).
+
+| Shape | C1 | C4 | C8 | C16 | C32 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 8192/1024 production | 39.19 | 149.10 | 287.08 | 522.47 | 929.04 |
+| 1024/8192 production | 53.08 | 202.75 | 395.19 | 689.59 | 1,214.39 |
+| 8192/1024 DFlash-3 | 54.67 | 241.66 | 287.04 | 388.67 | 411.66 |
+| 1024/8192 DFlash-3 | 94.93 | 269.51 | 167.12 | 207.03 | 240.75 |
+| 1024/1024 DFlash-3 | 113.77 | 365.43 | 510.81 | 633.18 | 883.26 |
+
+DFlash-3 C8 at 1024/1024 is the earlier depth sweep (510.81). This run reproduced C1 at 113.77. Production 1024/1024 stays the table above this section. DFlash-3 is ahead at C1 and C4 on every shape and behind production from C8 up on 1024/1024 and 1024/8192, and from C16 up on 8192/1024. On 1024/8192, DFlash-3 drops from C4 (269.51) to C8 (167.12).
 
 ## Client concurrency on HF recipe (1K/1K)
 
@@ -184,20 +198,28 @@ not general task quality. Artifacts: `quality/baseline.json`,
 | --- | --- | --- |
 | Saturated | HF recipe, graphs on (O2), auto seqs, batched 8192, optional pinned KV bytes | C8 554.57; C64 2017.49 |
 | Lowest TTFT / smoothest stream | HF recipe, no speculation | Better TTFT and p95 ITL at C1–C8 |
+| Attention performance candidate | Frozen MXFP4 + explicit `TRITON_ATTN`; opt-in pending quality policy | C1 **100.36 ± 0.04**; C8 **660.53 ± 8.69**; greedy equality **98/116** |
 | Low-concurrency long output | **DFLASH-3** on same target; opt-in C1–C3 only | C1 113.75; equality 101/116; TTFT/ITL p95 regress |
 
 Do not add `--enforce-eager`, `--max-num-seqs 32`, `--optimization-level 1`, `VLLM_ROCM_USE_AITER=1`, or a `NUM_KSPLIT=1` DEFAULT overlay to the saturated command.
 
-Live: HF recipe `awq` on `127.0.0.1:8000` with `--kv-cache-memory-bytes 103223724237`.
+Live after experiments: restore the HF recipe `awq` on `127.0.0.1:8000`
+with `--kv-cache-memory-bytes 103223724237`. Triton attention is launched
+separately with `scripts/launch_vllm_mxfp4_triton_attn.sh`.
 
 ## Next (frozen control; serving is the gate)
 
-1. Keep HF control unchanged. Gate kernel changes on unprofiled C1/C8 vs **79.35 ± 0.57 / 553.58 ± 2.97**, not eager GEMM or profiler-on capture tok/s (M=1 **60.92**).
-2. Exclusive-GPU FP8 sampling vs MXFP4 30/32. EngineCore spawn-exec for `KERNEL_DISPATCH` (live attach blocked). Mid-batch C32–C128 power/KV.
+1. Keep HF control unchanged. `TRITON_ATTN` is the first full-serving win:
+   **100.36 ± 0.04 C1 / 660.53 ± 8.69 C8**, with p95 ITL improved. It stays
+   opt-in pending a larger quality gate because greedy equality is 98/116.
+2. Exclusive-GPU FP8 sampling vs MXFP4 30/32. EngineCore `KERNEL_DISPATCH`
+   is now captured (`_results/profiling/enginecore_exec/TRACE.md`): MXFP4
+   GEMM+reduce 49%, attention+KV 20%, elementwise/norm 12%, quant 8%.
+   Use it to select candidates; serving remains the gate.
 3. File `_results/upstream/ISSUES.md`. DFLASH-3 stays opt-in long-output only.
 4. Captured vLLM O2 replay and Babel `MiBytes/sec` parser are **done**: `_results/profiling/vllm_captured/SUMMARY.md`, `scripts/parse_rvs_babel.py`. 1K/256 C32–C128: `_results/priority_eval/saturation_c32_c128/SATURATION.md`.
 
-Canonical: `docs/MI350P_MXFP4_VLLM_EVAL.md` §5/§8.
+Canonical: `docs/MI350P.md` §5/§8.
 
 ## Profiling enablement
 

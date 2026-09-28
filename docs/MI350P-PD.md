@@ -1,6 +1,6 @@
 # Dual Instinct MI350P PCIe — Phase Isolation and P/D Report
 
-**Filename:** `DUAL_MI450P_REPORT.md` (requested). The cards on this host are **AMD Instinct MI350P PCIe**, not an MI450 SKU.
+The cards on this host are **AMD Instinct MI350P PCIe**.
 
 | Field | Value |
 | --- | --- |
