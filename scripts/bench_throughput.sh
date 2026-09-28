@@ -17,6 +17,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "$ROOT_DIR"
+TOKENIZER_NAME_OVERRIDE="${TOKENIZER_NAME_OVERRIDE:-${TOKENIZER_NAME:-}}"
+RESULTS_TAG="${RESULTS_TAG:-}"
+ATTACH_ONLY="${ATTACH_ONLY:-0}"
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/lib/gpu_profile.sh"
 
@@ -41,6 +44,9 @@ if [ -f "${ROOT_DIR}/.env" ]; then
 fi
 export HF_TOKEN="${HF_TOKEN:-}"
 export HF_HOME="${HF_HOME:-${HF_CACHE_DIR:-$HOME/.cache/huggingface}}"
+if [ -n "$TOKENIZER_NAME_OVERRIDE" ]; then
+    TOKENIZER_NAME="$TOKENIZER_NAME_OVERRIDE"
+fi
 # The public throughput.sh entrypoint sets this to auto unless explicitly
 # overridden. Reapply it after .env so stale host-specific settings do not win.
 GPU_PROFILE="${GPU_PROFILE_OVERRIDE:-${GPU_PROFILE:-auto}}"
@@ -56,7 +62,7 @@ BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-RESULTS_DIR="${ROOT_DIR}/_results/throughput/${TIMESTAMP}"
+RESULTS_DIR="${ROOT_DIR}/_results/throughput/${TIMESTAMP}${RESULTS_TAG:+_${RESULTS_TAG}}"
 mkdir -p "$RESULTS_DIR"
 
 CONC="${CONC:-1}"
@@ -341,7 +347,23 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
     echo -e "${BLUE}${BOLD}>>> BENCHMARKING ENGINE: ${CURR_ENGINE^^}${NC}"
     echo -e "${BLUE}${BOLD}======================================================================${NC}"
 
-    if ! start_engine "$CURR_ENGINE"; then
+    if [ "$ATTACH_ONLY" = "1" ]; then
+        echo -e "${CYAN}Attaching to ${SERVER_URL} without restarting servers.${NC}"
+        BENCH_PORT="${SERVER_URL##*:}"
+        BENCH_PORT="${BENCH_PORT%%/*}"
+        if ! [[ "$BENCH_PORT" =~ ^[0-9]+$ ]]; then
+            BENCH_PORT=8000
+        fi
+        if ! wait_for_server "$BENCH_PORT" 30; then
+            echo -e "${YELLOW}No healthy server at ${SERVER_URL}.${NC}"
+            BENCH_FAILURES=$((BENCH_FAILURES + 1))
+            for TC in "${TEST_CASES[@]}"; do
+                IFS=":" read -r IN_LEN OUT_LEN <<< "$TC"
+                TABLE_ROWS+=("${CURR_ENGINE}|${IN_LEN}|${OUT_LEN}|N/A|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE|UNAVAILABLE")
+            done
+            continue
+        fi
+    elif ! start_engine "$CURR_ENGINE"; then
         echo -e "${YELLOW}Skipping throughput run for ${CURR_ENGINE} (engine unavailable).${NC}"
         BENCH_FAILURES=$((BENCH_FAILURES + 1))
         for TC in "${TEST_CASES[@]}"; do
@@ -351,9 +373,19 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         continue
     fi
 
-    # Query active model ID
-    MODEL_NAME=$(curl -s "http://127.0.0.1:8000/v1/models" 2>/dev/null | jq -r '.data[0].id // "Unknown"' || echo "Unknown")
+    # Query active model ID on the target server, not a hardcoded port.
+    BENCH_PORT="${SERVER_URL##*:}"
+    BENCH_PORT="${BENCH_PORT%%/*}"
+    if ! [[ "$BENCH_PORT" =~ ^[0-9]+$ ]]; then
+        BENCH_PORT=8000
+    fi
+    MODEL_NAME=$(curl -s "${SERVER_URL}/v1/models" 2>/dev/null | jq -r '.data[0].id // "Unknown"' || echo "Unknown")
     echo -e "Active Model ID   : ${GREEN}${BOLD}${MODEL_NAME}${NC}"
+    GPT_OSS_BENCH=0
+    if [[ "$MODEL_NAME" == *gpt-oss* ]] || [[ "${MODEL_PROFILE:-}" == gpt-oss* ]]; then
+        GPT_OSS_BENCH=1
+        echo -e "Benchmark protocol : ${BOLD}native MXFP4, ignore_eos, temperature 0, percentiles tpot/ttft/itl/e2el${NC}"
+    fi
     echo ""
 
     TOTAL_CASES=${#TEST_CASES[@]}
@@ -365,9 +397,12 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         ISL="$IN_LEN"
         OSL="$OUT_LEN"
 
-        # Dynamic prompt sizing based on OSL and CONC
+        # Dynamic prompt sizing based on OSL and CONC.
+        # gpt-oss-20b on a 32 GB R9700S uses the 10-prompt protocol unless -n is set.
         if [ -n "${NUM_PROMPTS_OVERRIDE:-}" ]; then
             export NUM_PROMPTS="$NUM_PROMPTS_OVERRIDE"
+        elif [ "$GPT_OSS_BENCH" -eq 1 ] && [[ "$MODEL_NAME" == *20b* || "$MODEL_NAME" == *20B* || "${MODEL_PROFILE:-}" == "gpt-oss-20b" ]]; then
+            export NUM_PROMPTS=10
         else
             if [[ "$OSL" == "8192" ]]; then
                 export NUM_PROMPTS=$(( CONC * 20 ))
@@ -383,7 +418,9 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         CONTAINER_RES_DIR="/results"
         # Determine matching HF tokenizer for client-side token counting
         tok_args=()
-        if [[ "$MODEL_NAME" == *".gguf"* ]] || [[ "$MODEL_NAME" != *"/"* ]] || [[ "$MODEL_NAME" == *"MXFP4"* ]]; then
+        if [ -n "${TOKENIZER_NAME:-}" ]; then
+            tok_args=(--tokenizer "$TOKENIZER_NAME")
+        elif [[ "$MODEL_NAME" == *".gguf"* ]] || [[ "$MODEL_NAME" != *"/"* ]] || [[ "$MODEL_NAME" == *"MXFP4"* ]]; then
             if [[ "$MODEL_NAME" == *"0.5b"* ]] || [[ "$MODEL_NAME" == *"0.5B"* ]]; then
                 tok_args=(--tokenizer "Qwen/Qwen2.5-0.5B-Instruct")
             else
@@ -392,54 +429,98 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         fi
 
         # Execute vllm bench serve
-        ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test|rocm-mxfp4-server|qwen38-r9700-radiance)$" | head -n1 || true)
+        ACTIVE_VLLM=""
+        if [ "$GPT_OSS_BENCH" -eq 1 ] && docker ps --format '{{.Names}}' | grep -qx "rocm-gpt-oss-server"; then
+            ACTIVE_VLLM="rocm-gpt-oss-server"
+        fi
+        if [ -z "$ACTIVE_VLLM" ]; then
+            ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test|rocm-mxfp4-server|qwen38-r9700-radiance|rocm-parallel-g[0-9]+)$" | head -n1 || true)
+        fi
+        if [ "$GPT_OSS_BENCH" -eq 1 ]; then
+            bench_cmd=(
+                vllm bench serve
+                --model "$MODEL_NAME"
+                --percentile-metrics tpot,ttft,itl,e2el
+                --dataset-name random
+                --ignore-eos
+                --temperature 0
+                --max-concurrency "$CONC"
+                --num-prompts "$NUM_PROMPTS"
+                --random-input-len "$ISL"
+                --random-output-len "$OSL"
+                --host 127.0.0.1
+                --port "$BENCH_PORT"
+                --save-result
+                --result-dir "$CONTAINER_RES_DIR"
+                --result-filename "$RESULT_FILE"
+            )
+        else
+            bench_cmd=(
+                vllm bench serve
+                --backend openai-chat
+                --model "$MODEL_NAME"
+                "${tok_args[@]}"
+                --endpoint /v1/chat/completions
+                --host 127.0.0.1
+                --port "$BENCH_PORT"
+                --dataset-name random
+                --random-input-len "$ISL"
+                --random-output-len "$OSL"
+                --num-prompts "$NUM_PROMPTS"
+                --max-concurrency "$CONC"
+                --request-rate inf
+                --save-result
+                --result-dir "$CONTAINER_RES_DIR"
+                --result-filename "$RESULT_FILE"
+            )
+        fi
         if { [ "$CURR_ENGINE" = "vllm" ] || [ "$CURR_ENGINE" = "mxfp4" ]; } && [ -n "$ACTIVE_VLLM" ]; then
-            docker exec "$ACTIVE_VLLM" vllm bench serve \
-              --backend openai-chat \
-              --model "$MODEL_NAME" \
-              "${tok_args[@]}" \
-              --endpoint /v1/chat/completions \
-              --host 127.0.0.1 \
-              --port 8000 \
-              --dataset-name random \
-              --random-input-len "$ISL" \
-              --random-output-len "$OSL" \
-              --num-prompts "$NUM_PROMPTS" \
-              --max-concurrency "$CONC" \
-              --request-rate inf \
-              --save-result \
-              --result-dir "/results" \
-              --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+            docker exec "$ACTIVE_VLLM" "${bench_cmd[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
             # Copy result if placed inside /results
             [ -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" ] && cp -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" "${FULL_PATH}" 2>/dev/null || true
         else
-            # Standalone containerized benchmark client targeting http://127.0.0.1:8000
-            docker run --rm --network host \
-              --device /dev/kfd --device /dev/dri \
-              --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
-              --security-opt seccomp=unconfined \
-              --security-opt apparmor=unconfined \
-              -e HIP_VISIBLE_DEVICES=0 \
-              -e HF_TOKEN="${HF_TOKEN:-}" \
-              -e HF_HOME=/root/.cache/huggingface \
-              -v "${HF_HOME}:/root/.cache/huggingface" \
-              -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
-              --entrypoint python ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} -m vllm.entrypoints.cli.main bench serve \
-              --backend openai-chat \
-              --model "$MODEL_NAME" \
-              "${tok_args[@]}" \
-              --endpoint /v1/chat/completions \
-              --host 127.0.0.1 \
-              --port 8000 \
-              --dataset-name random \
-              --random-input-len "$ISL" \
-              --random-output-len "$OSL" \
-              --num-prompts "$NUM_PROMPTS" \
-              --max-concurrency "$CONC" \
-              --request-rate inf \
-              --save-result \
-              --result-dir "$CONTAINER_RES_DIR" \
-              --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+            # Standalone containerized benchmark client targeting the server port.
+            if [ "$GPT_OSS_BENCH" -eq 1 ]; then
+                docker run --rm --network host \
+                  --device /dev/kfd --device /dev/dri \
+                  --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
+                  --security-opt seccomp=unconfined \
+                  --security-opt apparmor=unconfined \
+                  -e HIP_VISIBLE_DEVICES=0 \
+                  -e HF_TOKEN="${HF_TOKEN:-}" \
+                  -e HF_HOME=/root/.cache/huggingface \
+                  -v "${HF_HOME}:/root/.cache/huggingface" \
+                  -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
+                  --entrypoint vllm ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} \
+                  bench serve \
+                  --model "$MODEL_NAME" \
+                  --percentile-metrics tpot,ttft,itl,e2el \
+                  --dataset-name random \
+                  --ignore-eos \
+                  --temperature 0 \
+                  --max-concurrency "$CONC" \
+                  --num-prompts "$NUM_PROMPTS" \
+                  --random-input-len "$ISL" \
+                  --random-output-len "$OSL" \
+                  --host 127.0.0.1 \
+                  --port "$BENCH_PORT" \
+                  --save-result \
+                  --result-dir "$CONTAINER_RES_DIR" \
+                  --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+            else
+                docker run --rm --network host \
+                  --device /dev/kfd --device /dev/dri \
+                  --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
+                  --security-opt seccomp=unconfined \
+                  --security-opt apparmor=unconfined \
+                  -e HIP_VISIBLE_DEVICES=0 \
+                  -e HF_TOKEN="${HF_TOKEN:-}" \
+                  -e HF_HOME=/root/.cache/huggingface \
+                  -v "${HF_HOME}:/root/.cache/huggingface" \
+                  -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
+                  --entrypoint python ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} -m vllm.entrypoints.cli.main bench serve \
+                  "${bench_cmd[@]:3}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+            fi
         fi
 
         # Parse and report metrics
@@ -463,7 +544,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
 done
 
 # Restore default vLLM engine if multiple engines were benchmarked
-if [ "${#ENGINE_LIST[@]}" -gt 1 ] || [ "${ENGINE_LIST[0]}" != "vllm" ]; then
+if [ "$ATTACH_ONLY" != "1" ] && { [ "${#ENGINE_LIST[@]}" -gt 1 ] || [ "${ENGINE_LIST[0]}" != "vllm" ]; }; then
     echo -e "${CYAN}Restoring default inference engine: vLLM...${NC}"
     stop_container "rocm-llama-server"
     stop_container "rocm-sglang-server"
@@ -505,6 +586,8 @@ cat << EOF > "$REPORT_FILE"
 - **GPU Profile**: \`${GPU_PROFILE}\`
 - **ROCm ISA**: \`${PYTORCH_ROCM_ARCH}\`
 - **Engines Tested**: \`${ENGINE_LIST[*]}\`
+- **Model**: \`${MODEL_NAME:-unknown}\`
+- **Server**: \`${SERVER_URL}\`
 - **Benchmark Suite**: vLLM Throughput Matrix (\`vllm bench serve\`)
 - **Reference**: [vLLM Throughput CLI Docs](https://docs.vllm.ai/en/latest/cli/bench/throughput/)
 - **Timestamp**: $(date)

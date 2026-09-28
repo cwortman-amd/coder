@@ -34,6 +34,24 @@ services:
       - VLLM_ROCM_FP8_PADDING=${VLLM_ROCM_FP8_PADDING:-0}
       - VLLM_ROCM_USE_AITER=${VLLM_ROCM_USE_AITER:-0}
       - VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION=${VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION:-0}
+      - HSA_NO_SCRATCH_RECLAIM=${HSA_NO_SCRATCH_RECLAIM:-}
+      - AMDGCN_USE_BUFFER_OPS=${AMDGCN_USE_BUFFER_OPS:-}
+      - VLLM_ROCM_QUICK_REDUCE_QUANTIZATION=${VLLM_ROCM_QUICK_REDUCE_QUANTIZATION:-}
+      - MODEL_NAME=${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
+      - TOOL_PARSER=${TOOL_PARSER:-hermes}
+      - VLLM_HF_OVERRIDES=${VLLM_HF_OVERRIDES:-}
+      - VLLM_SKIP_HF_OVERRIDES=${VLLM_SKIP_HF_OVERRIDES:-0}
+      - VLLM_REASONING_PARSER=${VLLM_REASONING_PARSER:-}
+      - VLLM_SERVE_RECIPE=${VLLM_SERVE_RECIPE:-}
+      - VLLM_COMPILATION_CONFIG=${VLLM_COMPILATION_CONFIG:-}
+      - EXTRA_SERVE_ARGS=${EXTRA_SERVE_ARGS:-}
+      - MAX_MODEL_LEN=${MAX_MODEL_LEN:-9600}
+      - MAX_NUM_SEQS=${MAX_NUM_SEQS:-16}
+      - MAX_NUM_BATCHED_TOKENS=${MAX_NUM_BATCHED_TOKENS:-2048}
+      - GPU_MEM_UTIL=${GPU_MEM_UTIL:-0.90}
+      - KV_CACHE_MEMORY_BYTES=${KV_CACHE_MEMORY_BYTES:-1073741824}
+      - INFERENCE_BIND_HOST=${INFERENCE_BIND_HOST:-127.0.0.1}
+      - INFERENCE_PORT=${INFERENCE_PORT:-8000}
     volumes:
       # Persist downloaded Hugging Face model weights on host
       - ${HF_HOME:-${HF_CACHE_DIR:-${HOME}/.cache/huggingface}}:/root/.cache/huggingface
@@ -43,21 +61,57 @@ services:
       - ${MODELS_DIR:-../models}:/models
       - ../patches/qwen3_5_vllm030.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen3_5.py:ro
       - ../scripts/qwen3_5_rocm10.py:/opt/python/lib/python3.14/site-packages/vllm/model_executor/models/qwen3_5.py:ro
-    entrypoint: ["vllm", "serve"]
-    command: >
-      ${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
-      --host ${INFERENCE_BIND_HOST:-127.0.0.1}
-      --port ${INFERENCE_PORT:-8000}
-      --max-model-len ${MAX_MODEL_LEN:-9600}
-      --max-num-seqs ${MAX_NUM_SEQS:-16}
-      --max-num-batched-tokens ${MAX_NUM_BATCHED_TOKENS:-2048}
-      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.90}
-      --enable-auto-tool-choice
-      --tool-call-parser ${TOOL_PARSER:-hermes}
-      --hf-overrides '{"architectures": ["Qwen3_5ForCausalLM"]}'
-      --compilation-config='${VLLM_COMPILATION_CONFIG}'
-      --kv-cache-memory-bytes ${KV_CACHE_MEMORY_BYTES:-1073741824}
-      ${EXTRA_SERVE_ARGS:-}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        if [ "$${VLLM_SERVE_RECIPE:-}" = "gpt-oss-mxfp4" ]; then
+          # openai/gpt-oss-20b native MXFP4. Fits a 32 GB R9700S.
+          # Do not apply the Qwen FP8 KV pin, tool parser, or architecture override.
+          args=(
+            vllm serve "$${MODEL_NAME}"
+            --host "$${INFERENCE_BIND_HOST:-127.0.0.1}"
+            --port "$${INFERENCE_PORT:-8000}"
+            --dtype auto
+            --tensor-parallel-size 1
+            --no-enable-prefix-caching
+            --disable-uvicorn-access-log
+          )
+        else
+          if [ -z "$${VLLM_COMPILATION_CONFIG:-}" ]; then
+            VLLM_COMPILATION_CONFIG='{"cudagraph_mode": "NONE"}'
+          fi
+          args=(
+            vllm serve "$${MODEL_NAME}"
+            --host "$${INFERENCE_BIND_HOST:-127.0.0.1}"
+            --port "$${INFERENCE_PORT:-8000}"
+            --max-model-len "$${MAX_MODEL_LEN:-9600}"
+            --max-num-seqs "$${MAX_NUM_SEQS:-16}"
+            --max-num-batched-tokens "$${MAX_NUM_BATCHED_TOKENS:-2048}"
+            --gpu-memory-utilization "$${GPU_MEM_UTIL:-0.90}"
+            --enable-auto-tool-choice
+            --tool-call-parser "$${TOOL_PARSER:-hermes}"
+            --compilation-config "$${VLLM_COMPILATION_CONFIG}"
+            --kv-cache-memory-bytes "$${KV_CACHE_MEMORY_BYTES:-1073741824}"
+          )
+          if [ -n "$${VLLM_HF_OVERRIDES:-}" ]; then
+            args+=(--hf-overrides "$${VLLM_HF_OVERRIDES}")
+          elif [ "$${VLLM_SKIP_HF_OVERRIDES:-0}" != "1" ]; then
+            args+=(--hf-overrides '{"architectures": ["Qwen3_5ForCausalLM"]}')
+          fi
+          if [ -n "$${VLLM_REASONING_PARSER:-}" ]; then
+            args+=(--reasoning-parser "$${VLLM_REASONING_PARSER}")
+          fi
+        fi
+        if [ -n "$${EXTRA_SERVE_ARGS:-}" ]; then
+          # shellcheck disable=SC2206
+          extra=( $${EXTRA_SERVE_ARGS} )
+          args+=("$${extra[@]}")
+        fi
+        printf 'Launching:'
+        printf ' %q' "$${args[@]}"
+        printf '\n'
+        exec "$${args[@]}"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
       interval: 15s

@@ -26,6 +26,8 @@ Suites:
 Shared options:
   -g, --gpu-profile <p>  auto | r9700 | mi350p (default: auto)
   -e, --engine <engine>  vllm | mxfp4 | llama.cpp | sglang
+  --models <list>        Compare profiles, one GPU each when the host has enough cards
+  --kernel-variant <k>   Stock rocm_attn plus aiter or mxfp4 on the next GPU
   -q, --quick            Small accuracy sample and 128:64 throughput smoke test
   -h, --help             Show this help
 
@@ -51,8 +53,15 @@ Examples:
   ./test.sh --accuracy -d --accuracy-limit 5
   ./test.sh --throughput -e vllm -c 8 --test-cases 8192:1024
   ./test.sh --both -g auto -e mxfp4 -d --accuracy-limit 5 -c 8
+  ./test.sh --models qwen3.8,gpt-oss-20b -q
+  ./test.sh --models gpt-oss-20b
+  ./scripts/bench_gpt_oss_20b.sh
+  ./test.sh --model qwen3.8 --kernel-variant aiter --throughput -q
 EOF
 }
+
+MODEL_LIST=""
+KERNEL_VARIANT=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -70,6 +79,16 @@ while [[ $# -gt 0 ]]; do
             ENGINE="$2"; shift 2 ;;
         -q|--quick)
             QUICK=true; shift ;;
+        --model|--models)
+            [ -n "${2:-}" ] || { echo "Error: $1 requires a profile list." >&2; exit 1; }
+            if [ -n "$MODEL_LIST" ]; then
+                echo "Pass --models once." >&2
+                exit 1
+            fi
+            MODEL_LIST="$2"; shift 2 ;;
+        --kernel-variant)
+            [ -n "${2:-}" ] || { echo "Error: --kernel-variant requires rocm_attn, aiter, or mxfp4." >&2; exit 1; }
+            KERNEL_VARIANT="$2"; shift 2 ;;
 
         -s|--sample|-d|--diamond|-l|--lite|-m|--main|-a|--all|--swe-only|--gpqa-only|--eval|--run-eval|--run-evaluation)
             ACCURACY_ARGS+=("$1"); shift ;;
@@ -109,26 +128,118 @@ if [ "$QUICK" = true ]; then
     THROUGHPUT_ARGS+=("--quick")
 fi
 
-FAILED=0
-
-if [ "$RUN_ACCURACY" = true ]; then
-    echo "========================================================================"
-    echo "Running accuracy benchmarks"
-    echo "========================================================================"
-    if ! "${SCRIPT_DIR}/accuracy.sh" "${ACCURACY_ARGS[@]}"; then
-        echo "Accuracy benchmarks failed." >&2
-        FAILED=1
-    fi
+# gpt-oss-20b native MXFP4 on a 32 GB R9700S: 1024/1024, 10 prompts, concurrency 1.
+gpt_oss_only=0
+if [ -n "$MODEL_LIST" ]; then
+    gpt_oss_only=1
+    IFS=',' read -ra _model_specs <<< "$MODEL_LIST"
+    for spec in "${_model_specs[@]}"; do
+        spec="${spec//@*/}"
+        spec="${spec// /}"
+        case "$spec" in
+            gpt-oss|gpt-oss-20b|openai/gpt-oss-20b) ;;
+            *) gpt_oss_only=0 ;;
+        esac
+    done
+fi
+has_cases=0
+has_prompts=0
+for arg in "${THROUGHPUT_ARGS[@]}"; do
+    [ "$arg" = "--test-cases" ] && has_cases=1
+    [ "$arg" = "--num-prompts" ] && has_prompts=1
+done
+if [ "$gpt_oss_only" -eq 1 ] && [ "$QUICK" = false ] && [ "$has_cases" -eq 0 ]; then
+    THROUGHPUT_ARGS+=(--test-cases "1024:1024")
+fi
+if [ "$gpt_oss_only" -eq 1 ] && [ "$QUICK" = false ] && [ "$has_prompts" -eq 0 ]; then
+    THROUGHPUT_ARGS+=(--num-prompts 10)
 fi
 
-if [ "$RUN_THROUGHPUT" = true ]; then
-    echo "========================================================================"
-    echo "Running throughput benchmarks"
-    echo "========================================================================"
-    if ! "${SCRIPT_DIR}/throughput.sh" "${THROUGHPUT_ARGS[@]}"; then
-        echo "Throughput benchmarks failed." >&2
-        FAILED=1
+FAILED=0
+
+run_suites() {
+    local failed=0
+    local port="$1"
+    local served="$2"
+    local tokenizer="$3"
+    local tag="$4"
+    local url="http://127.0.0.1:${port}"
+    if [ "$RUN_ACCURACY" = true ]; then
+        echo "========================================================================"
+        echo "Accuracy  ${tag}  ${url}"
+        echo "========================================================================"
+        local acc=("${ACCURACY_ARGS[@]}" --port "$port")
+        [ -n "$served" ] && acc+=(--model "$served")
+        if ! "${SCRIPT_DIR}/accuracy.sh" "${acc[@]}"; then
+            echo "Accuracy benchmarks failed for ${tag}." >&2
+            failed=1
+        fi
     fi
+    if [ "$RUN_THROUGHPUT" = true ]; then
+        echo "========================================================================"
+        echo "Throughput  ${tag}  ${url}"
+        echo "========================================================================"
+        if ! ATTACH_ONLY=1 \
+            TOKENIZER_NAME_OVERRIDE="$tokenizer" \
+            RESULTS_TAG="$tag" \
+            "${SCRIPT_DIR}/throughput.sh" "${THROUGHPUT_ARGS[@]}" --server-url "$url"; then
+            echo "Throughput benchmarks failed for ${tag}." >&2
+            failed=1
+        fi
+    fi
+    return "$failed"
+}
+
+SPECS=""
+if [ -n "$KERNEL_VARIANT" ]; then
+    if [[ "$MODEL_LIST" == *,* ]]; then
+        echo "--kernel-variant benchmarks one model. The optimized kernel is placed on another GPU." >&2
+        exit 1
+    fi
+    base="${MODEL_LIST:-qwen3.8}"
+    SPECS="${base}@rocm_attn,${base}@${KERNEL_VARIANT}"
+elif [ -n "$MODEL_LIST" ]; then
+    SPECS="$MODEL_LIST"
+fi
+
+if [ -z "$SPECS" ]; then
+    run_suites "${INFERENCE_PORT:-8000}" "" "" "active" || FAILED=1
+    exit "$FAILED"
+fi
+
+slot_count=0
+IFS=',' read -ra SPEC_ARR <<< "$SPECS"
+for spec in "${SPEC_ARR[@]}"; do
+    [ -n "${spec// /}" ] && slot_count=$((slot_count + 1))
+done
+
+gpu_count=0
+if command -v rocm-smi >/dev/null 2>&1; then
+    gpu_count="$(rocm-smi --showid 2>/dev/null | sed -n 's/.*GPU\[\{0,1\}\([0-9][0-9]*\).*/\1/p' | awk '!seen[$0]++' | wc -l)"
+fi
+if [ "$gpu_count" -ge "$slot_count" ]; then
+    echo "Starting ${slot_count} servers across ${gpu_count} GPUs."
+    "${SCRIPT_DIR}/scripts/parallel_serve.sh" --gpu-profile "$GPU_PROFILE" --slots "$SPECS"
+    pids=()
+    while IFS=$'\t' read -r gpu port profile kernel url served tokenizer; do
+        [ -n "${port:-}" ] || continue
+        tag="${profile}_${kernel}_g${gpu}"
+        run_suites "$port" "$served" "$tokenizer" "$tag" &
+        pids+=("$!")
+    done < "${SCRIPT_DIR}/_results/parallel/slots.tsv"
+    for pid in "${pids[@]}"; do
+        wait "$pid" || FAILED=1
+    done
+else
+    echo "Host shows ${gpu_count} GPU(s) and ${slot_count} slots. Each slot is served and scored in turn on one GPU." >&2
+    echo "With one card per slot, the servers stay up together and kernel variants do not share a GPU." >&2
+    for spec in "${SPEC_ARR[@]}"; do
+        spec="${spec// /}"
+        [ -n "$spec" ] || continue
+        "${SCRIPT_DIR}/scripts/parallel_serve.sh" --gpu-profile "$GPU_PROFILE" --slots "$spec"
+        IFS=$'\t' read -r gpu port profile kernel url served tokenizer < "${SCRIPT_DIR}/_results/parallel/slots.tsv"
+        run_suites "$port" "$served" "$tokenizer" "${profile}_${kernel}_g${gpu}" || FAILED=1
+    done
 fi
 
 exit "$FAILED"

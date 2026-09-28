@@ -235,6 +235,7 @@ The root directory contains 6 primary automation and benchmarking scripts. Below
   ./throughput.sh -q                 # Quick 128:64 smoke test
   ./throughput.sh -e vllm -c 8 --test-cases 8192:1024 # Benchmark 8192 input / 1024 output at C=8
   ./throughput.sh --compare-engines -q # Side-by-side benchmark comparing all engines
+  ./scripts/bench_gpt_oss_20b.sh     # GPT-OSS-20B native MXFP4, 1024/1024, on a 32 GB R9700S
   ```
 - **Key Options & Flags**:
   - `-e, --engine <vllm|mxfp4|llama.cpp|sglang|all>`: Target inference engine.

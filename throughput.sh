@@ -52,6 +52,7 @@ Examples:
   ./throughput.sh -q
   ./throughput.sh -e vllm -c 8 --test-cases 8192:1024
   ./throughput.sh --compare-engines -q
+  ./scripts/bench_gpt_oss_20b.sh
 EOF
             exit 0
             ;;
@@ -63,7 +64,19 @@ EOF
 done
 
 if [ "$HAS_TEST_CASES" = false ] && [ "$QUICK" = false ]; then
-    FORWARD_ARGS+=("--test-cases" "8192:1024,1024:8192,1024:1024")
+    model_hint="${MODEL_PROFILE:-}"
+    if [ -z "$model_hint" ] && [ -f "${SCRIPT_DIR}/.env" ]; then
+        model_hint="$(sed -n 's/^MODEL_PROFILE=//p' "${SCRIPT_DIR}/.env" | tail -n 1)"
+    fi
+    case "$model_hint" in
+        gpt-oss|gpt-oss-20b|openai/gpt-oss-20b)
+            # 32 GB R9700S protocol: 1024 in / 1024 out.
+            FORWARD_ARGS+=("--test-cases" "1024:1024")
+            ;;
+        *)
+            FORWARD_ARGS+=("--test-cases" "8192:1024,1024:8192,1024:1024")
+            ;;
+    esac
 fi
 
 export GPU_PROFILE_OVERRIDE

@@ -31,6 +31,7 @@ The table below outlines optimal coding models validated for the 32 GB VRAM capa
 | **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`** | AWQ (4-bit) | ~19 GB | ~24 GB (32k ctx) | `vLLM` / `hermes` | **Best reasoning-to-VRAM ratio** on single R9700. Delivers 32B capability within 32 GB VRAM budget. |
 | **`Qwen/Qwen2.5-Coder-32B-Instruct`** | BF16 / FP16 | ~65 GB | **Requires Dual R9700** | `vLLM` / `hermes` | Full-precision 32B dense coder on Dual R9700 (64 GB) with TP=2. |
 | **`Qwen/Qwen3-0.6B`** | BF16 | ~1.4 GB | ~4 GB (32k ctx) | `vLLM` / `hermes` | Ultra-fast validation model for testing container pipelines. |
+| **`openai/gpt-oss-20b`** | native MXFP4 | fits a 32 GB card | one replica per R9700S | stock `vLLM`, `VLLM_ROCM_USE_AITER=1` | **32 GB MXFP4 bench.** TP=1, prefix caching off. `gpt-oss-120b` does not fit. Protocol and commands: [GPT-OSS.md](GPT-OSS.md). |
 
 To switch models, run `./setup.sh` with flags or edit `.env`:
 ```bash
@@ -42,6 +43,10 @@ To switch models, run `./setup.sh` with flags or edit `.env`:
 
 # Or launch any custom Hugging Face model
 ./setup.sh -m Qwen/Qwen2.5-Coder-7B-Instruct
+
+# GPT-OSS-20B native MXFP4 on one 32 GB card, then the 1024/1024 bench
+./setup.sh -m gpt-oss-20b
+./scripts/bench_gpt_oss_20b.sh
 ```
 
 ---

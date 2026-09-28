@@ -12,6 +12,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/gpu_profile.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/model_profile.sh"
 
 # ANSI Colors
 GREEN='\033[0;32m'
@@ -66,6 +68,8 @@ INFERENCE_PORT="${INFERENCE_PORT:-8000}"
 ENGINE="${INFERENCE_ENGINE:-vllm}"
 MODEL_OVERRIDE=""
 TOPOLOGY="single"
+PARALLEL_SPECS=""
+KERNEL_VARIANT=""
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -94,6 +98,14 @@ while [[ $# -gt 0 ]]; do
             TOPOLOGY="$2"
             shift 2
             ;;
+        --parallel)
+            PARALLEL_SPECS="$2"
+            shift 2
+            ;;
+        --kernel-variant)
+            KERNEL_VARIANT="$2"
+            shift 2
+            ;;
         --bind)
             INFERENCE_BIND_HOST="$2"
             OPENCODE_BIND_HOST="$2"
@@ -106,7 +118,9 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  -e, --engine <vllm|llama.cpp|sglang|mxfp4>  Inference engine (default: vllm)"
             echo "  --topology <single|tp2|dp2|pd|pd.vllm>     Multi-GPU layout (default: single)"
-            echo "  -m, --model <name>                   Model name or HF repository ID"
+            echo "  -m, --model <profile|id>             qwen3.8 | gpt-oss-20b | gpt-oss-120b | HF id"
+            echo "  --parallel <specs>                   One server per GPU. Example: qwen3.8,gpt-oss-20b"
+            echo "  --kernel-variant <aiter|mxfp4>       Baseline on GPU 0, optimized kernel on the next GPU"
             echo "  -p, --port <port>                    Inference API port (default: 8000)"
             echo "  --opencode-port <port>               OpenCode Web UI port (default: 4096)"
             echo "  -g, --gpu-profile <r9700|mi350p|auto>  Target GPU (default: auto)"
@@ -121,6 +135,20 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [ -n "$KERNEL_VARIANT" ]; then
+    if [ -n "$PARALLEL_SPECS" ]; then
+        echo "Use --parallel specs or --kernel-variant, not both." >&2
+        (return 0 2>/dev/null) && return 1 || exit 1
+    fi
+    base="${MODEL_OVERRIDE:-${MODEL_PROFILE:-qwen3.8}}"
+    PARALLEL_SPECS="${base}@rocm_attn,${base}@${KERNEL_VARIANT}"
+fi
+if [ -n "$PARALLEL_SPECS" ]; then
+    exec "${SCRIPT_DIR}/scripts/parallel_serve.sh" \
+        --gpu-profile "${GPU_PROFILE:-auto}" \
+        --slots "$PARALLEL_SPECS"
+fi
 
 apply_gpu_profile
 
@@ -187,12 +215,22 @@ case "$TOPOLOGY" in
             MODEL="Qwen/Qwen3.8-27B-FP8"
         fi
         ;;
-    *)
+        *)
         echo -e "${RED}Unknown topology: ${TOPOLOGY}${NC}" >&2
         echo "Supported: single, tp2, dp2, pd, pd.vllm" >&2
         (return 0 2>/dev/null) && return 1 || exit 1
         ;;
 esac
+
+if ! apply_model_profile "${MODEL_OVERRIDE}" "$ENGINE" "$TOPOLOGY"; then
+    (return 0 2>/dev/null) && return 1 || exit 1
+fi
+if [ "${MODEL_PROFILE_ENGINE}" != "$ENGINE" ]; then
+    ENGINE="${MODEL_PROFILE_ENGINE}"
+    COMPOSE_FILE="docker/docker-compose.yml"
+    ENGINE_LABEL="vLLM ROCm Server (Default)"
+fi
+MODEL="$MODEL_NAME"
 
 export MODEL_NAME="$MODEL"
 export INFERENCE_ENGINE="$ENGINE"
@@ -202,12 +240,30 @@ export MAX_MODEL_LEN GPU_MEM_UTIL KV_CACHE_MEMORY_BYTES VLLM_COMPILATION_CONFIG
 export HSA_OVERRIDE_GFX_VERSION VLLM_ROCM_FP8_PADDING RADIANCE_USE_R4D RADIANCE_R4D_ATTN_FP8
 export GPU_LABEL MODELS_DIR HF_HOME HF_CACHE_DIR VLLM_CACHE_DIR TRITON_CACHE_DIR
 export ROUTER_BIND_HOST INFERENCE_BIND_HOST OPENCODE_BIND_HOST MODEL_PATH
+export MODEL_PROFILE SERVED_MODEL_NAME TOKENIZER_NAME TOOL_PARSER
+export VLLM_HF_OVERRIDES VLLM_SKIP_HF_OVERRIDES VLLM_REASONING_PARSER VLLM_SERVE_RECIPE
+export VLLM_ROCM_USE_AITER VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION
+export HSA_NO_SCRATCH_RECLAIM AMDGCN_USE_BUFFER_OPS VLLM_ROCM_QUICK_REDUCE_QUANTIZATION
+export SGLANG_TOOL_PARSER SGLANG_REASONING_PARSER SGLANG_MAMBA_RADIX
 if [ -f "${SCRIPT_DIR}/.env" ]; then
     upsert_env_var "COMPOSE_FILE" "$COMPOSE_FILE" "${SCRIPT_DIR}/.env"
     upsert_env_var "INFERENCE_ENGINE" "$ENGINE" "${SCRIPT_DIR}/.env"
     upsert_env_var "GPU_PROFILE" "$GPU_PROFILE" "${SCRIPT_DIR}/.env"
     upsert_env_var "INFERENCE_PORT" "$INFERENCE_PORT" "${SCRIPT_DIR}/.env"
     upsert_env_var "OPENCODE_PORT" "$OPENCODE_PORT" "${SCRIPT_DIR}/.env"
+    upsert_env_var "MODEL_PROFILE" "$MODEL_PROFILE" "${SCRIPT_DIR}/.env"
+    upsert_env_var "MODEL_NAME" "$MODEL_NAME" "${SCRIPT_DIR}/.env"
+    upsert_env_var "SERVED_MODEL_NAME" "$SERVED_MODEL_NAME" "${SCRIPT_DIR}/.env"
+    upsert_env_var "TOKENIZER_NAME" "$TOKENIZER_NAME" "${SCRIPT_DIR}/.env"
+    upsert_env_var "TOOL_PARSER" "$TOOL_PARSER" "${SCRIPT_DIR}/.env"
+    upsert_env_var "VLLM_SKIP_HF_OVERRIDES" "$VLLM_SKIP_HF_OVERRIDES" "${SCRIPT_DIR}/.env"
+    upsert_env_var "VLLM_HF_OVERRIDES" "$VLLM_HF_OVERRIDES" "${SCRIPT_DIR}/.env"
+    upsert_env_var "VLLM_ROCM_USE_AITER" "$VLLM_ROCM_USE_AITER" "${SCRIPT_DIR}/.env"
+    upsert_env_var "VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION" "$VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION" "${SCRIPT_DIR}/.env"
+    upsert_env_var "VLLM_SERVE_RECIPE" "$VLLM_SERVE_RECIPE" "${SCRIPT_DIR}/.env"
+    upsert_env_var "SGLANG_TOOL_PARSER" "$SGLANG_TOOL_PARSER" "${SCRIPT_DIR}/.env"
+    upsert_env_var "SGLANG_REASONING_PARSER" "$SGLANG_REASONING_PARSER" "${SCRIPT_DIR}/.env"
+    upsert_env_var "SGLANG_MAMBA_RADIX" "${SGLANG_MAMBA_RADIX:-}" "${SCRIPT_DIR}/.env"
     chmod 600 "${SCRIPT_DIR}/.env" 2>/dev/null || true
 fi
 
@@ -216,6 +272,7 @@ echo -e "${BLUE}${BOLD}   Starting AMD ROCm Inference & OpenCode Stack          
 echo -e "${BLUE}${BOLD}============================================================${NC}"
 echo -e "Inference Engine   : ${GREEN}${BOLD}${ENGINE_LABEL}${NC}"
 echo -e "GPU Compute Target : ${BOLD}${GPU_LABEL}${NC}"
+echo -e "Model profile      : ${BOLD}${MODEL_PROFILE}${NC}"
 echo -e "Configured Model   : ${BOLD}${MODEL}${NC}"
 echo -e "Inference API Port : ${BOLD}http://localhost:${INFERENCE_PORT}/v1${NC}"
 echo -e "Bind address       : ${BOLD}${INFERENCE_BIND_HOST:-127.0.0.1}${NC}"

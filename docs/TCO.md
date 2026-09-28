@@ -77,12 +77,13 @@ Efficiency at nameplate: R9600D 4.7 W/GB, R9700S 9.4 W/GB, MI350P 4.2 W/GB, RTX 
 
 ## What the server holds
 
-Checkpoint sizes are from this repo’s measurements. Usable memory is 29.8 GiB on a 32 GB card, 89.4 GiB on the RTX PRO 6000, and 134.1 GiB on the MI350P. Sixteen R9600D cards are 476.8 GiB. Eight R9700S cards are 238.4 GiB.
+Checkpoint sizes are from this repo’s measurements, except the GPT-OSS row, which is a fit statement and not a weighed checkpoint. Usable memory is 29.8 GiB on a 32 GB card, 89.4 GiB on the RTX PRO 6000, and 134.1 GiB on the MI350P. Sixteen R9600D cards are 476.8 GiB. Eight R9700S cards are 238.4 GiB.
 
 | Checkpoint | Size | 16× R9600D | 8× R9700S | 8× RTX PRO 6000 | 8× MI350P |
 |---|---:|---|---|---|---|
 | Qwen3.8-27B Quark MXFP4 | 14.2 GiB | 16 replicas, one per card | 8 replicas, one per card | 8 replicas, one per card | 8 replicas, one per card |
 | Qwen3.8-27B FP8 | 27.5 GiB | 16 replicas, little KV left on each | 8 replicas, little KV left on each | 8 replicas with KV headroom | 8 replicas with KV headroom |
+| openai/gpt-oss-20b native MXFP4 | fits a 32 GB card | 16 replicas, one per card | 8 replicas, one per card | 8 replicas, one per card | 8 replicas, one per card |
 | Qwen3.8-Flash-Next FP8 | 172.8 GiB | 2 replicas at TP=8 (238.4 GiB each); unproven | 1 replica at TP=8 (238.4 GiB); unproven | 2 replicas at TP=4 (357.6 GiB each). TP=2 is 178.8 GiB, almost no KV room | 4 replicas at TP=2 (268.2 GiB each), the layout in [FLASH-NEXT.md](FLASH-NEXT.md); not yet loaded |
 
 Capex per 27B replica is the per-GPU figure: R9600D $6,938, R9700S $12,174, RTX PRO 6000 $26,875, MI350P $25,875. Capex per Flash-Next replica:
@@ -94,6 +95,8 @@ Capex per 27B replica is the per-GPU figure: R9600D $6,938, R9700S $12,174, RTX 
 | Capex per replica | $55,500 | $97,392 | $107,500 | $51,750 |
 
 The R9700 tok/s does not carry to the R9600D. That sweep is 64 CUs at 300 W. The R9600D is 48 CUs at 150 W. All four cards are PCIe boards. A 27B replica on one card pays no collective. A Flash-Next replica pays it at TP=2 on MI350P, TP=4 on RTX PRO 6000, and TP=8 on R9600D or R9700S.
+
+openai/gpt-oss-20b is native MXFP4. On a 32 GB R9700S the serve line is `VLLM_ROCM_USE_AITER=1`, `--dtype auto`, tensor parallel 1, prefix caching off. The client is 1,024 in / 1,024 out, 10 prompts, concurrency 1. Commands are in [GPT-OSS.md](GPT-OSS.md). gpt-oss-120b does not fit that card. No rate from the 20B run is in the tables below.
 
 ## Tokens per dollar
 
