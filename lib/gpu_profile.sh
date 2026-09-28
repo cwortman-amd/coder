@@ -117,19 +117,32 @@ compose_file_for_engine() {
     local engine="${1:-vllm}"
     engine="${engine,,}"
     case "$engine" in
-        llama.cpp|llamacpp|gguf) echo "docker-compose.gguf.yml" ;;
-        sglang) echo "docker-compose.sglang.yml" ;;
-        mxfp4) echo "docker-compose.mxfp4.yml" ;;
-        tp2) echo "docker-compose.tp2.yml" ;;
-        dp2) echo "docker-compose.dp2.yml" ;;
-        pd) echo "docker-compose.pd.yml" ;;
-        pd.vllm|pd-vllm) echo "docker-compose.pd.vllm.yml" ;;
-        vllm|*) echo "docker-compose.yml" ;;
+        llama.cpp|llamacpp|gguf) echo "docker/docker-compose.gguf.yml" ;;
+        sglang) echo "docker/docker-compose.sglang.yml" ;;
+        mxfp4) echo "docker/docker-compose.mxfp4.yml" ;;
+        tp2) echo "docker/docker-compose.tp2.yml" ;;
+        dp2) echo "docker/docker-compose.dp2.yml" ;;
+        pd) echo "docker/docker-compose.pd.yml" ;;
+        pd.vllm|pd-vllm) echo "docker/docker-compose.pd.vllm.yml" ;;
+        vllm|*) echo "docker/docker-compose.yml" ;;
     esac
 }
 
+# HIP ordinals for the active profile. Integrated GPUs (for example gfx1103)
+# are omitted so a second slot is not scheduled onto the APU.
+list_target_gpu_ids() {
+    local profile="${1:-${GPU_PROFILE:-auto}}"
+    local lib_dir py
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    py="${lib_dir}/../scripts/gpu_profile.py"
+    if [ ! -f "$py" ]; then
+        return 1
+    fi
+    python3 "$py" --indices --gpu-profile "$profile"
+}
+
 docker_compose() {
-    local file="${COMPOSE_FILE:-docker-compose.yml}"
+    local file="${COMPOSE_FILE:-docker/docker-compose.yml}"
     docker compose -f "$file" "$@"
 }
 

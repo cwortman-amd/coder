@@ -28,10 +28,10 @@ This guide provides complete specifications for container orchestration, Dockerf
 > [!NOTE]
 > **VRAM Allocation & Context Tuning on 32 GB R9700**: Serving `Qwen/Qwen3.8-27B-FP8` requires ~27.5 GB for weights alone.
 > - **Single 32 GB R9700 (FP8 Production)**: Supported with bounded context (`MAX_MODEL_LEN=9600` or `8192`) and `--kv-cache-memory-bytes 1073741824` (1.0 GB pre-allocated KV cache). This allocates ~28.5 GB total VRAM, leaving ~3.5 GB safe operating headroom.
-> - **Single 32 GB R9700 (Ultra-Deep Context)**: For 32,768–65,536 token context windows on a single card, use **`Q4_K_M` GGUF quantization** via [`docker/docker-compose.gguf.yml`](docker-compose.gguf.yml) (llama.cpp ROCm 7.x server), which consumes only ~16.8 GB for weights.
+> - **Single 32 GB R9700 (Ultra-Deep Context)**: For 32,768–65,536 token context windows on a single card, use **`Q4_K_M` GGUF quantization** via [`docker/docker-compose.gguf.yml`](../docker/docker-compose.gguf.yml) (llama.cpp ROCm 7.x server), which consumes only ~16.8 GB for weights.
 > - **Dual 64 GB R9700 (Scale-Up)**: Configure `HIP_VISIBLE_DEVICES=0,1` and append `--tensor-parallel-size 2` (`--tp 2`) to divide the weights (~13.7 GB per GPU), providing 18+ GB headroom per card for extended 64k+ context.
 
-The primary [`docker/docker-compose.yml`](docker-compose.yml) orchestrates the inference engine, client agent, and optional benchmarking suite using **vLLM** optimized for AMD ROCm:
+The primary [`docker/docker-compose.yml`](../docker/docker-compose.yml) orchestrates the inference engine, client agent, and optional benchmarking suite using **vLLM** optimized for AMD ROCm:
 
 ```yaml
 services:

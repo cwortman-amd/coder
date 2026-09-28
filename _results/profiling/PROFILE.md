@@ -1,31 +1,43 @@
 # Profiling Qwen3.8-27B MXFP4 on MI350P
 
-Campaign summary: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md).
+Campaign summary: [`docs/MI350P.md`](../../docs/MI350P.md).
 
 Use three layers, in this order: **vLLM `/metrics`**, **rocprofv3 timeline**, **ROCm Compute Profiler counters**. Add **amd-smi / pidstat / vmstat / iostat** on every candidate.
 
-## Unblock EngineCore traces (still blocked)
+## EngineCore kernel traces (working via spawn-exec)
 
-**KERNEL_DISPATCH was not obtained.** Detail: [`enginecore_attach/ATTACH.md`](enginecore_attach/ATTACH.md).
+**KERNEL_DISPATCH is now captured.** Result and Perfetto/CSV artifacts:
+[`enginecore_exec/TRACE.md`](enginecore_exec/TRACE.md).
 
 **Live attach** (`rocprofv3 --pid` / `--attach`) **exists** on SDK **1.3.2** in `vllm/vllm-openai-rocm:latest`. There is **no** `rocp-bg-attach` binary; that name is a **thread** the attacher looks up in `/proc/<pid>/task`. `docker exec rocprofv3 --pid 277` against EngineCore **does not crash** the server: it exits 1 *before* ptrace (`rocp-bg-attach` thread not found). Tiny `max_tokens=8` decode stayed healthy.
 
-`ROCP_TOOL_ATTACH=1` is on the **API parent only**. EngineCore (`VLLM_WORKER_MULTIPROC_METHOD=spawn`) does **not** inherit it, does not map `librocprofiler-sdk-attach.so`, and never starts the attach thread. Parent also has `/dev/kfd`; **decode maps belong to EngineCore**.
+EngineCore inherits `ROCPROFILER_REGISTER_LIBRARY` from the **API parent**.
+rocprofiler-register therefore considers a tool active and skips loading
+`librocprofiler-sdk-attach.so`, even when `ROCP_TOOL_ATTACH=1` is restored
+before child HIP initialization. Parent also has `/dev/kfd`; **decode maps
+belong to EngineCore**.
 
 **Do not wrap `vllm serve` again** expecting kernel CSV. `scripts/profile_enginecore_launch.sh` remains a **profiler-perturbation diagnostic** (1K/128: **60.46 tok/s** default MP, **65.26 tok/s** with `VLLM_ENABLE_V1_MULTIPROCESSING=0`; parent HIP init only, **no KERNEL_DISPATCH**). Unprofiled C1 **79.53**. Artifacts: `_results/profiling/c1_rocprof_launch/`, `_results/profiling/c1_rocprof_mp0/`.
 
-**EngineCore-only exec wrapper is possible** via `multiprocessing.spawn.set_executable` (rocprofv3 as parent of the EngineCore Python child). That requires a **new spawn / server restart**. Emit with `./scripts/profile_enginecore_attach.sh --emit-exec-wrapper scripts/enginecore_rocprof_exec.sh`. Never use that file as docker `--entrypoint`.
+**Working route:** `scripts/rocprof_attach_sitecustomize.py` calls
+`multiprocessing.set_executable` in API PID 1. The executable wrapper passes
+resource tracker/helpers directly to Python and wraps only
+`--multiprocessing-fork` (EngineCore) in rocprofv3. It requires a restart but
+does **not** profile `vllm serve`.
 
 ```bash
-./scripts/profile_enginecore_attach.sh --identify-only
-# refused attach (safe): ./scripts/profile_enginecore_attach.sh --force
-# perturbation check only (displaces :8000):
-./scripts/profile_enginecore_launch.sh --concurrency 1 --warmup 8 --num-prompts 8
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+mkdir -p "_results/profiling/enginecore_exec/${stamp}"
+ENGINECORE_ROCP_EXEC=1 \
+ENGINECORE_ROCPROF_DIR="/results/profiling/enginecore_exec/${stamp}" \
+  ./scripts/launch_vllm_mxfp4.sh
 ```
 
 Production `:8000` container has **no `SYS_PTRACE`**. Do **not** gdb / extra `LD_PRELOAD` the live EngineCore.
 
-Open `rocprof/*.pftrace` in [Perfetto](https://ui.perfetto.dev) only after a real kernel CSV exists. Rank:
+After the request window, stop once to flush, restore the standard server, and
+clip the raw CSV with `scripts/clip_rocprof_kernel_trace.py`. Convert the
+compressed row-level CSV with `scripts/rocprof_csv_to_perfetto.py`.
 
 ```bash
 python3 scripts/aggregate_kernel_csv.py \
@@ -38,7 +50,9 @@ python3 scripts/aggregate_kernel_csv.py \
 | Script | Role |
 |---|---|
 | `scripts/profile_enginecore_attach.sh` | EngineCore-only `rocprofv3 --pid`; never wraps `vllm serve`. Blocked without `rocp-bg-attach` thread |
-| `scripts/enginecore_rocprof_exec.sh` | Spawn executable: rocprofv3 parent of EngineCore Python only (restart required) |
+| `scripts/enginecore_rocprof_exec.sh` | **Working** spawn executable: rocprofv3 parent of EngineCore Python only |
+| `scripts/clip_rocprof_kernel_trace.py` | Clip raw monotonic timestamps to UTC benchmark markers; robust kernel ranking |
+| `scripts/rocprof_csv_to_perfetto.py` | Convert clipped CSV(.gz) to Perfetto JSON(.gz) |
 | `scripts/profile_enginecore_launch.sh` | rocprofv3 wraps `vllm serve` (port 8001). **Boots; HIP init only; 60–65 tok/s diagnostic** |
 | `scripts/bench_gdn_decode.py` | Isolated FLA GDN packed decode + rocprof. Report: `gdn_decode/GDN.md` |
 | `scripts/launch_vllm_mxfp4.sh` | Unprofiled HF recipe on :8000; `VLLM_ROCPROF_DIR=...` is the older wrap (EngineCore still often untraced) |
@@ -67,6 +81,14 @@ Tried `docker exec rocprofv3 --pid 277` (EngineCore). Refused: no `rocp-bg-attac
 thread (`enginecore_attach/ATTACH.md`). Host `rocprofv3` is also 1.3.2; we did
 not ptrace the live EngineCore from the host. Do **not** wrap `vllm serve`.
 Helper: `scripts/profile_enginecore_attach.sh`.
+
+## Layer 2b — EngineCore spawn-exec (working)
+
+The C1 1K/1K run produced 1,530,943 dispatches / 81 kernel names. Robust
+p99-winsorized shares: MXFP4 GEMM+reduce **49.18%**, attention+KV **20.02%**,
+compiled elementwise/norm **12.15%**, MXFP4 quant **8.38%**, large split-K
+(likely LM head) **5.13%**, and GDN/state **3.64%**. Profiled throughput
+**57.35 tok/s** is perturbed and is not a campaign point.
 
 ## Layer 3 — rocprof-compute (after a named hot kernel)
 

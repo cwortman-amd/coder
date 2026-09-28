@@ -43,6 +43,7 @@ RUN_SWE=true
 RUN_GPQA=true
 RUN_EVAL=false
 ENGINE="${INFERENCE_ENGINE:-vllm}"
+REQUESTED_MODEL=""
 
 usage() {
     cat <<EOF
@@ -62,6 +63,8 @@ Options:
   --gpqa-only                 Run only GPQA
   --eval                      Run the SWE-bench evaluation harness
   -e, --engine <engine>       vllm | mxfp4 | llama.cpp | sglang
+  --model <name>              Served model id (default: first id on the server)
+  --port <port>               Inference port (default: 8000 or INFERENCE_PORT)
   -g, --gpu-profile <profile> auto | r9700 | mi350p (default: auto)
   -h, --help                  Show help
 
@@ -93,6 +96,10 @@ while [[ $# -gt 0 ]]; do
             RUN_EVAL=true; shift ;;
         -e|--engine)
             ENGINE="${2:-}"; shift 2 ;;
+        --model)
+            REQUESTED_MODEL="${2:-}"; shift 2 ;;
+        --port)
+            INFERENCE_PORT="${2:-}"; shift 2 ;;
         -g|--gpu-profile)
             GPU_PROFILE="${2:-auto}"; apply_gpu_profile; shift 2 ;;
         -h|--help)
@@ -145,6 +152,7 @@ if [ "$RUN_SWE" = true ]; then
         "--dataset" "$SWE_DATASET"
     )
     [ -n "$NUM_SAMPLES" ] && SWE_ARGS+=("--num-samples" "$NUM_SAMPLES")
+    [ -n "$REQUESTED_MODEL" ] && SWE_ARGS+=("--model" "$REQUESTED_MODEL")
     [ "$RUN_EVAL" = true ] && SWE_ARGS+=("--run-evaluation")
 
     echo -e "\n${BOLD}Running SWE-bench...${NC}"
@@ -166,6 +174,7 @@ if [ "$RUN_GPQA" = true ]; then
         "--subset" "$GPQA_SUBSET"
     )
     [ -n "$NUM_SAMPLES" ] && GPQA_ARGS+=("--num-samples" "$NUM_SAMPLES")
+    [ -n "$REQUESTED_MODEL" ] && GPQA_ARGS+=("--model" "$REQUESTED_MODEL")
 
     echo -e "\n${BOLD}Running GPQA...${NC}"
     if python3 "${SCRIPT_DIR}/benchmark/run_gpqa.py" "${GPQA_ARGS[@]}"; then
@@ -177,7 +186,8 @@ fi
 
 END_TIME="$(date +%s)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-REPORT="${SCRIPT_DIR}/_results/accuracy_summary_${TIMESTAMP}.md"
+SAFE_MODEL="$(printf '%s' "${REQUESTED_MODEL:-model}" | tr '/:' '__')"
+REPORT="${SCRIPT_DIR}/_results/accuracy_summary_${SAFE_MODEL}_p${INFERENCE_PORT}_${TIMESTAMP}.md"
 mkdir -p "${SCRIPT_DIR}/_results"
 cat >"$REPORT" <<EOF
 # Accuracy Benchmark Summary

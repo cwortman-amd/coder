@@ -20,7 +20,7 @@ from datetime import datetime
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "concurrency_sweep")
 TELEMETRY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "telemetry")
-DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
+DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
 DOCKER_RESULTS_DIR = "/results/concurrency_sweep"
 
 PROMPT_COUNTS = {
@@ -283,9 +283,10 @@ def main():
             print(f"  • Latency TPOT p95: {curr['tpot_p95_ms']} ms {'(Interactive SLO exceeded >50ms)' if curr['tpot_p95_ms'] > 50 else '(Interactive OK)'}")
 
     # Save summary report markdown
-    report_file = os.path.join(DOCS_DIR, "CONCURRENCY_SWEEP_REPORT.md")
+    report_file = os.path.join(DOCS_DIR, "R9700-SWEEP.md")
     with open(report_file, "w", encoding="utf-8") as rf:
-        rf.write("# Power-of-Two Concurrency Sweep Report (C = 1, 2, 4, 8, 16)\n\n")
+        rf.write("# R9700 concurrency sweep\n\n")
+        rf.write("Narrative and earlier sweeps: [R9700.md](R9700.md).\n\n")
         rf.write("**Target Hardware**: AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6)\n")
         rf.write("**Model**: `Qwen3.8-27B-Quark-AWQ-MXFP4` (Hybrid Attention: 48 GDN + 16 Full Softmax)\n")
         rf.write("**Workload**: 8,192 Input Tokens / 1,024 Output Tokens\n")

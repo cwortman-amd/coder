@@ -1,6 +1,6 @@
 # C1 control vs RVS BABEL HBM roof (25 Sep 2026)
 
-Canonical report: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md).
+Canonical report: [`docs/MI350P.md`](../../docs/MI350P.md).
 
 **Question:** what is the practical MI350P HBM streaming limit, how close is best unprofiled C1 MXFP4 decode, and what should we optimize next?
 
@@ -61,7 +61,13 @@ BABEL is a **streaming microbenchmark**, not vLLM decode traffic.
 
 3. **C1 is not “HBM-spec starved.”** 79.53 tok/s is **40%** of the Babel Read roof under a one-full-weight-stream model. Isolated GEMM knobs that improved M=1 wall time **did not** improve serving, so that unused 60% **cannot** be assigned to pack/unpack or gate GEMM without an EngineCore timeline or calibrated serving HBM counters.
 
-4. **Kernel ranking is still missing.** Launch-under-`rocprofv3` (`profile_enginecore_launch.sh`) on this image traces **only the API parent’s HIP init** (`hipDriverGetVersion` / `hipGetProcAddress`). `VLLM::EngineCore` still forks (`VLLM_ENABLE_V1_MULTIPROCESSING=0` does not keep HIP in PID 1). Output CSVs are ~5 KB pftrace, **no KERNEL_DISPATCH**. Attach remains blocked (`rocp-bg-attach` absent). Do not rank MXFP4 GEMM vs GDN vs LM-head from these traces.
+4. **Kernel ranking is now available through EngineCore spawn-exec.** Dynamic
+   attach remains blocked (`rocp-bg-attach` absent), and wrapping `vllm serve`
+   still traces only parent HIP init. The 27 Sep C1 1K/1K EngineCore trace
+   ranks robust dispatch duration as MXFP4 GEMM+reduce **49%**, attention+KV
+   **20%**, elementwise/norm **12%**, quant **8%**, large split-K **5%**, and
+   GDN/state **4%**. The run slowed to **57.35 tok/s**, so use it for
+   attribution only. `_results/profiling/enginecore_exec/TRACE.md`.
 
 5. **LM-head/sampling is already a weak C1 explanation.** `generation_config` sampling vs greedy was 81.98 vs 82.78 tok/s at 1K/256.
 

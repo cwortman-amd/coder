@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Launch the frozen HF MXFP4 vLLM recipe on MI350P GPU 0.
 # Extra vllm serve args are forwarded (e.g. speculative-config).
+#
+# EngineCore-only rocprof (restart required):
+#   ENGINECORE_ROCP_EXEC=1 \
+#   ENGINECORE_ROCPROF_DIR=/results/profiling/enginecore_exec/<stamp> \
+#     ./scripts/launch_vllm_mxfp4.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -32,11 +37,51 @@ COMMON=(
   -v "${ROOT}/_results:/results"
 )
 
+if [[ -n "${REAL_ATTN_CAPTURE_DIR:-}" ]]; then
+  COMMON+=(
+    -e "REAL_ATTN_CAPTURE_DIR=${REAL_ATTN_CAPTURE_DIR}"
+    -e "REAL_ATTN_CAPTURE_TOKENS=${REAL_ATTN_CAPTURE_TOKENS:-44}"
+    -e PYTHONPATH=/opt/vllm-attn-capture
+    -v "${ROOT}/scripts/attn_capture_sitecustomize.py:/opt/vllm-attn-capture/sitecustomize.py:ro"
+  )
+fi
+
+if [[ "${ENGINECORE_ROCP_ATTACH:-0}" == "1" || "${ENGINECORE_ROCP_EXEC:-0}" == "1" ]]; then
+  # Python spawn starts EngineCore in a fresh interpreter. sitecustomize can
+  # request attach for an attach-enabled register build or route only the
+  # spawned EngineCore via rocprofv3.
+  COMMON+=(
+    --cap-add SYS_PTRACE
+    -e PYTHONPATH=/opt/vllm-enginecore-attach
+    -v "${ROOT}/scripts/rocprof_attach_sitecustomize.py:/opt/vllm-enginecore-attach/sitecustomize.py:ro"
+  )
+fi
+if [[ "${ENGINECORE_ROCP_ATTACH:-0}" == "1" ]]; then
+  COMMON+=(-e VLLM_ENGINECORE_ROCP_ATTACH=1)
+fi
+if [[ "${ENGINECORE_ROCP_EXEC:-0}" == "1" ]]; then
+  mkdir -p "${ROOT}/_results/profiling/enginecore_exec"
+  COMMON+=(
+    -e VLLM_ENGINECORE_ROCP_EXEC=1
+    -e VLLM_ENGINECORE_ROCP_EXECUTABLE=/opt/vllm-enginecore-attach/enginecore_rocprof_exec.sh
+    -e "ENGINECORE_ROCPROF_DIR=${ENGINECORE_ROCPROF_DIR:-/results/profiling/enginecore_exec}"
+    -v "${ROOT}/scripts/enginecore_rocprof_exec.sh:/opt/vllm-enginecore-attach/enginecore_rocprof_exec.sh:ro"
+  )
+fi
+
 if [[ -n "${VLLM_ROCM_USE_AITER:-}" ]]; then
   COMMON+=(-e "VLLM_ROCM_USE_AITER=${VLLM_ROCM_USE_AITER}")
 fi
 if [[ -n "${AITER_AFP4_DEFAULT_JSON:-}" ]]; then
   COMMON+=(-v "${AITER_AFP4_DEFAULT_JSON}:/usr/local/lib/python3.12/dist-packages/aiter/ops/triton/configs/gfx950/triton/gemm/gemm_afp4wfp4/DEFAULT.json:ro")
+fi
+# One exact-shape file. Basename must be GEMM-AFP4WFP4-N=<N>-K=<K>.json.
+# This does not replace DEFAULT.json and does not set VLLM_ROCM_USE_AITER.
+if [[ -n "${AITER_AFP4_SHAPE_JSON:-}" ]]; then
+  shape_base="$(basename "${AITER_AFP4_SHAPE_JSON}")"
+  COMMON+=(
+    -v "${AITER_AFP4_SHAPE_JSON}:/usr/local/lib/python3.12/dist-packages/aiter/ops/triton/configs/gfx950/triton/gemm/gemm_afp4wfp4/${shape_base}:ro"
+  )
 fi
 
 SERVE_ARGS=(

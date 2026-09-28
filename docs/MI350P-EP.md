@@ -4,7 +4,7 @@ Same burst as the NVIDIA forum comparison of 2× RTX PRO 6000 Blackwell on PCIe 
 
 Source post: [Expert Parallelism using 6000 Pro PCIe Gen5 vs B200 NVLink](https://forums.developer.nvidia.com/t/expert-parallelism-using-6000-pro-pcie-gen5-vs-b200-nvlink/378258) (27 July 2026). The PCIe-width question those numbers get read against is [dual PCIe 5.0 x8 vs x16](https://www.reddit.com/r/LocalLLaMA/comments/1up4d62/impact_of_dual_pcie_5_x8_vs_dual_pcie_5_x16_for/).
 
-Date of the link reading below: 28 September 2026. Serving numbers for MI350P are filled by `scripts/bench_ep_mi350p.sh --run` into `_results/ep_mi350p/COMPARE.md`. This page records the protocol, the link this host actually negotiated, and the published NVIDIA cells. It does not invent an MI350P tok/s.
+Date of the link reading and the eager burst: 28 September 2026. The measured pair is in section 4 and in [`_results/ep_mi350p/COMPARE.md`](../_results/ep_mi350p/COMPARE.md). The runner is `scripts/bench_ep_mi350p.sh`. Expert parallel was **0.93×** tensor parallel on output tok/s. Mean TTFT was slower (TP/EP **0.67×**). Mean TPOT was **1.07×**. Those cells are `--enforce-eager`. Peak tok/s in the table is a short window.
 
 ---
 
@@ -57,7 +57,9 @@ Mean TTFT in this burst is the client’s time to first token with all 16 reques
 
 The runner waits until `GET /health` returns, then starts `vllm bench serve`.
 
-This host has 30 GiB of RAM and about 8 GiB free once the GPUs are idle. The first TP launch loaded the checkpoint (32.86 GiB of weights on each card) and finished the AOT compile of the text backbone, then Inductor sat in swap at roughly 250 MB/s with no new kernel written for 30 minutes. Both arms therefore pass `--enforce-eager` and `--skip-mm-profiling`. Eager skips that compile. Skipping multimodal profiling keeps the vision tower out of the memory profile; the burst is text. Absolute tok/s will sit below a CUDA-graph run and below the forum’s graphed numbers. The EP-versus-TP ratio is still on one stack.
+This host has 30 GiB of RAM and about 8 GiB free once the GPUs are idle. The first TP launch loaded the checkpoint (32.86 GiB of weights on each card) and finished the AOT compile of the text backbone, then Inductor sat in swap at roughly 250 MB/s with no new kernel written for 30 minutes. The saved pair therefore passes `--enforce-eager`. Eager skips that compile. Absolute tok/s on that pair sit below a graphed run and below the forum’s graphed numbers. The EP-versus-TP ratio on that pair is still one stack.
+
+`--skip-mm-profiling` skips dummy multimodal inputs in the memory profile. It does not skip the vision tower. The 28 September log still records `Multi-modal warmup completed in 12.666s`. On vLLM 0.30, `--language-model-only` sets every modality limit to 0, and `Qwen3_5MoeForConditionalGeneration` builds `visual` inside `_mark_tower_model`, which installs a `StageMissingLayer` when those limits are 0. A default `--run` passes that flag and writes `text_tp.json` / `text_ep.json`. `tp.json` and `ep.json` stay the eager pair that still loaded the tower. `--graphs` drops `--enforce-eager` and writes `graphs_text_*.json`. It refuses to start when MemAvailable is under 24 GiB.
 
 ---
 
@@ -77,7 +79,7 @@ Transcribed from the forum post. All four runs: 16 successful requests, 16000 in
 | Median TPOT (ms) | 12.66 | 12.85 | 6.55 | 5.68 |
 | P99 TPOT (ms) | 12.89 | 13.08 | 6.89 | 6.16 |
 | Mean ITL (ms) | 12.63 | 12.82 | 6.53 | 5.63 |
-| Peak output tok/s | 1344 | 1328 | 2544 | 2960 |
+| Peak output tok/s (window) | 1344 | 1328 | 2544 | 2960 |
 
 EP / TP on output tok/s is **2.30×** on the 6000 pair and **1.04×** on the B200 pair. TP / EP on mean TTFT is **27.3×** on the 6000 pair (expert parallel is the shorter wait) and **0.78×** on the B200 pair (expert parallel is the longer wait).
 
@@ -95,11 +97,11 @@ MI350P cells are the eager run on 28 September 2026, both arms `--enforce-eager 
 | Median TPOT (ms) | 899.93 | 961.62 |
 | P99 TPOT (ms) | 900.97 | 967.46 |
 | Mean ITL (ms) | 898.49 | 961.54 |
-| Peak output tok/s | 48 | 48 |
+| Peak output tok/s (window) | 48 | 48 |
 
-EP / TP on this host is **0.93×** output tok/s. Mean TTFT got longer (14.2 s to 21.2 s). Mean TPOT went from 898 ms to 962 ms. That is the B200 direction, where expert parallel did not fix prefill, and it is far from the 6000 pair’s 2.30× output and 27× shorter TTFT. These milliseconds are an eager stack. They are not a CUDA-graph comparison with the forum.
+EP / TP on this host is **0.93×** output tok/s. Mean TTFT got longer (14.2 s to 21.2 s, TP/EP **0.67×**). Mean TPOT went from 898 ms to 962 ms (EP/TP **1.07×**). The peak of 48 tok/s is the bench client's short window. Sustained output is the 17.54 and 16.28 tok/s row, about 16 sequences at a ~900 ms inter-token time. That is the B200 direction, where expert parallel did not fix prefill, and it is far from the 6000 pair’s 2.30× output and 27× shorter TTFT. These milliseconds are an eager stack. They are not a CUDA-graph comparison with the forum.
 
-RCCL initialized both arms as P2P/IPC across `8b000` and `1c7000` (`tp.rccl.txt`, `ep.rccl.txt`). During the EP burst, GPU 0 stayed near full use while GPU 1 stayed near idle.
+RCCL initialized both arms as P2P/IPC across `8b000` and `1c7000` (`tp.rccl.txt`, `ep.rccl.txt`). At startup both workers held similar memory: TP0 consumed 35.95 GiB of weights and non-torch memory plus 92.42 GiB of KV cache, and TP1 consumed 35.83 GiB plus 92.54 GiB (`ep.server.log`). That burst did not save a per-GPU utilization series. Later runs write `{tag}.gpus.json` from `rocm-smi` for the duration of `vllm bench serve`.
 
 A useful reading of the forum columns:
 
@@ -119,11 +121,20 @@ cd /home/amd/workspace/coder
 # Link only. Does not stop the dense server.
 ./scripts/bench_ep_mi350p.sh --topology
 
-# Both arms. Stops rocm-inference-server. Writes COMPARE.md.
+# Text-only eager pair. Stops rocm-inference-server.
+# Writes text_tp.json and text_ep.json, then COMPARE.md.
 ./scripts/bench_ep_mi350p.sh --run
+
+# Graphed text-only pair. Needs MemAvailable >= 24 GiB.
+# Writes graphs_text_tp.json and graphs_text_ep.json.
+./scripts/bench_ep_mi350p.sh --run --graphs
 
 # One arm, after the checkpoint is local.
 ./scripts/bench_ep_mi350p.sh --run --arm ep
+
+# Repeat the 28 September serve line, including the vision tower.
+# Reuses tp.json and ep.json.
+./scripts/bench_ep_mi350p.sh --run --with-vision
 
 # Put the Quark MXFP4 control back.
 ./scripts/launch_vllm_mxfp4.sh

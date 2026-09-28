@@ -6,6 +6,10 @@ Goal: GPU-owner kernel timeline **without** wrapping `vllm serve`.
 
 **KERNEL_DISPATCH obtained: no.** Compatible dynamic attach was attempted against live `VLLM::EngineCore`. rocprofv3 refused **before ptrace** and did **not** crash EngineCore:
 
+This document records the failed **dynamic-attach** route. Kernel dispatch was
+subsequently obtained by launching only the Python-spawned EngineCore under
+rocprofv3; see `_results/profiling/enginecore_exec/TRACE.md`.
+
 ```text
 Could not find 'rocp-bg-attach' thread in /proc/277/task
 Cannot attach to process 277: 'rocp-bg-attach' thread not found.
@@ -15,7 +19,14 @@ build configured with ROCPROFILER_REGISTER_BUILD_DEFAULT_ATTACHMENT=ON.
 
 Tiny decode (`max_tokens=8`) succeeded (~0.47 s, 8 completion tokens). `/health` stayed HTTP 200 through the attach. No `rocprof/` CSV.
 
-`ROCP_TOOL_ATTACH=1` is on the **API parent only**. EngineCore spawn (`VLLM_WORKER_MULTIPROC_METHOD=spawn`) does not have that env, does not map `librocprofiler-sdk-attach.so`, and never starts a `rocp-bg-attach` **thread**. There is no `rocp-bg-attach` **binary** in SDK 1.3.2 (`rocprofv3-attach` / `rocprof-attach` exist).
+In this first experiment `ROCP_TOOL_ATTACH=1` appeared only in the **API
+parent's exec-time environment**. EngineCore spawn did not map
+`librocprofiler-sdk-attach.so` and never started a `rocp-bg-attach` **thread**.
+Later child-startup injection proved the deeper blocker: EngineCore inherits
+`ROCPROFILER_REGISTER_LIBRARY`, which marks a profiler tool active and causes
+rocprofiler-register to skip loading the attach library even when
+`ROCP_TOOL_ATTACH=1` is restored before HIP. There is no `rocp-bg-attach`
+**binary** in SDK 1.3.2 (`rocprofv3-attach` / `rocprof-attach` exist).
 
 Do **not** wrap `vllm serve` again (parent HIP init only; C1 **60–65 tok/s** profiler perturbation vs unprofiled **79.53**).
 
@@ -68,8 +79,10 @@ Attach: **17:09:37Z**, healthy. At **17:12:41Z** API `[shutdown]` / EngineCore S
 ## Remaining blockers
 
 1. No `rocp-bg-attach` thread in EngineCore → attach cannot start.
-2. `ROCP_TOOL_ATTACH=1` never reaches EngineCore environ before HIP init.
-3. KERNEL_DISPATCH still needs EngineCore started with attach support **or** spawn exec wrapper (both restart).
+2. Restoring `ROCP_TOOL_ATTACH=1` before EngineCore HIP init still does not
+   create the thread; the installed normal register path is not attach-enabled.
+3. Dynamic attach needs an attach-enabled register build. The spawn-exec
+   wrapper now works for restart-based kernel tracing.
 4. Production container has no `SYS_PTRACE` (not needed for this refusal).
 
 Helper: `scripts/profile_enginecore_attach.sh` (`--identify-only`; `--force` reproduces the refusal).

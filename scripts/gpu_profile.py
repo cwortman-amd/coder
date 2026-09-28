@@ -177,3 +177,42 @@ def homogeneous_target_gpus(profile: Optional[str] = None) -> Tuple[bool, int, L
     all_gpus = parse_host_gpus()
     matched = [g for g in all_gpus if classify_gpu(g) == key]
     return len(matched) >= 2, len(matched), all_gpus
+
+
+def target_gpu_indices(profile: Optional[str] = None) -> List[int]:
+    """rocm-smi ordinals whose device matches the profile.
+
+    HIP_VISIBLE_DEVICES uses these ordinals. An integrated APU on the same
+    host keeps its own ordinal and is left out.
+    """
+    key = normalize_profile(profile)
+    indices: List[int] = []
+    for gpu in parse_rocm_smi_gpus():
+        if classify_gpu(gpu) != key:
+            continue
+        match = re.search(r"(\d+)", gpu.get("agent_id", ""))
+        if match:
+            indices.append(int(match.group(1)))
+    return indices
+
+
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Host GPU profile helpers")
+    parser.add_argument("--gpu-profile", default=None)
+    parser.add_argument(
+        "--indices",
+        action="store_true",
+        help="Print HIP ordinals for GPUs that match the profile, one per line",
+    )
+    args = parser.parse_args()
+    if args.indices:
+        for index in target_gpu_indices(args.gpu_profile):
+            print(index)
+        return
+    print(profile_info(args.gpu_profile)["profile"])
+
+
+if __name__ == "__main__":
+    main()

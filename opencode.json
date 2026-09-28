@@ -35,6 +35,9 @@
         },
         "Qwen/Qwen3-0.6B": {
           "name": "Qwen3 0.6B (Smoke Test)"
+        },
+        "openai/gpt-oss-20b": {
+          "name": "GPT-OSS 20B (Native MXFP4)"
         }
       }
     }

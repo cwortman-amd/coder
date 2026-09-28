@@ -84,10 +84,10 @@ detect_gpu_ids() {
         printf '%s\n' "${ids[@]}"
         return
     fi
-    if command -v rocm-smi >/dev/null 2>&1; then
-        mapfile -t ids < <(rocm-smi --showid 2>/dev/null | sed -n 's/.*GPU\[\{0,1\}\([0-9][0-9]*\).*/\1/p' | awk '!seen[$0]++')
-    fi
+    mapfile -t ids < <(list_target_gpu_ids "$GPU_PROFILE" || true)
     if [ "${#ids[@]}" -eq 0 ]; then
+        # One discrete slot. Do not scan every rocm-smi ordinal; that list
+        # includes the integrated APU.
         ids=(0)
     fi
     printf '%s\n' "${ids[@]}"

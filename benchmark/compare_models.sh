@@ -81,8 +81,17 @@ for MODEL in "${MODELS[@]}"; do
     TOOL_PARSER="mistral"
   fi
 
-  # Start/recreate inference container with target model
-  MODEL_NAME="${MODEL}" TOOL_PARSER="${TOOL_PARSER}" docker compose -f "${ROOT_DIR}/docker/docker-compose.yml" up -d --force-recreate inference
+  # Qwen3.8 keeps the architecture override. Other checkpoints do not.
+  SKIP_OVERRIDE=1
+  HF_OVERRIDE=""
+  if [[ "${MODEL}" == *Qwen3.8* || "${MODEL}" == *Qwen3_5* ]]; then
+    SKIP_OVERRIDE=0
+    HF_OVERRIDE='{"architectures": ["Qwen3_5ForCausalLM"]}'
+  fi
+  MODEL_NAME="${MODEL}" TOOL_PARSER="${TOOL_PARSER}" \
+    VLLM_SKIP_HF_OVERRIDES="${SKIP_OVERRIDE}" \
+    VLLM_HF_OVERRIDES="${HF_OVERRIDE}" \
+    docker compose -f "${ROOT_DIR}/docker/docker-compose.yml" up -d --force-recreate inference
 
   # Wait for server to load weights and report healthy
   wait_for_server 8000

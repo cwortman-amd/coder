@@ -1,6 +1,6 @@
 # MXFP4 vs DFlash greedy quality (text-only)
 
-Campaign summary: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md).
+Campaign summary: [`docs/MI350P.md`](../../docs/MI350P.md).
 
 ## Claim this run can support
 

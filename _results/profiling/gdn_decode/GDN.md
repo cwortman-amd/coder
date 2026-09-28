@@ -1,6 +1,6 @@
 # Isolated GDN decode vs C1 (25 Sep 2026)
 
-Canonical: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md).
+Canonical: [`docs/MI350P.md`](../../../docs/MI350P.md).
 
 Qwen3.8-27B: **48 / 64** layers are `linear_attention` (interval 4). Production decode on this image is **not** fused CUDA and **not** AITER KDA.
 

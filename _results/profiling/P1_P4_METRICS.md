@@ -1,8 +1,11 @@
 # P1–P4 service-layer comparison (1K/1K)
 
-Roofline, energy, and report wording: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md) §5.
+Roofline, energy, and report wording: [`docs/MI350P.md`](../../docs/MI350P.md) §5.
 
-Captured with `scripts/profile_capture.sh --skip-attach`. GPU kernel traces are not available yet (EngineCore attach blocked). Queue time is ~0 in all four windows.
+Captured with `scripts/profile_capture.sh --skip-attach`; these historical P1–P4
+windows have no kernel trace. A later EngineCore spawn-exec C1 trace is available
+at `_results/profiling/enginecore_exec/TRACE.md`. Queue time is ~0 in all four
+windows.
 
 | ID | tok/s | mean TTFT s | mean ITL s | draft accept | accepted/draft-step | notes |
 |---|---:|---:|---:|---:|---:|---|

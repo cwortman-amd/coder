@@ -1,6 +1,6 @@
 # Isolated AITER MXFP4 GEMM vs Babel Read (25 Sep 2026)
 
-Canonical: [`docs/MI350P_MXFP4_VLLM_EVAL.md`](../../docs/MI350P_MXFP4_VLLM_EVAL.md). Babel roof: [`C1_BABEL_ROOFLINE.md`](C1_BABEL_ROOFLINE.md).
+Canonical: [`docs/MI350P.md`](../../../docs/MI350P.md). Babel roof: [`C1_BABEL_ROOFLINE.md`](../C1_BABEL_ROOFLINE.md).
 
 Same-process `torch.ops.vllm.gemm_with_dynamic_quant` on **real** Qwen3.8-27B layer-0 shards. No EngineCore. Reproduce:
 

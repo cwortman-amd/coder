@@ -1,0 +1,505 @@
+faede00001328os:382:382 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. 
+faede00001328os:382:382 [0] NCCL INFO NET/Socket : Using [0]eno17395np0:10.194.240.177<0>
+faede00001328os:382:382 [0] NCCL INFO Initialized NET plugin Socket
+faede00001328os:382:382 [0] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:383:383 [1] NCCL INFO NET/Plugin: Could not find: libnccl-net.so. 
+faede00001328os:383:383 [1] NCCL INFO NET/Socket : Using [0]eno17395np0:10.194.240.177<0>
+faede00001328os:383:383 [1] NCCL INFO Initialized NET plugin Socket
+faede00001328os:383:383 [1] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:382:382 [0] NCCL INFO Channel 00/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 01/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 02/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 03/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 04/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 05/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 06/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 07/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 08/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 09/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 10/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 11/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 12/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 13/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 14/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 15/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:383:383 [1] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:382:382 [0] NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 0
+faede00001328os:382:382 [0] NCCL INFO Channel 00/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 01/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 02/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 03/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 04/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 05/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 06/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 07/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 08/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 09/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 10/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 11/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 12/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 13/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 00/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 14/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 01/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 15/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46a68d90 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 02/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 03/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 04/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 05/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 06/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 07/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 08/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 09/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 10/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 11/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 12/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 13/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 14/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 15/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4c024030 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:383:383 [1] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:382:382 [0] NCCL INFO Channel 00/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 01/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 02/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 03/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 04/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 05/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 06/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 07/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 08/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 09/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 10/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 11/16 : 0 1
+faede00001328os:383:383 [1] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:382:382 [0] NCCL INFO Channel 12/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 13/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 14/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO Channel 15/16 : 0 1
+faede00001328os:382:382 [0] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:382:382 [0] NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 0
+faede00001328os:382:382 [0] NCCL INFO Channel 00/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 01/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 00/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 02/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 01/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 02/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 03/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 03/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 04/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 04/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 05/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 05/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 06/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 06/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 07/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 07/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 08/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 08/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 09/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 09/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 10/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 10/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 11/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 12/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 11/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 13/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 12/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 14/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 13/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:383:383 [1] NCCL INFO Channel 15/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x4a8b9e10 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 14/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO Channel 15/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x46d5b6e0 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:652 [0] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:383:653 [1] NCCL INFO Assigned NET plugin Socket to comm
+faede00001328os:382:652 [0] NCCL INFO Channel 00/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 01/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 02/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 03/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 04/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 05/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 06/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 07/16 : 0 1
+faede00001328os:383:653 [1] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:382:652 [0] NCCL INFO Channel 08/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 09/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 10/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 11/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 12/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 13/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 14/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO Channel 15/16 : 0 1
+faede00001328os:382:652 [0] NCCL INFO P2P Chunksize set to 131072
+faede00001328os:382:652 [0] NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 0
+faede00001328os:383:653 [1] NCCL INFO Channel 00/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 01/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 02/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 03/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 04/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 05/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 06/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 07/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 08/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 09/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 10/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 11/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 12/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 13/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 14/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:383:653 [1] NCCL INFO Channel 15/0 : 1[1c7000] -> 0[8b000] via P2P/IPC comm 0x6a21ade0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 00/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 01/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 02/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 03/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 04/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 05/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 06/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 07/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 08/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 09/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 10/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 11/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 12/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 13/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 14/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:652 [0] NCCL INFO Channel 15/0 : 0[8b000] -> 1[1c7000] via P2P/IPC comm 0x6b6b0ad0 nRanks 02
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2
+faede00001328os:382:382 [0] NCCL INFO minNChannels:-2
+faede00001328os:383:383 [1] NCCL INFO minNChannels:-2

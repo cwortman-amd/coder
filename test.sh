@@ -213,10 +213,11 @@ for spec in "${SPEC_ARR[@]}"; do
     [ -n "${spec// /}" ] && slot_count=$((slot_count + 1))
 done
 
-gpu_count=0
-if command -v rocm-smi >/dev/null 2>&1; then
-    gpu_count="$(rocm-smi --showid 2>/dev/null | sed -n 's/.*GPU\[\{0,1\}\([0-9][0-9]*\).*/\1/p' | awk '!seen[$0]++' | wc -l)"
-fi
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/gpu_profile.sh"
+gpu_ids=()
+mapfile -t gpu_ids < <(list_target_gpu_ids "$GPU_PROFILE" || true)
+gpu_count="${#gpu_ids[@]}"
 if [ "$gpu_count" -ge "$slot_count" ]; then
     echo "Starting ${slot_count} servers across ${gpu_count} GPUs."
     "${SCRIPT_DIR}/scripts/parallel_serve.sh" --gpu-profile "$GPU_PROFILE" --slots "$SPECS"
