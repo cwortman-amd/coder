@@ -6,6 +6,8 @@ The serving target is `Qwen3.8-27B-Quark-AWQ-MXFP4-sharded`, served name `awq`, 
 
 This document records the connector architecture, how to run it, and the measurements from this two-GPU host. The only measured pair is cross-NUMA. Radeon AI PRO R9700 and RTX PRO 6000 Blackwell remain unmeasured. Copy bandwidth and NIXL transfer time are separate from serving handoff time.
 
+The native `HIP_IPC` path has completed real Qwen3.8 prefill-to-decode requests. That is an experimental transport milestone. Greedy completion token IDs do not yet match a single-GPU control, and the UCX `rocm_ipc` serving waterfall was not rerun, so this is not a production-qualified P/D result.
+
 Related phase-isolation numbers, without KV handoff, are in [MI350P-PD.md](MI350P-PD.md).
 
 ---
@@ -476,7 +478,7 @@ native NIXL backend was added as
 - `hipMemcpyAsync(..., hipMemcpyDeviceToDevice)` on a persistent pool of four
   nonblocking streams;
 - reusable HIP completion events exposed through NIXL `checkXfer`;
-- same-host Unix datagram notifications required by NIXL remote backends; and
+- same-host abstract Unix datagram notifications required by NIXL remote backends; and
 - explicit `HIP_IPC` backend selection, with no silent host-staging fallback.
 
 Build against ROCm 7.14 and NIXL 1.4.0:
@@ -537,21 +539,106 @@ decoder on GPU1 for this chassis.
 
 The backend integration benchmark is
 `scripts/kv_xfer/nixl_hip_ipc_bench.cpp`; results are in
-`_results/kv_xfer_mi350p/nixl_hip_ipc_matrix.jsonl`. The first live vLLM
-qualification reached NixlConnector initialization but stopped before a
-request because Qwen3.8 hybrid transfer requires
-`VLLM_SSM_CONV_STATE_LAYOUT=DS`. A restarted decoder confirmed the DS layout
-was selected; full KV-ready→first-token timing remains a serving gate.
+`_results/kv_xfer_mi350p/nixl_hip_ipc_matrix.jsonl` and
+`nixl_hip_ipc_regions.jsonl`.
+
+Contiguous descriptors are not the Qwen3.8 layout. The live registration is
+16 full-attention regions, 157 blocks, and 2,512 descriptors, with each
+attention page 3,407,872 bytes. A request that touched 17 blocks is therefore
+16 separate allocations times 17 pages: 926,941,184 bytes and 272 descriptors.
+Adjacent pages inside one region collapse to one copy. Pages in different
+allocations do not.
+
+| Layout | Copies after coalescing | p50 | p95 | p99 | GB/s at p50 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 allocation, 256 MiB | 1 | 5.90 ms | 61.0 ms | 431 ms | 45.5 |
+| 16 allocations, 272 descriptors, 884 MiB | 16 | 20.5 ms | 103 ms | 127 ms | 45.3 |
+| 272 allocations, 272 descriptors, 884 MiB | 272 | 77.9 ms | 236 ms | 275 ms | 11.9 |
+
+The 16-region case keeps the measured HIP bandwidth. Splitting the same bytes
+into 272 independently registered allocations does not. Packing those
+allocations into one buffer would add a GPU pack and unpack around the copy;
+that interval has not been shown to beat the 16-copy plan. The p95 tails are
+present in the one-buffer HIP path as well, so they are a scheduling and
+topology limit rather than a UCX descriptor cost.
+
+vLLM containers do not share `/tmp`. Pathname sockets are invisible across
+them even with host networking. Notifications use abstract `AF_UNIX` names in
+the shared network namespace. Container-local PIDs collide (both engine cores
+were PID 97), so the abstract name includes the NIXL agent name and a random
+suffix. One-GPU-visible processes also need `HSA_ENABLE_IPC_MODE_LEGACY=1`;
+without it, `hipIpcOpenMemHandle` returns `invalid device context`. The
+container image is glibc 2.35, so the plugin loaded by vLLM is the install
+under `_opt/nixl-hip-ipc-container`, built inside `vllm/vllm-openai-rocm` with
+`/opt/rocm-7.14.0` mounted at `/opt/rocm`. The host install requires
+GLIBC_2.38 and does not load in that image.
 
 ### 5.5 Layer 3 — serving handoff
 
-Partially initialized, not yet timed. A vLLM 0.30.0 decoder loaded the custom
-ROCm-7.14 `nixl_rocm` build, selected `NixlConnector` with
-`backends=["HIP_IPC"]`, and constructed the hybrid KV layout. The first start
-correctly failed before serving because the default convolution-state layout
-cannot represent NIXL's three-region Mamba transfer. Restarting with
-`VLLM_SSM_CONV_STATE_LAYOUT=DS` passed that gate. Prefill→decode request timing,
-decoder admission, TTFT, and `t6 - t3` remain empty.
+Status: experimental. A vLLM 0.30.0 pair completed Qwen3.8 requests with
+`backends=["HIP_IPC"]` and `kv_load_failure_policy=fail`. Hybrid registration
+requires `VLLM_SSM_CONV_STATE_LAYOUT=DS`. The live cache is 16 full-attention
+regions, 2,512 registered descriptors, and attention pages of 3,407,872 bytes.
+One-GPU-visible peers require `HSA_ENABLE_IPC_MODE_LEGACY=1`. Notifications
+use abstract sockets because container `/tmp` is not shared, and the socket
+name includes the agent id because both engine cores were PID 97.
+
+The router’s `kv_handoff_ms` is only the HTTP gap after prefill returns. NIXL
+post and completion times below are decode-engine Prometheus deltas
+(`vllm:nixl_post_time_seconds`, `vllm:nixl_xfer_time_seconds`) with requests
+issued serially. `scripts/kv_xfer/pd_gate.py` records them.
+
+#### Token-ID gate
+
+Greedy settings were `temperature=0`, `seed=1`, `ignore_eos=true`. Prompt
+token IDs matched the single-GPU control. Completion IDs did not. A repeated
+single-GPU run reproduced its own IDs, so the mismatch is stable.
+
+| Prompt | Prompt tokens | Completion length | First differing completion index |
+| --- | ---: | ---: | ---: |
+| Fixed short instruction | 81 | 32 | 2 |
+| 8K user text plus chat template | 8246 | 16 | 5 |
+
+On every full handoff the decoder queried N external prefix-cache tokens and
+hit N−1. For the 8,246-token prompt that was 8,256 hits out of 8,257 queries:
+one prompt token was not imported. The short prompt prepared 208 descriptors
+as 64 copies (16 attention regions plus 48 linear layers × 3 convolution
+sub-projections and one SSM state). The cold 8K prompt prepared 240
+descriptors as 96 copies and moved 699,203,584 bytes. Those counts show
+attention, convolution, and SSM descriptors were in the plan. They do not
+prove the bytes match a single-GPU cache. The single-GPU control selected a
+784-token attention page; NixlConnector selected 832. Both runs used GPU 1
+and `VLLM_SSM_CONV_STATE_LAYOUT=DS`.
+
+#### 8K HIP-IPC waterfall
+
+Eight unique cold prompts, each 8,257 prompt tokens, `max_tokens=1`, serial:
+
+| Interval | p50 | p95 | p99 |
+| --- | ---: | ---: | ---: |
+| Prefill HTTP | 854 ms | 860 ms | 862 ms |
+| NIXL post | 24.8 ms | 44.0 ms | 44.5 ms |
+| NIXL transfer, post through completion | 100 ms | 235 ms | 265 ms |
+| Client arrival through the one-token response | 1,189 ms | 1,443 ms | 1,447 ms |
+
+Every sample moved 699,203,584 bytes. Seven used 240 descriptors and one used
+272. Failed transfers were zero. One earlier cold sample of the same payload
+completed in 21.5 ms (about 31 GB/s) with post time 5.3 ms, so the median
+above is not the best observed copy.
+
+Repeating one 8K prompt did not repeat the full transfer. Decode prefix-cache
+hits kept later NIXL payloads at 208,470,016 bytes and 208 descriptors, with
+transfer times from 6 ms to 152 ms. That is a warm-prefix tail, not another
+8K copy.
+
+Four concurrent unique cold 8K requests raised client p50 from 1,189 ms to
+3,233 ms and prefill p50 from 854 ms to 3,012 ms. The four transfers together
+moved 4 × 699,203,584 bytes in 299 ms of summed NIXL time (about 75 ms mean)
+and recomputed one token each. No transfer failed.
+
+UCX `rocm_ipc` was not rerun through this serving waterfall. The earlier
+matched microbench remains the UCX comparison: 9.70 ms p50 for one 256 MiB
+descriptor and 59.0 ms p50 at 256 descriptors.
 
 | Gate | Status | Evidence |
 | --- | --- | --- |
@@ -560,8 +647,12 @@ decoder admission, TTFT, and `t6 - t3` remain empty.
 | NIXL VRAM READ and selected UCX protocol | Measured | `nixl_vram.json`, `probe_auto.log` |
 | Forced `rocm_ipc` | Failed to initialize | `probe_ipc.log` |
 | Native NIXL `HIP_IPC` READ | Measured | `nixl_hip_ipc_matrix.jsonl`; 5.55 ms p50, 48.3 GB/s |
-| NixlConnector initialization | Passed with DS layout | `backends=["HIP_IPC"]`, `VLLM_SSM_CONV_STATE_LAYOUT=DS` |
-| NixlConnector `t6 - t3` | Not run | Prefill and validated request still required |
+| NixlConnector initialization | Passed with DS layout | `backends=["HIP_IPC"]`, `VLLM_SSM_CONV_STATE_LAYOUT=DS`, 2,512 descriptors |
+| Qwen-shaped 16-region READ | Measured | `nixl_hip_ipc_regions.jsonl`; 20.5 ms p50, 45.3 GB/s |
+| HIP-IPC Qwen3.8 handoff | Functional, experimental | Cold 8K moves 699,203,584 bytes; 240 descriptors coalesce to 96 copies |
+| Single-GPU token-id match | Failed | First completion mismatch at index 2 (81 tokens) and index 5 (8,246 tokens) |
+| 8K HIP-IPC waterfall | Measured | Transfer p50 100 ms, p95 235 ms; client one-token p50 1,189 ms |
+| UCX serving waterfall | Not run | Microbench only |
 | 1P1D versus DP=2 | Not run | |
 
 ### 5.6 Handoff attempt without a connector

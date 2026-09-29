@@ -84,11 +84,17 @@ static nixl_xfer_dlist_t make_descs(uintptr_t base, size_t bytes, int device, in
   return list;
 }
 
-static int producer(int port, int device, size_t bytes) {
+static int producer(int port, int device, size_t bytes, int regions) {
   CHECK_HIP(hipSetDevice(device));
-  void *source = nullptr;
-  CHECK_HIP(hipMalloc(&source, bytes));
-  CHECK_HIP(hipMemset(source, 0xa5, bytes));
+  const size_t region_bytes = bytes / static_cast<size_t>(regions);
+  std::vector<void *> sources(regions, nullptr);
+  nixl_reg_dlist_t registration(VRAM_SEG);
+  for (int region = 0; region < regions; ++region) {
+    CHECK_HIP(hipMalloc(&sources[region], region_bytes));
+    CHECK_HIP(hipMemset(sources[region], 0xa5, region_bytes));
+    registration.addDesc(nixlBlobDesc(
+        reinterpret_cast<uintptr_t>(sources[region]), region_bytes, device));
+  }
   CHECK_HIP(hipDeviceSynchronize());
 
   nixlAgent agent("producer", nixlAgentConfig{});
@@ -97,52 +103,69 @@ static int producer(int port, int device, size_t bytes) {
   CHECK_NIXL(agent.createBackend("HIP_IPC", params, backend));
   nixl_opt_args_t options;
   options.backends.push_back(backend);
-  nixl_reg_dlist_t registration(VRAM_SEG);
-  registration.addDesc(nixlBlobDesc(reinterpret_cast<uintptr_t>(source), bytes, device));
   CHECK_NIXL(agent.registerMem(registration, &options));
   std::string metadata;
   CHECK_NIXL(agent.getLocalMD(metadata));
 
   int fd = server(port);
   if (fd < 0) return 1;
-  struct RemoteBuffer { uintptr_t pointer; int device; } remote{
-      reinterpret_cast<uintptr_t>(source), device};
-  if (send_blob(fd, &remote, sizeof(remote)) ||
+  struct RemoteBuffer { uintptr_t pointer; int device; };
+  std::vector<RemoteBuffer> remotes(regions);
+  for (int region = 0; region < regions; ++region) {
+    remotes[region] = {reinterpret_cast<uintptr_t>(sources[region]), device};
+  }
+  if (send_blob(fd, remotes.data(), remotes.size() * sizeof(RemoteBuffer)) ||
       send_blob(fd, metadata.data(), metadata.size())) return 1;
   if (recv_blob(fd) != "done") return 1;
   CHECK_NIXL(agent.deregisterMem(registration, &options));
-  CHECK_HIP(hipFree(source));
+  for (void *source : sources) CHECK_HIP(hipFree(source));
   close(fd);
   return 0;
 }
 
-static int consumer(int port, int device, size_t bytes, int descriptors, int iterations) {
+static int consumer(int port, int device, size_t bytes, int descriptors,
+                     int iterations, int regions) {
   int fd = client(port);
   if (fd < 0) return 1;
   std::string pointer_blob = recv_blob(fd);
   std::string metadata = recv_blob(fd);
-  struct RemoteBuffer { uintptr_t pointer; int device; } remote_buffer{};
-  if (pointer_blob.size() != sizeof(remote_buffer) || metadata.empty()) return 1;
-  std::memcpy(&remote_buffer, pointer_blob.data(), sizeof(remote_buffer));
+  struct RemoteBuffer { uintptr_t pointer; int device; };
+  if (pointer_blob.size() != sizeof(RemoteBuffer) * static_cast<size_t>(regions) ||
+      metadata.empty()) return 1;
+  std::vector<RemoteBuffer> remotes(regions);
+  std::memcpy(remotes.data(), pointer_blob.data(), pointer_blob.size());
 
   CHECK_HIP(hipSetDevice(device));
-  void *destination = nullptr;
-  CHECK_HIP(hipMalloc(&destination, bytes));
+  const size_t region_bytes = bytes / static_cast<size_t>(regions);
+  std::vector<void *> destinations(regions, nullptr);
+  nixl_reg_dlist_t registration(VRAM_SEG);
+  for (int region = 0; region < regions; ++region) {
+    CHECK_HIP(hipMalloc(&destinations[region], region_bytes));
+    registration.addDesc(nixlBlobDesc(
+        reinterpret_cast<uintptr_t>(destinations[region]), region_bytes, device));
+  }
   nixlAgent agent("consumer", nixlAgentConfig{});
   nixlBackendH *backend = nullptr;
   nixl_b_params_t params;
   CHECK_NIXL(agent.createBackend("HIP_IPC", params, backend));
   nixl_opt_args_t options;
   options.backends.push_back(backend);
-  nixl_reg_dlist_t registration(VRAM_SEG);
-  registration.addDesc(nixlBlobDesc(reinterpret_cast<uintptr_t>(destination), bytes, device));
   CHECK_NIXL(agent.registerMem(registration, &options));
   std::string remote_name;
   CHECK_NIXL(agent.loadRemoteMD(metadata, remote_name));
 
-  auto local = make_descs(reinterpret_cast<uintptr_t>(destination), bytes, device, descriptors);
-  auto remote = make_descs(
-      remote_buffer.pointer, bytes, remote_buffer.device, descriptors);
+  const int per_region = descriptors / regions;
+  nixl_xfer_dlist_t local(VRAM_SEG), remote(VRAM_SEG);
+  for (int region = 0; region < regions; ++region) {
+    auto local_part = make_descs(
+        reinterpret_cast<uintptr_t>(destinations[region]), region_bytes, device, per_region);
+    auto remote_part = make_descs(
+        remotes[region].pointer, region_bytes, remotes[region].device, per_region);
+    for (int index = 0; index < per_region; ++index) {
+      local.addDesc(local_part[index]);
+      remote.addDesc(remote_part[index]);
+    }
+  }
   nixlXferReqH *request = nullptr;
   CHECK_NIXL(agent.createXferReq(
       NIXL_READ, local, remote, remote_name, request, &options));
@@ -164,35 +187,45 @@ static int consumer(int port, int device, size_t bytes, int descriptors, int ite
     samples.push_back(std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - start).count());
   }
-  std::vector<unsigned char> host(bytes);
-  CHECK_HIP(hipMemcpy(host.data(), destination, bytes, hipMemcpyDeviceToHost));
-  size_t mismatches = std::count_if(host.begin(), host.end(),
-                                    [](unsigned char value) { return value != 0xa5; });
+  std::vector<unsigned char> host(region_bytes);
+  size_t mismatches = 0;
+  for (void *destination : destinations) {
+    CHECK_HIP(hipMemcpy(host.data(), destination, region_bytes, hipMemcpyDeviceToHost));
+    mismatches += static_cast<size_t>(std::count_if(
+        host.begin(), host.end(), [](unsigned char value) { return value != 0xa5; }));
+  }
   double p50 = percentile(samples, 50), p95 = percentile(samples, 95);
   double p99 = percentile(samples, 99);
   std::printf("{\"backend\":\"HIP_IPC\",\"bytes\":%zu,\"descriptors\":%d,"
-              "\"iters\":%d,\"ok\":%s,\"mismatches\":%zu,\"cold_ms\":%.4f,"
+              "\"regions\":%d,\"iters\":%d,\"ok\":%s,\"mismatches\":%zu,\"cold_ms\":%.4f,"
               "\"latency_ms\":{\"p50\":%.4f,\"p95\":%.4f,\"p99\":%.4f},"
               "\"GBps_at_p50\":%.4f}\n",
-              bytes, descriptors, iterations, mismatches ? "false" : "true",
+              bytes, descriptors, regions, iterations, mismatches ? "false" : "true",
               mismatches, cold, p50, p95, p99, (bytes / (p50 / 1e3)) / 1e9);
   send_blob(fd, "done", 4);
   CHECK_NIXL(agent.releaseXferReq(request));
   CHECK_NIXL(agent.deregisterMem(registration, &options));
-  CHECK_HIP(hipFree(destination));
+  for (void *destination : destinations) CHECK_HIP(hipFree(destination));
   close(fd);
   return mismatches ? 1 : 0;
 }
 
 int main(int argc, char **argv) {
-  if (argc != 7) {
-    std::fprintf(stderr, "usage: %s producer|consumer port device bytes descriptors iters\n", argv[0]);
+  if (argc < 7 || argc > 8) {
+    std::fprintf(stderr,
+                 "usage: %s producer|consumer port device bytes descriptors iters [regions]\n",
+                 argv[0]);
     return 2;
   }
   int port = std::atoi(argv[2]), device = std::atoi(argv[3]);
   size_t bytes = std::strtoull(argv[4], nullptr, 10);
   int descriptors = std::atoi(argv[5]), iterations = std::atoi(argv[6]);
+  int regions = argc == 8 ? std::atoi(argv[7]) : 1;
+  if (regions < 1 || descriptors < regions || descriptors % regions != 0 ||
+      bytes % static_cast<size_t>(regions) != 0) {
+    return 2;
+  }
   return !std::strcmp(argv[1], "producer")
-      ? producer(port, device, bytes)
-      : consumer(port, device, bytes, descriptors, iterations);
+      ? producer(port, device, bytes, regions)
+      : consumer(port, device, bytes, descriptors, iterations, regions);
 }

@@ -25,10 +25,10 @@ index eb875fc3..c289d83b 100644
  option('disable_plugins', type: 'string', value: '', description: 'Comma-separated list of plugins to exclude from build. Cannot be used with enable_plugins.')
 diff --git a/src/plugins/hip_ipc/hip_ipc_backend.cpp b/src/plugins/hip_ipc/hip_ipc_backend.cpp
 new file mode 100644
-index 00000000..9c9af0f0
+index 00000000..76c709b1
 --- /dev/null
 +++ b/src/plugins/hip_ipc/hip_ipc_backend.cpp
-@@ -0,0 +1,474 @@
+@@ -0,0 +1,509 @@
 +/*
 + * SPDX-License-Identifier: Apache-2.0
 + */
@@ -37,7 +37,11 @@ index 00000000..9c9af0f0
 +#include "common/nixl_log.h"
 +
 +#include <array>
++#include <cctype>
++#include <cerrno>
++#include <cstddef>
 +#include <cstring>
++#include <random>
 +#include <limits>
 +#include <memory>
 +#include <fcntl.h>
@@ -69,6 +73,31 @@ index 00000000..9c9af0f0
 +        return {};
 +    }
 +    return name.data();
++}
++
++std::string
++abstractSocketName(const std::string &agent) {
++    std::string safe;
++    safe.reserve(agent.size());
++    for (unsigned char character : agent) {
++        safe.push_back(std::isalnum(character) ? static_cast<char>(character) : '-');
++    }
++    if (safe.size() > 60) {
++        safe.resize(60);
++    }
++    std::random_device random;
++    return "nixl-hip-" + safe + "-" + std::to_string(random());
++}
++
++sockaddr_un
++abstractAddress(const std::string &name, socklen_t &length) {
++    sockaddr_un address{};
++    address.sun_family = AF_UNIX;
++    address.sun_path[0] = '\0';
++    const size_t copied = std::min(name.size(), sizeof(address.sun_path) - 2);
++    std::memcpy(address.sun_path + 1, name.data(), copied);
++    length = static_cast<socklen_t>(offsetof(sockaddr_un, sun_path) + 1 + copied);
++    return address;
 +}
 +
 +nixl_status_t
@@ -139,15 +168,16 @@ index 00000000..9c9af0f0
 +            }
 +        }
 +    }
-+    socketPath_ = "/tmp/nixl-hip-ipc-" + std::to_string(getuid()) + "-" +
-+                  std::to_string(getpid()) + ".sock";
++    socketPath_ = abstractSocketName(init_params->localAgent);
 +    notifFd_ = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
-+    sockaddr_un address{};
-+    address.sun_family = AF_UNIX;
-+    std::strncpy(address.sun_path, socketPath_.c_str(), sizeof(address.sun_path) - 1);
-+    unlink(socketPath_.c_str());
++    socklen_t address_length = 0;
++    sockaddr_un address = abstractAddress(socketPath_, address_length);
 +    initErr = hostId_.empty() || notifFd_ < 0 ||
-+              bind(notifFd_, reinterpret_cast<sockaddr *>(&address), sizeof(address)) != 0;
++              bind(notifFd_, reinterpret_cast<sockaddr *>(&address), address_length) != 0;
++    if (initErr) {
++        NIXL_ERROR << "HIP_IPC notification bind failed for " << socketPath_ << ": "
++                   << std::strerror(errno);
++    }
 +    if (!initErr) {
 +        int flags = fcntl(notifFd_, F_GETFL, 0);
 +        initErr = flags < 0 || fcntl(notifFd_, F_SETFL, flags | O_NONBLOCK) != 0;
@@ -164,9 +194,6 @@ index 00000000..9c9af0f0
 +    }
 +    if (notifFd_ >= 0) {
 +        close(notifFd_);
-+    }
-+    if (!socketPath_.empty()) {
-+        unlink(socketPath_.c_str());
 +    }
 +}
 +
@@ -234,7 +261,7 @@ index 00000000..9c9af0f0
 +
 +nixl_status_t
 +nixlHipIpcEngine::getConnInfo(std::string &out) const {
-+    out = hostId_ + "|" + socketPath_;
++    out = hostId_ + "|abstract:" + socketPath_;
 +    return NIXL_SUCCESS;
 +}
 +
@@ -266,18 +293,22 @@ index 00000000..9c9af0f0
 +    if (remote == remoteSockets_.end()) {
 +        return NIXL_ERR_NOT_FOUND;
 +    }
-+    sockaddr_un address{};
-+    address.sun_family = AF_UNIX;
-+    if (remote->second.size() >= sizeof(address.sun_path)) {
++    if (remote->second.rfind("abstract:", 0) != 0) {
++        NIXL_ERROR << "HIP_IPC remote notification address is not abstract";
 +        return NIXL_ERR_INVALID_PARAM;
 +    }
-+    std::strncpy(address.sun_path, remote->second.c_str(), sizeof(address.sun_path) - 1);
++    socklen_t address_length = 0;
++    sockaddr_un address = abstractAddress(remote->second.substr(9), address_length);
 +    std::string payload = localAgent;
 +    payload.push_back('\0');
 +    payload.append(message);
 +    ssize_t sent = sendto(notifFd_, payload.data(), payload.size(), MSG_DONTWAIT,
-+                          reinterpret_cast<sockaddr *>(&address), sizeof(address));
-+    return sent == static_cast<ssize_t>(payload.size()) ? NIXL_SUCCESS : NIXL_ERR_BACKEND;
++                          reinterpret_cast<sockaddr *>(&address), address_length);
++    if (sent != static_cast<ssize_t>(payload.size())) {
++        NIXL_ERROR << "HIP_IPC notification send failed: " << std::strerror(errno);
++        return NIXL_ERR_BACKEND;
++    }
++    return NIXL_SUCCESS;
 +}
 +
 +nixl_status_t
@@ -417,6 +448,8 @@ index 00000000..9c9af0f0
 +
 +    request->copyDevice = static_cast<int>(
 +        operation == NIXL_READ ? local[0].devId : remote[0].devId);
++    NIXL_INFO << "HIP_IPC prepared " << descriptor_count << " descriptors as "
++              << request->copies.size() << " copies";
 +    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set copy device");
 +        status != NIXL_SUCCESS) {
 +        return status;
@@ -447,6 +480,7 @@ index 00000000..9c9af0f0
 +        request->notification = opt_args->notifMsg;
 +    }
 +    request->notificationSent = false;
++    std::lock_guard lock(hipMutex_);
 +    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set post device");
 +        status != NIXL_SUCCESS) {
 +        return status;
@@ -475,6 +509,7 @@ index 00000000..9c9af0f0
 +    if (!request || !request->active) {
 +        return request ? NIXL_SUCCESS : NIXL_ERR_INVALID_PARAM;
 +    }
++    std::lock_guard lock(hipMutex_);
 +    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set query device");
 +        status != NIXL_SUCCESS) {
 +        return status;
@@ -505,10 +540,10 @@ index 00000000..9c9af0f0
 +}
 diff --git a/src/plugins/hip_ipc/hip_ipc_backend.h b/src/plugins/hip_ipc/hip_ipc_backend.h
 new file mode 100644
-index 00000000..562f11f8
+index 00000000..b91cf752
 --- /dev/null
 +++ b/src/plugins/hip_ipc/hip_ipc_backend.h
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,128 @@
 +/*
 + * SPDX-License-Identifier: Apache-2.0
 + */
@@ -622,6 +657,7 @@ index 00000000..562f11f8
 +    std::string hostId_;
 +    std::string socketPath_;
 +    int notifFd_ = -1;
++    mutable std::mutex hipMutex_;
 +    mutable std::mutex mappingMutex_;
 +    mutable std::unordered_map<std::string, std::weak_ptr<nixlHipIpcMapping>> mappings_;
 +    std::unordered_map<std::string, std::string> remoteSockets_;
