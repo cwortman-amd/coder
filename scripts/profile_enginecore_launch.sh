@@ -14,6 +14,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
 MODEL="${VLLM_MODEL:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded}"
 BASE_NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server}"
@@ -119,14 +121,12 @@ docker rm -f "${PROF_NAME}" >/dev/null 2>&1 || true
 # previously opened KFD but produced no kernel_trace). --process-sync waits
 # for descendant flush when multiprocessing is left on; it is not sufficient
 # on this image.
+serve_gpu_flags "${GPU}"
 docker run -d \
   --name "${PROF_NAME}" --restart=no --network host --ipc host \
   --shm-size 64g \
-  --device /dev/kfd --device /dev/dri \
-  --group-add 44 --group-add 993 \
+  "${SERVE_GPU_FLAGS[@]}" \
   --cap-add SYS_PTRACE \
-  --security-opt seccomp=unconfined --security-opt apparmor=unconfined --security-opt label=disable \
-  -e HIP_VISIBLE_DEVICES="${GPU}" \
   -e PYTORCH_ROCM_ARCH=gfx950 \
   -e GPU_ARCHS=gfx950 \
   -e HF_HOME=/root/.cache/huggingface \

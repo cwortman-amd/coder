@@ -3,6 +3,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
+serve_gpu_flags "${HIP_VISIBLE_DEVICES:-0}"
 PORT="${VLLM_PORT:-8000}"
 NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server-fp8}"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
@@ -19,10 +22,7 @@ if docker ps --format '{{.Names}}' | grep -qx "${NAME}"; then
 fi
 
 exec docker run --rm --name "${NAME}" --network host --ipc host --shm-size 64g \
-  --device /dev/kfd --device /dev/dri \
-  --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-993}" \
-  --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
-  -e HIP_VISIBLE_DEVICES=0 \
+  "${SERVE_GPU_FLAGS[@]}" \
   -e PYTORCH_ROCM_ARCH=gfx950 \
   -e GPU_ARCHS=gfx950 \
   -e HF_HOME=/root/.cache/huggingface \

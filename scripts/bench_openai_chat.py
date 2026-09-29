@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import signal
 import statistics
 import subprocess
+import sys
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import catalog  # noqa: E402
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.request import Request, urlopen
 
@@ -126,7 +129,7 @@ def main() -> int:
     p.add_argument("--top-k", type=int, default=None)
     p.add_argument("--enable-thinking", action="store_true")
     p.add_argument("--stream", action="store_true", help="Enable SSE streaming to measure TTFT and ITL latencies")
-    p.add_argument("--monitor-power", action="store_true", help="Monitor GPU power via collect_amd_power.py during benchmark")
+    p.add_argument("--monitor-power", action="store_true", help="Record the telemetry window during the benchmark")
     p.add_argument("--gpu", type=int, default=0, help="Target GPU index for power monitoring")
     p.add_argument("--gpu-profile", default=os.environ.get("GPU_PROFILE", ""), help="Target GPU profile (mi350p, r9700, r9600)")
     p.add_argument("--device-tdp", type=float, default=None, help="Device TDP in Watts (default: 600W for mi350p, 300W for r9700)")
@@ -136,27 +139,17 @@ def main() -> int:
     args = p.parse_args()
 
     # Setup optional power monitoring
-    power_proc = None
-    telemetry_csv = None
     telemetry_json = None
     if args.monitor_power:
-        telemetry_csv = f"{os.path.splitext(args.out)[0]}_power.csv"
         telemetry_json = f"{os.path.splitext(args.out)[0]}_power.json"
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        cmd = [
-            "python3", os.path.join(script_dir, "collect_amd_power.py"),
-            "--gpu", str(args.gpu),
-            "--interval", "0.25",
-            "--output", telemetry_csv,
+        begin = [
+            sys.executable, os.path.join(script_dir, "telemetry.py"),
+            "begin", "--output", telemetry_json, "--gpu", str(args.gpu), "--interval", "0.25",
         ]
         if args.gpu_profile:
-            cmd.extend(["--profile", args.gpu_profile])
-        if args.device_tdp:
-            cmd.extend(["--tdp", str(args.device_tdp)])
-        if args.peak_bw_gbs:
-            cmd.extend(["--peak-bw", str(args.peak_bw_gbs)])
-        power_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        time.sleep(1.0)
+            begin.extend(["--profile", args.gpu_profile])
+        subprocess.run(begin, check=False)
 
     t_all = time.perf_counter()
     rows = []
@@ -186,13 +179,13 @@ def main() -> int:
 
     # Stop power monitoring if active
     pwr_summary = {}
-    if power_proc:
-        try:
-            power_proc.send_signal(signal.SIGINT)
-            power_proc.wait(timeout=4)
-        except Exception:
-            power_proc.kill()
-        if telemetry_json and os.path.exists(telemetry_json):
+    if telemetry_json:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        subprocess.run(
+            [sys.executable, os.path.join(script_dir, "telemetry.py"), "end", "--output", telemetry_json],
+            check=False,
+        )
+        if os.path.exists(telemetry_json):
             try:
                 with open(telemetry_json, "r", encoding="utf-8") as pf:
                     pwr_summary = json.load(pf)
@@ -216,19 +209,17 @@ def main() -> int:
 
     # Memory bandwidth estimation
     prof = (args.gpu_profile or os.environ.get("GPU_PROFILE", "")).lower()
-    peak_bw = args.peak_bw_gbs
-    if peak_bw is None:
-        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
-            peak_bw = 4096.0
-        elif "r9600" in prof:
-            peak_bw = 640.0
-        else:
-            peak_bw = 960.0  # default r9700
+    spec = catalog.gpu(prof or "r9700")
+    peak_bw = args.peak_bw_gbs if args.peak_bw_gbs is not None else float(spec["peak_bw_gbs"])
+    catalog_weight = catalog.model(args.model).get("weight_gib")
+    weight_gib = args.model_weight_gib if args.model_weight_gib != 17.91 or catalog_weight is None else float(catalog_weight)
+    if args.model_weight_gib == 17.91 and catalog_weight is None:
+        weight_gib = None
 
     out_tok_s = gen / wall if wall else 0.0
-    step_rate = out_tok_s / args.concurrency if args.concurrency > 0 else 0.0
-    mem_bw_gb_s = round(step_rate * (args.model_weight_gib * 1.073741824), 2)
-    mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if peak_bw > 0 else 0.0
+    replay = catalog.weight_replay_gbs(out_tok_s, args.concurrency, weight_gib)
+    mem_bw_gb_s = round(replay, 2) if replay is not None else None
+    mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if mem_bw_gb_s is not None and peak_bw > 0 else None
 
     # Power metrics integration
     avg_power_w = pwr_summary.get("avg_power_w")

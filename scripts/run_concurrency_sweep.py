@@ -4,7 +4,7 @@ Power-of-Two Concurrency Sweep (C = 1, 2, 4, 8, 16) for Qwen3.8-27B Quark AWQ MX
 Automates:
 - Warm-up phase (10 discarded requests)
 - Power-of-two concurrency sweep: C = 1, 2, 4, 8, 16
-- 250ms high-frequency GPU telemetry & power monitoring via collect_amd_power.py
+- GPU telemetry window via scripts/telemetry.py
 - Multi-repetition averaging and plateau analysis (Throughput, Efficiency, Latency, Memory)
 - Automated report generation in GitHub Markdown
 """
@@ -12,11 +12,14 @@ Automates:
 import argparse
 import json
 import os
-import signal
 import subprocess
 import sys
 import time
 from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import bench_serve  # noqa: E402
+import catalog  # noqa: E402
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "concurrency_sweep")
@@ -32,21 +35,24 @@ PROMPT_COUNTS = {
     16: 320
 }
 
+def _avg_optional(rows, key):
+    values = [row[key] for row in rows if isinstance(row.get(key), (int, float))]
+    if not values:
+        return None
+    return round(sum(values) / len(values), 2)
+
+
 def get_vram_peak_mb():
     try:
-        res = subprocess.run(["amd-smi", "metric", "-g", "0", "--usage", "--json"], capture_output=True, text=True, check=True)
+        res = subprocess.run(["amd-smi", "metric", "-g", "0", "--usage", "--mem-usage", "--json"], capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
         gpu_data = data.get("gpu_data", [{}])[0]
+        used = (gpu_data.get("mem_usage") or {}).get("used_vram") or {}
+        if isinstance(used, dict) and used.get("value") is not None:
+            return float(used["value"])
         vram = gpu_data.get("usage", {}).get("vram", {}).get("value", None)
         if vram is not None:
             return float(vram)
-    except Exception:
-        pass
-    try:
-        res = subprocess.run(["rocm-smi", "--showmemuse"], capture_output=True, text=True)
-        for line in res.stdout.splitlines():
-            if "GPU[0]" in line and "%" in line:
-                return line.strip()
     except Exception:
         pass
     return "N/A"
@@ -91,23 +97,13 @@ def main():
     args = parser.parse_args()
 
     prof = args.gpu_profile.lower()
-    device_tdp = args.device_tdp
-    if device_tdp is None:
-        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
-            device_tdp = 600.0
-        elif "r9600" in prof:
-            device_tdp = 150.0
-        else:
-            device_tdp = 300.0
-
-    peak_bw = args.peak_bw_gbs
-    if peak_bw is None:
-        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
-            peak_bw = 4096.0
-        elif "r9600" in prof:
-            peak_bw = 640.0
-        else:
-            peak_bw = 960.0
+    spec = catalog.gpu(prof)
+    device_tdp = args.device_tdp if args.device_tdp is not None else float(spec["tdp_w"])
+    peak_bw = args.peak_bw_gbs if args.peak_bw_gbs is not None else float(spec["peak_bw_gbs"])
+    catalog_weight = catalog.model(args.model).get("weight_gib")
+    weight_gib = float(catalog_weight) if args.model_weight_gib == 17.91 and catalog_weight is not None else (
+        None if args.model_weight_gib == 17.91 and catalog_weight is None else args.model_weight_gib
+    )
 
     if args.max_concurrency is not None:
         args.concurrency_list = [c for c in args.concurrency_list if c <= args.max_concurrency]
@@ -139,7 +135,6 @@ def main():
 
         for rep in range(1, args.repetitions + 1):
             run_id = f"c{C}_r{rep}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            telemetry_csv = f"{TELEMETRY_DIR}/{run_id}.csv"
             telemetry_json = f"{TELEMETRY_DIR}/{run_id}.json"
             bench_json_host = f"{RESULTS_DIR}/{run_id}.json"
             bench_json_docker_dir = f"{DOCKER_RESULTS_DIR}"
@@ -147,50 +142,35 @@ def main():
 
             print(f"\n--- [C={C} | Rep {rep}/{args.repetitions}] Run ID: {run_id} ---")
 
-            # Launch power monitor at 250 ms interval
-            power_cmd = [
-                "python3", os.path.join(os.path.dirname(os.path.abspath(__file__)), "collect_amd_power.py"),
-                "--gpu", str(args.gpu),
-                "--profile", prof,
-                "--tdp", str(device_tdp),
-                "--peak-bw", str(peak_bw),
-                "--interval", "0.25",
-                "--output", telemetry_csv
-            ]
-            power_proc = subprocess.Popen(power_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(
+                [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "telemetry.py"),
+                 "begin", "--output", telemetry_json, "--gpu", str(args.gpu),
+                 "--profile", prof, "--interval", "0.25"],
+                check=False,
+            )
 
-            time.sleep(2.0)
-
-            bench_cmd = [
-                "docker", "exec", args.container,
-                "/opt/vllm/bin/vllm", "bench", "serve",
-                "--backend", "openai-chat",
-                "--host", "127.0.0.1",
-                "--port", "8000",
-                "--endpoint", "/v1/chat/completions",
-                "--model", args.model,
-                "--tokenizer", args.tokenizer,
-                "--percentile-metrics", "tpot,ttft,itl,e2el",
-                "--dataset-name", "random",
-                "--random-input-len", str(args.input_len),
-                "--random-output-len", str(args.output_len),
-                "--num-prompts", str(prompts),
-                "--max-concurrency", str(C),
-                "--save-result",
-                "--result-dir", bench_json_docker_dir,
-                "--result-filename", bench_filename
-            ]
+            serve_args = bench_serve.bench_serve_args(
+                model=args.model,
+                tokenizer=args.tokenizer,
+                input_len=args.input_len,
+                output_len=args.output_len,
+                num_prompts=prompts,
+                max_concurrency=C,
+                request_rate=None,
+                result_dir=bench_json_docker_dir,
+                result_filename=bench_filename,
+            )
+            bench_cmd = ["docker", "exec", args.container, "/opt/vllm/bin/vllm", *serve_args]
 
             start_t = time.time()
             bench_res = subprocess.run(bench_cmd, capture_output=True, text=True)
             elapsed_t = time.time() - start_t
 
-            # Stop power monitor
-            try:
-                power_proc.send_signal(signal.SIGINT)
-                power_proc.wait(timeout=4)
-            except Exception:
-                power_proc.kill()
+            subprocess.run(
+                [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "telemetry.py"),
+                 "end", "--output", telemetry_json],
+                check=False,
+            )
 
             vram_peak = get_vram_peak_mb()
 
@@ -229,9 +209,9 @@ def main():
             j_per_tok = (total_energy / total_output_tokens) if total_output_tokens > 0 else 0.0
             tok_per_j = (total_output_tokens / total_energy) if total_energy > 0 else 0.0
             per_stream_tok_s = (agg_tok_s / C) if C > 0 else 0.0
-            step_rate = per_stream_tok_s
-            mem_bw_gb_s = round(step_rate * (args.model_weight_gib * 1.073741824), 2)
-            mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if peak_bw > 0 else 0.0
+            replay = catalog.weight_replay_gbs(agg_tok_s, C, weight_gib)
+            mem_bw_gb_s = round(replay, 2) if replay is not None else None
+            mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if mem_bw_gb_s is not None and peak_bw > 0 else None
 
             run_record = {
                 "concurrency": C,
@@ -259,7 +239,8 @@ def main():
             }
 
             c_runs.append(run_record)
-            print(f"Result: {agg_tok_s:.2f} tok/s | TTFT p50: {ttft_p50:.1f} ms | TPOT p50: {tpot_p50:.2f} ms | Power: {avg_power:.1f}W ({power_util_pct:.1f}% TDP) | BW: {mem_bw_gb_s:.1f} GB/s ({mem_bw_util_pct:.1f}% Peak) | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
+            bw_txt = "N/A" if mem_bw_gb_s is None else f"{mem_bw_gb_s:.1f} GB/s ({mem_bw_util_pct:.1f}% Peak)"
+            print(f"Result: {agg_tok_s:.2f} tok/s | TTFT p50: {ttft_p50:.1f} ms | TPOT p50: {tpot_p50:.2f} ms | Power: {avg_power:.1f}W ({power_util_pct:.1f}% TDP) | BW: {bw_txt} | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
 
             time.sleep(5.0)
 
@@ -278,8 +259,8 @@ def main():
                 "avg_power_w": round(sum(r["avg_power_w"] for r in valid_runs) / len(valid_runs), 1),
                 "max_power_w": max(r["max_power_w"] for r in valid_runs),
                 "power_util_pct": round(sum(r["power_util_pct"] for r in valid_runs) / len(valid_runs), 1),
-                "mem_bw_gb_s": round(sum(r["mem_bw_gb_s"] for r in valid_runs) / len(valid_runs), 2),
-                "mem_bw_util_pct": round(sum(r["mem_bw_util_pct"] for r in valid_runs) / len(valid_runs), 1),
+                "mem_bw_gb_s": _avg_optional(valid_runs, "mem_bw_gb_s"),
+                "mem_bw_util_pct": _avg_optional(valid_runs, "mem_bw_util_pct"),
                 "total_energy_j": round(sum(r["total_energy_j"] for r in valid_runs) / len(valid_runs), 1),
                 "j_per_tok": round(sum(r["j_per_tok"] for r in valid_runs) / len(valid_runs), 3),
                 "tok_per_j": round(sum(r["tok_per_j"] for r in valid_runs) / len(valid_runs), 4),

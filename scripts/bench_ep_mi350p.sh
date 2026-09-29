@@ -38,6 +38,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
 NAME=rocm-ep-server
 WEIGHTS="bf16"
@@ -312,13 +314,11 @@ launch_arm() {
     serve_args+=(--moe-backend aiter_mxfp4_mxfp4)
   fi
   docker rm -f "${NAME}" >/dev/null 2>&1 || true
+  serve_gpu_flags "0,1"
   docker run -d \
     --name "${NAME}" --restart=no --network host --ipc host \
     --shm-size 8g \
-    --device /dev/kfd --device /dev/dri \
-    --group-add 44 --group-add 993 \
-    --security-opt seccomp=unconfined --security-opt apparmor=unconfined --security-opt label=disable \
-    -e HIP_VISIBLE_DEVICES=0,1 \
+    "${SERVE_GPU_FLAGS[@]}" \
     -e PYTORCH_ROCM_ARCH=gfx950 \
     -e GPU_ARCHS=gfx950 \
     -e HF_HOME=/root/.cache/huggingface \
@@ -358,66 +358,17 @@ PY
 
 start_gpu_sampler() {
   local tag="$1"
-  rm -f "${RESULTS}/${tag}.gpus.stop" "${RESULTS}/${tag}.gpus.json"
-  python3 - "${RESULTS}/${tag}.gpus.json" "${RESULTS}/${tag}.gpus.stop" <<'PY' &
-import json, subprocess, time, sys
-from pathlib import Path
-
-out, stop = Path(sys.argv[1]), Path(sys.argv[2])
-
-def num(value):
-    if value is None:
-        return None
-    try:
-        return float(str(value).split()[0])
-    except ValueError:
-        return None
-
-samples = []
-while not stop.exists():
-    t0 = time.time()
-    proc = subprocess.run(
-        ["rocm-smi", "--showuse", "--showmeminfo", "vram", "--json"],
-        capture_output=True, text=True,
-    )
-    gpus = {}
-    try:
-        raw = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        raw = {}
-    if isinstance(raw, dict):
-        for card, info in raw.items():
-            if not isinstance(info, dict):
-                continue
-            gpus[card] = {
-                "use_pct": num(info.get("GPU use (%)")),
-                "vram_used_bytes": num(info.get("VRAM Total Used Memory (B)")),
-                "vram_total_bytes": num(info.get("VRAM Total Memory (B)")),
-            }
-    samples.append({"t": t0, "gpus": gpus})
-    time.sleep(max(0.0, 2.0 - (time.time() - t0)))
-
-out.write_text(json.dumps({"interval_s": 2.0, "samples": samples}) + "\n")
-PY
-  echo $! > "${RESULTS}/${tag}.samplerpid"
+  python3 "${ROOT}/scripts/telemetry.py" begin \
+    --output "${RESULTS}/${tag}.power.json" \
+    --all-gpus \
+    --interval 2 \
+    --profile "${GPU_PROFILE:-mi350p}" \
+    --gpus-json "${RESULTS}/${tag}.gpus.json"
 }
 
 stop_gpu_sampler() {
   local tag="$1"
-  touch "${RESULTS}/${tag}.gpus.stop"
-  if [[ -f "${RESULTS}/${tag}.samplerpid" ]]; then
-    local pid i
-    pid="$(cat "${RESULTS}/${tag}.samplerpid")"
-    for i in 1 2 3 4 5 6; do
-      if ! kill -0 "${pid}" 2>/dev/null; then
-        break
-      fi
-      sleep 1
-    done
-    kill "${pid}" 2>/dev/null || true
-    wait "${pid}" 2>/dev/null || true
-  fi
-  rm -f "${RESULTS}/${tag}.gpus.stop" "${RESULTS}/${tag}.samplerpid"
+  python3 "${ROOT}/scripts/telemetry.py" end --output "${RESULTS}/${tag}.power.json"
 }
 
 _bench_arm_exec() {

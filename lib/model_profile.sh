@@ -150,6 +150,11 @@ apply_model_profile() {
     esac
 
     export INFERENCE_ENGINE="$engine"
+    _catalog_py="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/catalog.py"
+    if [ -f "${_catalog_py}" ]; then
+        # shellcheck disable=SC2046
+        eval "$(python3 "${_catalog_py}" exports-model "${MODEL_PROFILE}")"
+    fi
 }
 
 # Kernel variants are served on their own GPU. rocm_attn is the stock

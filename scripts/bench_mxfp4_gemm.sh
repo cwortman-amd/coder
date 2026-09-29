@@ -3,6 +3,9 @@
 # Stops the 27B server so the microbench owns GPU 0, then restores HF control.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
+serve_gpu_flags 0
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
 NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server}"
 BENCH_NAME="${VLLM_GEMM_CONTAINER:-rocm-mxfp4-gemm-bench}"
@@ -25,11 +28,8 @@ docker rm "${BENCH_NAME}" >/dev/null 2>&1 || true
 
 COMMON=(
   --rm --name "${BENCH_NAME}" --network host --ipc host --shm-size 16g
-  --device /dev/kfd --device /dev/dri
-  --group-add 44 --group-add 993
+  "${SERVE_GPU_FLAGS[@]}"
   --cap-add SYS_PTRACE
-  --security-opt seccomp=unconfined --security-opt apparmor=unconfined --security-opt label=disable
-  -e HIP_VISIBLE_DEVICES=0
   -e PYTORCH_ROCM_ARCH=gfx950
   -e GPU_ARCHS=gfx950
   -e HIP_FORCE_DEV_KERNARG=1

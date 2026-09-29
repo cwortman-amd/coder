@@ -9,8 +9,8 @@ _gpu_profile_detect() {
     if command -v rocminfo >/dev/null 2>&1; then
         info="$(rocminfo 2>/dev/null || true)"
     fi
-    if command -v rocm-smi >/dev/null 2>&1; then
-        info="${info}$(rocm-smi --showproductname --showid 2>/dev/null || true)"
+    if command -v amd-smi >/dev/null 2>&1; then
+        info="${info}$(amd-smi static --asic 2>/dev/null || true)"
     fi
     if command -v lspci >/dev/null 2>&1; then
         info="${info}$(lspci -nn 2>/dev/null || true)"
@@ -51,8 +51,6 @@ apply_gpu_profile() {
             export GPU_MARKETING_NAME="AMD Instinct MI350P"
             export PYTORCH_ROCM_ARCH="gfx950"
             export GPU_ISA="gfx950"
-            export GPU_VRAM_GB="144"
-            export GPU_TDP_W="600"
             export GPU_LABEL="AMD Instinct™ MI350P (gfx950, 144 GB HBM3E)"
             unset HSA_OVERRIDE_GFX_VERSION || true
             export VLLM_ROCM_FP8_PADDING=""
@@ -81,8 +79,6 @@ apply_gpu_profile() {
             export GPU_MARKETING_NAME="AMD Radeon AI PRO R9700"
             export PYTORCH_ROCM_ARCH="gfx1201"
             export GPU_ISA="gfx1201"
-            export GPU_VRAM_GB="32"
-            export GPU_TDP_W="300"
             export GPU_LABEL="AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6)"
             export HSA_OVERRIDE_GFX_VERSION="12.0.1"
             export VLLM_ROCM_FP8_PADDING="0"
@@ -97,6 +93,12 @@ apply_gpu_profile() {
             export VLLM_IMAGE="${VLLM_IMAGE:-rocm/vllm:rocm10.0.0_ubuntu24.04_py3.14_pytorch_2.12.0_vllm_0.27.0}"
             ;;
     esac
+
+    _catalog_py="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/catalog.py"
+    if [ -f "${_catalog_py}" ]; then
+        # shellcheck disable=SC2046
+        eval "$(python3 "${_catalog_py}" exports-gpu "${GPU_PROFILE}")"
+    fi
 
     export HIP_VISIBLE_DEVICES="${HIP_VISIBLE_DEVICES:-0}"
     export INFERENCE_ENGINE="${INFERENCE_ENGINE:-vllm}"

@@ -3,10 +3,15 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
+import sys
 from typing import Any, Dict, List, Optional, Tuple
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import catalog  # noqa: E402
 
 PROFILES: Dict[str, Dict[str, Any]] = {
     "r9700": {
@@ -62,7 +67,7 @@ def detect_profile() -> str:
     text = " ".join(
         (
             _cmd_text(["rocminfo"]),
-            _cmd_text(["rocm-smi", "--showproductname", "--showid"]),
+            _cmd_text(["amd-smi", "static", "--asic"]),
             _cmd_text(["lspci", "-nn"]),
         )
     ).lower()
@@ -76,6 +81,10 @@ def detect_profile() -> str:
 def profile_info(name: Optional[str] = None) -> Dict[str, Any]:
     key = normalize_profile(name)
     info = dict(PROFILES.get(key, PROFILES["r9700"]))
+    spec = catalog.gpu(key)
+    info["tdp_w"] = spec["tdp_w"]
+    info["vram_gb"] = spec["vram_gb"]
+    info["peak_bw_gbs"] = spec["peak_bw_gbs"]
     info["profile"] = key
     info["label"] = os.environ.get("GPU_LABEL", info["label"])
     return info
@@ -107,28 +116,33 @@ def parse_rocminfo_gpus() -> List[Dict[str, str]]:
     return devices
 
 
-def parse_rocm_smi_gpus() -> List[Dict[str, str]]:
+def parse_amd_smi_gpus() -> List[Dict[str, str]]:
     devices: List[Dict[str, str]] = []
-    text = _cmd_text(["rocm-smi", "--showproductname", "--showid"])
-    if not text.strip():
-        return devices
-    by_idx: Dict[str, Dict[str, str]] = {}
-    for line in text.splitlines():
-        m = re.search(r"GPU\[(\d+)\]\s*:\s*(.+)", line)
-        if not m:
-            continue
-        idx, rest = m.group(1), m.group(2)
-        rec = by_idx.setdefault(
-            idx,
-            {"device_type": "GPU", "agent_id": f"GPU {idx}", "source": "rocm-smi"},
+    try:
+        res = subprocess.run(
+            ["amd-smi", "static", "--asic", "--json"],
+            capture_output=True,
+            text=True,
+            check=False,
         )
-        if "Device Name:" in rest or "Card Series:" in rest:
-            rec["marketing_name"] = rest.split(":", 1)[-1].strip()
-        elif "GFX Version:" in rest:
-            rec["gfx"] = rest.split(":", 1)[-1].strip()
-        elif "Device ID:" in rest or "Card Model:" in rest:
-            rec["pci_id"] = rest.split(":", 1)[-1].strip().replace("0x", "").lower()
-    devices = [by_idx[k] for k in sorted(by_idx, key=int)]
+        payload = json.loads(res.stdout or "{}")
+    except (OSError, json.JSONDecodeError):
+        return devices
+    for gpu in payload.get("gpu_data") or []:
+        asic = gpu.get("asic") or {}
+        idx = gpu.get("gpu")
+        if idx is None:
+            continue
+        devices.append(
+            {
+                "device_type": "GPU",
+                "agent_id": f"GPU {idx}",
+                "marketing_name": str(asic.get("market_name") or ""),
+                "gfx": str(asic.get("target_graphics_version") or ""),
+                "pci_id": str(asic.get("device_id") or "").replace("0x", "").lower(),
+                "source": "amd-smi",
+            }
+        )
     return devices
 
 
@@ -156,7 +170,7 @@ def parse_host_gpus() -> List[Dict[str, str]]:
     devices = parse_rocminfo_gpus()
     if devices:
         return devices
-    devices = parse_rocm_smi_gpus()
+    devices = parse_amd_smi_gpus()
     if devices:
         return devices
     return parse_lspci_gpus()
@@ -180,14 +194,14 @@ def homogeneous_target_gpus(profile: Optional[str] = None) -> Tuple[bool, int, L
 
 
 def target_gpu_indices(profile: Optional[str] = None) -> List[int]:
-    """rocm-smi ordinals whose device matches the profile.
+    """amd-smi ordinals whose device matches the profile.
 
     HIP_VISIBLE_DEVICES uses these ordinals. An integrated APU on the same
     host keeps its own ordinal and is left out.
     """
     key = normalize_profile(profile)
     indices: List[int] = []
-    for gpu in parse_rocm_smi_gpus():
+    for gpu in parse_amd_smi_gpus():
         if classify_gpu(gpu) != key:
             continue
         match = re.search(r"(\d+)", gpu.get("agent_id", ""))

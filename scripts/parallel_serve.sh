@@ -10,6 +10,8 @@ cd "$ROOT"
 source "${ROOT}/lib/gpu_profile.sh"
 # shellcheck disable=SC1091
 source "${ROOT}/lib/model_profile.sh"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
 
 if [ -f "$HOME/.env" ]; then
     set -a
@@ -86,7 +88,7 @@ detect_gpu_ids() {
     fi
     mapfile -t ids < <(list_target_gpu_ids "$GPU_PROFILE" || true)
     if [ "${#ids[@]}" -eq 0 ]; then
-        # One discrete slot. Do not scan every rocm-smi ordinal; that list
+        # One discrete slot. Do not scan every amd-smi ordinal; that list
         # includes the integrated APU.
         ids=(0)
     fi
@@ -303,12 +305,11 @@ for i in "${!SLOT_PROFILE[@]}"; do
         if [ -n "${HSA_OVERRIDE_GFX_VERSION:-}" ]; then
             env_args+=(-e "HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION}")
         fi
+        serve_gpu_flags "$gpu"
         docker_cmd=(
             docker run -d --name "$name" --restart no
             --network host --ipc host --shm-size 64g
-            --device /dev/kfd --device /dev/dri
-            --group-add "${VIDEO_GID}" --group-add "${RENDER_GID}"
-            --security-opt seccomp=unconfined --security-opt apparmor=unconfined
+            "${SERVE_GPU_FLAGS[@]}"
             "${env_args[@]}"
             "${mounts[@]}"
             --entrypoint "${entrypoint[0]}"

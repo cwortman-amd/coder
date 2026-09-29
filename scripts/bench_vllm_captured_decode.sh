@@ -3,6 +3,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
+serve_gpu_flags 0
 NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server}"
 RUN_NAME="${VLLM_CAPTURE_CONTAINER:-vllm-captured-decode}"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
@@ -72,11 +75,7 @@ fi
 docker rm -f "${RUN_NAME}" >/dev/null 2>&1 || true
 docker run --rm \
   --name "${RUN_NAME}" --network host --ipc host --shm-size 64g \
-  --device /dev/kfd --device /dev/dri \
-  --group-add 44 --group-add 993 \
-  --security-opt seccomp=unconfined \
-  --security-opt apparmor=unconfined \
-  --security-opt label=disable \
+  "${SERVE_GPU_FLAGS[@]}" \
   -e HIP_VISIBLE_DEVICES=0 \
   -e PYTORCH_ROCM_ARCH=gfx950 \
   -e GPU_ARCHS=gfx950 \

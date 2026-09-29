@@ -9,6 +9,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
+serve_gpu_flags "${HIP_VISIBLE_DEVICES:-0}"
 NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server}"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
 MODEL="${VLLM_MODEL:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded}"
@@ -21,10 +24,7 @@ docker rm "${NAME}" >/dev/null 2>&1 || true
 COMMON=(
   --name "${NAME}" --restart=no --network host --ipc host
   --shm-size 64g
-  --device /dev/kfd --device /dev/dri
-  --group-add 44 --group-add 993
-  --security-opt seccomp=unconfined --security-opt apparmor=unconfined --security-opt label=disable
-  -e HIP_VISIBLE_DEVICES=0
+  "${SERVE_GPU_FLAGS[@]}"
   -e PYTORCH_ROCM_ARCH=gfx950
   -e GPU_ARCHS=gfx950
   -e HF_HOME=/root/.cache/huggingface

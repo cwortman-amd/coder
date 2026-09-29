@@ -120,7 +120,7 @@ for MODEL in "${MODELS[@]}"; do
 
   # Record VRAM consumption
   echo "Current VRAM Usage on Radeon AI PRO R9700:"
-  rocm-smi --showmeminfo vram || true
+  amd-smi metric -m || true
 done
 
 echo ""

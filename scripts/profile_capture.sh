@@ -36,7 +36,7 @@ mkdir -p "${OUT}/telemetry" "${OUT}/rocprof"
   docker inspect rocm-inference-server --format '{{json .Config.Cmd}}' 2>/dev/null || true
   echo "rocm=$(cat /opt/rocm/.info/version 2>/dev/null || true)"
   rocprofv3 --version 2>&1 | head -6
-  sudo -n amd-smi version 2>&1 | head -8 || true
+  amd-smi version 2>&1 | head -8 || true
   lspci -nn | grep -iE 'amd|display|vga' || true
 } > "${OUT}/version_manifest.txt"
 
@@ -65,8 +65,12 @@ echo "engine_host_pid=${ENGINE_PID}" | tee "${OUT}/engine_pid.txt"
 curl -s http://127.0.0.1:8000/metrics > "${OUT}/metrics_before.prom"
 docker logs rocm-inference-server > "${OUT}/server_before.log" 2>&1 || true
 
-sudo -n amd-smi monitor -g 0 -w 1 -p -u -m -t > "${OUT}/telemetry/amd-smi.log" &
-echo $! > "${OUT}/telemetry/amd-smi.pid"
+python3 "${ROOT}/scripts/telemetry.py" begin \
+  --output "${OUT}/telemetry/power.json" \
+  --gpu 0 \
+  --profile "${GPU_PROFILE:-auto}" \
+  --interval 1
+trap 'python3 "${ROOT}/scripts/telemetry.py" end --output "${OUT}/telemetry/power.json" >/dev/null 2>&1 || true' EXIT
 pidstat -durh -p "${ENGINE_PID}" 1 > "${OUT}/telemetry/pidstat.log" 2>/dev/null &
 echo $! > "${OUT}/telemetry/pidstat.pid"
 vmstat 1 > "${OUT}/telemetry/vmstat.log" &
@@ -119,7 +123,8 @@ fi
 
 curl -s http://127.0.0.1:8000/metrics > "${OUT}/metrics_after.prom"
 docker logs rocm-inference-server > "${OUT}/server_after.log" 2>&1 || true
-sudo -n amd-smi static -g 0 > "${OUT}/telemetry/amd-smi-static.txt" 2>&1 || true
+amd-smi static -g 0 > "${OUT}/telemetry/amd-smi-static.txt" 2>&1 || true
+python3 "${ROOT}/scripts/telemetry.py" end --output "${OUT}/telemetry/power.json" || true
 numastat -p "$(docker inspect -f '{{.State.Pid}}' rocm-inference-server)" > "${OUT}/telemetry/numastat.txt" 2>&1 || true
 {
   echo '=== numactl --hardware ==='
@@ -128,7 +133,7 @@ numastat -p "$(docker inspect -f '{{.State.Pid}}' rocm-inference-server)" > "${O
   lspci -nn | grep -iE 'amd|display|vga' || true
 } > "${OUT}/telemetry/numa_once.txt"
 
-for pidf in amd-smi.pid pidstat.pid vmstat.pid iostat.pid metrics_loop.pid; do
+for pidf in pidstat.pid vmstat.pid iostat.pid metrics_loop.pid; do
   if [[ -f "${OUT}/telemetry/${pidf}" ]]; then
     kill "$(cat "${OUT}/telemetry/${pidf}")" >/dev/null 2>&1 || true
   fi

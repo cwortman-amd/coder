@@ -157,13 +157,14 @@ echo "Prompts  : ${NUM_PROMPTS}"
 echo "Output   : ${BENCH_JSON}"
 echo "--------------------------------------------------------------------------------"
 
-# Launch high-frequency power collector
-echo "[Telemetry] Starting 250ms power telemetry daemon..."
-python3 "${SCRIPT_DIR}/collect_amd_power.py" \
+# Launch the shared telemetry window
+echo "[Telemetry] Starting amd-smi telemetry window..."
+TELEMETRY_JSON="${TELEMETRY_DIR}/${RUN_ID}.json"
+python3 "${SCRIPT_DIR}/telemetry.py" begin \
+  --output "$TELEMETRY_JSON" \
   --gpu 0 \
-  --interval 0.25 \
-  --output "$TELEMETRY_CSV" &
-POWER_PID=$!
+  --profile "${GPU_PROFILE:-auto}" \
+  --interval 0.25
 
 sleep 2
 
@@ -181,46 +182,37 @@ ACTIVE_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-mxfp4-serve
 if [ -n "$ACTIVE_CONTAINER" ]; then
     echo "[Benchmark] Executing via active container: ${ACTIVE_CONTAINER}..."
     set +e
-    docker exec "$ACTIVE_CONTAINER" /opt/vllm/bin/vllm bench serve \
-      --backend openai-chat \
-      --host "127.0.0.1" \
-      --port 8000 \
-      --endpoint "/v1/chat/completions" \
+    mapfile -t BENCH_TAIL < <(python3 "${SCRIPT_DIR}/bench_serve.py" \
       --model "$MODEL_NAME" \
       --tokenizer "$TOKENIZER_NAME" \
-      --dataset-name random \
-      --random-input-len "$ISL" \
-      --random-output-len "$OSL" \
+      --input-len "$ISL" \
+      --output-len "$OSL" \
       --num-prompts "$NUM_PROMPTS" \
       --max-concurrency "$CONCURRENCY" \
-      --save-result \
+      --no-request-rate \
       --result-dir "/results/dual_gpu_eval" \
-      --result-filename "${RUN_ID}.json"
+      --result-filename "${RUN_ID}.json")
+    docker exec "$ACTIVE_CONTAINER" /opt/vllm/bin/vllm "${BENCH_TAIL[@]}"
     BENCH_RC=$?
     set -e
 else
     echo "[Benchmark] Executing via host python environment..."
     set +e
-    vllm bench serve \
-      --backend openai-chat \
-      --host "127.0.0.1" \
-      --port 8000 \
-      --endpoint "/v1/chat/completions" \
+    mapfile -t BENCH_TAIL < <(python3 "${SCRIPT_DIR}/bench_serve.py" \
       --model "$MODEL_NAME" \
       --tokenizer "$TOKENIZER_NAME" \
-      --dataset-name random \
-      --random-input-len "$ISL" \
-      --random-output-len "$OSL" \
+      --input-len "$ISL" \
+      --output-len "$OSL" \
       --num-prompts "$NUM_PROMPTS" \
-      --max-concurrency "$CONCURRENCY"
+      --max-concurrency "$CONCURRENCY" \
+      --no-request-rate)
+    vllm "${BENCH_TAIL[@]}"
     BENCH_RC=$?
     set -e
 fi
 
-# Terminate power monitor
-kill -INT "$POWER_PID" 2>/dev/null || true
-wait "$POWER_PID" 2>/dev/null || true
-echo "[Telemetry] Power telemetry saved to ${TELEMETRY_CSV}"
+python3 "${SCRIPT_DIR}/telemetry.py" end --output "$TELEMETRY_JSON"
+echo "[Telemetry] Power telemetry saved to ${TELEMETRY_JSON}"
 
 if [ "$BENCH_RC" -eq 0 ]; then
     echo "================================================================================"

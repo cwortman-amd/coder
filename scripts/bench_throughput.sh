@@ -22,6 +22,8 @@ RESULTS_TAG="${RESULTS_TAG:-}"
 ATTACH_ONLY="${ATTACH_ONLY:-0}"
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/lib/gpu_profile.sh"
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/lib/serve.sh"
 
 # 1. Load user environment (~/.env) if present to pull in HF_TOKEN
 if [ -f "$HOME/.env" ]; then
@@ -440,58 +442,30 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         if [ -z "$ACTIVE_VLLM" ]; then
             ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-mxfp4-server|rocm-inference-server|vllm-rocm10-test|qwen38-r9700-radiance|rocm-parallel-g[0-9]+)$" | head -n1 || true)
         fi
+        bench_extra=()
         if [ "$GPT_OSS_BENCH" -eq 1 ]; then
-            bench_cmd=(
-                vllm bench serve
-                --model "$MODEL_NAME"
-                --percentile-metrics tpot,ttft,itl,e2el
-                --dataset-name random
-                --ignore-eos
-                --temperature 0
-                --max-concurrency "$CONC"
-                --num-prompts "$NUM_PROMPTS"
-                --random-input-len "$ISL"
-                --random-output-len "$OSL"
-                --host 127.0.0.1
-                --port "$BENCH_PORT"
-                --save-result
-                --result-dir "$CONTAINER_RES_DIR"
-                --result-filename "$RESULT_FILE"
-            )
-        else
-            bench_cmd=(
-                vllm bench serve
-                --backend openai-chat
-                --model "$MODEL_NAME"
-                "${tok_args[@]}"
-                --endpoint /v1/chat/completions
-                --host 127.0.0.1
-                --port "$BENCH_PORT"
-                --percentile-metrics tpot,ttft,itl,e2el
-                --dataset-name random
-                --random-input-len "$ISL"
-                --random-output-len "$OSL"
-                --num-prompts "$NUM_PROMPTS"
-                --max-concurrency "$CONC"
-                --request-rate inf
-                --save-result
-                --result-dir "$CONTAINER_RES_DIR"
-                --result-filename "$RESULT_FILE"
-            )
+            bench_extra+=(--no-backend --no-endpoint --no-request-rate --ignore-eos --temperature 0)
+        elif [ -n "${TOKENIZER_NAME:-}" ]; then
+            bench_extra+=(--tokenizer "$TOKENIZER_NAME")
         fi
+        mapfile -t bench_tail < <(python3 "${ROOT_DIR}/scripts/bench_serve.py" \
+            --model "$MODEL_NAME" \
+            --input-len "$ISL" \
+            --output-len "$OSL" \
+            --num-prompts "$NUM_PROMPTS" \
+            --max-concurrency "$CONC" \
+            --port "$BENCH_PORT" \
+            --result-dir "$CONTAINER_RES_DIR" \
+            --result-filename "$RESULT_FILE" \
+            "${bench_extra[@]}")
+        bench_cmd=(vllm "${bench_tail[@]}")
 
-        PWR_CSV="${RESULTS_DIR}/power_${CURR_ENGINE}_${ISL}_${OSL}.csv"
         PWR_JSON="${RESULTS_DIR}/power_${CURR_ENGINE}_${ISL}_${OSL}.json"
-        PWR_PID=""
-        if [ -f "${ROOT_DIR}/scripts/collect_amd_power.py" ]; then
-            python3 "${ROOT_DIR}/scripts/collect_amd_power.py" \
-                --gpu 0 \
-                --profile "${GPU_PROFILE}" \
-                --interval 0.25 \
-                --output "${PWR_CSV}" >/dev/null 2>&1 &
-            PWR_PID=$!
-            sleep 1
-        fi
+        python3 "${ROOT_DIR}/scripts/telemetry.py" begin \
+            --output "${PWR_JSON}" \
+            --gpu 0 \
+            --profile "${GPU_PROFILE}" \
+            --interval 0.25
 
         if { [ "$CURR_ENGINE" = "vllm" ] || [ "$CURR_ENGINE" = "mxfp4" ]; } && [ -n "$ACTIVE_VLLM" ]; then
             docker exec "$ACTIVE_VLLM" "${bench_cmd[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
@@ -499,52 +473,29 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         else
             # Standalone containerized benchmark client targeting the server port.
             if [ "$GPT_OSS_BENCH" -eq 1 ]; then
+                serve_gpu_flags 0
                 docker run --rm --network host \
-                  --device /dev/kfd --device /dev/dri \
-                  --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
-                  --security-opt seccomp=unconfined \
-                  --security-opt apparmor=unconfined \
-                  -e HIP_VISIBLE_DEVICES=0 \
+                  "${SERVE_GPU_FLAGS[@]}" \
                   -e HF_TOKEN="${HF_TOKEN:-}" \
                   -e HF_HOME=/root/.cache/huggingface \
                   -v "${HF_HOME}:/root/.cache/huggingface" \
                   -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
                   --entrypoint vllm ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} \
-                  bench serve \
-                  --model "$MODEL_NAME" \
-                  --percentile-metrics tpot,ttft,itl,e2el \
-                  --dataset-name random \
-                  --ignore-eos \
-                  --temperature 0 \
-                  --max-concurrency "$CONC" \
-                  --num-prompts "$NUM_PROMPTS" \
-                  --random-input-len "$ISL" \
-                  --random-output-len "$OSL" \
-                  --host 127.0.0.1 \
-                  --port "$BENCH_PORT" \
-                  --save-result \
-                  --result-dir "$CONTAINER_RES_DIR" \
-                  --result-filename "$RESULT_FILE" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+                  "${bench_tail[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
             else
+                serve_gpu_flags 0
                 docker run --rm --network host \
-                  --device /dev/kfd --device /dev/dri \
-                  --group-add "${VIDEO_GID:-44}" --group-add "${RENDER_GID:-109}" \
-                  --security-opt seccomp=unconfined \
-                  --security-opt apparmor=unconfined \
-                  -e HIP_VISIBLE_DEVICES=0 \
+                  "${SERVE_GPU_FLAGS[@]}" \
                   -e HF_TOKEN="${HF_TOKEN:-}" \
                   -e HF_HOME=/root/.cache/huggingface \
                   -v "${HF_HOME}:/root/.cache/huggingface" \
                   -v "${RESULTS_DIR}:${CONTAINER_RES_DIR}" \
-                  --entrypoint python ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} -m vllm.entrypoints.cli.main bench serve \
-                  "${bench_cmd[@]:3}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
+                  --entrypoint python ${VLLM_BENCH_IMAGE:-${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}} -m vllm.entrypoints.cli.main \
+                  "${bench_tail[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
             fi
         fi
 
-        if [ -n "$PWR_PID" ]; then
-            kill -INT "$PWR_PID" 2>/dev/null || true
-            wait "$PWR_PID" 2>/dev/null || true
-        fi
+        python3 "${ROOT_DIR}/scripts/telemetry.py" end --output "${PWR_JSON}"
 
         # Parse and report metrics
         FULL_PATH="${RESULTS_DIR}/${RESULT_FILE}"
@@ -562,14 +513,13 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
                 PWR_UTIL=$(jq -r '.power_util_pct // "N/A"' "$PWR_JSON")
             fi
 
-            PEAK_BW=960
-            case "${GPU_PROFILE,,}" in
-                mi350p|mi350|gfx950|instinct) PEAK_BW=4096 ;;
-                r9600*) PEAK_BW=640 ;;
-                *) PEAK_BW=960 ;;
-            esac
-            MEM_BW_GBS=$(awk -v t="$OUT_TOK_S" -v c="$CONC" 'BEGIN { if (c>0) printf "%.1f", (t/c)*17.91*1.07374; else print "0.0" }')
-            MEM_BW_UTIL=$(awk -v bw="$MEM_BW_GBS" -v p="$PEAK_BW" 'BEGIN { if (p>0) printf "%.1f", (bw/p)*100; else print "0.0" }')
+            PEAK_BW="$(python3 "${ROOT_DIR}/scripts/catalog.py" gpu-field "${GPU_PROFILE}" peak_bw_gbs)"
+            MEM_BW_GBS="$(python3 "${ROOT_DIR}/scripts/catalog.py" replay-gbs --tok-s "$OUT_TOK_S" --concurrency "$CONC" --model "${MODEL_PROFILE:-qwen3.8}")"
+            if [ "$MEM_BW_GBS" = "N/A" ]; then
+                MEM_BW_UTIL="N/A"
+            else
+                MEM_BW_UTIL=$(awk -v bw="$MEM_BW_GBS" -v p="$PEAK_BW" 'BEGIN { if (p>0) printf "%.1f", (bw/p)*100; else print "0.0" }')
+            fi
 
             echo -e "    ${GREEN}✓ Done in ${DURATION_S}s${NC} | Output: ${BOLD}${OUT_TOK_S} tok/s${NC} | TTFT: ${TTFT_MS} ms | Power: ${AVG_PWR}W (${PWR_UTIL}%) | BW: ${MEM_BW_GBS} GB/s (${MEM_BW_UTIL}%)"
             TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|${OUT_TOK_S}|${TOTAL_TOK_S}|${TTFT_MS}|${TPOT_MS}|${AVG_PWR}|${PWR_UTIL}|${MEM_BW_GBS}|${MEM_BW_UTIL}|${DURATION_S}")

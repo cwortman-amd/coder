@@ -240,7 +240,7 @@ def _gpu_section(results: Path) -> list[str]:
     lines = [
         "## GPU use during the burst",
         "",
-        "`rocm-smi` samples every 2 s while `vllm bench serve` runs. Use is mean / max of `GPU use (%)`. VRAM is the mean of used bytes.",
+        "`amd-smi metric` samples every 2 s while `vllm bench serve` runs. Use is mean / max of GFX activity. VRAM is the mean of used bytes.",
         "",
     ]
     if not rows:

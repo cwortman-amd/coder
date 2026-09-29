@@ -126,7 +126,12 @@ echo ""
 
 # Helper to query current GPU VRAM usage in MB
 get_vram_usage() {
-    rocm-smi --showmeminfo vram 2>/dev/null | grep -i "used" | head -n 1 | awk '{print $NF}' || echo "N/A"
+    amd-smi metric -g 0 -m --json 2>/dev/null | python3 -c 'import json,sys
+try:
+    row=json.load(sys.stdin)["gpu_data"][0]["mem_usage"]["used_vram"]["value"]
+    print(row)
+except Exception:
+    print("N/A")' || echo "N/A"
 }
 
 # Helper to stop a container reliably across snap AppArmor environments

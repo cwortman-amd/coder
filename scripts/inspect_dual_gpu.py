@@ -64,13 +64,14 @@ def probe_host_topology(profile: str):
     print("--------------------------------------------------------------------------------")
 
     try:
-        res = subprocess.run(["rocm-smi", "--showtopo", "--showproductname"], capture_output=True, text=True, check=True)
-        print("\nROCm-SMI Inter-GPU Topology & Product Details:")
-        for line in res.stdout.splitlines():
-            if any(k in line for k in ["Series:", "Model:", "GFX Version:", "PCIE", "Weight", "Hops"]):
-                print(f"  {line}")
+        res = subprocess.run(["amd-smi", "static", "--asic"], capture_output=True, text=True, check=True)
+        topo = subprocess.run(["amd-smi", "topology", "-t", "-w", "-o"], capture_output=True, text=True, check=False)
+        print("\nAMD-SMI ASIC and inter-GPU topology:")
+        print(res.stdout.rstrip())
+        if topo.stdout.strip():
+            print(topo.stdout.rstrip())
     except Exception as e:
-        print(f"Warning: rocm-smi topology query failed: {e}")
+        print(f"Warning: amd-smi topology query failed: {e}")
 
     try:
         res = subprocess.run(["lspci", "-vvv"], capture_output=True, text=True)

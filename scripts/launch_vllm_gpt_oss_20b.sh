@@ -14,6 +14,8 @@ export ROOT_DIR="$ROOT"
 export SCRIPT_DIR="$ROOT"
 # shellcheck disable=SC1091
 source "${ROOT}/lib/gpu_profile.sh"
+# shellcheck disable=SC1091
+source "${ROOT}/lib/serve.sh"
 
 if [ -f "$HOME/.env" ]; then
   set -a
@@ -64,10 +66,10 @@ done
 args=(
   --name "${NAME}" --restart=no --network host --ipc host
   --shm-size 64g
-  --device /dev/kfd --device /dev/dri
-  --group-add "${VIDEO_GID}" --group-add "${RENDER_GID}"
-  --security-opt seccomp=unconfined --security-opt apparmor=unconfined
-  -e "HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES}"
+)
+serve_gpu_flags "${HIP_VISIBLE_DEVICES}"
+args+=(
+  "${SERVE_GPU_FLAGS[@]}"
   -e "PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH}"
   -e "GPU_ARCHS=${PYTORCH_ROCM_ARCH}"
   -e "GPU_PROFILE=${GPU_PROFILE}"

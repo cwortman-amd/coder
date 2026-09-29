@@ -13,6 +13,9 @@ import signal
 import sys
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import catalog  # noqa: E402
+
 running = True
 
 # PCI device id hints (lowercase hex without 0x)
@@ -178,22 +181,9 @@ def main():
         mem_temps = [s["mem_temp_c"] for s in samples]
         total_duration = time.time() - start_time
         prof = (args.profile or os.environ.get("GPU_PROFILE", "")).lower()
-        tdp = args.tdp
-        if tdp is None:
-            if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
-                tdp = 600.0
-            elif "r9600" in prof:
-                tdp = 150.0
-            else:
-                tdp = 300.0  # default r9700
-        peak_bw = args.peak_bw
-        if peak_bw is None:
-            if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
-                peak_bw = 4096.0
-            elif "r9600" in prof:
-                peak_bw = 640.0
-            else:
-                peak_bw = 960.0  # default r9700
+        spec = catalog.gpu(prof or "r9700")
+        tdp = args.tdp if args.tdp is not None else float(spec["tdp_w"])
+        peak_bw = args.peak_bw if args.peak_bw is not None else float(spec["peak_bw_gbs"])
 
         avg_pwr = round(sum(powers) / len(powers), 2) if powers else 0.0
         max_pwr = round(max(powers), 2) if powers else 0.0
