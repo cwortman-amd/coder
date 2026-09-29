@@ -89,6 +89,7 @@ def generate_master_dashboard():
             ax1.text(b1.get_x() + b1.get_width()/2, p95 * 1.15, f"{p95:.1f}", ha='center', va='bottom', fontsize=8.0, fontweight='bold', color=AMD_DARK_RED if not emu else EMU_BLUE)
             ax1.text(b2.get_x() + b2.get_width()/2, peak * 1.15, f"{peak:.1f}", ha='center', va='bottom', fontsize=8.0, fontweight='bold', color=AMD_DARK_RED if not emu else EMU_BLUE)
     
+    ax1.axhspan(100, 3500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (ITL > 100 ms)")
     ax1.axhline(100, color="#D84315", linestyle="--", linewidth=1.5, label="Generative Streaming SLO (p95 ≤ 100 ms)")
     ax1.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.5, label="Interactive Stall Ceiling (Max ITL ≤ 500 ms)")
     
@@ -189,6 +190,7 @@ def generate_master_dashboard():
     ax4.bar(xd - width_d/2, goodput_sat, width_d, color="none", edgecolor=EMU_CYAN, hatch="//", linewidth=1.5, label="Goodput: Saturated Trace [Emulated]")
     ax4.bar(xd + width_d/2, goodput_j3, width_d, color="none", edgecolor=PASS_GREEN, hatch="\\\\", linewidth=1.5, label="Goodput: J3 Sustained Trace [Emulated]")
     ax4_twin.plot(xd, ttft_p95_j3, color="#D32F2F", marker='o', linewidth=2.0, linestyle="--", label="TTFT p95 (J3 Sustained) [Right Axis]")
+    ax4_twin.axhspan(3000, 3950, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (TTFT > 3.0s)")
     ax4_twin.axhline(3000, color="#B71C1C", linestyle=":", linewidth=1.5, label="TTFT 3.0s SLA Boundary")
     
     ax4.set_xticks(xd)
@@ -376,6 +378,7 @@ def generate_token_latency_timeline():
     # Panel 1: Collocated DP=2
     ax1.plot(tokens, dp_itl, color=AMD_RED, linewidth=1.5, label="Collocated DP=2 ITL (Measured Single-Card Pattern)")
     ax1.scatter([110], [613.31], color="#B71C1C", s=60, zorder=5)
+    ax1.axhspan(100, 720, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (ITL > 100 ms)")
     ax1.axhline(100, color="#D84315", linestyle="--", linewidth=1.2, label="Streaming SLO (100 ms)")
     ax1.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.2, label="Max Stall Ceiling (500 ms)")
     
@@ -387,13 +390,14 @@ def generate_token_latency_timeline():
     ax1.legend(loc='upper right', fontsize=8.0)
     
     ax1.annotate("613.3 ms Forward Execution Stall!\n(Cold 2K chunk preempts decode loop)",
-                 xy=(110, 613.3), xytext=(125, 480),
+                 xy=(110, 613.3), xytext=(45, 460),
                  arrowprops=dict(arrowstyle="->", color="#B71C1C", lw=1.5),
                  fontsize=8.5, fontweight='bold', color="#B71C1C",
                  bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
     
     # Panel 2: Disaggregated P/D 1P1D
     ax2.plot(tokens, pd_itl, color=EMU_BLUE, linestyle="--", linewidth=1.5, label="Disaggregated 1P1D Decoder ITL (Emulated Pipeline)")
+    ax2.axhspan(100, 720, color="#FFCDD2", alpha=0.12, label="SLO Cut-Off Region (ITL > 100 ms)")
     ax2.axhline(100, color="#D84315", linestyle="--", linewidth=1.2, label="Streaming SLO (100 ms)")
     ax2.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.2, label="Max Stall Ceiling (500 ms)")
     
@@ -525,6 +529,7 @@ def generate_tradeoff_pareto():
     ax1.plot(lam_dp2, ttft_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (2 Replicas, Measured Contention Trend)")
     ax1.plot(lam_pd, ttft_pd, marker='D', markersize=6, color=EMU_BLUE, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (1P + 1D, Emulated Pipeline)")
     
+    ax1.axhspan(3.0, 18.0, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (TTFT > 3.0s)")
     ax1.axhline(3.0, color="#D84315", linestyle=":", linewidth=1.5, label="Interactive TTFT SLO Target (3.0 s)")
     
     ax1.set_title("A. TTFT Pareto Frontier: Time-to-First-Token vs. Completed Throughput", fontsize=11.5, fontweight='bold')
@@ -558,6 +563,7 @@ def generate_tradeoff_pareto():
     ax2.plot(lam_dp2, max_itl_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (Measured Chunk Preemption Trend)")
     ax2.plot(lam_pd, max_itl_pd, marker='D', markersize=6, color=PASS_GREEN, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (Protected Decode Cadence)")
     
+    ax2.axhspan(100, 1500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (Peak ITL > 100 ms)")
     ax2.axhline(100, color="#D84315", linestyle="--", linewidth=1.3, label="Streaming ITL Target (100 ms)")
     ax2.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.5, label="Max Permissible Stall Ceiling (500 ms)")
     
@@ -569,10 +575,8 @@ def generate_tradeoff_pareto():
     ax2.grid(True, linestyle="--", alpha=0.5)
     ax2.legend(loc='upper left', fontsize=8.5)
     
-    ax2.fill_between([0.0, 0.8], 500, 1500, color="#FFCDD2", alpha=0.3, label="SLO Disqualification Zone (>500 ms)")
-    
     ax2.annotate("SLO BREACH: 613ms–1363ms Stalls!\nIncoming prompt chunks preempt\nactive streaming decoders.",
-                 xy=(0.45, 850), xytext=(0.20, 1100),
+                 xy=(0.45, 850), xytext=(0.42, 350),
                  arrowprops=dict(arrowstyle="->", color=FAIL_RED, lw=1.5),
                  fontsize=8.5, fontweight='bold', color=FAIL_RED,
                  bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
@@ -606,11 +610,9 @@ def generate_tradeoff_pareto():
     ax3.grid(True, linestyle="--", alpha=0.5)
     ax3.legend(loc='lower left', fontsize=8.2)
     
-    ax3.annotate("PHANTOM CAPACITY GAP:\nDP=2 generates raw tokens,\nbut 100% fail interactive SLAs!",
-                 xy=(0.45, 32), xytext=(0.48, 48),
-                 arrowprops=dict(arrowstyle="->", color="#B71C1C", lw=1.5),
-                 fontsize=8.5, fontweight='bold', color="#B71C1C",
-                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
+    ax3.text(0.54, 18, "PHANTOM CAPACITY GAP:\nDP=2 generates raw tokens,\nbut 100% fail interactive SLAs!",
+             ha='center', va='center', fontsize=8.2, fontweight='bold', color="#B71C1C",
+             bbox=dict(boxstyle="round,pad=0.35", facecolor="#FFEBEE", edgecolor="#EF9A9A", alpha=0.95))
 
     # -------------------------------------------------------------
     # PANEL D: Request SLO Compliance Attainment Rate (%) vs Offered Load

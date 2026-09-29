@@ -728,10 +728,14 @@ def plot_ttft_latency():
     c_mi350_8k = [1]
     ttft_mi350_8k = [705.4]
 
-    # Shaded interactive zone (< 1,000 ms)
-    ax.axhspan(80, 1000, color="#E8F5E9", alpha=0.55, label="_nolegend_")
-    ax.axhline(1000, color="#4CAF50", linestyle="--", linewidth=1.5, alpha=0.85)
-    ax.text(2.2, 1120, "1.0s Sub-Second Interactive Threshold", fontsize=9.5, fontweight="bold", color="#2E7D32")
+    # Shaded zones: Compliant (<= 3,000 ms) and Cut-Off Region (> 3,000 ms)
+    ax.axhspan(80, 3000, color="#E8F5E9", alpha=0.35, label="SLO Compliant Region (TTFT ≤ 3.0s)")
+    ax.axhspan(3000, 120000, color="#FFEBEE", alpha=0.35, label="SLO Cut-Off Region (TTFT > 3.0s, Batch Only)")
+    ax.axhline(3000, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Cut-Off Ceiling")
+    ax.axhline(1000, color="#4CAF50", linestyle=":", linewidth=1.2, alpha=0.85)
+    ax.text(1.1, 1150, "1.0s Sub-Second Target", fontsize=8.5, fontweight="bold", color="#2E7D32")
+    ax.text(1.1, 3350, "3.0s Interactive SLO Cut-Off Ceiling", fontsize=9.0, fontweight="bold", color="#B71C1C",
+            bbox=dict(boxstyle="square,pad=0.2", facecolor="#FFEBEE", edgecolor="#EF9A9A", alpha=0.9))
 
     # Plot curves
     ax.plot(c_8k1k, ttft_8k1k, "o-", color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out)")
@@ -805,6 +809,11 @@ def plot_slo_qualified_goodput():
              ha='center', fontsize=8.5, fontweight='bold', color="#2E7D32",
              bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#A5D6A7"))
     
+    # R9700S Cut-Off vertical line
+    ax1.axvline(5.6, color="#D32F2F", linestyle=":", linewidth=1.5, alpha=0.85)
+    ax1.text(5.6, 6800, "R9700S SLO Cut-Off\n(Queue TTFT > 3.0s)", ha='center', fontsize=7.8, fontweight='bold', color="#B71C1C",
+             bbox=dict(boxstyle="round,pad=0.2", facecolor="#FFEBEE", edgecolor="#EF9A9A", alpha=0.9))
+    
     ax1.axvspan(6.0, 36, color='#E8EAF6', alpha=0.35, label='_nolegend_')
     ax1.text(24, 4500, "MI350P HIGH-CONCURRENCY DOMAIN\n(100% SLA Maintained through C32)", 
              ha='center', fontsize=8.5, fontweight='bold', color="#1A237E",
@@ -851,6 +860,12 @@ def plot_slo_qualified_goodput():
     ax2.text(2.0, 3.2, "RADEON INTERACTIVE COST LEADERSHIP\n(1.7× Less Expensive per Token)", 
              ha='center', fontsize=8.5, fontweight='bold', color="#2E7D32",
              bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#A5D6A7"))
+    
+    # R9700S Cut-Off vertical line and batch completion regime
+    ax2.axvline(5.6, color="#D32F2F", linestyle=":", linewidth=1.5, alpha=0.85)
+    ax2.text(5.6, 2.3, "R9700S Cut-Off\n(Interactive -> Batch)", ha='center', fontsize=7.8, fontweight='bold', color="#B71C1C",
+             bbox=dict(boxstyle="round,pad=0.2", facecolor="#FFEBEE", edgecolor="#EF9A9A", alpha=0.9))
+    ax2.axvspan(5.6, 36, color='#FFEBEE', alpha=0.22, label='_nolegend_')
     
     # Annotations on Panel 2
     ax2.annotate("$0.57/M @ C4\n1.7× less expensive\nthan MI350P ($0.98)", xy=(4, 0.57), xytext=(2.2, 1.4),
