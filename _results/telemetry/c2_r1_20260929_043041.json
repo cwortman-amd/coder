@@ -1,0 +1,17 @@
+{
+  "duration_s": 284.11,
+  "sample_count": 1136,
+  "sample_interval_s": 0.25,
+  "gpu_index": 0,
+  "gpu_profile": "",
+  "hwmon_dir": "/sys/class/drm/card1/device/hwmon/hwmon3",
+  "avg_power_w": 195.22,
+  "max_power_w": 247.0,
+  "min_power_w": 14.0,
+  "total_energy_joules": 55433.65,
+  "energy_joules": 55433.65,
+  "avg_hotspot_c": 70.9,
+  "max_hotspot_c": 74.0,
+  "avg_mem_c": 79.7,
+  "max_mem_c": 84.0
+}

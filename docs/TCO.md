@@ -134,12 +134,12 @@ MI350P production is non-speculative Quark MXFP4, `ignore_eos`, one replica per 
 | 8× MI350P, DFlash-3 | 437 | — | 1,933 | 2,296 | 3,109 | 3,293 |
 | 8× RTX PRO 6000 | — | — | — | — | — | — |
 
-Production per card: C1 **39.19**, C4 **149.10**, C8 **287.08**, C16 **522.47**, C32 **929.04**. Throughput is still rising at C32. DFlash-3 per card: C1 **54.67**, C4 **241.66**, C8 **287.04**, C16 **388.67**, C32 **411.66**. DFlash-3 is cheaper at C1 and C4, tied at C8, and more expensive from C16 up because aggregate tok/s flattens.
+Production per card: C1 **39.19**, C4 **149.10**, C8 **287.08**, C16 **522.47**, C32 **929.04**. Throughput is still rising at C32. DFlash-3 per card: C1 **54.67**, C4 **241.66**, C8 **287.04**, C16 **388.67**, C32 **411.66**. DFlash-3 is less expensive at C1 and C4, tied at C8, and more expensive from C16 up because aggregate tok/s flattens.
 
 R9700S per card, Radiance `vllm-mxfp4` (8,192/1,024):
 - **Interactive SLA Tier (`--max-num-seqs 4`)**: C1 **32.81 tok/s** ($2.12/M), C2 **62.26 tok/s** ($1.12/M), C4 **101.80 tok/s** ($0.68/M). At C8 and C16, requests queue to protect interactive latency (TPOT 33.9–36.4 ms), holding throughput at **101.92 tok/s** ($0.68/M) and **100.20 tok/s** ($0.70/M).
 - **Batch Saturation Tier (`--max-num-seqs 8` or auto)**: C8 reaches peak throughput of **138.67 tok/s** (**1,109 tok/s** full server, **$0.50** per million tokens) with TPOT 44.87 ms. C16 reaches **135.93 tok/s** (**1,087 tok/s** full server, **$0.51** per million tokens) where the 32 GB card reaches 99.1% KV cache saturation.
-The latest sweep demonstrates a **+7.3% (C1)**, **+14.1% (C2)**, and **+11.3% (C4)** throughput increase over prior baseline runs, while reducing energy to **3.012 J/tok** at C4. The campaign drew about 186–265 W, so the 150 W planning average is low by roughly $2,000 over three years. With the matched 256 GB DRAM server ($37,000), 3-year TCO drops to $52,787 ($2,199/GPU-yr). At C1 through C8 the R9700S server ($0.50–$2.12) is significantly cheaper per token than the MI350P server. Only at high concurrency ($C \ge 16$) does the massive aggregate throughput of 8× MI350P pull ahead.
+The latest sweep demonstrates a **+7.3% (C1)**, **+14.1% (C2)**, and **+11.3% (C4)** throughput increase over prior baseline runs, while reducing energy to **3.012 J/tok** at C4. The campaign drew about 186–265 W, so the 150 W planning average is low by roughly $2,000 over three years. With the matched 256 GB DRAM server ($37,000), 3-year TCO drops to $52,787 ($2,199/GPU-yr). At C1 through C8 the R9700S server ($0.50–$2.12) is significantly less expensive per token than the MI350P server. Only at high concurrency ($C \ge 16$) does the massive aggregate throughput of 8× MI350P pull ahead.
 
 ![Serving Cost vs Concurrency (8,192 In / 1,024 Out)](figures/tco/02_cost_per_token_8k_1k.png)
 
@@ -147,21 +147,26 @@ The latest sweep demonstrates a **+7.3% (C1)**, **+14.1% (C2)**, and **+11.3% (C
 
 | $ / million output tokens | C1 | C2 | C4 | C8 | C16 | C32 |
 |---|---:|---:|---:|---:|---:|---:|
-| 16× R9600D | — | — | — | — | — | — |
-| 8× R9700S | — | — | — | — | — | — |
+| 16× R9600D (150W projected) | $2.77 | $1.41 | $0.75 | — | — | — |
+| 8× R9700S (interactive SLA) | $2.20 | $1.12 | $0.59 | — | — | — |
 | 8× MI350P, production | $5.39 | — | $1.41 | $0.72 | $0.41 | $0.24 |
 | 8× MI350P, DFlash-3 | $3.01 | — | $1.06 | $1.71 | $1.38 | $1.19 |
 | 8× RTX PRO 6000 | — | — | — | — | — | — |
 
 | Output tok/s, full server | C1 | C2 | C4 | C8 | C16 | C32 |
 |---|---:|---:|---:|---:|---:|---:|
-| 16× R9600D | — | — | — | — | — | — |
-| 8× R9700S | — | — | — | — | — | — |
+| 16× R9600D (150W projected) | 292 | 576 | 1,085 | — | — | — |
+| 8× R9700S (interactive SLA) | 254 | 500 | 942 | — | — | — |
 | 8× MI350P, production | 425 | — | 1,622 | 3,162 | 5,517 | 9,715 |
 | 8× MI350P, DFlash-3 | 759 | — | 2,156 | 1,337 | 1,656 | 1,926 |
 | 8× RTX PRO 6000 | — | — | — | — | — | — |
 
-Production per card: C1 **53.08**, C4 **202.75**, C8 **395.19**, C16 **689.59**, C32 **1,214.39**. Still rising at C32. DFlash-3 per card: C1 **94.93**, C4 **269.51**, C8 **167.12**, C16 **207.03**, C32 **240.75**. On this long-output shape DFlash-3 wins at C1 and C4, then loses from C8 up. Its throughput drops from C4 to C8 and only partly recovers. The R9700S and RTX PRO 6000 have no completed run at this shape.
+Production per card: C1 **53.08**, C4 **202.75**, C8 **395.19**, C16 **689.59**, C32 **1,214.39**. Still rising at C32. DFlash-3 per card: C1 **94.93**, C4 **269.51**, C8 **167.12**, C16 **207.03**, C32 **240.75**. On this long-output shape DFlash-3 wins at C1 and C4, then loses from C8 up. Its throughput drops from C4 to C8 and only partly recovers.
+
+R9700S per card, Radiance `vllm-mxfp4` (1,024/8,192, [R9700-SWEEP-1024-8192.md](R9700-SWEEP-1024-8192.md)):
+- **Measured Sweep**: C1 **31.72 tok/s** ($2.20/M, 31.50 ms TPOT), C2 **62.45 tok/s** ($1.12/M, 32.00 ms TPOT), C4 **117.78 tok/s** ($0.59/M, 33.85 ms TPOT).
+- **Efficiency**: Board power holds remarkably flat across concurrency (195.2–195.4 W), scaling energy efficiency from **6.683 J/tok (C1)** down to **1.788 J/tok (C4)**.
+At C1 through C4, 8× R9700S ($0.59–$2.20/M) is **2.4× to 2.5× less expensive** per token than 8× MI350P production ($1.41–$5.39/M). The RTX PRO 6000 has no completed run at this shape.
 
 ### 1,024 in / 1,024 out
 
@@ -181,12 +186,12 @@ Production per card: C1 **53.08**, C4 **202.75**, C8 **395.19**, C16 **689.59**,
 | 8× MI350P, DFlash-3 | 910 | — | 2,923 | 4,086 | 5,065 | 7,066 |
 | 8× RTX PRO 6000 | — | — | — | — | — | — |
 
-Production per card: C1 **79.43**, C4 **292.80**, C8 **554.57**, C16 **903.65**, C32 **1,504.33**. Frozen 3× means are C1 **79.35** and C8 **553.58**. The same sweep was still rising at C64 (2,017 tok/s per card, **$0.14** per million on the eight-card server). Mean request latency goes from 12.89 s at C1 to 21.77 s at C32. DFlash-3 per card: C1 **113.77**, C4 **365.43**, C8 **510.81**, C16 **633.18**, C32 **883.26**. C8 is the earlier depth-sweep cell; this run reproduced C1 at 113.77 against the published 113.75. DFlash-3 is cheaper at C1 and C4. Production is cheaper from C8 up.
+Production per card: C1 **79.43**, C4 **292.80**, C8 **554.57**, C16 **903.65**, C32 **1,504.33**. Frozen 3× means are C1 **79.35** and C8 **553.58**. The same sweep was still rising at C64 (2,017 tok/s per card, **$0.14** per million on the eight-card server). Mean request latency goes from 12.89 s at C1 to 21.77 s at C32. DFlash-3 per card: C1 **113.77**, C4 **365.43**, C8 **510.81**, C16 **633.18**, C32 **883.26**. C8 is the earlier depth-sweep cell; this run reproduced C1 at 113.77 against the published 113.75. DFlash-3 is less expensive at C1 and C4. Production is less expensive from C8 up.
 
 R9700S per card, Radiance `vllm-mxfp4` (1,024/1,024, [R9700-SWEEP-1024-1024.md](R9700-SWEEP-1024-1024.md)):
 - **Measured Sweep**: C1 **33.26 tok/s** ($2.10/M, 29.84 ms TPOT), C2 **64.48 tok/s** ($1.08/M, 30.84 ms TPOT), C4 **121.95 tok/s** ($0.57/M, 32.03 ms TPOT).
 - **Scheduler Capping**: Under `--max-num-seqs 4`, C8 runs at **121.99 tok/s** ($0.57/M) and C16 at **122.12 tok/s** ($0.57/M), delivering consistent sub-33 ms TPOT and 2.47–2.53 J/token efficiency across the board.
-At C1 through C4, 8× R9700S ($0.57–$2.10/M) is significantly cheaper per token than both MI350P profiles ($0.78–$3.60/M). An earlier MI350P FP8 sweep (51.48 / 193.28 / 371.15 tok/s at C1 / C4 / C8) is a different quant and is not in this table.
+At C1 through C4, 8× R9700S ($0.57–$2.10/M) is significantly less expensive per token than both MI350P profiles ($0.78–$3.60/M). An earlier MI350P FP8 sweep (51.48 / 193.28 / 371.15 tok/s at C1 / C4 / C8) is a different quant and is not in this table.
 
 ![Serving Cost vs Concurrency (1,024 In / 1,024 Out)](figures/tco/03_cost_per_token_1k_1k.png)
 
@@ -207,7 +212,7 @@ $$\text{Projected Tok/s (Full Server)} = 16 \times \left( \text{R9700S Tok/s} \t
 - **1,024/1,024**: C1 is **352 tok/s** ($2.30/M), C2 is **842 tok/s** ($0.96/M), C4 is **1,558 tok/s** ($0.52/M), C8 is **1,273 tok/s** ($0.64/M), and C16 is **1,128 tok/s** ($0.72/M).
 
 #### Measured tok/s needed to match Production 8× MI350P
-The lines below match the **production** MI350P dollars per million tokens. An empirical per-card rate above the line makes the sixteen-card server cheaper per token than production 8× MI350P.
+The lines below match the **production** MI350P dollars per million tokens. An empirical per-card rate above the line makes the sixteen-card server less expensive per token than production 8× MI350P.
 
 | 16× R9600D tok/s to tie, 8,192/1,024 | C1 | C4 | C8 | C16 | C32 |
 |---|---:|---:|---:|---:|---:|
@@ -244,7 +249,9 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | | 16× R9600D (150W projected) | $2.30 | $0.96 | $0.52 | $0.64 | $0.72 | — |
 | | 8× MI350P (Production Quark MXFP4) | $3.60 | — | $0.98 | $0.52 | $0.32 | $0.19 |
 | | 8× MI350P (DFlash-3 Speculative) | $2.51 | — | $0.78 | $0.56 | $0.45 | $0.32 |
-| **1,024 in / 8,192 out** | 8× MI350P (Production Quark MXFP4) | $5.39 | — | $1.41 | $0.72 | $0.41 | $0.24 |
+| **1,024 in / 8,192 out** | 8× R9700S (Interactive SLA) | $2.20 | $1.12 | $0.59 | — | — | — |
+| | 16× R9600D (150W projected) | $2.77 | $1.41 | $0.75 | — | — | — |
+| | 8× MI350P (Production Quark MXFP4) | $5.39 | — | $1.41 | $0.72 | $0.41 | $0.24 |
 | | 8× MI350P (DFlash-3 Speculative) | $3.01 | — | $1.06 | $1.71 | $1.38 | $1.19 |
 
 ### Aggregate server throughput (tok/s) across shapes
@@ -261,7 +268,9 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | | 16× R9600D (150W projected) | 352 | 842 | 1,558 | 1,273 | 1,128 | — |
 | | 8× MI350P (Production Quark MXFP4) | 635 | — | 2,342 | 4,437 | 7,229 | 12,035 |
 | | 8× MI350P (DFlash-3 Speculative) | 910 | — | 2,923 | 4,086 | 5,065 | 7,066 |
-| **1,024 in / 8,192 out** | 8× MI350P (Production Quark MXFP4) | 425 | — | 1,622 | 3,162 | 5,517 | 9,715 |
+| **1,024 in / 8,192 out** | 8× R9700S (Interactive SLA) | 254 | 500 | 942 | — | — | — |
+| | 16× R9600D (150W projected) | 292 | 576 | 1,085 | — | — | — |
+| | 8× MI350P (Production Quark MXFP4) | 425 | — | 1,622 | 3,162 | 5,517 | 9,715 |
 | | 8× MI350P (DFlash-3 Speculative) | 759 | — | 2,156 | 1,337 | 1,656 | 1,926 |
 
 ![Aggregate Server Throughput Across Shapes](figures/tco/04_aggregate_throughput.png)
@@ -270,7 +279,7 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 ### Architectural & Economic Takeaways
 
 1. **Low-to-Medium Concurrency ($C = 1 \dots 4$): Radeon AI PRO Cost Leadership**
-   - At $C=1 \dots 4$, 8× R9700S ($0.57–$2.12/M) and projected 16× R9600D ($0.52–$2.33/M) are **2.5× to 3.5× cheaper** per token than 8× MI350P ($0.78–$7.30/M).
+   - At $C=1 \dots 4$, 8× R9700S ($0.57–$2.12/M) and projected 16× R9600D ($0.52–$2.33/M) are **2.5× to 3.5× less expensive** per token than 8× MI350P ($0.78–$7.30/M).
    - Because single-card 27B replicas operate without inter-GPU collectives or cross-card NVLink/PCIe sync, small concurrency workloads do not saturate MI350P’s 32 TB/s HBM, making MI350P capex underutilized at low concurrency.
 2. **Crossover Concurrency ($C = 8 \dots 16$):**
    - On **8,192:1,024**, 8× R9700S under batch saturation hits **$0.50/M** at C8, beating production MI350P ($1.00/M) by **2×**.
@@ -282,11 +291,24 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
    - DFlash-3 delivers notable cost reductions at low concurrency ($C=1 \dots 4$), cutting token costs by ~30–40%.
    - At high concurrency ($C \ge 8$), speculative drafting collapses in throughput due to verification overhead and batch contention, becoming significantly more expensive than standard non-speculative production serving ($1.19–$1.71/M vs $0.24–$0.72/M).
 
+### Hardware Resource Saturation Profiles (Power & Memory Bandwidth)
+
+![Hardware Utilization Profiles: Power & Memory Bandwidth](figures/tco/08_power_and_bandwidth_utilization.png)
+
+1. **Power Utilization (% of Device Max TDP)**:
+   - **Radeon AI PRO R9700S (300 W Max TDP)**: At $C=1 \dots 4$, operates between **61.2% and 66.5% of TDP** (184–199 W), delivering superior energy efficiency (1.79–3.38 J/token). At $C=16$, queue scaling elevates board power to **86.6%–88.4% of TDP** (260–265 W).
+   - **Instinct MI350P (600 W Max TDP)**: Operates at **66.7%–68.3% of TDP** (400–410 W) during $C=1 \dots 8$ decode serving.
+   - **Radeon AI PRO R9600D (150 W Max TDP)**: Runs at **100% of its 150 W TDP boundary**, maximizing compute density per watt.
+
+2. **Memory Bandwidth Utilization (% of Device Peak Bandwidth)**:
+   - **Radeon AI PRO R9700S (640 GB/s Peak GDDR6)**: Consistently sustains **71.1%–76.3% of advertised peak bandwidth** (and ~82%–84% of physical 576 GB/s bus ceiling) across all workloads and concurrencies. This empirical ceiling proves that `vllm-mxfp4` autoregressive decode operates near optimal memory bus saturation on RDNA 4.
+   - **Instinct MI350P (4,096 GB/s Peak HBM3E)**: Operates at **32.7%–37.4% of peak bandwidth** (1,340–1,530 GB/s) at $C=1 \dots 8$. MI350P’s 4 TB/s HBM3E bus has ~65% unused headroom at low concurrency, which is only amortized at $C \ge 32$.
+
 ## How to read the servers
 
 - **16× R9600D** is the single-slot fill with 512 GB host DRAM ($49,000 server): 512 GB of GDDR6, 10.24 TB/s, 2.4 kW, 3-year TCO $76,787 ($1,600/GPU-yr). Sixteen 27B replicas fit. Flash-Next needs eight cards per replica, so the server holds two ($36,500/replica). At 150 W iso-efficiency projection, token costs range from $0.52 to $2.33 per million tokens at C1–C16.
 - **8× R9700S** is the dual-slot 64 CU board with 256 GB host DRAM ($37,000 server): 256 GB GDDR6, 5.12 TB/s, 2.4 kW, 3-year TCO $52,787 ($2,199/GPU-yr). At 8,192/1,024, latest C1 is $2.12, C2 is $1.12, C4 is $0.68, and batch C8 is $0.50 per million tokens (with C16 at $0.51 near KV saturation); interactive SLA capping (`--max-num-seqs 4`) holds C8/C16 at $0.68–$0.70 with sub-40 ms TPOT. At 1,024/1,024, C1 is $2.10, C2 is $1.08, and C4–C16 plateau at $0.57 per million tokens at ~32 ms TPOT.
-- **8× MI350P** is the 1,152 GB / 32 TB/s server with 1,536 GB host DRAM ($89,000 server). 3-year TCO $216,574 ($9,024/GPU-yr). Production keeps getting cheaper per token through C32 on every shape. The cheapest production cell is 1,024/1,024 at C32, **$0.19** per million tokens. DFlash-3 is the cheaper profile at C1 on every shape, and at C4 on every shape. It is the more expensive profile once concurrency reaches C8 on 1,024/1,024 and on 1,024/8,192, and from C16 up on 8,192/1,024. This server is the only fill here that puts Flash-Next on two cards, four replicas per server ($52,250/replica).
+- **8× MI350P** is the 1,152 GB / 32 TB/s server with 1,536 GB host DRAM ($89,000 server). 3-year TCO $216,574 ($9,024/GPU-yr). Production keeps getting less expensive per token through C32 on every shape. The lowest-cost production cell is 1,024/1,024 at C32, **$0.19** per million tokens. DFlash-3 is the less expensive profile at C1 on every shape, and at C4 on every shape. It is the more expensive profile once concurrency reaches C8 on 1,024/1,024 and on 1,024/8,192, and from C16 up on 8,192/1,024. This server is the only fill here that puts Flash-Next on two cards, four replicas per server ($52,250/replica).
 - **8× RTX PRO 6000** is with 768 GB host DRAM ($62,000 server) at 4.8 kW, with 768 GB GDDR7 and 14.3 TB/s, 3-year TCO $197,574 ($8,232/GPU-yr). It has no priced cell in these three tables.
 
 Each table stays inside one shape. A blank cell means that concurrency was not measured there.

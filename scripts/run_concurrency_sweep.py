@@ -51,8 +51,8 @@ def get_vram_peak_mb():
         pass
     return "N/A"
 
-def run_warmup(container_name, count=10):
-    print(f"\n[Warmup] Executing {count} warmup requests (8192:64) to discard...")
+def run_warmup(container_name, count=2, input_len=1024):
+    print(f"\n[Warmup] Executing {count} warmup requests ({input_len}:64) to discard...")
     cmd = [
         "docker", "exec", container_name,
         "/opt/vllm/bin/vllm", "bench", "serve",
@@ -63,7 +63,7 @@ def run_warmup(container_name, count=10):
         "--model", "Qwen3.8-27B-Quark-AWQ-MXFP4",
         "--tokenizer", "Qwen/Qwen3.8-27B-FP8",
         "--dataset-name", "random",
-        "--random-input-len", "8192",
+        "--random-input-len", str(min(input_len, 8192)),
         "--random-output-len", "64",
         "--num-prompts", str(count),
         "--max-concurrency", "2"
@@ -75,25 +75,35 @@ def main():
     parser = argparse.ArgumentParser(description="Run Power-of-Two Concurrency Sweep")
     parser.add_argument("--container", default="rocm-mxfp4-server", help="Docker container name")
     parser.add_argument("--concurrency-list", nargs="+", type=int, default=[1, 2, 4, 8, 16], help="Concurrency list")
-    parser.add_argument("--repetitions", type=int, default=3, help="Repetitions per point")
-    parser.add_argument("--prompt-scale", type=float, default=1.0, help="Scale factor for prompt counts (e.g. 0.1 for rapid calibration)")
-    parser.add_argument("--skip-warmup", action="store_true", help="Skip 10-prompt warmup")
+    parser.add_argument("--max-concurrency", type=int, default=None, help="Maximum concurrency ceiling")
+    parser.add_argument("--repetitions", type=int, default=1, help="Repetitions per point")
+    parser.add_argument("--prompt-scale", type=float, default=None, help="Scale factor for prompt counts")
+    parser.add_argument("--skip-warmup", action="store_true", help="Skip warmup")
     parser.add_argument("--input-len", type=int, default=8192, help="Input prompt length")
     parser.add_argument("--output-len", type=int, default=1024, help="Output completion length")
     args = parser.parse_args()
+
+    if args.max_concurrency is not None:
+        args.concurrency_list = [c for c in args.concurrency_list if c <= args.max_concurrency]
+
+    if args.prompt_scale is None:
+        args.prompt_scale = 1.0 if args.output_len >= 4096 else 0.05
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
     os.makedirs(TELEMETRY_DIR, exist_ok=True)
     os.makedirs(DOCS_DIR, exist_ok=True)
 
     if not args.skip_warmup:
-        run_warmup(args.container, 10)
+        run_warmup(args.container, count=2, input_len=args.input_len)
 
     sweep_records = []
 
     for C in args.concurrency_list:
-        base_prompts = PROMPT_COUNTS.get(C, C * 20)
-        prompts = max(C, int(base_prompts * args.prompt_scale))
+        if args.output_len >= 4096:
+            base_prompts = C
+        else:
+            base_prompts = PROMPT_COUNTS.get(C, C * 20)
+        prompts = max(1, max(C if C > 1 else 1, int(base_prompts * args.prompt_scale)))
 
         print(f"\n" + "=" * 80)
         print(f"=== TESTING CONCURRENCY C={C} (Prompts per run: {prompts}, Repetitions: {args.repetitions}) ===")

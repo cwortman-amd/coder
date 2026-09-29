@@ -130,7 +130,7 @@ def plot_cost_8k_1k():
     ax.annotate("$7.30/M", xy=(1, 7.30), xytext=(1.4, 7.4),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
                 fontweight='bold', color=COLOR_MI350P_PROD)
-    ax.annotate("$0.50/M (2× cheaper than MI350P)", xy=(8, 0.50), xytext=(5.2, 0.15),
+    ax.annotate("$0.50/M (2× less expensive than MI350P)", xy=(8, 0.50), xytext=(5.2, 0.15),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.5),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.5)
@@ -141,14 +141,14 @@ def plot_cost_8k_1k():
     
     # Background shaded zones
     ax.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.35, label='_nolegend_')
-    ax.text(2.3, 6.8, "RADEON COST LEADERSHIP\n(2.5× – 3.4× Cheaper)", ha='center', fontsize=9.5, fontweight='bold', color='#2E7D32',
+    ax.text(2.3, 6.8, "RADEON COST LEADERSHIP\n(2.5× – 3.4× Less Expensive)", ha='center', fontsize=9.5, fontweight='bold', color='#2E7D32',
             bbox=dict(boxstyle="square,pad=0.3", facecolor='white', alpha=0.8, edgecolor='#A5D6A7'))
     
     ax.set_xscale('log', base=2)
     ax.set_xticks([1, 2, 4, 8, 16, 32])
     ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight='bold')
     ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight='bold', labelpad=8)
-    ax.set_ylabel("Serving Cost ($ / Million Output Tokens)", fontsize=13, fontweight='bold', labelpad=8)
+    ax.set_ylabel("Serving Cost ($ / Million Output Tokens)  [Lower is better]", fontsize=12.5, fontweight='bold', labelpad=8)
     ax.set_title("Serving Cost vs Concurrency: Long Context (8,192 In / 1,024 Out)", fontsize=15, fontweight='bold', pad=15)
     ax.set_ylim(0, 8.2)
     ax.set_xlim(0.8, 36)
@@ -200,14 +200,14 @@ def plot_cost_1k_1k():
     
     # Background shaded zone
     ax.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.35, label='_nolegend_')
-    ax.text(2.0, 3.1, "RADEON ADVANTAGE\n(1.7× – 1.8× Cheaper)", ha='center', fontsize=9.5, fontweight='bold', color='#2E7D32',
+    ax.text(2.0, 3.1, "RADEON ADVANTAGE\n(1.7× – 1.8× Less Expensive)", ha='center', fontsize=9.5, fontweight='bold', color='#2E7D32',
             bbox=dict(boxstyle="square,pad=0.3", facecolor='white', alpha=0.8, edgecolor='#A5D6A7'))
     
     ax.set_xscale('log', base=2)
     ax.set_xticks([1, 2, 4, 8, 16, 32])
     ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight='bold')
     ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight='bold', labelpad=8)
-    ax.set_ylabel("Serving Cost ($ / Million Output Tokens)", fontsize=13, fontweight='bold', labelpad=8)
+    ax.set_ylabel("Serving Cost ($ / Million Output Tokens)  [Lower is better]", fontsize=12.5, fontweight='bold', labelpad=8)
     ax.set_title("Serving Cost vs Concurrency: Standard Workload (1,024 In / 1,024 Out)", fontsize=15, fontweight='bold', pad=15)
     ax.set_ylim(0, 4.2)
     ax.set_xlim(0.8, 36)
@@ -250,7 +250,7 @@ def plot_throughput():
     ax1.set_xticks([1, 2, 4, 8, 16, 32])
     ax1.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
     ax1.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
-    ax1.set_ylabel("Full Server Throughput (Output tok/s)", fontsize=11, fontweight='bold')
+    ax1.set_ylabel("Full Server Throughput (Output tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
     ax1.set_title("8,192 In / 1,024 Out (Long Context)", fontsize=13, fontweight='bold')
     ax1.set_ylim(0, 8000)
     ax1.grid(True, which='both', linestyle='--', alpha=0.7)
@@ -271,13 +271,13 @@ def plot_throughput():
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
     ax2.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
-    ax2.set_ylabel("Full Server Throughput (Output tok/s)", fontsize=11, fontweight='bold')
+    ax2.set_ylabel("Full Server Throughput (Output tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
     ax2.set_title("1,024 In / 1,024 Out (Standard Workload)", fontsize=13, fontweight='bold')
     ax2.set_ylim(0, 13000)
     ax2.grid(True, which='both', linestyle='--', alpha=0.7)
     ax2.legend(loc='upper left', frameon=True, fontsize=8.5)
     
-    fig.suptitle("Full Server Aggregate Throughput Scaling Across Concurrency", fontsize=15, fontweight='bold', y=0.98)
+    fig.suptitle("Full Server Aggregate Throughput Scaling Across Concurrency (Higher is better)", fontsize=15, fontweight='bold', y=0.98)
     plt.tight_layout(rect=[0, 0.02, 1, 0.95])
     output_path = os.path.join(OUTPUT_DIR, "04_aggregate_throughput.png")
     plt.savefig(output_path, dpi=300)
@@ -328,13 +328,13 @@ def plot_executive_dashboard():
     ax2.set_xscale('log', base=2)
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax2.set_title("B. Serving Cost: 8,192 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold', pad=8)
+    ax2.set_title("B. Serving Cost: 8,192 In / 1,024 Out [Lower is better]", fontsize=11.5, fontweight='bold', pad=8)
     ax2.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
-    ax2.set_ylabel("Serving Cost ($ / Million Tokens)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax2.set_ylabel("Serving Cost ($ / M Tokens) [Lower is better]", fontsize=10, fontweight='bold', labelpad=6)
     ax2.set_ylim(0, 8.0)
     ax2.grid(True, which='both', linestyle='--', alpha=0.6)
     ax2.legend(loc='upper right', fontsize=8.5)
-    ax2.text(0.35, 0.85, "C1–C4: R9700S is 2.8×–3.4× cheaper\nC8: R9700S hits $0.50/M (2× cheaper)",
+    ax2.text(0.35, 0.85, "C1–C4: R9700S is 2.8×–3.4× less expensive\nC8: R9700S hits $0.50/M (2× less expensive)",
              transform=ax2.transAxes, fontsize=8.5, fontweight='bold', color="#B71C1C",
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF5350"))
     
@@ -351,13 +351,13 @@ def plot_executive_dashboard():
     ax3.set_xscale('log', base=2)
     ax3.set_xticks([1, 2, 4, 8, 16, 32])
     ax3.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax3.set_title("C. Serving Cost: 1,024 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold', pad=8)
+    ax3.set_title("C. Serving Cost: 1,024 In / 1,024 Out [Lower is better]", fontsize=11.5, fontweight='bold', pad=8)
     ax3.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
-    ax3.set_ylabel("Serving Cost ($ / Million Tokens)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax3.set_ylabel("Serving Cost ($ / M Tokens) [Lower is better]", fontsize=10, fontweight='bold', labelpad=6)
     ax3.set_ylim(0, 4.2)
     ax3.grid(True, which='both', linestyle='--', alpha=0.6)
     ax3.legend(loc='upper right', fontsize=8.5)
-    ax3.text(0.35, 0.85, "C1–C4: R9700S is 1.7×–1.8× cheaper\nC4–C16: Plateaus at $0.57/M @ 32ms TPOT",
+    ax3.text(0.35, 0.85, "C1–C4: R9700S is 1.7×–1.8× less expensive\nC4–C16: Plateaus at $0.57/M @ 32ms TPOT",
              transform=ax3.transAxes, fontsize=8.5, fontweight='bold', color="#B71C1C",
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF5350"))
     
@@ -373,9 +373,9 @@ def plot_executive_dashboard():
     ax4.set_xscale('log', base=2)
     ax4.set_xticks([1, 2, 4, 8, 16, 32])
     ax4.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax4.set_title("D. Aggregate Server Throughput: 8k:1k (tok/s)", fontsize=12, fontweight='bold', pad=8)
+    ax4.set_title("D. Aggregate Server Throughput: 8k:1k [Higher is better]", fontsize=11.5, fontweight='bold', pad=8)
     ax4.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
-    ax4.set_ylabel("Aggregate Throughput (tok/s)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax4.set_ylabel("Aggregate Throughput (tok/s) [Higher is better]", fontsize=10, fontweight='bold', labelpad=6)
     ax4.set_ylim(0, 8000)
     ax4.grid(True, which='both', linestyle='--', alpha=0.6)
     ax4.legend(loc='upper left', fontsize=8.5)
@@ -390,15 +390,221 @@ def plot_executive_dashboard():
     plt.close()
     return output_path
 
+# ==============================================================================
+# PLOT 6: Power Utilization (% of Device Max TDP) vs Concurrency per GPU
+# ==============================================================================
+def plot_power_utilization():
+    fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
+    
+    # Concurrency and power utilization (% of device max TDP)
+    # R9700S: Max TDP = 300 W
+    c_r9700_8k = [1, 2, 4, 8, 16]
+    pwr_r9700_8k = [226.5 / 300 * 100, 186.1 / 300 * 100, 199.4 / 300 * 100, 238.5 / 300 * 100, 265.1 / 300 * 100]
+    
+    c_r9700_1k = [1, 2, 4, 8, 16]
+    pwr_r9700_1k = [226.8 / 300 * 100, 183.7 / 300 * 100, 187.9 / 300 * 100, 230.0 / 300 * 100, 259.9 / 300 * 100]
+    
+    c_r9700_long = [1, 2, 4]
+    pwr_r9700_long = [195.3 / 300 * 100, 195.2 / 300 * 100, 195.4 / 300 * 100]
+    
+    # MI350P: Max TDP = 600 W (Control 1k/1k: 400W @ C1, 410W @ C8)
+    c_mi350 = [1, 8]
+    pwr_mi350 = [400.0 / 600 * 100, 410.0 / 600 * 100]
+    
+    # R9600D: Max TDP = 150 W (Operating at 150W Cap = 100%)
+    c_r9600 = [1, 2, 4, 8, 16]
+    pwr_r9600 = [100.0, 100.0, 100.0, 100.0, 100.0]
+    
+    # Plot lines
+    ax.plot(c_r9700_8k, pwr_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out, 300W Max)")
+    ax.plot(c_r9700_1k, pwr_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out, 300W Max)")
+    ax.plot(c_r9700_long, pwr_r9700_long, '^-.', color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out, 300W Max)")
+    ax.plot(c_mi350, pwr_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (CDNA 4, 600W Max TDP)")
+    ax.plot(c_r9600, pwr_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="Radeon AI PRO R9600D (150W Capped Envelope)")
+    
+    # 100% Device TDP Ceiling line
+    ax.axhline(100.0, color="#78909C", linestyle="--", linewidth=1.5, alpha=0.85)
+    ax.text(0.9, 101.5, "100% Device Max TDP Ceiling", fontsize=9.5, fontweight='bold', color="#455A64")
+    
+    # Data Callouts
+    ax.annotate("C1–C4 High Efficiency\n61.2%–66.5% TDP", xy=(2, 61.2), xytext=(1.4, 45),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
+                fontweight='bold', color="#E65100", fontsize=9.0)
+    
+    ax.annotate("C16 Queue Scaling\n86.6%–88.4% TDP", xy=(16, 88.4), xytext=(9.5, 94),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
+    
+    ax.annotate("MI350P: 66.7%–68.3% TDP\n(400W–410W of 600W Cap)", xy=(8, 68.3), xytext=(5.5, 75),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
+    
+    ax.set_xscale('log', base=2)
+    ax.set_xticks([1, 2, 4, 8, 16, 32])
+    ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight='bold')
+    ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight='bold', labelpad=8)
+    ax.set_ylabel("Power Utilization (% of Device Max TDP)", fontsize=12.5, fontweight='bold', labelpad=8)
+    ax.set_title("Power Utilization vs Concurrency per GPU (% of Device Max TDP)", fontsize=15, fontweight='bold', pad=15)
+    ax.set_ylim(35, 110)
+    ax.set_xlim(0.8, 36)
+    ax.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax.legend(loc='lower right', frameon=True, framealpha=0.95, facecolor='white', fontsize=9.5)
+    
+    plt.tight_layout()
+    output_path = os.path.join(OUTPUT_DIR, "06_power_utilization.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
+# ==============================================================================
+# PLOT 7: Memory Bandwidth Utilization (% of Device Max Peak) vs Concurrency
+# ==============================================================================
+def plot_memory_bandwidth_utilization():
+    fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
+    
+    # Memory Bandwidth Utilization (% of Device Max Peak)
+    # R9700S: Peak = 640 GB/s (GDDR6)
+    c_r9700_8k = [1, 2, 4, 8, 16]
+    bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
+    
+    c_r9700_1k = [1, 2, 4, 8, 16]
+    bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
+    
+    c_r9700_long = [1, 2, 4]
+    bw_r9700_long = [73.6, 74.8, 74.9]
+    
+    # MI350P: Peak = 4,096 GB/s (HBM3E)
+    # Measured weight traffic: 1,530 GB/s @ C1 (37.4%), 1,340 GB/s @ C8 (32.7%)
+    c_mi350 = [1, 8]
+    bw_mi350 = [37.4, 32.7]
+    
+    # R9600D: Peak = 640 GB/s (GDDR6), 150W Capped
+    # 48 CUs & 150W cap yields ~344–353 GB/s sustained (53.8%–55.2%)
+    c_r9600 = [1, 2, 4]
+    bw_r9600 = [53.8, 54.5, 55.2]
+    
+    # Shaded band for R9700S near-optimal GDDR6 decode saturation
+    ax.axhspan(70.0, 78.0, color='#FFEBEE', alpha=0.5, label='_nolegend_')
+    ax.text(3.5, 66.5, "R9700S GDDR6 SATURATION ZONE (71%–76% of 640 GB/s Spec, ~84% Physical Bus)", 
+            ha='center', fontsize=9.0, fontweight='bold', color="#C62828",
+            bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#EF9A9A"))
+    
+    # Plot lines
+    ax.plot(c_r9700_8k, bw_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out, 640 GB/s Max)")
+    ax.plot(c_r9700_1k, bw_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out, 640 GB/s Max)")
+    ax.plot(c_r9700_long, bw_r9700_long, '^-.', color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out, 640 GB/s Max)")
+    ax.plot(c_r9600, bw_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="Radeon AI PRO R9600D (150W Capped, 640 GB/s Max)")
+    ax.plot(c_mi350, bw_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (CDNA 4, 4,096 GB/s Max HBM3E)")
+    
+    # Data Callouts
+    ax.annotate("Near-Optimal GDDR6 Saturation\n~470–488 GB/s (74%–76%)", xy=(1, 75.9), xytext=(1.3, 86.5),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
+    
+    ax.annotate("MI350P HBM3E Headroom\n33%–37% Utilized @ C1–C8\n(Massive Headroom for C32+)", xy=(8, 32.7), xytext=(4.0, 18),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
+    
+    ax.set_xscale('log', base=2)
+    ax.set_xticks([1, 2, 4, 8, 16, 32])
+    ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight='bold')
+    ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight='bold', labelpad=8)
+    ax.set_ylabel("Memory Bandwidth Utilization (% of Device Max Peak)  [Higher is better]", fontsize=12.0, fontweight='bold', labelpad=8)
+    ax.set_title("Memory Bandwidth Utilization vs Concurrency per GPU (% of Device Max)", fontsize=15, fontweight='bold', pad=15)
+    ax.set_ylim(10, 100)
+    ax.set_xlim(0.8, 36)
+    ax.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax.legend(loc='lower left', frameon=True, framealpha=0.95, facecolor='white', fontsize=9.5)
+    
+    plt.tight_layout()
+    output_path = os.path.join(OUTPUT_DIR, "07_memory_bandwidth_utilization.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
+# ==============================================================================
+# PLOT 8: Hardware Utilization Dashboard (Side-by-Side Power & Bandwidth)
+# ==============================================================================
+def plot_hardware_utilization_dashboard():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6.5), dpi=300)
+    
+    # 1. Power Utilization
+    c_r9700_8k = [1, 2, 4, 8, 16]
+    pwr_r9700_8k = [75.5, 62.0, 66.5, 79.5, 88.4]
+    c_r9700_1k = [1, 2, 4, 8, 16]
+    pwr_r9700_1k = [75.6, 61.2, 62.6, 76.7, 86.6]
+    c_r9700_long = [1, 2, 4]
+    pwr_r9700_long = [65.1, 65.1, 65.1]
+    c_mi350 = [1, 8]
+    pwr_mi350 = [66.7, 68.3]
+    c_r9600 = [1, 2, 4, 8, 16]
+    pwr_r9600 = [100.0, 100.0, 100.0, 100.0, 100.0]
+    
+    ax1.plot(c_r9700_8k, pwr_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.4, ms=6, label="R9700S (8k:1k, 300W)")
+    ax1.plot(c_r9700_1k, pwr_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.0, ms=6, label="R9700S (1k:1k, 300W)")
+    ax1.plot(c_r9700_long, pwr_r9700_long, '^-.', color="#C2185B", lw=2.0, ms=6, label="R9700S (1k:8k, 300W)")
+    ax1.plot(c_mi350, pwr_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (CDNA 4, 600W)")
+    ax1.plot(c_r9600, pwr_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="R9600D (150W Cap)")
+    ax1.axhline(100.0, color="#78909C", linestyle="--", lw=1.3, alpha=0.85)
+    ax1.set_xscale('log', base=2)
+    ax1.set_xticks([1, 2, 4, 8, 16, 32])
+    ax1.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
+    ax1.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
+    ax1.set_ylabel("Power Utilization (% of Device Max TDP)", fontsize=11, fontweight='bold')
+    ax1.set_title("A. Power Utilization (% of Device TDP)", fontsize=12.5, fontweight='bold')
+    ax1.set_ylim(35, 110)
+    ax1.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax1.legend(loc='lower right', frameon=True, fontsize=8.5)
+    
+    # 2. Memory Bandwidth Utilization
+    bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
+    bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
+    bw_r9700_long = [73.6, 74.8, 74.9]
+    bw_mi350 = [37.4, 32.7]
+    c_r9600_bw = [1, 2, 4]
+    bw_r9600 = [53.8, 54.5, 55.2]
+    
+    ax2.axhspan(70.0, 78.0, color='#FFEBEE', alpha=0.5, label='_nolegend_')
+    ax2.plot(c_r9700_8k, bw_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.4, ms=6, label="R9700S (8k:1k, 640 GB/s)")
+    ax2.plot(c_r9700_1k, bw_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.0, ms=6, label="R9700S (1k:1k, 640 GB/s)")
+    ax2.plot(c_r9700_long, bw_r9700_long, '^-.', color="#C2185B", lw=2.0, ms=6, label="R9700S (1k:8k, 640 GB/s)")
+    ax2.plot(c_r9600_bw, bw_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="R9600D (150W Cap, 640 GB/s)")
+    ax2.plot(c_mi350, bw_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (CDNA 4, 4,096 GB/s)")
+    ax2.set_xscale('log', base=2)
+    ax2.set_xticks([1, 2, 4, 8, 16, 32])
+    ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
+    ax2.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
+    ax2.set_ylabel("Memory Bandwidth Utilization (% of Device Max Peak)  [Higher is better]", fontsize=11, fontweight='bold')
+    ax2.set_title("B. Memory Bandwidth Utilization (% of Peak) [Higher is better]", fontsize=12.5, fontweight='bold')
+    ax2.set_ylim(10, 100)
+    ax2.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax2.legend(loc='lower left', frameon=True, fontsize=8.5)
+    
+    fig.suptitle("Hardware Utilization Profiles: Power & Memory Bandwidth vs Concurrency per GPU", fontsize=15, fontweight='bold', y=0.98)
+    plt.tight_layout(rect=[0, 0.02, 1, 0.95])
+    output_path = os.path.join(OUTPUT_DIR, "08_power_and_bandwidth_utilization.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
 if __name__ == "__main__":
     p1 = plot_capex_and_tco()
     p2 = plot_cost_8k_1k()
     p3 = plot_cost_1k_1k()
     p4 = plot_throughput()
     p5 = plot_executive_dashboard()
+    p6 = plot_power_utilization()
+    p7 = plot_memory_bandwidth_utilization()
+    p8 = plot_hardware_utilization_dashboard()
     
     # Also copy to artifact directory for presentation / embedding
-    for p in [p1, p2, p3, p4, p5]:
+    for p in [p1, p2, p3, p4, p5, p6, p7, p8]:
         dest = os.path.join(ARTIFACT_DIR, os.path.basename(p))
         shutil.copy(p, dest)
         print(f"Generated: {p} -> {dest}")
+
