@@ -1,6 +1,6 @@
 # GPT-OSS-20B native MXFP4
 
-`openai/gpt-oss-20b` ships native MXFP4 and fits one 32 GB card. That is the Radeon AI PRO R9700S (and the R9700, the same 64 CU / 32 GB / 300 W GPU). `openai/gpt-oss-120b` does not fit that card. Run 120B on MI350P.
+`openai/gpt-oss-20b` ships native MXFP4 and fits one 32 GB card. That is the Radeon AI PRO R9700S (and the R9700, the same 64 CU / 32 GB / 300 W GPU). `openai/gpt-oss-120b` does not fit that card. The 120B AIM sweep on one MI350P is [MI350P-AIMS.md](MI350P-AIMS.md).
 
 This is stock vLLM, not the Quark Radiance compose used for Qwen3.8-27B. The Qwen FP8 KV pin, architecture override, and tool-parser flags are not applied.
 
