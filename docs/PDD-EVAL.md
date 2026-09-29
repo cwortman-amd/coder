@@ -423,3 +423,88 @@ Every customer deliverable must include:
    - P/D increases qualified capacity sufficiently to offset KV transport and operational overhead.
 3. **Deploy Tensor Parallelism (TP=2) When**:
    - Serving 32K–64K long-context models or larger parameter footprints exceeding 32 GB physical VRAM.
+
+---
+
+## 12. Cluster Implementation & Fleet Orchestration Infrastructure
+
+To transition from 2-card proof-of-concept setups to full enterprise production, concrete orchestration specifications and cluster management tooling have been implemented:
+
+### 12.1 Multi-Card Fleet Orchestration Manifests
+1. **8-Card Server Disaggregated Cluster (1P:7D)** ([`docker/docker-compose.pd.8card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.8card.yml)):
+   - **Prefill Engine**: Dedicated worker bound to GPU 0 (`rocm-pd-prefill-gpu0`) listening on port `8001`, configured with `--max-num-seqs 2` and `--max-model-len 9600` for deep prompt ingestion.
+   - **Decode Pool**: 7 continuous batching workers bound to GPUs 1 through 7 (`rocm-pd-decode-gpu1` to `gpu7`) listening on ports `8002` through `8008`, configured with continuous batching concurrency $C=4$.
+   - **Shared Memory IPC**: Host-mounted `/dev/shm` IPC volume enabling high-speed KV tensor handoffs between prefill and decoders.
+2. **8-Card Collocated Control Baseline (DP=8)** ([`docker/docker-compose.dp8.yml`](file:///home/amd/workspace/coder/docker/docker-compose.dp8.yml)):
+   - 8 collocated prefill+decode replicas bound to GPUs 0 through 7 (`rocm-dp-replica-gpu0` to `gpu7`) listening on ports `8001` through `8008`.
+   - Used to measure multi-replica phase interference and verify the "Phantom Capacity Gap" under identical load.
+3. **16-Card Dual-Node Cluster (2P:14D)** ([`docker/docker-compose.pd.16card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.16card.yml)):
+   - Dual-chassis rack architecture pooling 512 GB GDDR6 VRAM across two 8-card server chassis.
+   - Dual prefill workers (`rocm-pd-prefill-node1-gpu0`, `rocm-pd-prefill-node2-gpu0`) eliminate single-point-of-failure bottlenecks.
+   - 14 distributed decoders across both nodes interconnected via high-speed RDMA / RoCE v2 networking.
+
+### 12.2 Asynchronous Fleet Router ([`scripts/pd_fleet_router.py`](file:///home/amd/workspace/coder/scripts/pd_fleet_router.py))
+An enterprise-grade, asynchronous FastAPI proxy providing OpenAI-compatible endpoints (`/v1/chat/completions`):
+- **P/D Mode (`--mode pd`)**: Directs all incoming prompts to the prefill pool, registers prompt hash and KV cache locations, and seamlessly hands off generated KV states to the least-loaded decode worker.
+- **Data Parallel Mode (`--mode dp`)**: Implements cache-affine session routing with fallback round-robin across collocated replicas.
+- **Observability**: Exposes real-time prometheus-ready `/health` and `/metrics` detailing queue depth, worker state, and active concurrency.
+
+### 12.3 Discrete-Event Fleet Simulator ([`scripts/simulate_fleet_cluster.py`](file:///home/amd/workspace/coder/scripts/simulate_fleet_cluster.py))
+A high-fidelity cluster simulator modeling request queueing, chunk preemption, KV handoffs, and SLO compliance across arbitrary cluster topologies ($1\text{P}:1\text{D}$, $\text{DP}=2$, $1\text{P}:7\text{D}$, $\text{DP}=8$):
+- Evaluates queue stability condition $\frac{dQ}{dt} \le 0$ across arrival rates $\lambda \in [0.05, 0.80]\text{ req/s}$.
+- Demonstrates that under 8K:1K workloads, DP=8 experiences catastrophic SLO collapse at $\lambda \ge 0.40\text{ req/s}$ ($0\%$ compliance due to collocated $613\text{ ms}$ preemption stalls), whereas 1P:7D maintains $100\%$ compliance through $\lambda = 0.60\text{ req/s}$ ($0.60\text{ qual req/s}$ vs. $0.00$).
+
+---
+
+## 13. Live Host Diagnostics & In-Container Connector Status
+
+Empirical verification executed via [`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) reports the following physical and container runtime state:
+
+### 13.1 Host ROCm Hardware & Inter-GPU Topology
+- **Primary Discrete Accelerator**: AMD Radeon™ AI PRO R9700 (`gfx1201`, 64 CUs, 32 GB GDDR6) on PCIe address `0000:03:00.0`.
+- **Integrated Graphics**: AMD Radeon™ 780M Graphics (`gfx1103`, 12 CUs) on PCIe address `0000:c9:00.0`.
+- **Preflight Guardrail**: The preflight harness strictly blocks mixing discrete and integrated GPUs (`[STATUS: HARDWARE GATE BLOCKED] Detected 1 matching cards (Expected: 2)`). Dual-card multi-GPU configurations require two homogeneous dGPUs of the same ISA (do not mix R9700 with MI350P or iGPU).
+- **Evidence Ladder Status**: Physical dual-card execution (Level 4) is hardware-gated on installing a second physical R9700 in PCIe Slot 2.
+
+### 13.2 In-Container KV Connector Lifecycle Status ([`rocm-mxfp4-server`](file:///home/amd/workspace/coder/docker/docker-compose.yml))
+vLLM 0.27.1 registers 16 KV transfer connectors. Runtime probe diagnostics classify connector readiness:
+
+| Connector | Lifecycle Status | Native Dependency Status | Operational Path |
+| :--- | :--- | :--- | :--- |
+| **[`SimpleCPUOffloadConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[RUNTIME_READY]`** | Zero external C++ dependencies | **Immediate fallback**: Host-staged `/dev/shm` IPC transfer ($8\text{--}18\text{ ms}$). |
+| **[`ExampleConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[RUNTIME_READY]`** | Zero external C++ dependencies | Test harness and reference implementation. |
+| **[`MoRIIOConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[NATIVE_RUNTIME_MISSING]`** | Native C++ `mori.io` driver missing | Python module `msgpack` resolved; C++ driver required for direct DMA. |
+| **[`NixlConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[PYTHON_IMPORTABLE]`** | External NIXL agent/daemon missing | Requires UCX / NIXL daemon configuration. |
+| **[`MooncakeConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[PYTHON_IMPORTABLE]`** | Mooncake transfer engine missing | Requires external Mooncake store compilation. |
+| **[`LMCacheConnectorV1`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py)** | **`[PYTHON_IMPORTABLE]`** | Backend qualification required | Redis / shared storage qualification needed. |
+
+> [!TIP]
+> **Immediate Functional Path (Level 3 Gate)**: Because [`SimpleCPUOffloadConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) is `[RUNTIME_READY]`, functional P/D can be fully demonstrated today via `/dev/shm` IPC without waiting for native MoRI-IO compilation.
+
+---
+
+## 14. Active Engineering Execution Roadmap
+
+The active engineering priorities are structured across four concurrent workstreams:
+
+```
+Track 1: Software P/D Gate (Level 3) ────> SimpleCPUOffload / /dev/shm Functional Validation
+Track 2: MI350P MLPerf Server QPS    ────> 3.0 QPS Candidate Sweep (p99 TTFT <= 3s, TPOT <= 80ms)
+Track 3: Physical Dual-R9700 Gate    ────> Mount 2nd R9700 -> Convert dashed lines to solid Level 4
+Track 4: Presales Briefing Package   ────> TCO Economics (4.7x less expensive) + Pareto Exhibit Deck
+```
+
+1. **Track 1: Level 3 Functional P/D Validation (Software Track — *Immediate*)**:
+   - Wire [`docker/docker-compose.pd.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.yml) using [`SimpleCPUOffloadConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) over `/dev/shm`.
+   - Verify zero-recomputation KV cache migration and confirm elimination of the $613.3\text{ ms}$ chunk preemption stall.
+2. **Track 2: MI350P MLPerf v6.1 Server QPS Qualification (Benchmark Track — *Ready to Run*)**:
+   - Execute the 3.0 QPS candidate sweep script at `_results/mlperf_gptoss/run_server_qps_sweep.sh` (documented in [`docs/MI350P-MLPERF.md`](file:///home/amd/workspace/coder/docs/MI350P-MLPERF.md)).
+   - Validate compliance against strict MLPerf latency bounds (p99 TTFT $\le 3000\text{ ms}$, p99 TPOT $\le 80\text{ ms}$) to secure an official single-GPU Server rating.
+3. **Track 3: Dual-R9700 Physical Hardware Gate (Hardware Track — *Gated on Card 2*)**:
+   - Mount the second AMD Radeon AI PRO R9700 in PCIe Slot 2.
+   - Run [`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) to pass homogeneous preflight.
+   - Run [`scripts/bench_dual_gpu.sh`](file:///home/amd/workspace/coder/scripts/bench_dual_gpu.sh) across `--mode pd` vs `--mode dp2` to convert emulated dashed curves into solid measured Level 4 curves.
+4. **Track 4: Executive Briefing & Presales Collateral (Enablement Track)**:
+   - Finalize executive slide deck ([`tco_presentation.md`](file:///home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe/tco_presentation.md)) synthesizing the 12 TCO figures ([`docs/figures/tco/`](file:///home/amd/workspace/coder/docs/figures/tco/)) and 6 PDD figures ([`docs/figures/pd/`](file:///home/amd/workspace/coder/docs/figures/pd/)).
+   - Detail the economic proposition: R9700 delivers a 5.6× less expensive capital expenditure and 4.7× less expensive 3-year TCO per token than H100 SXM5, while PDD eliminates the "Phantom Capacity Gap" under production SLAs.
+

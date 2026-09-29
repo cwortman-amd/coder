@@ -218,3 +218,15 @@ The complete presales package is organized into an **Executive Briefing** backed
 3. **Deploy Tensor Parallelism (TP=2) When**:
    - Serving 32K–64K long-context models or larger parameter footprints exceeding 32 GB physical VRAM.
 
+---
+
+## 10. Operationalization & Execution Cross-References
+
+For concrete implementation manifests, benchmark commands, and verification scripts, see:
+- **Fleet Topologies & Sizing**: [`docker/docker-compose.pd.8card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.8card.yml) (1P:7D), [`docker/docker-compose.dp8.yml`](file:///home/amd/workspace/coder/docker/docker-compose.dp8.yml) (DP=8), and [`docker/docker-compose.pd.16card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.16card.yml) (2P:14D dual-node).
+- **Cluster Router & Simulator**: [`scripts/pd_fleet_router.py`](file:///home/amd/workspace/coder/scripts/pd_fleet_router.py) (FastAPI router) and [`scripts/simulate_fleet_cluster.py`](file:///home/amd/workspace/coder/scripts/simulate_fleet_cluster.py) (queue stability simulator).
+- **Diagnostics & In-Container Connectors**: [`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) (homogeneous ISA validation & 16-connector lifecycle probe).
+- **Master Evaluation Standard & 4-Track Roadmap**: [`docs/PDD-EVAL.md`](file:///home/amd/workspace/coder/docs/PDD-EVAL.md) Sections 12–14.
+- **Operations & Troubleshooting**: [`docs/OPS.md`](file:///home/amd/workspace/coder/docs/OPS.md) Sections 8 & 11.
+
+
