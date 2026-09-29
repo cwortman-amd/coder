@@ -18,9 +18,10 @@ import sys
 import time
 from datetime import datetime
 
-RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "concurrency_sweep")
-TELEMETRY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_results", "telemetry")
-DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "concurrency_sweep")
+TELEMETRY_DIR = os.path.join(PROJECT_DIR, "_results", "telemetry")
+DOCS_DIR = os.path.join(PROJECT_DIR, "docs")
 DOCKER_RESULTS_DIR = "/results/concurrency_sweep"
 
 PROMPT_COUNTS = {
@@ -283,13 +284,14 @@ def main():
             print(f"  • Latency TPOT p95: {curr['tpot_p95_ms']} ms {'(Interactive SLO exceeded >50ms)' if curr['tpot_p95_ms'] > 50 else '(Interactive OK)'}")
 
     # Save summary report markdown
-    report_file = os.path.join(DOCS_DIR, "R9700-SWEEP.md")
+    report_filename = f"R9700-SWEEP-{args.input_len}-{args.output_len}.md" if (args.input_len != 8192 or args.output_len != 1024) else "R9700-SWEEP.md"
+    report_file = os.path.join(DOCS_DIR, report_filename)
     with open(report_file, "w", encoding="utf-8") as rf:
-        rf.write("# R9700 concurrency sweep\n\n")
+        rf.write(f"# R9700 concurrency sweep ({args.input_len}:{args.output_len})\n\n")
         rf.write("Narrative and earlier sweeps: [R9700.md](R9700.md).\n\n")
         rf.write("**Target Hardware**: AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6)\n")
         rf.write("**Model**: `Qwen3.8-27B-Quark-AWQ-MXFP4` (Hybrid Attention: 48 GDN + 16 Full Softmax)\n")
-        rf.write("**Workload**: 8,192 Input Tokens / 1,024 Output Tokens\n")
+        rf.write(f"**Workload**: {args.input_len:,} Input Tokens / {args.output_len:,} Output Tokens\n")
         rf.write(f"**Execution Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S EDT')}\n\n")
         rf.write("## Performance, Latency & Energy Ledger\n\n")
         rf.write("| C | Aggregate tok/s | Per-stream tok/s | TTFT p50/p95 (ms) | TPOT p50/p95 (ms) | Avg / Max Power (W) | Total Energy (J) | J/token | tokens/Joule | Hotspot Max (°C) | Status |\n")

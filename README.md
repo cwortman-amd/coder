@@ -296,4 +296,4 @@ Switch inference engines at startup:
 
 ## Documentation
 
-The index is [docs/README.md](docs/README.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). Server cost and tokens per dollar: [docs/TCO.md](docs/TCO.md).
+The documentation index is [docs/README.md](docs/README.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). R9700 concurrency sweeps: [docs/R9700-SWEEP.md](docs/R9700-SWEEP.md) (8k:1k) and [docs/R9700-SWEEP-1024-1024.md](docs/R9700-SWEEP-1024-1024.md) (1k:1k). Server TCO analysis and presentation figures: [docs/TCO.md](docs/TCO.md).

@@ -432,9 +432,13 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         ACTIVE_VLLM=""
         if [ "$GPT_OSS_BENCH" -eq 1 ] && docker ps --format '{{.Names}}' | grep -qx "rocm-gpt-oss-server"; then
             ACTIVE_VLLM="rocm-gpt-oss-server"
+        elif [ "$CURR_ENGINE" = "mxfp4" ] && docker ps --format '{{.Names}}' | grep -qx "rocm-mxfp4-server"; then
+            ACTIVE_VLLM="rocm-mxfp4-server"
+        elif [ "$CURR_ENGINE" = "vllm" ] && docker ps --format '{{.Names}}' | grep -qx "rocm-inference-server"; then
+            ACTIVE_VLLM="rocm-inference-server"
         fi
         if [ -z "$ACTIVE_VLLM" ]; then
-            ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-inference-server|vllm-rocm10-test|rocm-mxfp4-server|qwen38-r9700-radiance|rocm-parallel-g[0-9]+)$" | head -n1 || true)
+            ACTIVE_VLLM=$(docker ps --format '{{.Names}}' | grep -E "^(rocm-mxfp4-server|rocm-inference-server|vllm-rocm10-test|qwen38-r9700-radiance|rocm-parallel-g[0-9]+)$" | head -n1 || true)
         fi
         if [ "$GPT_OSS_BENCH" -eq 1 ]; then
             bench_cmd=(
@@ -476,8 +480,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
         fi
         if { [ "$CURR_ENGINE" = "vllm" ] || [ "$CURR_ENGINE" = "mxfp4" ]; } && [ -n "$ACTIVE_VLLM" ]; then
             docker exec "$ACTIVE_VLLM" "${bench_cmd[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
-            # Copy result if placed inside /results
-            [ -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" ] && cp -f "${SCRIPT_DIR}/_results/${RESULT_FILE}" "${FULL_PATH}" 2>/dev/null || true
+            [ -f "${ROOT_DIR}/_results/${RESULT_FILE}" ] && cp -f "${ROOT_DIR}/_results/${RESULT_FILE}" "${FULL_PATH}" 2>/dev/null || true
         else
             # Standalone containerized benchmark client targeting the server port.
             if [ "$GPT_OSS_BENCH" -eq 1 ]; then
@@ -544,7 +547,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
 done
 
 # Restore default vLLM engine if multiple engines were benchmarked
-if [ "$ATTACH_ONLY" != "1" ] && { [ "${#ENGINE_LIST[@]}" -gt 1 ] || [ "${ENGINE_LIST[0]}" != "vllm" ]; }; then
+if [ "$ATTACH_ONLY" != "1" ] && [ "${#ENGINE_LIST[@]}" -gt 1 ]; then
     echo -e "${CYAN}Restoring default inference engine: vLLM...${NC}"
     stop_container "rocm-llama-server"
     stop_container "rocm-sglang-server"
