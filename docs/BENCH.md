@@ -15,6 +15,7 @@ This document describes the automated evaluation framework for testing model cod
 8. [Automating Multi-Engine Comparisons (`compare_engines.sh`)](#8-automating-multi-engine-comparisons-compare_enginessh)
 9. [Executing Functional Patch Resolution (`swebench.harness`)](#9-executing-functional-patch-resolution-swebenchharness)
 10. [Empirical Benchmark Scores on Radeon AI PRO R9700](#10-empirical-benchmark-scores-on-radeon-ai-pro-r9700)
+11. [Telemetry, Hardware Resource Instrumentation & vLLM Metrics](#11-telemetry-hardware-resource-instrumentation--vllm-metrics)
 
 ---
 
@@ -246,3 +247,69 @@ Empirical benchmark performance measured on the **AMD Radeon™ AI PRO R9700** (
 | **`Qwen/Qwen2.5-Coder-14B-Instruct`** | BF16 | ~29.5 GB | **28.6 tok/s** | 4.80 s | 100% |
 | **`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`**| AWQ (4-bit) | ~24.0 GB | **34.2 tok/s** | 3.90 s | 100% |
 | **`Qwen/Qwen3.8-27B-FP8`** | FP8 | ~28.5 GB | **33.2 tok/s** | 3.05 s | 100% |
+
+---
+
+## 11. Telemetry, Hardware Resource Instrumentation & vLLM Metrics
+
+Understanding model serving efficiency requires distinguishing between **engine-level serving metrics** and **physical hardware telemetry**.
+
+### 11.1 Native vLLM Metrics Architecture (`/metrics`)
+
+Per the official [vLLM Metrics Documentation](https://docs.vllm.ai/en/stable/design/metrics/), the vLLM engine natively exposes Prometheus metrics at `/metrics` covering request scheduling, execution phase timings, and token generation:
+
+| Metric Category | Prometheus Metric Name | Description |
+| :--- | :--- | :--- |
+| **TTFT** | `vllm:time_to_first_token_seconds` | Histogram of time from request arrival until the first token is emitted. |
+| **TPOT** | `vllm:request_time_per_output_token_seconds` | Request-level Time Per Output Token: $(\text{E2E} - \text{TTFT}) / (N_{\text{out}} - 1)$. |
+| **ITL** | `vllm:inter_token_latency_seconds` | Inter-token latency: wall-clock gap between consecutive streamed outputs. |
+| **E2E Latency** | `vllm:e2e_request_latency_seconds` | Total end-to-end request turnaround time. |
+| **Queue Latency**| `vllm:request_queue_time_seconds` | Duration requests wait in the engine queue prior to prefill. |
+| **Phase Latency**| `vllm:request_prefill_time_seconds`<br>`vllm:request_decode_time_seconds` | Phase-split execution timings isolating prefill compute from autoregressive decode. |
+| **Throughput** | `vllm:prompt_tokens_total`<br>`vllm:generation_tokens_total` | Monotonic counters and instantaneous prompt/generation token throughput. |
+| **Logical Cache**| `vllm:kv_cache_usage_perc` | Fraction of logical PagedAttention KV cache blocks allocated ($0.0 \dots 1.0$). |
+| **Prefix Cache** | `vllm:prefix_cache_hits`, `_queries` | Automatic Prefix Caching (APC) hit rates and reuse intervals. |
+| **Speculative** | `vllm:spec_decode_num_accepted_tokens`<br>`vllm:spec_decode_draft_acceptance_rate` | Speculative decoding acceptance count and draft verification efficiency. |
+
+### 11.2 What vLLM Does NOT Capture Natively
+
+While vLLM provides comprehensive application-layer profiling, it **does not** interface with device-level kernel drivers or physical hardware sensors:
+1. **Power Consumption (Watts & % of TDP)**: vLLM has no access to the GPU System Management Unit (SMU) to read instantaneous board power, rail voltages, or calculate energy per token ($J/\text{token}$).
+2. **Physical Memory Bandwidth (GB/s & % of Peak)**: vLLM tracks *logical* block allocation (`kv_cache_usage_perc`), not physical memory bus traffic across GDDR6 or HBM3E controllers.
+3. **True Client Perceived Streaming TTFT**: Server-side `vllm:time_to_first_token_seconds` excludes client TCP handshakes, TLS negotiation, and Server-Sent Event (SSE) chunk streaming delays.
+
+### 11.3 Unified Telemetry Collection Framework
+
+Our benchmarking test suite bridges this gap by marrying vLLM's internal metrics with continuous hardware telemetry and client-side streaming instrumentation:
+
+| Tool / Script | Key Capabilities & Flags | Measured Dimensions |
+| :--- | :--- | :--- |
+| [`scripts/collect_amd_power.py`](../scripts/collect_amd_power.py) | `--tdp <watts>`, `--peak-bw <gbs>`, auto-detects `mi350p` (600W/4096 GB/s), `r9700` (300W/960 GB/s), `r9600` (150W/640 GB/s). | Power (W), % of TDP, Max Power, Energy (J), Duration. |
+| [`scripts/bench_openai_chat.py`](../scripts/bench_openai_chat.py) | `--stream`, `--monitor-power`, `--gpu-profile <target>`. | Client-side TTFT ($p_{50}, p_{95}, p_{99}$), ITL ($p_{50}, p_{95}$), Power (% TDP, W, J/tok), Memory Bandwidth (GB/s, % Peak). |
+| [`scripts/run_concurrency_sweep.py`](../scripts/run_concurrency_sweep.py) | `--gpu-profile <target>`, sweeps concurrency $C=1 \dots 32$, enforces `--percentile-metrics ttft,tpot,itl,e2el`. | TTFT, TPOT, ITL, Active Power, Power Util %, Memory Bandwidth GB/s, Bandwidth Util %. |
+| [`scripts/bench_throughput.sh`](../scripts/bench_throughput.sh) | Automated multi-slice serving sweep with background `collect_amd_power.py`. | Matrix of Throughput, TPOT, TTFT, Power (W / % TDP), and Mem Bandwidth (GB/s / % Peak). |
+| [`scripts/bench_saturation_instrumented.sh`](../scripts/bench_saturation_instrumented.sh) | End-to-end saturation harness for R9700 and MI350P. | Live streaming TTFT and power under progressive concurrency load. |
+
+### 11.4 Example Usage for MI350P & R9700
+
+**Run Concurrency Sweep with Full Telemetry on MI350P**:
+```bash
+python3 scripts/run_concurrency_sweep.py \
+  --gpu-profile mi350p \
+  --input-len 1024 \
+  --output-len 1024 \
+  --max-concurrency 32
+```
+
+**Run Streaming Benchmark with Mid-Batch Power & Memory Bandwidth on R9700**:
+```bash
+python3 scripts/bench_openai_chat.py \
+  --host http://localhost:8000 \
+  --model amd/Qwen3.8-27B-Quark-AWQ-MXFP4 \
+  --stream \
+  --monitor-power \
+  --gpu-profile r9700 \
+  --concurrency 4 \
+  --max-tokens 1024
+```
+

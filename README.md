@@ -40,7 +40,7 @@ The architecture consists of four primary software and hardware layers:
 2. **OpenCode Agent Client (`opencode`)**:
    - Interactive Web UI (`http://localhost:4096`) and Terminal TUI (`./setup.sh -i`) featuring automated multi-file editing, git diff synthesis, workspace search, and terminal tool execution.
 3. **Hardware Telemetry & Profiling Stack (`scripts/`)**:
-   - High-frequency 250ms sysfs hwmon power collector (`collect_amd_power.py`), `rocm-smi` monitoring, and GPU architecture profile auto-detection (`gpu_profile.py`).
+   - High-frequency sysfs/SMI power collector (`collect_amd_power.py`), continuous power monitoring (% TDP, Joules/tok), memory bandwidth utilization (% Peak), and streaming client TTFT benchmark harnesses (`bench_openai_chat.py`, `run_concurrency_sweep.py`).
 4. **Evaluation & Benchmarking Harness (`benchmark/`)**:
    - Automated SWE-bench Lite/Verified GitHub issue resolution pipeline, GPQA Diamond scientific reasoning harness, and multi-engine throughput sweeper.
 
@@ -246,7 +246,7 @@ The root directory contains 6 primary automation and benchmarking scripts. Below
   - `-q, --quick`: Single 128:64 smoke test.
   - `--compare-engines`: Automated side-by-side comparison matrix across engines.
 - **Expected Results & Outputs**:
-  - Metrics detailing prompt ingestion rate (prefill tok/s), generation rate (decode tok/s), Time-To-First-Token (TTFT ms), Inter-Token Latency (ITL ms), and peak VRAM allocation.
+  - Metrics detailing prompt ingestion rate (prefill tok/s), generation rate (decode tok/s), Time-To-First-Token (TTFT p50/p95 ms), Inter-Token Latency (ITL ms), GPU power utilization (% TDP), memory bandwidth utilization (% Peak), and peak VRAM allocation.
   - JSON result files and markdown reports written to `_results/throughput/<timestamp>/`.
 
 ---

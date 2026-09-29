@@ -87,6 +87,23 @@ SERVICE OBJECTIVE SPECIFICATIONS
 > [!IMPORTANT]
 > **Boundary Calibration Note:** Single-GPU mixed-load profiling on `gfx1201` demonstrates that at concurrency $C=2$, the median ITL is already $p50 \approx 51.0\text{ ms}$ due to memory-bus sharing across concurrent sequences. Therefore, **50 ms must NOT be used as a general standard-tier ITL goal** for $C \ge 2$. It is reserved strictly for $C=1$ dedicated streaming tiers or scaled-out decoder pools.
 
+### 2.3 Engine Metrics (vLLM) vs. Physical Hardware Telemetry Instrumentation
+
+Evaluating SLO conformance and hardware efficiency requires synchronizing application-level metrics with physical accelerator telemetry:
+
+1. **Native vLLM Metrics (`/metrics`)**:
+   - As documented in the [vLLM Metrics Guide](https://docs.vllm.ai/en/stable/design/metrics/), the vLLM engine exports Prometheus metrics including `vllm:time_to_first_token_seconds` (TTFT), `vllm:request_time_per_output_token_seconds` (TPOT), `vllm:inter_token_latency_seconds` (ITL), `vllm:request_queue_time_seconds`, and `vllm:kv_cache_usage_perc`.
+   - These metrics accurately measure internal request queues, batch scheduling, and logical KV page allocations.
+
+2. **Physical Hardware Telemetry Gap**:
+   - vLLM does **not** interface with device SMU sensors or physical memory controllers. It cannot report board power draw (Watts), total energy consumed (Joules), % of TDP, or physical memory bus traffic (GB/s, % of Peak HBM/GDDR).
+
+3. **Integrated Telemetry Harness**:
+   - To close this gap across both R9700 and MI350P, our test harness couples vLLM benchmark runs with external hardware telemetry:
+     - **Power Telemetry**: [`scripts/collect_amd_power.py`](file:///home/amd/workspace/coder/scripts/collect_amd_power.py) samples device power via `amd-smi` / sysfs at 100 ms intervals during active batch processing, computing average power, peak power, energy in Joules, and `power_util_pct` (% of device TDP).
+     - **Memory Bandwidth Modeling**: [`scripts/bench_openai_chat.py`](file:///home/amd/workspace/coder/scripts/bench_openai_chat.py) and [`scripts/run_concurrency_sweep.py`](file:///home/amd/workspace/coder/scripts/run_concurrency_sweep.py) calculate active decode memory bandwidth ($\text{GB/s}$) from parameter byte transfers per step and active KV cache reads, reporting `mem_bw_util_pct` against peak device limits (4,096 GB/s on MI350P, 960 GB/s on R9700).
+     - **Client-Observed Streaming TTFT**: Client-side SSE chunk interval parsing measures true end-to-end user-perceived TTFT and ITL percentiles ($p_{50}, p_{95}, p_{99}$).
+
 ---
 
 ## 3. Stage 1: Single-R9700 Empirical Baseline Calibration
