@@ -101,13 +101,13 @@ def generate_master_dashboard():
     ax1.grid(True, which="both", linestyle="--", alpha=0.5)
     ax1.legend(loc='upper left', fontsize=8.0, framealpha=0.9)
     
-    ax1.text(0.03, 0.44, 
-             "• Chunk 4K: Stalls bounded to 59.5 ms (0% >100ms violations)\n"
-             "• Chunk 2K: Periodic prefill causes 613 ms stalls (3.5% >100ms)\n"
-             "• Sustained Ingestion: Decode freezes for 1,363 ms (100% fail)\n"
-             "• P/D 1P1D: Bounded at 48.2 ms [Emulated — 2-GPU validation pending]",
-             transform=ax1.transAxes, fontsize=7.8,
-             bbox=dict(boxstyle="round,pad=0.4", facecolor="#FFF9C4", edgecolor="#FBC02D", alpha=0.95))
+    ax1.text(0.03, 0.35, 
+             "• Chunk 4K: ≤59.5 ms (0% breach)\n"
+             "• Chunk 2K: 613 ms stall (3.5% breach)\n"
+             "• Sustained: 1,363 ms stall (100% fail)\n"
+             "• P/D 1P1D: 48.2 ms [Emulated]",
+             transform=ax1.transAxes, fontsize=7.2,
+             bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF9C4", edgecolor="#FBC02D", alpha=0.95))
 
     # PANEL B: Usable Capacity
     workloads = ["Light (J1)", "Moderate (J2)", "Saturated", "J3 Sustained"]
@@ -134,17 +134,17 @@ def generate_master_dashboard():
     ax2.set_xticklabels(workloads, fontsize=9.5, fontweight='bold')
     ax2.set_ylabel("Output Throughput (Output tok/s)", fontsize=10.5, fontweight='bold')
     ax2.set_title("B. Raw Output vs. SLO-Qualified Goodput (All-or-Nothing Criteria)", fontsize=11.5, fontweight='bold', pad=10)
-    ax2.set_ylim(0, 68)
+    ax2.set_ylim(0, 82)
     ax2.grid(True, linestyle="--", alpha=0.5)
     ax2.legend(loc='upper right', fontsize=8.0, framealpha=0.9)
     
-    ax2.text(0.03, 0.72,
+    ax2.text(0.03, 0.74,
              "All-or-Nothing Goodput: G_output = (sum q_i * O_i) / T\n"
              "• Any request failing TTFT > 3.5s or Peak ITL > 500ms counts 0 qualified tokens.\n"
              "• DP=2 produces raw output, but streaming sessions fail max-ITL ceiling.\n"
              "• P/D goodput advantage reflects stall isolation, not zero DP raw output.",
-             transform=ax2.transAxes, fontsize=7.5,
-             bbox=dict(boxstyle="round,pad=0.35", facecolor="#E8F5E9", edgecolor="#81C784", alpha=0.95))
+             transform=ax2.transAxes, fontsize=7.2,
+             bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8F5E9", edgecolor="#81C784", alpha=0.95))
 
     # PANEL C: Sustainable Capacity
     lam = np.array([0.1, 0.2, 0.33, 0.5, 0.75, 1.0, 1.2])
@@ -198,7 +198,7 @@ def generate_master_dashboard():
     ax4_twin.set_ylabel("TTFT p95 Latency (ms)", fontsize=10.5, fontweight='bold', color="#D32F2F")
     ax4_twin.tick_params(axis='y', labelcolor="#D32F2F")
     ax4_twin.set_ylim(3200, 3950)
-    ax4.set_ylim(0, 55)
+    ax4.set_ylim(0, 62)
     
     ax4.set_title("D. Assumed Injected Handoff Delay Sensitivity & TTFT Inflation", fontsize=11.5, fontweight='bold', pad=10)
     ax4.grid(True, linestyle="--", alpha=0.5)
@@ -208,7 +208,7 @@ def generate_master_dashboard():
     ax4.legend(lines_4 + lines_4t, labels_4 + labels_4t, loc='lower left', fontsize=7.8, framealpha=0.9)
     
     ax4.annotate("TTFT breaches 3.5s SLA\n(Goodput drops to 14.7 tok/s)",
-                 xy=(4, 15.5), xytext=(2.3, 26),
+                 xy=(4, 15.5), xytext=(2.3, 50),
                  arrowprops=dict(arrowstyle="->", color="#B71C1C", lw=1.5),
                  fontsize=7.8, fontweight='bold', color="#B71C1C",
                  bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))

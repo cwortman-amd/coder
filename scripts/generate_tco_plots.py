@@ -253,10 +253,10 @@ def plot_cost_1k_8k():
     ax.annotate("$5.39/M", xy=(1, 5.39), xytext=(1.2, 5.55),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
                 fontweight='bold', color=COLOR_MI350P_PROD)
-    ax.annotate("R9700S Cost Leadership\n$0.59/M @ C4 (2.4× less expensive)", xy=(4, 0.59), xytext=(2.2, 0.25),
+    ax.annotate("R9700S Cost Leadership\n$0.59/M @ C4 (2.4× less expensive)", xy=(4, 0.59), xytext=(1.2, 0.22),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.5),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
-                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.5)
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.5)
     ax.annotate("MI350P HBM Scaling\n$0.24/M @ C32", xy=(32, 0.24), xytext=(20, 0.8),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.5),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
@@ -473,7 +473,7 @@ def plot_executive_dashboard():
     ax4.set_ylim(0, 8000)
     ax4.grid(True, which='both', linestyle='--', alpha=0.6)
     ax4.legend(loc='upper left', fontsize=8.5)
-    ax4.text(0.48, 0.15, "GDDR6 cards saturate KV cache @ C8-C16\nMI350P scales to 7.4k+ tok/s via HBM",
+    ax4.text(0.32, 0.72, "GDDR6 cards saturate KV cache @ C8-C16\nMI350P scales to 7.4k+ tok/s via HBM",
              transform=ax4.transAxes, fontsize=8.5, fontweight='bold', color="#1A237E",
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor="#3949AB"))
     
@@ -526,20 +526,20 @@ def plot_power_utilization():
     ax.text(0.9, 101.5, "100% Device Max TDP Ceiling", fontsize=9.5, fontweight='bold', color="#455A64")
     
     # Data Callouts
-    ax.annotate("C1–C4 High Efficiency\n61.2%–66.5% TDP", xy=(2, 61.2), xytext=(1.4, 45),
+    ax.annotate("C1–C4 High Efficiency\n61.2%–66.5% TDP", xy=(2, 61.2), xytext=(0.85, 38),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
-                fontweight='bold', color="#E65100", fontsize=9.0)
+                fontweight='bold', color="#E65100", fontsize=8.5)
     
     ax.annotate("C16 Queue Scaling\n86.6%–88.4% TDP", xy=(16, 88.4), xytext=(9.5, 94),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
     
-    ax.annotate("MI350P 1k/1k: 61%–67% TDP through C32\n(75% / 450 W at C64)", xy=(32, 67.08), xytext=(8, 78),
+    ax.annotate("MI350P 1k/1k: 61%–67% TDP through C32\n(75% / 450 W at C64)", xy=(32, 67.08), xytext=(18, 48),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
-                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=8.5)
     
     ax.set_xscale('log', base=2)
     ax.set_xticks([1, 2, 4, 8, 16, 32])
@@ -741,10 +741,10 @@ def plot_ttft_latency():
     ax.plot(c_mi350_8k, ttft_mi350_8k, "P", color="#3949AB", ms=9, label="Instinct MI350P (8,192/1,024 first request)")
 
     # Annotations
-    ax.annotate("C1–C4 Sub-Second Ingestion\n165–937 ms (1k Input)", xy=(2, 194.9), xytext=(1.5, 420),
+    ax.annotate("C1–C4 Sub-Second Ingestion\n165–937 ms (1k Input)", xy=(2, 194.9), xytext=(2.0, 115),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
-                fontweight="bold", color="#E65100", fontsize=9.0)
+                fontweight="bold", color="#E65100", fontsize=8.5)
 
     ax.annotate("Scheduler Queueing under max-num-seqs 4\nProtects TPOT (<34 ms) by queueing incoming streams",
                 xy=(8, 17258.1), xytext=(2.2, 35000),
@@ -811,12 +811,12 @@ def plot_slo_qualified_goodput():
              bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#9FA8DA"))
     
     # Annotations on Panel 1
-    ax1.annotate("R9700S Interactive Saturation\n976 tok/s @ C4 (TTFT 809ms)", xy=(4, 976), xytext=(1.8, 2200),
+    ax1.annotate("R9700S Interactive Saturation\n976 tok/s @ C4 (TTFT 809ms)", xy=(4, 976), xytext=(1.4, 3800),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.5)
     
-    ax1.annotate("Queueing under max-num-seqs 4\nProtects TPOT (<33ms), but\nTTFT breaches 3.5s SLA (17–50s)", xy=(8, 976), xytext=(5.5, 4500),
+    ax1.annotate("Queueing under max-num-seqs 4\nProtects TPOT (<33ms), but\nTTFT breaches 3.5s SLA (17–50s)", xy=(8, 976), xytext=(6.5, 2000),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
                 fontweight='bold', color="#E65100", fontsize=8.5)
@@ -898,7 +898,7 @@ def plot_joules_per_token():
     ax.plot(c, j_1k, "D-", color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="MI350P 1,024 in / 1,024 out")
     ax.plot([64], [0.23], "D", color=COLOR_MI350P_PROD, ms=8)
 
-    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(28, 0.7),
+    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(42, 1.2),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
                 fontweight="bold", color=COLOR_MI350P_PROD, fontsize=9.5)
     ax.annotate("R9700S 3.01 J/tok\nat 8k/1k C4", xy=(4, 3.01), xytext=(6.5, 4.6),
