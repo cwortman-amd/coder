@@ -1,0 +1,119 @@
+# ==============================================================================
+# 8-Card Server Node: Collocated Data Parallelism Control (DP=8)
+# Target Architecture: 1x 8-GPU Host (8x AMD Radeon AI PRO R9700 or Instinct MI350P)
+# Topology:
+#   - GPUs 0-7: 8 Independent Full Replicas (Prefill + Decode, Ports 8001-8008)
+#   - Router: Session & Prefix-Affine Hash Router (Port 8000)
+# ==============================================================================
+
+services:
+  replica-0: &replica-template
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-dp8-replica-0
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=0
+      - ROCR_VISIBLE_DEVICES=0
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - ../_results:/results
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization 0.90
+        --max-num-seqs 8
+        --max-num-batched-tokens 2048
+        --enable-prefix-caching
+        --host 127.0.0.1
+        --port 8001
+    restart: unless-stopped
+
+  replica-1:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-1
+    environment:
+      - HIP_VISIBLE_DEVICES=1
+      - ROCR_VISIBLE_DEVICES=1
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8002
+
+  replica-2:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-2
+    environment:
+      - HIP_VISIBLE_DEVICES=2
+      - ROCR_VISIBLE_DEVICES=2
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8003
+
+  replica-3:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-3
+    environment:
+      - HIP_VISIBLE_DEVICES=3
+      - ROCR_VISIBLE_DEVICES=3
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8004
+
+  replica-4:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-4
+    environment:
+      - HIP_VISIBLE_DEVICES=4
+      - ROCR_VISIBLE_DEVICES=4
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8005
+
+  replica-5:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-5
+    environment:
+      - HIP_VISIBLE_DEVICES=5
+      - ROCR_VISIBLE_DEVICES=5
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8006
+
+  replica-6:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-6
+    environment:
+      - HIP_VISIBLE_DEVICES=6
+      - ROCR_VISIBLE_DEVICES=6
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8007
+
+  replica-7:
+    <<: *replica-template
+    container_name: rocm-dp8-replica-7
+    environment:
+      - HIP_VISIBLE_DEVICES=7
+      - ROCR_VISIBLE_DEVICES=7
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8008

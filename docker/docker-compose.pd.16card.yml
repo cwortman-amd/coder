@@ -1,0 +1,108 @@
+# ==============================================================================
+# 16-Card Dual-Node Cluster: Prefill/Decode Disaggregation (2P : 14D)
+# Target Architecture: 2x 8-GPU Host Chassis (16x AMD Radeon AI PRO R9700 or Instinct MI350P)
+# Topology:
+#   - GPUs 0, 1: 2 Dedicated Prefill Workers (Ports 8100, 8101)
+#   - GPUs 2-15: 14 Dedicated Continuous-Batching Decode Workers (Ports 8202-8215)
+#   - Inter-Node Interconnect: RoCE v2 / Mellanox CX7 400 Gbps RDMA
+#   - Router: High-Availability P/D Cluster Router (Port 8000)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Dual Prefill Workers (Redundancy & High Concurrency Prompt Ingestion)
+  # ----------------------------------------------------------------------------
+  prefill-0:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-16card-prefill-0
+    ipc: host
+    network_mode: host
+    shm_size: 32g
+    environment:
+      - HIP_VISIBLE_DEVICES=0
+      - ROCR_VISIBLE_DEVICES=0
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --max-num-batched-tokens 8192
+        --port 8100
+    restart: unless-stopped
+
+  prefill-1:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-16card-prefill-1
+    ipc: host
+    network_mode: host
+    shm_size: 32g
+    environment:
+      - HIP_VISIBLE_DEVICES=1
+      - ROCR_VISIBLE_DEVICES=1
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --max-num-batched-tokens 8192
+        --port 8101
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Decode Workers (Pool of 14 continuous-batching generation cards)
+  # ----------------------------------------------------------------------------
+  # Decode engines are mapped to GPUs 2 through 15 across the unified PCIe/RDMA fabric
+  decode-2: &decode-template
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-16card-decode-2
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=2
+      - ROCR_VISIBLE_DEVICES=2
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --max-num-seqs 8
+        --max-num-batched-tokens 2048
+        --port 8202
+    restart: unless-stopped
+
+  decode-3:
+    <<: *decode-template
+    container_name: rocm-pd-16card-decode-3
+    environment:
+      - HIP_VISIBLE_DEVICES=3
+      - ROCR_VISIBLE_DEVICES=3
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --port 8203
+
+  # Decoders 4 through 15 are orchestrated similarly across the host/remote nodes
