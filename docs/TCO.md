@@ -328,9 +328,15 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | 1,024 in / 8,192 out | 6.00 | 3.18 | 1.71 | 0.93 | 0.52 | 0.35 | — |
 | 1,024 in / 1,024 out | 4.93 | 2.69 | 1.46 | 0.77 | 0.42 | 0.27 | 0.23 |
 
+| J / output token, one R9700S | C1 | C2 | C4 | C8 | C16 |
+|---|---:|---:|---:|---:|---:|
+| 8,192 in / 1,024 out | 9.28 | 4.94 | 3.01 | 2.98 | 3.01 |
+| 1,024 in / 8,192 out | 6.68 | 3.38 | 1.79 | — | — |
+| 1,024 in / 1,024 out | 9.18 | 4.79 | 2.53 | 2.49 | 2.47 |
+
 ![Socket energy per output token](figures/tco/11_joules_per_token.png)
 
-R9700S on the same shapes is **3.01 J/tok** at 8,192/1,024 C4 and **1.79 J/tok** at 1,024/8,192 C4. MI350P is lower on joules per token at those cells (1.93 and 1.71). Electricity is still a few percent of the 3-year TCO, so the dollar-per-token ranking above does not follow the joule ranking.
+At low concurrency ($C = 1$), static baseline system power dominates (184–226 W over a single ~33 tok/s stream), yielding ~9.2 J/tok for R9700S and 4.9–7.1 J/tok for MI350P. As concurrency increases to $C = 2 \dots 4$, energy efficiency improves dramatically on both platforms: R9700S drops to **1.79–3.01 J/tok** at $C=4$. Beyond $C \ge 4$, R9700S energy consumption plateaus at **~2.5–3.0 J/tok** as GDDR6 memory bandwidth reaches saturation and surplus requests enter admission queueing. In contrast, MI350P leverages its massive 4.0 TB/s HBM3E bandwidth to continually scale concurrency, reducing socket energy to **0.23 J/tok at $C=64$**. Electricity represents only 4–6% of total 3-year server TCO, so the overall cost-per-million-tokens ranking remains favorable to R9700S at low-to-medium concurrencies despite the higher joules per token.
 
 ## How to read the servers
 

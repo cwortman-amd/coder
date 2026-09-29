@@ -888,35 +888,49 @@ def plot_slo_qualified_goodput():
 def plot_joules_per_token():
     fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
 
-    c = [1, 2, 4, 8, 16, 32]
-    j_1k = [4.93, 2.69, 1.46, 0.77, 0.42, 0.27]
-    j_8k = [7.13, 3.61, 1.93, 1.04, 0.59, 0.39]
-    j_long = [6.00, 3.18, 1.71, 0.93, 0.52, 0.35]
+    # MI350P empirical data
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    j_mi350_1k = [4.93, 2.69, 1.46, 0.77, 0.42, 0.27]
+    j_mi350_8k = [7.13, 3.61, 1.93, 1.04, 0.59, 0.39]
+    j_mi350_long = [6.00, 3.18, 1.71, 0.93, 0.52, 0.35]
 
-    ax.plot(c, j_8k, "s--", color="#3949AB", lw=2.4, ms=7, label="MI350P 8,192 in / 1,024 out")
-    ax.plot(c, j_long, "^-.", color="#5C6BC0", lw=2.4, ms=7, label="MI350P 1,024 in / 8,192 out")
-    ax.plot(c, j_1k, "D-", color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="MI350P 1,024 in / 1,024 out")
+    # R9700S empirical data from power-of-two sweeps
+    c_r9700 = [1, 2, 4, 8, 16]
+    j_r9700_8k = [9.28, 4.94, 3.01, 2.98, 3.01]       # 8,192 In / 1,024 Out
+    j_r9700_1k = [9.18, 4.79, 2.53, 2.49, 2.47]       # 1,024 In / 1,024 Out
+    c_r9700_long = [1, 2, 4]
+    j_r9700_long = [6.68, 3.38, 1.79]                  # 1,024 In / 8,192 Out
+
+    # Plot R9700S curves
+    ax.plot(c_r9700, j_r9700_8k, "o-", color=COLOR_R9700S_PEAK, lw=2.4, ms=7, label="R9700S 8,192 in / 1,024 out")
+    ax.plot(c_r9700, j_r9700_1k, "s--", color=COLOR_R9700S_SLA, lw=2.0, ms=6, label="R9700S 1,024 in / 1,024 out")
+    ax.plot(c_r9700_long, j_r9700_long, "^-.", color="#C2185B", lw=2.0, ms=6, label="R9700S 1,024 in / 8,192 out")
+
+    # Plot MI350P curves
+    ax.plot(c_mi350, j_mi350_8k, "s--", color="#3949AB", lw=2.2, ms=6, label="MI350P 8,192 in / 1,024 out")
+    ax.plot(c_mi350, j_mi350_long, "^-.", color="#5C6BC0", lw=2.0, ms=6, label="MI350P 1,024 in / 8,192 out")
+    ax.plot(c_mi350, j_mi350_1k, "D-", color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P 1,024 in / 1,024 out")
     ax.plot([64], [0.23], "D", color=COLOR_MI350P_PROD, ms=8)
 
-    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(42, 1.2),
+    # Annotations
+    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(40, 1.2),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
-                fontweight="bold", color=COLOR_MI350P_PROD, fontsize=9.5)
-    ax.annotate("R9700S 3.01 J/tok\nat 8k/1k C4", xy=(4, 3.01), xytext=(6.5, 4.6),
+                fontweight="bold", color=COLOR_MI350P_PROD, fontsize=9.0)
+    ax.annotate("R9700S Energy Plateau\n~2.5–3.0 J/tok @ C4–C16", xy=(4, 3.01), xytext=(6.0, 5.0),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.2),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
-                fontweight="bold", color=COLOR_R9700S_PEAK, fontsize=9.0)
-    ax.plot([4], [3.01], "o", color=COLOR_R9700S_PEAK, ms=8)
+                fontweight="bold", color=COLOR_R9700S_PEAK, fontsize=8.5)
 
     ax.set_xscale("log", base=2)
     ax.set_xticks([1, 2, 4, 8, 16, 32, 64])
     ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32", "C64"], fontsize=12, fontweight="bold")
     ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight="bold", labelpad=8)
     ax.set_ylabel("Socket energy (J / output token)  [Lower is better]", fontsize=12.5, fontweight="bold", labelpad=8)
-    ax.set_title("Socket Energy per Output Token — Qwen3.8-27B MXFP4 on MI350P [Lower is better]", fontsize=14, fontweight="bold", pad=15)
-    ax.set_ylim(0, 8.2)
+    ax.set_title("Socket Energy per Output Token vs Concurrency — Qwen3.8-27B MXFP4: MI350P vs. R9700S [Lower is better]", fontsize=13.5, fontweight="bold", pad=15)
+    ax.set_ylim(0, 10.5)
     ax.set_xlim(0.8, 80)
     ax.grid(True, which="both", linestyle="--", alpha=0.7)
-    ax.legend(loc="upper right", frameon=True, framealpha=0.95, facecolor="white", fontsize=10)
+    ax.legend(loc="upper right", frameon=True, framealpha=0.95, facecolor="white", fontsize=9.0)
 
     plt.tight_layout()
     output_path = os.path.join(OUTPUT_DIR, "11_joules_per_token.png")
