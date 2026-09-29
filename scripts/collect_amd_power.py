@@ -90,6 +90,8 @@ def main():
     parser.add_argument("--gpu", type=int, default=0, help="Target GPU index among power-capable amdgpu devices")
     parser.add_argument("--profile", default=os.environ.get("GPU_PROFILE", ""), help="r9700 or mi350p (PCI hint)")
     parser.add_argument("--interval", type=float, default=0.25, help="Sampling interval in seconds (default: 0.25)")
+    parser.add_argument("--tdp", type=float, default=None, help="Device TDP in Watts (default: 600W for mi350p, 300W for r9700)")
+    parser.add_argument("--peak-bw", type=float, default=None, help="Device peak memory bandwidth in GB/s (default: 4096 for mi350p, 960 for r9700)")
     parser.add_argument("--output", required=True, help="Output CSV path")
     args = parser.parse_args()
 
@@ -175,16 +177,43 @@ def main():
         hot_temps = [s["hotspot_temp_c"] for s in samples]
         mem_temps = [s["mem_temp_c"] for s in samples]
         total_duration = time.time() - start_time
+        prof = (args.profile or os.environ.get("GPU_PROFILE", "")).lower()
+        tdp = args.tdp
+        if tdp is None:
+            if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
+                tdp = 600.0
+            elif "r9600" in prof:
+                tdp = 150.0
+            else:
+                tdp = 300.0  # default r9700
+        peak_bw = args.peak_bw
+        if peak_bw is None:
+            if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
+                peak_bw = 4096.0
+            elif "r9600" in prof:
+                peak_bw = 640.0
+            else:
+                peak_bw = 960.0  # default r9700
+
+        avg_pwr = round(sum(powers) / len(powers), 2) if powers else 0.0
+        max_pwr = round(max(powers), 2) if powers else 0.0
+        pwr_util_pct = round((avg_pwr / tdp) * 100.0, 2) if tdp > 0 else 0.0
+        max_pwr_util_pct = round((max_pwr / tdp) * 100.0, 2) if tdp > 0 else 0.0
+
         summary = {
             "duration_s": round(total_duration, 2),
             "sample_count": len(samples),
             "sample_interval_s": args.interval,
             "gpu_index": args.gpu,
-            "gpu_profile": args.profile or os.environ.get("GPU_PROFILE", ""),
+            "gpu_profile": prof,
+            "device_tdp_w": tdp,
+            "device_peak_bw_gbs": peak_bw,
             "hwmon_dir": hwmon_dir,
-            "avg_power_w": round(sum(powers) / len(powers), 2) if powers else 0.0,
-            "max_power_w": round(max(powers), 2) if powers else 0.0,
+            "avg_power_w": avg_pwr,
+            "max_power_w": max_pwr,
             "min_power_w": round(min(powers), 2) if powers else 0.0,
+            "power_util_pct": pwr_util_pct,
+            "max_power_util_pct": max_pwr_util_pct,
             "total_energy_joules": round(total_energy_joules, 2),
             "energy_joules": round(total_energy_joules, 2),
             "avg_hotspot_c": round(sum(hot_temps) / len(hot_temps), 1) if hot_temps else 0.0,

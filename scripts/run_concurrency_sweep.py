@@ -74,6 +74,13 @@ def run_warmup(container_name, count=2, input_len=1024):
 def main():
     parser = argparse.ArgumentParser(description="Run Power-of-Two Concurrency Sweep")
     parser.add_argument("--container", default="rocm-mxfp4-server", help="Docker container name")
+    parser.add_argument("--model", default="Qwen3.8-27B-Quark-AWQ-MXFP4", help="Model name")
+    parser.add_argument("--tokenizer", default="Qwen/Qwen3.8-27B-FP8", help="Tokenizer name")
+    parser.add_argument("--gpu-profile", default=os.environ.get("GPU_PROFILE", "r9700"), help="GPU profile (r9700, mi350p, r9600)")
+    parser.add_argument("--gpu", type=int, default=0, help="Target GPU index for power monitoring")
+    parser.add_argument("--device-tdp", type=float, default=None, help="Device TDP in Watts (default: 600W for mi350p, 300W for r9700)")
+    parser.add_argument("--peak-bw-gbs", type=float, default=None, help="Device peak memory bandwidth in GB/s (default: 4096 for mi350p, 960 for r9700)")
+    parser.add_argument("--model-weight-gib", type=float, default=17.91, help="Model weights size in GiB for memory bandwidth estimation (default: 17.91)")
     parser.add_argument("--concurrency-list", nargs="+", type=int, default=[1, 2, 4, 8, 16], help="Concurrency list")
     parser.add_argument("--max-concurrency", type=int, default=None, help="Maximum concurrency ceiling")
     parser.add_argument("--repetitions", type=int, default=1, help="Repetitions per point")
@@ -82,6 +89,25 @@ def main():
     parser.add_argument("--input-len", type=int, default=8192, help="Input prompt length")
     parser.add_argument("--output-len", type=int, default=1024, help="Output completion length")
     args = parser.parse_args()
+
+    prof = args.gpu_profile.lower()
+    device_tdp = args.device_tdp
+    if device_tdp is None:
+        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
+            device_tdp = 600.0
+        elif "r9600" in prof:
+            device_tdp = 150.0
+        else:
+            device_tdp = 300.0
+
+    peak_bw = args.peak_bw_gbs
+    if peak_bw is None:
+        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
+            peak_bw = 4096.0
+        elif "r9600" in prof:
+            peak_bw = 640.0
+        else:
+            peak_bw = 960.0
 
     if args.max_concurrency is not None:
         args.concurrency_list = [c for c in args.concurrency_list if c <= args.max_concurrency]
@@ -122,12 +148,16 @@ def main():
             print(f"\n--- [C={C} | Rep {rep}/{args.repetitions}] Run ID: {run_id} ---")
 
             # Launch power monitor at 250 ms interval
-            power_proc = subprocess.Popen([
+            power_cmd = [
                 "python3", os.path.join(os.path.dirname(os.path.abspath(__file__)), "collect_amd_power.py"),
-                "--gpu", "0",
+                "--gpu", str(args.gpu),
+                "--profile", prof,
+                "--tdp", str(device_tdp),
+                "--peak-bw", str(peak_bw),
                 "--interval", "0.25",
                 "--output", telemetry_csv
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            ]
+            power_proc = subprocess.Popen(power_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             time.sleep(2.0)
 
@@ -138,8 +168,9 @@ def main():
                 "--host", "127.0.0.1",
                 "--port", "8000",
                 "--endpoint", "/v1/chat/completions",
-                "--model", "Qwen3.8-27B-Quark-AWQ-MXFP4",
-                "--tokenizer", "Qwen/Qwen3.8-27B-FP8",
+                "--model", args.model,
+                "--tokenizer", args.tokenizer,
+                "--percentile-metrics", "tpot,ttft,itl,e2el",
                 "--dataset-name", "random",
                 "--random-input-len", str(args.input_len),
                 "--random-output-len", str(args.output_len),
@@ -193,10 +224,14 @@ def main():
             max_power = pwr_data.get("max_power_w", 0.0)
             total_energy = pwr_data.get("total_energy_joules", 0.0)
             hotspot_max = pwr_data.get("max_hotspot_c", 0.0)
+            power_util_pct = pwr_data.get("power_util_pct", round((avg_power / device_tdp) * 100.0, 1) if device_tdp > 0 else 0.0)
 
             j_per_tok = (total_energy / total_output_tokens) if total_output_tokens > 0 else 0.0
             tok_per_j = (total_output_tokens / total_energy) if total_energy > 0 else 0.0
             per_stream_tok_s = (agg_tok_s / C) if C > 0 else 0.0
+            step_rate = per_stream_tok_s
+            mem_bw_gb_s = round(step_rate * (args.model_weight_gib * 1.073741824), 2)
+            mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if peak_bw > 0 else 0.0
 
             run_record = {
                 "concurrency": C,
@@ -213,6 +248,9 @@ def main():
                 "tpot_p95_ms": round(tpot_p95, 2),
                 "avg_power_w": round(avg_power, 1),
                 "max_power_w": round(max_power, 1),
+                "power_util_pct": power_util_pct,
+                "mem_bw_gb_s": mem_bw_gb_s,
+                "mem_bw_util_pct": mem_bw_util_pct,
                 "total_energy_j": round(total_energy, 1),
                 "j_per_tok": round(j_per_tok, 3),
                 "tok_per_j": round(tok_per_j, 4),
@@ -221,7 +259,7 @@ def main():
             }
 
             c_runs.append(run_record)
-            print(f"Result: {agg_tok_s:.2f} tok/s | TPOT p50: {tpot_p50:.2f} ms | TTFT p50: {ttft_p50:.1f} ms | Power: {avg_power:.1f}W | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
+            print(f"Result: {agg_tok_s:.2f} tok/s | TTFT p50: {ttft_p50:.1f} ms | TPOT p50: {tpot_p50:.2f} ms | Power: {avg_power:.1f}W ({power_util_pct:.1f}% TDP) | BW: {mem_bw_gb_s:.1f} GB/s ({mem_bw_util_pct:.1f}% Peak) | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
 
             time.sleep(5.0)
 
@@ -239,6 +277,9 @@ def main():
                 "tpot_p95_ms": round(sum(r["tpot_p95_ms"] for r in valid_runs) / len(valid_runs), 2),
                 "avg_power_w": round(sum(r["avg_power_w"] for r in valid_runs) / len(valid_runs), 1),
                 "max_power_w": max(r["max_power_w"] for r in valid_runs),
+                "power_util_pct": round(sum(r["power_util_pct"] for r in valid_runs) / len(valid_runs), 1),
+                "mem_bw_gb_s": round(sum(r["mem_bw_gb_s"] for r in valid_runs) / len(valid_runs), 2),
+                "mem_bw_util_pct": round(sum(r["mem_bw_util_pct"] for r in valid_runs) / len(valid_runs), 1),
                 "total_energy_j": round(sum(r["total_energy_j"] for r in valid_runs) / len(valid_runs), 1),
                 "j_per_tok": round(sum(r["j_per_tok"] for r in valid_runs) / len(valid_runs), 3),
                 "tok_per_j": round(sum(r["tok_per_j"] for r in valid_runs) / len(valid_runs), 4),
@@ -258,6 +299,9 @@ def main():
                 "tpot_p95_ms": 0.0,
                 "avg_power_w": 0.0,
                 "max_power_w": 0.0,
+                "power_util_pct": 0.0,
+                "mem_bw_gb_s": 0.0,
+                "mem_bw_util_pct": 0.0,
                 "total_energy_j": 0.0,
                 "j_per_tok": 0.0,
                 "tok_per_j": 0.0,
@@ -269,17 +313,18 @@ def main():
         sweep_records.append(avg_record)
 
     # Plateau Analysis & Recommendations
-    print("\n" + "=" * 80)
-    print("                      CONCURRENCY SWEEP SUMMARY TABLE")
-    print("=" * 80)
-    print(f"{'C':<4} | {'Agg tok/s':<10} | {'Stream tok/s':<12} | {'TTFT p50/p95':<16} | {'TPOT p50/p95':<16} | {'Avg/Max W':<12} | {'J/tok':<8} | {'tok/J':<8} | {'Status'}")
-    print("-" * 105)
+    print("\n" + "=" * 130)
+    print("                                      CONCURRENCY SWEEP SUMMARY TABLE")
+    print("=" * 130)
+    print(f"{'C':<4} | {'Agg tok/s':<10} | {'Stream tok/s':<12} | {'TTFT p50/p95':<16} | {'TPOT p50/p95':<16} | {'Power (W / %TDP)':<20} | {'Mem BW (%Peak)':<18} | {'J/tok':<8} | {'Status'}")
+    print("-" * 130)
 
     for rec in sweep_records:
         ttft_str = f"{rec['ttft_p50_ms']}/{rec['ttft_p95_ms']}"
         tpot_str = f"{rec['tpot_p50_ms']}/{rec['tpot_p95_ms']}"
-        pwr_str = f"{rec['avg_power_w']}/{rec['max_power_w']}"
-        print(f"{rec['concurrency']:<4} | {rec['agg_tok_s']:<10.2f} | {rec['per_stream_tok_s']:<12.2f} | {ttft_str:<16} | {tpot_str:<16} | {pwr_str:<12} | {rec['j_per_tok']:<8.3f} | {rec['tok_per_j']:<8.4f} | {rec['status']}")
+        pwr_str = f"{rec['avg_power_w']}W ({rec['power_util_pct']}%)"
+        bw_str = f"{rec['mem_bw_gb_s']}G ({rec['mem_bw_util_pct']}%)"
+        print(f"{rec['concurrency']:<4} | {rec['agg_tok_s']:<10.2f} | {rec['per_stream_tok_s']:<12.2f} | {ttft_str:<16} | {tpot_str:<16} | {pwr_str:<20} | {bw_str:<18} | {rec['j_per_tok']:<8.3f} | {rec['status']}")
 
     # Compute marginal gains
     for i in range(1, len(sweep_records)):
@@ -294,20 +339,21 @@ def main():
             print(f"  • Latency TPOT p95: {curr['tpot_p95_ms']} ms {'(Interactive SLO exceeded >50ms)' if curr['tpot_p95_ms'] > 50 else '(Interactive OK)'}")
 
     # Save summary report markdown
-    report_filename = f"R9700-SWEEP-{args.input_len}-{args.output_len}.md" if (args.input_len != 8192 or args.output_len != 1024) else "R9700-SWEEP.md"
+    report_prefix = "MI350P-SWEEP" if "mi350" in prof else "R9700-SWEEP"
+    report_filename = f"{report_prefix}-{args.input_len}-{args.output_len}.md" if (args.input_len != 8192 or args.output_len != 1024) else f"{report_prefix}.md"
     report_file = os.path.join(DOCS_DIR, report_filename)
+    hw_label = f"AMD Instinct™ MI350P (`gfx950`, 144 GB HBM3E, {device_tdp:.0f}W TDP, {peak_bw:.0f} GB/s Peak)" if "mi350" in prof else f"AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6, {device_tdp:.0f}W TDP, {peak_bw:.0f} GB/s Peak)"
     with open(report_file, "w", encoding="utf-8") as rf:
-        rf.write(f"# R9700 concurrency sweep ({args.input_len}:{args.output_len})\n\n")
-        rf.write("Narrative and earlier sweeps: [R9700.md](R9700.md).\n\n")
-        rf.write("**Target Hardware**: AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6)\n")
-        rf.write("**Model**: `Qwen3.8-27B-Quark-AWQ-MXFP4` (Hybrid Attention: 48 GDN + 16 Full Softmax)\n")
+        rf.write(f"# {report_prefix.replace('-', ' ')} ({args.input_len}:{args.output_len})\n\n")
+        rf.write(f"**Target Hardware**: {hw_label}\n")
+        rf.write(f"**Model**: `{args.model}`\n")
         rf.write(f"**Workload**: {args.input_len:,} Input Tokens / {args.output_len:,} Output Tokens\n")
         rf.write(f"**Execution Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S EDT')}\n\n")
-        rf.write("## Performance, Latency & Energy Ledger\n\n")
-        rf.write("| C | Aggregate tok/s | Per-stream tok/s | TTFT p50/p95 (ms) | TPOT p50/p95 (ms) | Avg / Max Power (W) | Total Energy (J) | J/token | tokens/Joule | Hotspot Max (°C) | Status |\n")
-        rf.write("| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
+        rf.write("## Performance, Latency, Power & Bandwidth Ledger\n\n")
+        rf.write("| C | Aggregate tok/s | Per-stream tok/s | TTFT p50/p95 (ms) | TPOT p50/p95 (ms) | Power (W / % TDP) | Mem Bandwidth (GB/s / % Peak) | Total Energy (J) | J/token | tokens/Joule | Hotspot Max (°C) | Status |\n")
+        rf.write("| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
         for rec in sweep_records:
-            rf.write(f"| **{rec['concurrency']}** | **{rec['agg_tok_s']:.2f}** | {rec['per_stream_tok_s']:.2f} | {rec['ttft_p50_ms']} / {rec['ttft_p95_ms']} | {rec['tpot_p50_ms']} / {rec['tpot_p95_ms']} | {rec['avg_power_w']} / {rec['max_power_w']} | {rec['total_energy_j']:,} | **{rec['j_per_tok']:.3f}** | **{rec['tok_per_j']:.4f}** | {rec['hotspot_max_c']} | `{rec['status']}` |\n")
+            rf.write(f"| **{rec['concurrency']}** | **{rec['agg_tok_s']:.2f}** | {rec['per_stream_tok_s']:.2f} | {rec['ttft_p50_ms']} / {rec['ttft_p95_ms']} | {rec['tpot_p50_ms']} / {rec['tpot_p95_ms']} | {rec['avg_power_w']} W ({rec['power_util_pct']}%) | {rec['mem_bw_gb_s']} GB/s ({rec['mem_bw_util_pct']}%) | {rec['total_energy_j']:,} | **{rec['j_per_tok']:.3f}** | **{rec['tok_per_j']:.4f}** | {rec['hotspot_max_c']} | `{rec['status']}` |\n")
         rf.write("\n---\n")
 
     print(f"\n[Report] Markdown summary saved to: {report_file}")

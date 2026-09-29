@@ -41,6 +41,9 @@ for C in "${LIST[@]}"; do
     --input-len "${ILEN}" --output-len "${OLEN}" \
     --num-prompts "${C}" --concurrency "${C}" \
     --timeout "${TIMEOUT}" \
+    --stream \
+    --monitor-power \
+    --gpu-profile "${GPU_PROFILE:-mi350p}" \
     --out "${OUT}/bench_c${C}.json" | tee -a "${OUT}/run.log"
   telemetry "c${C}_after"
   python3 "${ROOT}/scripts/summarize_vllm_metrics.py" \
@@ -61,12 +64,18 @@ row = {
     "concurrency": int(c),
     "output_tok_s": bench.get("output_throughput"),
     "mean_latency_s": bench.get("mean_latency_s"),
+    "ttft_p50_ms": bench.get("ttft_p50_ms"),
+    "ttft_p95_ms": bench.get("ttft_p95_ms"),
     "successful": bench.get("successful"),
     "failed": bench.get("failed"),
     "prom_mean_itl_s": (delta.get("derived") or {}).get("mean_itl_s"),
     "prom_mean_ttft_s": (delta.get("derived") or {}).get("mean_ttft_s"),
     "kv_cache_usage_perc_after": ((delta.get("gauges_end") or {}).get("vllm:kv_cache_usage_perc") or {}).get("after"),
-    "power_w": grab(r"POWER[:\s]+([0-9.]+)"),
+    "active_avg_power_w": bench.get("avg_power_w") or grab(r"POWER[:\s]+([0-9.]+)"),
+    "power_util_pct": bench.get("power_util_pct"),
+    "mem_bw_gb_s": bench.get("mem_bw_gb_s"),
+    "mem_bw_util_pct": bench.get("mem_bw_util_pct"),
+    "cooldown_power_w": grab(r"POWER[:\s]+([0-9.]+)"),
     "gfx_clk": grab(r"GFX_CLK[:\s]+([0-9.]+)"),
     "mem_clk": grab(r"MEM_CLK[:\s]+([0-9.]+)"),
 }

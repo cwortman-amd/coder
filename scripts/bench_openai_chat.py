@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
-"""Lightweight OpenAI-chat throughput client (no GPU)."""
+"""Lightweight OpenAI-chat throughput and latency client (with TTFT, Power & Bandwidth tracking)."""
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 import statistics
+import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.request import Request, urlopen
+
+
+def percentile(values: list[float], q: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = (len(ordered) - 1) * q
+    lower = int(index)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = index - lower
+    return ordered[lower] * (1 - weight) + ordered[upper] * weight
 
 
 def chat(
@@ -20,17 +34,23 @@ def chat(
     top_p: float | None,
     top_k: int | None,
     enable_thinking: bool,
+    stream: bool = False,
 ) -> dict:
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": "Say the word ping. " + ("alpha " * max(n_in - 8, 1))}],
         "max_tokens": n_out,
         "temperature": temperature,
-        "stream": False,
+        "stream": stream,
         "ignore_eos": True,
         "skip_special_tokens": True,
         "chat_template_kwargs": {"enable_thinking": enable_thinking},
     }
+    if stream:
+        payload["stream_options"] = {"include_usage": True}
+        payload["stream_interval"] = 1
+        payload["return_token_ids"] = True
+
     if top_p is not None:
         payload["top_p"] = top_p
     if top_k is not None:
@@ -42,16 +62,54 @@ def chat(
         method="POST",
     )
     t0 = time.perf_counter()
-    with urlopen(req, timeout=timeout) as resp:
-        body = json.loads(resp.read().decode())
-    dt = time.perf_counter() - t0
-    usage = body.get("usage") or {}
-    return {
-        "ok": True,
-        "dt": dt,
-        "prompt_tokens": usage.get("prompt_tokens", 0),
-        "completion_tokens": usage.get("completion_tokens", 0),
-    }
+    if not stream:
+        with urlopen(req, timeout=timeout) as resp:
+            body = json.loads(resp.read().decode())
+        dt = time.perf_counter() - t0
+        usage = body.get("usage") or {}
+        return {
+            "ok": True,
+            "dt": dt,
+            "ttft_s": None,
+            "itl_s": [],
+            "prompt_tokens": usage.get("prompt_tokens", 0),
+            "completion_tokens": usage.get("completion_tokens", 0),
+        }
+    else:
+        chunk_times: list[float] = []
+        token_times: list[float] = []
+        usage: dict = {}
+        with urlopen(req, timeout=timeout) as resp:
+            for raw_line in resp:
+                line = raw_line.decode().strip()
+                if not line.startswith("data: ") or line == "data: [DONE]":
+                    continue
+                try:
+                    body = json.loads(line[6:])
+                except json.JSONDecodeError:
+                    continue
+                if body.get("usage"):
+                    usage = body["usage"]
+                choices = body.get("choices") or []
+                received = time.perf_counter()
+                chunk_times.append(received)
+                token_ids = choices[0].get("token_ids") if choices else None
+                if token_ids:
+                    token_times.extend([received] * len(token_ids))
+                elif choices and (choices[0].get("delta", {}).get("content") or choices[0].get("delta", {}).get("text")):
+                    token_times.append(received)
+        dt = time.perf_counter() - t0
+        ttft_s = (chunk_times[0] - t0) if chunk_times else None
+        intervals = [b - a for a, b in zip(chunk_times, chunk_times[1:])]
+        gen_toks = usage.get("completion_tokens") or (len(token_times) if token_times else n_out)
+        return {
+            "ok": True,
+            "dt": dt,
+            "ttft_s": ttft_s,
+            "itl_s": intervals,
+            "prompt_tokens": usage.get("prompt_tokens", n_in),
+            "completion_tokens": gen_toks,
+        }
 
 
 def main() -> int:
@@ -67,8 +125,38 @@ def main() -> int:
     p.add_argument("--top-p", type=float, default=None)
     p.add_argument("--top-k", type=int, default=None)
     p.add_argument("--enable-thinking", action="store_true")
+    p.add_argument("--stream", action="store_true", help="Enable SSE streaming to measure TTFT and ITL latencies")
+    p.add_argument("--monitor-power", action="store_true", help="Monitor GPU power via collect_amd_power.py during benchmark")
+    p.add_argument("--gpu", type=int, default=0, help="Target GPU index for power monitoring")
+    p.add_argument("--gpu-profile", default=os.environ.get("GPU_PROFILE", ""), help="Target GPU profile (mi350p, r9700, r9600)")
+    p.add_argument("--device-tdp", type=float, default=None, help="Device TDP in Watts (default: 600W for mi350p, 300W for r9700)")
+    p.add_argument("--peak-bw-gbs", type=float, default=None, help="Device peak memory bandwidth in GB/s (default: 4096 for mi350p, 960 for r9700)")
+    p.add_argument("--model-weight-gib", type=float, default=17.91, help="Model weights size in GiB for memory bandwidth estimation (default: 17.91)")
     p.add_argument("--out", required=True)
     args = p.parse_args()
+
+    # Setup optional power monitoring
+    power_proc = None
+    telemetry_csv = None
+    telemetry_json = None
+    if args.monitor_power:
+        telemetry_csv = f"{os.path.splitext(args.out)[0]}_power.csv"
+        telemetry_json = f"{os.path.splitext(args.out)[0]}_power.json"
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        cmd = [
+            "python3", os.path.join(script_dir, "collect_amd_power.py"),
+            "--gpu", str(args.gpu),
+            "--interval", "0.25",
+            "--output", telemetry_csv,
+        ]
+        if args.gpu_profile:
+            cmd.extend(["--profile", args.gpu_profile])
+        if args.device_tdp:
+            cmd.extend(["--tdp", str(args.device_tdp)])
+        if args.peak_bw_gbs:
+            cmd.extend(["--peak-bw", str(args.peak_bw_gbs)])
+        power_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(1.0)
 
     t_all = time.perf_counter()
     rows = []
@@ -85,6 +173,7 @@ def main() -> int:
                 args.top_p,
                 args.top_k,
                 args.enable_thinking,
+                args.stream,
             )
             for _ in range(args.num_prompts)
         ]
@@ -92,12 +181,63 @@ def main() -> int:
             try:
                 rows.append(fut.result())
             except Exception as exc:  # noqa: BLE001
-                rows.append({"ok": False, "error": str(exc), "dt": 0, "prompt_tokens": 0, "completion_tokens": 0})
+                rows.append({"ok": False, "error": str(exc), "dt": 0, "ttft_s": None, "itl_s": [], "prompt_tokens": 0, "completion_tokens": 0})
     wall = time.perf_counter() - t_all
+
+    # Stop power monitoring if active
+    pwr_summary = {}
+    if power_proc:
+        try:
+            power_proc.send_signal(signal.SIGINT)
+            power_proc.wait(timeout=4)
+        except Exception:
+            power_proc.kill()
+        if telemetry_json and os.path.exists(telemetry_json):
+            try:
+                with open(telemetry_json, "r", encoding="utf-8") as pf:
+                    pwr_summary = json.load(pf)
+            except Exception as exc:
+                print(f"Warning: could not parse power JSON: {exc}", file=sys.stderr)
+
     ok = [r for r in rows if r.get("ok")]
     gen = sum(r["completion_tokens"] for r in ok)
     prompt = sum(r["prompt_tokens"] for r in ok)
     dts = [r["dt"] for r in ok]
+
+    # TTFT & ITL statistics
+    ttfts = [r["ttft_s"] for r in ok if r.get("ttft_s") is not None]
+    itls = [itl for r in ok for itl in r.get("itl_s", [])]
+    ttft_p50_ms = round(percentile(ttfts, 0.50) * 1000.0, 1) if ttfts else None
+    ttft_p95_ms = round(percentile(ttfts, 0.95) * 1000.0, 1) if ttfts else None
+    ttft_p99_ms = round(percentile(ttfts, 0.99) * 1000.0, 1) if ttfts else None
+    mean_ttft_ms = round(statistics.mean(ttfts) * 1000.0, 1) if ttfts else None
+    itl_p50_ms = round(percentile(itls, 0.50) * 1000.0, 2) if itls else None
+    itl_p95_ms = round(percentile(itls, 0.95) * 1000.0, 2) if itls else None
+
+    # Memory bandwidth estimation
+    prof = (args.gpu_profile or os.environ.get("GPU_PROFILE", "")).lower()
+    peak_bw = args.peak_bw_gbs
+    if peak_bw is None:
+        if "mi350" in prof or "gfx950" in prof or "instinct" in prof:
+            peak_bw = 4096.0
+        elif "r9600" in prof:
+            peak_bw = 640.0
+        else:
+            peak_bw = 960.0  # default r9700
+
+    out_tok_s = gen / wall if wall else 0.0
+    step_rate = out_tok_s / args.concurrency if args.concurrency > 0 else 0.0
+    mem_bw_gb_s = round(step_rate * (args.model_weight_gib * 1.073741824), 2)
+    mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if peak_bw > 0 else 0.0
+
+    # Power metrics integration
+    avg_power_w = pwr_summary.get("avg_power_w")
+    max_power_w = pwr_summary.get("max_power_w")
+    total_energy_j = pwr_summary.get("total_energy_joules")
+    power_util_pct = pwr_summary.get("power_util_pct")
+    j_per_tok = round(total_energy_j / gen, 3) if (total_energy_j and gen > 0) else None
+    tok_per_j = round(gen / total_energy_j, 4) if (total_energy_j and total_energy_j > 0) else None
+
     result = {
         "base_url": args.base_url,
         "model": args.model,
@@ -105,6 +245,7 @@ def main() -> int:
         "output_len": args.output_len,
         "num_prompts": args.num_prompts,
         "concurrency": args.concurrency,
+        "stream": args.stream,
         "temperature": args.temperature,
         "top_p": args.top_p,
         "top_k": args.top_k,
@@ -114,9 +255,23 @@ def main() -> int:
         "duration": wall,
         "total_prompt_tokens": prompt,
         "total_generated_tokens": gen,
-        "output_throughput": gen / wall if wall else 0,
-        "total_token_throughput": (gen + prompt) / wall if wall else 0,
+        "output_throughput": out_tok_s,
+        "total_token_throughput": (gen + prompt) / wall if wall else 0.0,
         "mean_latency_s": statistics.mean(dts) if dts else None,
+        "ttft_p50_ms": ttft_p50_ms,
+        "ttft_p95_ms": ttft_p95_ms,
+        "ttft_p99_ms": ttft_p99_ms,
+        "mean_ttft_ms": mean_ttft_ms,
+        "itl_p50_ms": itl_p50_ms,
+        "itl_p95_ms": itl_p95_ms,
+        "avg_power_w": avg_power_w,
+        "max_power_w": max_power_w,
+        "power_util_pct": power_util_pct,
+        "total_energy_joules": total_energy_j,
+        "joules_per_token": j_per_tok,
+        "tokens_per_joule": tok_per_j,
+        "mem_bw_gb_s": mem_bw_gb_s,
+        "mem_bw_util_pct": mem_bw_util_pct,
         "rows": rows,
     }
     with open(args.out, "w", encoding="utf-8") as fh:

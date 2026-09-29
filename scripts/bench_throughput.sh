@@ -467,6 +467,7 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
                 --endpoint /v1/chat/completions
                 --host 127.0.0.1
                 --port "$BENCH_PORT"
+                --percentile-metrics tpot,ttft,itl,e2el
                 --dataset-name random
                 --random-input-len "$ISL"
                 --random-output-len "$OSL"
@@ -478,6 +479,20 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
                 --result-filename "$RESULT_FILE"
             )
         fi
+
+        PWR_CSV="${RESULTS_DIR}/power_${CURR_ENGINE}_${ISL}_${OSL}.csv"
+        PWR_JSON="${RESULTS_DIR}/power_${CURR_ENGINE}_${ISL}_${OSL}.json"
+        PWR_PID=""
+        if [ -f "${ROOT_DIR}/scripts/collect_amd_power.py" ]; then
+            python3 "${ROOT_DIR}/scripts/collect_amd_power.py" \
+                --gpu 0 \
+                --profile "${GPU_PROFILE}" \
+                --interval 0.25 \
+                --output "${PWR_CSV}" >/dev/null 2>&1 &
+            PWR_PID=$!
+            sleep 1
+        fi
+
         if { [ "$CURR_ENGINE" = "vllm" ] || [ "$CURR_ENGINE" = "mxfp4" ]; } && [ -n "$ACTIVE_VLLM" ]; then
             docker exec "$ACTIVE_VLLM" "${bench_cmd[@]}" > "${RESULTS_DIR}/${CURR_ENGINE}_bench_${ISL}_${OSL}.log" 2>&1 || true
             [ -f "${ROOT_DIR}/_results/${RESULT_FILE}" ] && cp -f "${ROOT_DIR}/_results/${RESULT_FILE}" "${FULL_PATH}" 2>/dev/null || true
@@ -526,20 +541,41 @@ for CURR_ENGINE in "${ENGINE_LIST[@]}"; do
             fi
         fi
 
+        if [ -n "$PWR_PID" ]; then
+            kill -INT "$PWR_PID" 2>/dev/null || true
+            wait "$PWR_PID" 2>/dev/null || true
+        fi
+
         # Parse and report metrics
         FULL_PATH="${RESULTS_DIR}/${RESULT_FILE}"
         if [ -f "$FULL_PATH" ]; then
             OUT_TOK_S=$(jq -r '.output_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
             TOTAL_TOK_S=$(jq -r '.total_token_throughput // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-            TTFT_MS=$(jq -r '.mean_ttft_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
-            TPOT_MS=$(jq -r '.mean_tpot_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
+            TTFT_MS=$(jq -r '.median_ttft_ms // .mean_ttft_ms // 0' "$FULL_PATH" | awk '{printf "%.1f", $1}')
+            TPOT_MS=$(jq -r '.median_tpot_ms // .mean_tpot_ms // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
             DURATION_S=$(jq -r '.duration // 0' "$FULL_PATH" | awk '{printf "%.2f", $1}')
 
-            echo -e "    ${GREEN}✓ Done in ${DURATION_S}s${NC} | Output: ${BOLD}${OUT_TOK_S} tok/s${NC} | Total: ${BOLD}${TOTAL_TOK_S} tok/s${NC} | TTFT: ${TTFT_MS} ms | TPOT: ${TPOT_MS} ms"
-            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|${OUT_TOK_S}|${TOTAL_TOK_S}|${TTFT_MS}|${TPOT_MS}|${DURATION_S}")
+            AVG_PWR="N/A"
+            PWR_UTIL="N/A"
+            if [ -f "$PWR_JSON" ]; then
+                AVG_PWR=$(jq -r '.avg_power_w // "N/A"' "$PWR_JSON")
+                PWR_UTIL=$(jq -r '.power_util_pct // "N/A"' "$PWR_JSON")
+            fi
+
+            PEAK_BW=960
+            case "${GPU_PROFILE,,}" in
+                mi350p|mi350|gfx950|instinct) PEAK_BW=4096 ;;
+                r9600*) PEAK_BW=640 ;;
+                *) PEAK_BW=960 ;;
+            esac
+            MEM_BW_GBS=$(awk -v t="$OUT_TOK_S" -v c="$CONC" 'BEGIN { if (c>0) printf "%.1f", (t/c)*17.91*1.07374; else print "0.0" }')
+            MEM_BW_UTIL=$(awk -v bw="$MEM_BW_GBS" -v p="$PEAK_BW" 'BEGIN { if (p>0) printf "%.1f", (bw/p)*100; else print "0.0" }')
+
+            echo -e "    ${GREEN}✓ Done in ${DURATION_S}s${NC} | Output: ${BOLD}${OUT_TOK_S} tok/s${NC} | TTFT: ${TTFT_MS} ms | Power: ${AVG_PWR}W (${PWR_UTIL}%) | BW: ${MEM_BW_GBS} GB/s (${MEM_BW_UTIL}%)"
+            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|${OUT_TOK_S}|${TOTAL_TOK_S}|${TTFT_MS}|${TPOT_MS}|${AVG_PWR}|${PWR_UTIL}|${MEM_BW_GBS}|${MEM_BW_UTIL}|${DURATION_S}")
         else
             echo -e "    ${RED}✗ Benchmark failed for ${CURR_ENGINE} on ${ISL}:${OSL}${NC}"
-            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|ERROR|ERROR|ERROR|ERROR|ERROR")
+            TABLE_ROWS+=("${CURR_ENGINE}|${ISL}|${OSL}|${NUM_PROMPTS}|ERROR|ERROR|ERROR|ERROR|ERROR|ERROR|ERROR|ERROR|ERROR")
             BENCH_FAILURES=$((BENCH_FAILURES + 1))
         fi
         echo ""
@@ -560,20 +596,22 @@ chmod -R u+rwX,g+rwX "$RESULTS_DIR" 2>/dev/null || true
 # ------------------------------------------------------------------------------
 # Terminal Formatted Results Table
 # ------------------------------------------------------------------------------
-echo -e "${BLUE}${BOLD}===============================================================================================================${NC}"
-echo -e "${BLUE}${BOLD}                           THROUGHPUT BENCHMARK RESULTS SUMMARY MATRIX                                         ${NC}"
-echo -e "${BLUE}${BOLD}===============================================================================================================${NC}"
-printf "%-11s | %-10s | %-11s | %-8s | %-16s | %-15s | %-12s | %-12s\n" \
-  "Engine" "Input (tok)" "Output (tok)" "Prompts" "Output Throughput" "Total Throughput" "Mean TTFT" "Mean TPOT"
-echo "---------------------------------------------------------------------------------------------------------------"
+echo -e "${BLUE}${BOLD}===============================================================================================================================================${NC}"
+echo -e "${BLUE}${BOLD}                                           THROUGHPUT BENCHMARK RESULTS SUMMARY MATRIX                                                         ${NC}"
+echo -e "${BLUE}${BOLD}===============================================================================================================================================${NC}"
+printf "%-11s | %-10s | %-11s | %-8s | %-15s | %-12s | %-12s | %-18s | %-18s\n" \
+  "Engine" "Input (tok)" "Output (tok)" "Prompts" "Output Tok/s" "TTFT" "TPOT" "Power (W / %TDP)" "Mem BW (%Peak)"
+echo "-----------------------------------------------------------------------------------------------------------------------------------------------"
 
 for ROW in "${TABLE_ROWS[@]}"; do
-    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
-    printf "%-11s | %-10s | %-11s | %-8s | %-16s | %-15s | %-12s | %-12s\n" \
-      "${R_ENG}" "${R_IN}" "${R_OUT}" "${R_NUM}" "${R_OUT_S} tok/s" "${R_TOT_S} tok/s" "${R_TTFT} ms" "${R_TPOT} ms"
+    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_PWR R_PWR_U R_BW R_BW_U R_DUR <<< "$ROW"
+    PWR_STR="${R_PWR}W (${R_PWR_U}%)"
+    BW_STR="${R_BW}G (${R_BW_U}%)"
+    printf "%-11s | %-10s | %-11s | %-8s | %-15s | %-12s | %-12s | %-18s | %-18s\n" \
+      "${R_ENG}" "${R_IN}" "${R_OUT}" "${R_NUM}" "${R_OUT_S} tok/s" "${R_TTFT} ms" "${R_TPOT} ms" "${PWR_STR}" "${BW_STR}"
 done
 
-echo "---------------------------------------------------------------------------------------------------------------"
+echo "-----------------------------------------------------------------------------------------------------------------------------------------------"
 echo -e "Hardware Device : ${GPU_LABEL}"
 echo -e "Concurrency     : ${BOLD}${CONC}${NC}"
 echo -e "Metrics Folder  : ${RESULTS_DIR}"
@@ -599,18 +637,18 @@ cat << EOF > "$REPORT_FILE"
 
 ## Comparative Throughput & Latency Matrix
 
-| Engine | Input Tokens (ISL) | Output Tokens (OSL) | Prompts | Total Tokens | Output Throughput | Total Throughput | Mean TTFT | Mean TPOT | Duration |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Engine | Input Tokens (ISL) | Output Tokens (OSL) | Prompts | Total Tokens | Output Throughput | TTFT | TPOT | Power (W / % TDP) | Mem Bandwidth (% Peak) | Duration |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 EOF
 
 for ROW in "${TABLE_ROWS[@]}"; do
-    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_DUR <<< "$ROW"
+    IFS="|" read -r R_ENG R_IN R_OUT R_NUM R_OUT_S R_TOT_S R_TTFT R_TPOT R_PWR R_PWR_U R_BW R_BW_U R_DUR <<< "$ROW"
     TOTAL_TOK="N/A"
     if [[ "${R_NUM}" =~ ^[0-9]+$ ]]; then
         TOTAL_TOK=$(( (R_IN + R_OUT) * R_NUM ))
     fi
     cat << EOF >> "$REPORT_FILE"
-| **${R_ENG}** | **${R_IN}** | **${R_OUT}** | ${R_NUM} | ${TOTAL_TOK} | **${R_OUT_S} tok/s** | **${R_TOT_S} tok/s** | ${R_TTFT} ms | ${R_TPOT} ms | ${R_DUR} s |
+| **${R_ENG}** | **${R_IN}** | **${R_OUT}** | ${R_NUM} | ${TOTAL_TOK} | **${R_OUT_S} tok/s** | ${R_TTFT} ms | ${R_TPOT} ms | ${R_PWR} W (${R_PWR_U}%) | ${R_BW} GB/s (${R_BW_U}%) | ${R_DUR} s |
 EOF
 done
 
@@ -622,10 +660,11 @@ cat << EOF >> "$REPORT_FILE"
 - **Prompts**: Number of requests executed in this test slice.
 - **Output Throughput**: Speed of generated tokens (\`completion_tokens / duration\`).
 - **Total Throughput**: Combined prefill and decode token processing speed (\`(input_tokens + output_tokens) / duration\`).
-- **Mean TTFT (Time to First Token)**: Prefill latency before the first token is emitted.
-- **Mean TPOT (Time per Output Token)**: Average decode step time per subsequent token.
+- **TTFT (Time to First Token)**: Median latency before the first token is emitted.
+- **TPOT (Time per Output Token)**: Average decode step time per subsequent token.
+- **Power (W / % TDP)**: Active board power consumption in Watts and percentage of device TDP.
+- **Mem Bandwidth (% Peak)**: Inferred weight memory streaming traffic and percentage of device peak memory bandwidth.
 EOF
-
 echo ""
 echo -e "${GREEN}${BOLD}✓ Archival Markdown Report Saved:${NC} ${REPORT_FILE}"
 echo -e "${BLUE}===============================================================================================================${NC}"
