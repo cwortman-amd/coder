@@ -36,7 +36,7 @@ COLOR_RTX6000     = "#455A64"    # Slate Gray
 # PLOT 1: System Capex & 3-Year TCO Breakdown
 # ==============================================================================
 def plot_capex_and_tco():
-    fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(11, 7.0), dpi=300)
     
     systems = [
         "8× R9700S\n(256GB DRAM)",
@@ -72,6 +72,7 @@ def plot_capex_and_tco():
         ax.text(x[i], ch_val / 2, f"${chassis_capex[i]:,}", ha='center', va='center', color='white', fontweight='bold', fontsize=10)
         ax.text(x[i], ch_val + gpu_val / 2, f"${gpu_capex[i]:,}", ha='center', va='center', color='white', fontweight='bold', fontsize=10)
     
+    ax.set_xlabel("Server Architecture & Hardware Fill", fontsize=13, fontweight='bold', labelpad=12)
     ax.set_ylabel("Total Cost ($ in Thousands)", fontsize=13, fontweight='bold', labelpad=10)
     ax.set_title("Server Fill Capex & 3-Year TCO Comparison (Qwen3.8-27B Serving)", fontsize=15, fontweight='bold', pad=15)
     ax.set_xticks(x)
@@ -277,7 +278,7 @@ def plot_throughput():
     ax2.legend(loc='upper left', frameon=True, fontsize=8.5)
     
     fig.suptitle("Full Server Aggregate Throughput Scaling Across Concurrency", fontsize=15, fontweight='bold', y=0.98)
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.02, 1, 0.95])
     output_path = os.path.join(OUTPUT_DIR, "04_aggregate_throughput.png")
     plt.savefig(output_path, dpi=300)
     plt.close()
@@ -287,7 +288,7 @@ def plot_throughput():
 # PLOT 5: Executive Dashboard (Combined 4-Panel Summary)
 # ==============================================================================
 def plot_executive_dashboard():
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 10), dpi=300)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 11), dpi=300)
     
     # 1. Capex & TCO Bar Chart
     systems = ["8× R9700S", "16× R9600D", "8× RTX 6000", "8× MI350P"]
@@ -302,9 +303,11 @@ def plot_executive_dashboard():
     ax1.bar(x, power_3yr, w, bottom=chassis_capex + gpu_capex, label="3-Yr Power", color="#FFB300")
     for i in range(len(systems)):
         ax1.text(x[i], total_tco[i] + 4, f"${total_tco[i]:.1f}k", ha='center', va='bottom', fontweight='bold', fontsize=9.5)
-    ax1.set_title("A. System Capex & 3-Year TCO ($k)", fontsize=12, fontweight='bold')
+    ax1.set_title("A. System Capex & 3-Year TCO ($k)", fontsize=12, fontweight='bold', pad=8)
     ax1.set_xticks(x)
     ax1.set_xticklabels(systems, fontweight='bold', fontsize=10)
+    ax1.set_xlabel("Server Hardware Fill", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax1.set_ylabel("Total Cost ($ in Thousands)", fontsize=10.5, fontweight='bold', labelpad=6)
     ax1.set_ylim(0, 255)
     ax1.grid(axis='y', linestyle='--', alpha=0.6)
     ax1.legend(loc='upper left', fontsize=8.5)
@@ -325,7 +328,9 @@ def plot_executive_dashboard():
     ax2.set_xscale('log', base=2)
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax2.set_title("B. Serving Cost: 8,192 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold')
+    ax2.set_title("B. Serving Cost: 8,192 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold', pad=8)
+    ax2.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax2.set_ylabel("Serving Cost ($ / Million Tokens)", fontsize=10.5, fontweight='bold', labelpad=6)
     ax2.set_ylim(0, 8.0)
     ax2.grid(True, which='both', linestyle='--', alpha=0.6)
     ax2.legend(loc='upper right', fontsize=8.5)
@@ -346,7 +351,9 @@ def plot_executive_dashboard():
     ax3.set_xscale('log', base=2)
     ax3.set_xticks([1, 2, 4, 8, 16, 32])
     ax3.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax3.set_title("C. Serving Cost: 1,024 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold')
+    ax3.set_title("C. Serving Cost: 1,024 In / 1,024 Out ($ / M Tokens)", fontsize=12, fontweight='bold', pad=8)
+    ax3.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax3.set_ylabel("Serving Cost ($ / Million Tokens)", fontsize=10.5, fontweight='bold', labelpad=6)
     ax3.set_ylim(0, 4.2)
     ax3.grid(True, which='both', linestyle='--', alpha=0.6)
     ax3.legend(loc='upper right', fontsize=8.5)
@@ -366,7 +373,9 @@ def plot_executive_dashboard():
     ax4.set_xscale('log', base=2)
     ax4.set_xticks([1, 2, 4, 8, 16, 32])
     ax4.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
-    ax4.set_title("D. Aggregate Server Throughput: 8k:1k (tok/s)", fontsize=12, fontweight='bold')
+    ax4.set_title("D. Aggregate Server Throughput: 8k:1k (tok/s)", fontsize=12, fontweight='bold', pad=8)
+    ax4.set_xlabel("Concurrency per GPU (C)", fontsize=10.5, fontweight='bold', labelpad=6)
+    ax4.set_ylabel("Aggregate Throughput (tok/s)", fontsize=10.5, fontweight='bold', labelpad=6)
     ax4.set_ylim(0, 8000)
     ax4.grid(True, which='both', linestyle='--', alpha=0.6)
     ax4.legend(loc='upper left', fontsize=8.5)
@@ -375,7 +384,7 @@ def plot_executive_dashboard():
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor="#3949AB"))
     
     fig.suptitle("AMD AI Accelerator TCO & Serving Performance Dashboard (Qwen3.8-27B MXFP4)", fontsize=16, fontweight='bold', y=0.98)
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.02, 1, 0.96])
     output_path = os.path.join(OUTPUT_DIR, "05_tco_executive_summary_dashboard.png")
     plt.savefig(output_path, dpi=300)
     plt.close()
