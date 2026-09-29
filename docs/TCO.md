@@ -304,6 +304,12 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
    - **Radeon AI PRO R9700S (640 GB/s Peak GDDR6)**: Consistently sustains **71.1%–76.3% of advertised peak bandwidth** (and ~82%–84% of physical 576 GB/s bus ceiling) across all workloads and concurrencies. This empirical ceiling proves that `vllm-mxfp4` autoregressive decode operates near optimal memory bus saturation on RDNA 4.
    - **Instinct MI350P (4,096 GB/s Peak HBM3E)**: Operates at **32.7%–37.4% of peak bandwidth** (1,340–1,530 GB/s) at $C=1 \dots 8$. MI350P’s 4 TB/s HBM3E bus has ~65% unused headroom at low concurrency, which is only amortized at $C \ge 32$.
 
+3. **Time-to-First-Token (TTFT p50) Latency Dynamics**:
+   - **Sub-Second Interactive Zone ($C=1 \dots 4$)**: On standard 1,024-token prompts, 8× R9700S achieves **165–260 ms TTFT p50 at C1**, **189–195 ms at C2**, and **809–937 ms at C4**, remaining well below the 1.0 s interactive threshold.
+   - **Admission Queueing at High Concurrency ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing and protects decode TPOT (<34 ms) by holding incoming streams in an admission queue (17–20 s at C8, 50–58 s at C16).
+
+![Time-to-First-Token Latency vs Concurrency](figures/tco/09_ttft_latency.png)
+
 ## How to read the servers
 
 - **16× R9600D** is the single-slot fill with 512 GB host DRAM ($49,000 server): 512 GB of GDDR6, 10.24 TB/s, 2.4 kW, 3-year TCO $76,787 ($1,600/GPU-yr). Sixteen 27B replicas fit. Flash-Next needs eight cards per replica, so the server holds two ($36,500/replica). At 150 W iso-efficiency projection, token costs range from $0.52 to $2.33 per million tokens at C1–C16.

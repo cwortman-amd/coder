@@ -592,6 +592,73 @@ def plot_hardware_utilization_dashboard():
     plt.close()
     return output_path
 
+# ==============================================================================
+# PLOT 9: Time-to-First-Token (TTFT p50) Latency vs Concurrency per GPU
+# ==============================================================================
+def plot_ttft_latency():
+    fig, ax = plt.subplots(figsize=(11, 6.8), dpi=300)
+
+    # Measured TTFT p50 across concurrencies
+    c_8k1k = [1, 2, 4, 8, 16]
+    ttft_8k1k = [304.8, 443.9, 3319.7, 20445.2, 58410.1]
+
+    c_1k1k = [1, 2, 4, 8, 16]
+    ttft_1k1k = [259.5, 194.9, 808.7, 17258.1, 50360.4]
+
+    c_1k8k = [1, 2, 4]
+    ttft_1k8k = [164.6, 189.1, 936.7]
+
+    c_mi350_1k = [1, 8]
+    ttft_mi350_1k = [100.7, 245.0]
+
+    c_mi350_8k = [1]
+    ttft_mi350_8k = [925.0]
+
+    # Shaded interactive zone (< 1,000 ms)
+    ax.axhspan(80, 1000, color="#E8F5E9", alpha=0.55, label="_nolegend_")
+    ax.axhline(1000, color="#4CAF50", linestyle="--", linewidth=1.5, alpha=0.85)
+    ax.text(2.2, 1120, "1.0s Sub-Second Interactive Threshold", fontsize=9.5, fontweight="bold", color="#2E7D32")
+
+    # Plot curves
+    ax.plot(c_8k1k, ttft_8k1k, "o-", color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out)")
+    ax.plot(c_1k1k, ttft_1k1k, "s--", color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out)")
+    ax.plot(c_1k8k, ttft_1k8k, "^-.", color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out)")
+    ax.plot(c_mi350_1k, ttft_mi350_1k, "D-", color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="Instinct MI350P (1,024 In Reference)")
+    ax.plot(c_mi350_8k, ttft_mi350_8k, "P", color=COLOR_MI350P_DF3, ms=9, label="Instinct MI350P (8,192 In Reference)")
+
+    # Annotations
+    ax.annotate("C1–C4 Sub-Second Ingestion\n165–937 ms (1k Input)", xy=(2, 194.9), xytext=(1.5, 420),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
+                fontweight="bold", color="#E65100", fontsize=9.0)
+
+    ax.annotate("Scheduler Queueing under max-num-seqs 4\nProtects TPOT (<34 ms) by queueing incoming streams",
+                xy=(8, 17258.1), xytext=(2.2, 35000),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight="bold", color="#C62828", fontsize=9.0)
+
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log")
+    ax.set_xticks([1, 2, 4, 8, 16, 32])
+    ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight="bold")
+    ax.set_yticks([100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000])
+    ax.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda y, _: f"{int(y):,} ms" if y < 1000 else f"{y/1000:.1f} s"))
+
+    ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight="bold", labelpad=8)
+    ax.set_ylabel("Time-to-First-Token (TTFT p50 Latency)  [Lower is better]", fontsize=12.5, fontweight="bold", labelpad=8)
+    ax.set_title("Time-to-First-Token (TTFT p50) Latency vs Concurrency per GPU [Lower is better]", fontsize=15, fontweight="bold", pad=15)
+    ax.set_ylim(80, 120000)
+    ax.set_xlim(0.8, 36)
+    ax.grid(True, which="both", linestyle="--", alpha=0.6)
+    ax.legend(loc="lower right", frameon=True, framealpha=0.95, facecolor="white", fontsize=9.5)
+
+    plt.tight_layout()
+    output_path = os.path.join(OUTPUT_DIR, "09_ttft_latency.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
 if __name__ == "__main__":
     p1 = plot_capex_and_tco()
     p2 = plot_cost_8k_1k()
@@ -601,10 +668,12 @@ if __name__ == "__main__":
     p6 = plot_power_utilization()
     p7 = plot_memory_bandwidth_utilization()
     p8 = plot_hardware_utilization_dashboard()
+    p9 = plot_ttft_latency()
     
     # Also copy to artifact directory for presentation / embedding
-    for p in [p1, p2, p3, p4, p5, p6, p7, p8]:
+    for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9]:
         dest = os.path.join(ARTIFACT_DIR, os.path.basename(p))
         shutil.copy(p, dest)
         print(f"Generated: {p} -> {dest}")
+
 
