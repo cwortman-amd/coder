@@ -369,7 +369,8 @@ docs/figures/pd/
 ├── 02_pdd_sustainable_capacity_sweep.png    # Exhibit 2: Sustainable Capacity & Queue Stability
 ├── 03_pdd_decode_retention_crossover.png    # Exhibit 3: Decode Retention Crossover (η < 0.50)
 ├── 04_pdd_token_latency_timeline.png        # Exhibit 4: Real-Time Token Freeze Timeline
-└── 05_pdd_presales_tco_tokenomics.png       # Exhibit 5: Presales TCO & Fleet Sizing
+├── 05_pdd_presales_tco_tokenomics.png       # Exhibit 5: Presales TCO & Fleet Sizing
+└── 06_pdd_vs_dp_tradeoff_pareto.png        # Exhibit 6: DP Replications vs PDD Tradeoff Pareto
 ```
 
 1. **Exhibit 1: Executive Master Dashboard** ([`01_pdd_benefits_master_dashboard.png`](file:///home/amd/workspace/coder/docs/figures/pd/01_pdd_benefits_master_dashboard.png)): 4-panel overview connecting stall distributions, usable goodput, break-even crossover, and handoff delay tolerance.
@@ -377,6 +378,8 @@ docs/figures/pd/
 3. **Exhibit 3: Decode Retention Crossover** ([`03_pdd_decode_retention_crossover.png`](file:///home/amd/workspace/coder/docs/figures/pd/03_pdd_decode_retention_crossover.png)): Shows $\eta(\lambda)$ and the break-even condition where 1 dedicated decode card beats 2 collocated cards in raw volume.
 4. **Exhibit 4: Real-Time Token Freeze Timeline** ([`04_pdd_token_latency_timeline.png`](file:///home/amd/workspace/coder/docs/figures/pd/04_pdd_token_latency_timeline.png)): Side-by-side waterfall timeline contrasting a measured $613.3\text{ ms}$ forward execution stall against clockwork 48.2 ms decode pacing.
 5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](file:///home/amd/workspace/coder/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)): Compares cost per 1,000 qualified requests ($\$0.49\text{ vs. }\$3.98$) and required GPU fleet counts across diurnal demand.
+6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](file:///home/amd/workspace/coder/docs/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)): 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
+
 
 ### 10.2 Engineering Audit Appendix Checklist
 Every customer deliverable must include:
