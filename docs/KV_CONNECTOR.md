@@ -6,7 +6,7 @@ The serving target is `Qwen3.8-27B-Quark-AWQ-MXFP4-sharded`, served name `awq`, 
 
 This document records the connector architecture, how to run it, and the measurements from this two-GPU host. The only measured pair is cross-NUMA. Radeon AI PRO R9700 and RTX PRO 6000 Blackwell remain unmeasured. Copy bandwidth and NIXL transfer time are separate from serving handoff time.
 
-The native `HIP_IPC` path has completed real Qwen3.8 prefill-to-decode requests. That is an experimental transport milestone. Greedy completion token IDs do not yet match a single-GPU control, and the UCX `rocm_ipc` serving waterfall was not rerun, so this is not a production-qualified P/D result.
+The native `HIP_IPC` path has completed real Qwen3.8 prefill-to-decode requests. On 29 Sep the measured placement was GPU 1 prefill and GPU 0 decode. Four serial 8192-in / 1024-out prompts through the router produced **72.49 tok/s** aggregate, with inter-token latency **10.58 ms** p50 and time-to-first-token **1.47 s** p50. Failed transfers were zero. Greedy completion token IDs still do not match a single-GPU control, and the UCX `rocm_ipc` serving waterfall was not rerun, so this is not a production-qualified P/D result.
 
 Related phase-isolation numbers, without KV handoff, are in [MI350P-PD.md](MI350P-PD.md).
 
@@ -22,19 +22,23 @@ benchmark/pd_router.py          :8000
   │  prefill: max_tokens=1, return_token_ids,
   │           kv_transfer_params.do_remote_decode=true
   ▼
-GPU 0  rocm-mxfp4-pd-prefill    :8100
+GPU 1  prefill                     :8100
   NixlConnector  kv_role=kv_producer
+  HIP_VISIBLE_DEVICES=1,0
   side channel                    :5600
   │  response: prompt_token_ids + remote_block_ids,
   │            remote_engine_id, remote_host, remote_port
   ▼
 router forwards that handshake unchanged
   ▼
-GPU 1  rocm-mxfp4-pd-decode     :8200
+GPU 0  decode                      :8300
   NixlConnector  kv_role=kv_consumer
-  side channel                    :5601
+  HIP_VISIBLE_DEVICES=0,1
+  side channel                    :5602
   pull KV into decoder-owned blocks, then stream tokens
 ```
+
+Copy microbenchmarks are faster GPU 0→GPU 1 (48.3 GB/s versus 21.2 GB/s). Serving is not. A connector consumer on GPU 1 stayed near 8 tok/s after its CPUs and memory were moved to NUMA 1. The same consumer on GPU 0, NUMA 0, reached about 74 tok/s on a warm 1K/256 request. Decode placement wins, so the measured pair prefills on GPU 1 and decodes on GPU 0.
 
 `NixlConnector` in this image is the pull connector (`NixlPullConnector`). The producer keeps the blocks until the consumer reads them. The Unix/TCP side channel carries metadata. The payload is supposed to move through NIXL’s selected UCX transport.
 
@@ -89,7 +93,9 @@ The decoder still owns local KV slots. The preferred path copies producer VRAM i
 
 The 29 Sep “decode-biased” process used `--max-num-batched-tokens 2048` and `--max-num-seqs 16`. That cut the compile range to **2048** and CUDA-graph capture to **32**. The validated single-card MXFP4 control uses the defaults from `scripts/launch_vllm_mxfp4.sh`: compile range **8192**, capture through **512**, about **79 tok/s** at 1K/1K C1.
 
-A connector restart should use that control command, plus the Nixl flags, on both GPUs. Do not add the 2048/16 overrides until the control command matches the single-card baseline.
+A connector restart should use that control command, plus the Nixl flags, on both GPUs. Do not add the 2048/16 overrides.
+
+NixlConnector forces an 832-token attention page so the attention page is at least as large as the Mamba page. Each sequence then needs one Mamba block. An 8 GiB KV pool had 157 blocks and refused the default 1024-sequence graph capture. The measured pair uses a 32 GiB pool and `--max-num-seqs 512`, which is inside that block count and still captures graphs through batch 512. The 96 GiB single-GPU control pool is larger than this 30 GiB host can keep resident twice.
 
 ---
 
@@ -111,23 +117,38 @@ Shared arguments, from the frozen MXFP4 recipe:
 
 Environment on both containers: `PYTORCH_ROCM_ARCH=gfx950`, `GPU_ARCHS=gfx950`, `SAFETENSORS_FAST_GPU=1`. Set `HIP_VISIBLE_DEVICES` only. Leave `ROCR_VISIBLE_DEVICES` and `HSA_OVERRIDE_GFX_VERSION` unset.
 
-Prefill, GPU 0, port 8100:
+Apply the NIXL plugin onto a v1.4.0 tree, then build it inside the vLLM image. The helper applies every patch under `patches/nixl/`:
+
+```bash
+scripts/apply_nixl_hip_ipc_patch.sh --check /path/to/nixl
+scripts/apply_nixl_hip_ipc_patch.sh /path/to/nixl
+```
+
+Both engines need `VLLM_SSM_CONV_STATE_LAYOUT=DS`, `HSA_ENABLE_IPC_MODE_LEGACY=1`, `NIXL_PLUGIN_DIR` pointed at `libplugin_HIP_IPC.so`, and the peer GPU visible. Hiding the peer makes `hipIpcOpenMemHandle` return `invalid device context` on a GPU 1→GPU 0 import. List the local GPU first.
+
+Prefill, GPU 1, port 8100, CPUs and memory on NUMA 1:
 
 ```text
-HIP_VISIBLE_DEVICES=0
+HIP_VISIBLE_DEVICES=1,0
 VLLM_NIXL_SIDE_CHANNEL_HOST=127.0.0.1
 VLLM_NIXL_SIDE_CHANNEL_PORT=5600
---kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_producer","engine_id":"pd-prefill"}'
+--max-num-seqs 512
+--kv-cache-memory-bytes 34359738368
+--kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_producer","engine_id":"pd-prefill","kv_load_failure_policy":"fail","kv_connector_extra_config":{"backends":["HIP_IPC"]}}'
 ```
 
-Decode, GPU 1, port 8200:
+Decode, GPU 0, port 8300, CPUs and memory on NUMA 0. Give this container an 8 GiB cgroup memory reservation so the prefiller cannot swap the decoder out.
 
 ```text
-HIP_VISIBLE_DEVICES=1
+HIP_VISIBLE_DEVICES=0,1
 VLLM_NIXL_SIDE_CHANNEL_HOST=127.0.0.1
-VLLM_NIXL_SIDE_CHANNEL_PORT=5601
---kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_consumer","engine_id":"pd-decode"}'
+VLLM_NIXL_SIDE_CHANNEL_PORT=5602
+--max-num-seqs 512
+--kv-cache-memory-bytes 34359738368
+--kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_consumer","engine_id":"pd-decode","kv_load_failure_policy":"fail","kv_connector_extra_config":{"backends":["HIP_IPC"]}}'
 ```
+
+Leave the image `/opt/rocm` in place at runtime. The plugin `.so` is built in the image; a host ROCm 7.14 mount is a different HIP than the image's PyTorch.
 
 The side-channel ports must differ. Both engines default to 5600.
 
@@ -137,12 +158,12 @@ Router, after both `/health` checks succeed:
 python3 benchmark/pd_router.py \
   --host 127.0.0.1 --port 8000 \
   --prefill-url http://127.0.0.1:8100/v1 \
-  --decode-url http://127.0.0.1:8200/v1
+  --decode-url http://127.0.0.1:8300/v1
 ```
 
-Client traffic goes to `http://127.0.0.1:8000/v1/chat/completions`. Phase timing is on `GET /metrics/pd`.
+Client traffic goes to `http://127.0.0.1:8000/v1/chat/completions`. Phase timing is on `GET /metrics/pd`. NIXL copy time is the decode engine's `vllm:nixl_xfer_time_seconds` delta, not the router's `kv_handoff_ms`.
 
-The router container `rocm-mxfp4-pd-router` bind-mounts `benchmark/pd_router.py`. Restart that container after editing the file.
+`benchmark/pd_router.py` drops `stream_options` on the non-streaming prefill subrequest. vLLM 0.30 rejects that field when `stream` is false, which otherwise fails an 8K streaming benchmark with HTTP 400 before any KV move. Restart the router container after editing the file.
 
 ---
 
@@ -486,7 +507,7 @@ Build against ROCm 7.14 and NIXL 1.4.0:
 ```bash
 cd /path/to/nixl
 git checkout v1.4.0
-git apply /path/to/coder/patches/nixl/0001-add-hip-ipc-backend.patch
+/path/to/coder/scripts/apply_nixl_hip_ipc_patch.sh .
 
 meson setup build-hip-ipc \
   --prefix=/opt/nixl-hip-ipc \
@@ -533,9 +554,8 @@ one prepared copy, eliminating UCX's 59.0 ms / 4.55 GB/s descriptor collapse.
 The one-descriptor NIXL result is within measurement noise of raw HIP IPC
 (5.72 ms) and the same-process HIP peer copy (5.54 ms).
 
-Direction remains important. GPU1→GPU0 is byte-perfect but only 12.7 ms p50
-(21.2 GB/s), with 175 ms p95 and 222 ms p99. Place the prefiller on GPU0 and
-decoder on GPU1 for this chassis.
+Direction remains important for the copy itself. GPU1→GPU0 is byte-perfect but only 12.7 ms p50
+(21.2 GB/s), with 175 ms p95 and 222 ms p99. That slower direction is still the serving placement: section 5.5 puts prefill on GPU 1 and decode on GPU 0 because GPU 1 decode is several times slower than the extra copy time.
 
 The backend integration benchmark is
 `scripts/kv_xfer/nixl_hip_ipc_bench.cpp`; results are in
@@ -636,6 +656,14 @@ Four concurrent unique cold 8K requests raised client p50 from 1,189 ms to
 moved 4 × 699,203,584 bytes in 299 ms of summed NIXL time (about 75 ms mean)
 and recomputed one token each. No transfer failed.
 
+#### 8K/1K C1 on the GPU 1→GPU 0 pair
+
+Four serial streaming prompts, 8192 in / 1024 out, through the router. Decode Prometheus recorded zero failed transfers. Aggregate output throughput was **72.49 tok/s** over 56.5 s and 4,096 generated tokens. Inter-token latency was 10.58 ms p50 and 10.64 ms p95. Time to first token was 1.47 s p50 (mean 2.30 s). Per request the rates were 61.4, 73.4, 84.4, and 74.5 tok/s. Artifact: `_results/kv_xfer_mi350p/gates/hip_ipc_pd_gpu1p_gpu0d_8k1k.json`.
+
+About 11 s of a 12 s request is decode. The KV copy is about one token at this cadence. The 1.3–1.5 s time to first token is prefill on GPU 1 plus the handshake; a dedicated 8K prefill on a healthy GPU is 0.73 s (`phase_isolation_matched`, engine prefill). A same-process 1K/1K EngineCore trace attributes decode dispatch time to MXFP4 GEMM and reduction (49%), attention and KV (20%), and elementwise work (12%). That trace is the frozen single-GPU recipe, not this 1P1D process, and the profiled run itself was 57.35 tok/s.
+
+The short-prompt probe on this same pair still fails the token gate. Prompt IDs matched the saved single-GPU control and the first completion ID did not (`optimized_peer_visible_probe.json` against `correctness_single.json`). The 72.49 tok/s figure is a transport measurement.
+
 UCX `rocm_ipc` was not rerun through this serving waterfall. The earlier
 matched microbench remains the UCX comparison: 9.70 ms p50 for one 256 MiB
 descriptor and 59.0 ms p50 at 256 descriptors.
@@ -650,8 +678,9 @@ descriptor and 59.0 ms p50 at 256 descriptors.
 | NixlConnector initialization | Passed with DS layout | `backends=["HIP_IPC"]`, `VLLM_SSM_CONV_STATE_LAYOUT=DS`, 2,512 descriptors |
 | Qwen-shaped 16-region READ | Measured | `nixl_hip_ipc_regions.jsonl`; 20.5 ms p50, 45.3 GB/s |
 | HIP-IPC Qwen3.8 handoff | Functional, experimental | Cold 8K moves 699,203,584 bytes; 240 descriptors coalesce to 96 copies |
-| Single-GPU token-id match | Failed | First completion mismatch at index 2 (81 tokens) and index 5 (8,246 tokens) |
+| Single-GPU token-id match | Failed | First completion mismatch at index 2 (81 tokens) and index 5 (8,246 tokens) on the earlier GPU 0→GPU 1 pair; the GPU 1→GPU 0 short prompt also mismatches at index 0 |
 | 8K HIP-IPC waterfall | Measured | Transfer p50 100 ms, p95 235 ms; client one-token p50 1,189 ms |
+| 8K/1K C1 with HIP-IPC, GPU 1 prefill and GPU 0 decode | Measured, not qualified | 72.49 tok/s aggregate, ITL 10.58 ms p50, TTFT 1.47 s p50, 0 failed transfers |
 | UCX serving waterfall | Not run | Microbench only |
 | 1P1D versus DP=2 | Not run | |
 
@@ -737,7 +766,7 @@ in section 4. A successful request alone is not evidence of a direct PCIe path.
 
 ## 6. Next run
 
-1. Relaunch decoder, then prefill, with the section 2 configs and the frozen MXFP4 command. The PD containers were stopped for the copy tests.
-2. One router request with `kv_load_failure_policy=fail`, with host-monotonic `t3` through `t7` taken from the engines, then greedy token compare against the single-GPU control.
-3. Only after that passes, run the 8K:1K 1P1D versus DP=2 trace.
+1. Find why greedy completion IDs diverge after a byte-moving HIP-IPC handoff. The 8K/1K rate is not qualified until that match exists.
+2. Rerun the UCX `rocm_ipc` serving waterfall on the same prompts, with `NIXL_PLUGIN_DIR` pointed at the wheel plugin rather than the HIP-IPC install.
+3. Only after the token gate passes, run the 8K:1K 1P1D versus DP=2 trace.
 4. On an 8- or 16-card host, repeat the same HIP and NIXL matrix for every prefill→decode pair and classify each pair from `amd-smi topology` plus `lstopo` before quoting one latency.

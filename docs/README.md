@@ -33,7 +33,7 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 |---|---|
 | [PDD-FRAMEWORK.md](PDD-FRAMEWORK.md) | Theoretical & presales evaluation framework, three-part value narrative, 5-level evidence ladder, break-even crossover analysis ($\eta < 0.50$), and enterprise tokenomics model |
 | [PDD-EVAL.md](PDD-EVAL.md) | Comprehensive evaluation process, testbed architectures (2-card 1P1D, 8-card 1P:7D, 16-card 2P:14D), interactive SLO metrics, queue stability criteria, 6-exhibit visual suite, fleet router/simulator tooling, live connector diagnostics, and 4-track execution roadmap |
-| [KV_CONNECTOR.md](KV_CONNECTOR.md) | MI350P 1P1D KV connector: experimental HIP-IPC handoff, token-ID gap, and 8K waterfall |
+| [KV_CONNECTOR.md](KV_CONNECTOR.md) | MI350P 1P1D KV connector: HIP-IPC patch apply script, GPU 1→GPU 0 serving (72.49 tok/s, token-ID gate still open) |
 
 ## How to run
 

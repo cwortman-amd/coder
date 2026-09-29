@@ -137,6 +137,12 @@ echo "started ${NAME}"
 for i in $(seq 1 360); do
   if curl -sf "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
     echo "healthy after ${i} iterations"
+    # Soft reservation (cgroup memory.low). On a 32 GiB host the second engine
+    # otherwise swaps the decoder and inserts 200–900 ms token stalls.
+    if [[ -n "${VLLM_MEMORY_RESERVATION:-}" ]]; then
+      docker update --memory-reservation "${VLLM_MEMORY_RESERVATION}" "${NAME}" >/dev/null
+      echo "memory reservation ${VLLM_MEMORY_RESERVATION} on ${NAME}"
+    fi
     exit 0
   fi
   if ! docker ps --format '{{.Names}}' | grep -qx "${NAME}"; then

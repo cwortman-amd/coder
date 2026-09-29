@@ -17,6 +17,8 @@ export VLLM_PORT="${VLLM_PORT:-8200}"
 export VLLM_SERVED_NAME="${VLLM_SERVED_NAME:-awq}"
 export VLLM_CPUSET_CPUS="${VLLM_CPUSET_CPUS:-0-7,16-23}"
 export VLLM_CPUSET_MEMS="${VLLM_CPUSET_MEMS:-0}"
+# Keep the decoder resident when a prefiller shares this 32 GiB host.
+export VLLM_MEMORY_RESERVATION="${VLLM_MEMORY_RESERVATION:-8g}"
 
 # Do not add max-num-batched-tokens or max-num-seqs here. The validated control
 # uses vLLM's O2 defaults: an 8192-token compile range and graph capture to 512.

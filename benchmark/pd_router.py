@@ -284,6 +284,10 @@ async def chat_completions(request: Request):
         metrics.prefill_start = time.time()
         prefill_payload = dict(body)
         prefill_payload.pop("extra_body", None)
+        # The benchmark requests usage in the final SSE stream. The prefill
+        # subrequest is deliberately non-streaming, and vLLM rejects
+        # stream_options when stream=false.
+        prefill_payload.pop("stream_options", None)
         prefill_payload["max_tokens"] = 1
         prefill_payload["stream"] = False
         prefill_payload["return_token_ids"] = True
