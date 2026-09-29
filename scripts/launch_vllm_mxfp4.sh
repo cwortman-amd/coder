@@ -37,6 +37,16 @@ COMMON=(
   -v "${ROOT}/_results:/results"
 )
 
+if [[ -n "${VLLM_CPUSET_CPUS:-}" ]]; then
+  COMMON+=(--cpuset-cpus "${VLLM_CPUSET_CPUS}")
+fi
+if [[ -n "${VLLM_CPUSET_MEMS:-}" ]]; then
+  COMMON+=(--cpuset-mems "${VLLM_CPUSET_MEMS}")
+fi
+if [[ -n "${VLLM_ENABLE_V1_MULTIPROCESSING:-}" ]]; then
+  COMMON+=(-e "VLLM_ENABLE_V1_MULTIPROCESSING=${VLLM_ENABLE_V1_MULTIPROCESSING}")
+fi
+
 if [[ -n "${REAL_ATTN_CAPTURE_DIR:-}" ]]; then
   COMMON+=(
     -e "REAL_ATTN_CAPTURE_DIR=${REAL_ATTN_CAPTURE_DIR}"

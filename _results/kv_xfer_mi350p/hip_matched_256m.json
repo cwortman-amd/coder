@@ -1,0 +1,1 @@
+{"mode":"hip_ipc_matched","bytes":268435456,"iters":100,"ok":true,"mismatches":0,"registration_ms":172.3403,"cold_transfer_ms":5.7045,"latency_ms":{"p50":5.7164,"p95":56.7911,"p99":58.5556,"min":5.3507,"mean":10.3030,"max":59.4428},"GBps_at_p50":46.9585,"GBps_at_mean":26.0540}

@@ -1,0 +1,66 @@
+[
+    {
+        "gpu": 0,
+        "bdf": "0000:8b:00.0",
+        "links": [
+            {
+                "gpu": 0,
+                "bdf": "0000:8b:00.0",
+                "weight": 0,
+                "link_status": "ENABLED",
+                "link_type": "SELF",
+                "num_hops": 0,
+                "bandwidth": "N/A",
+                "coherent": "SELF",
+                "atomics": "SELF",
+                "dma": "SELF",
+                "bi_dir": "SELF"
+            },
+            {
+                "gpu": 1,
+                "bdf": "0001:c7:00.0",
+                "weight": 72,
+                "link_status": "ENABLED",
+                "link_type": "PCIE",
+                "num_hops": 3,
+                "bandwidth": "N/A",
+                "coherent": "NC",
+                "atomics": "64,32",
+                "dma": "T",
+                "bi_dir": "F"
+            }
+        ]
+    },
+    {
+        "gpu": 1,
+        "bdf": "0001:c7:00.0",
+        "links": [
+            {
+                "gpu": 0,
+                "bdf": "0000:8b:00.0",
+                "weight": 72,
+                "link_status": "ENABLED",
+                "link_type": "PCIE",
+                "num_hops": 3,
+                "bandwidth": "N/A",
+                "coherent": "NC",
+                "atomics": "64,32",
+                "dma": "T",
+                "bi_dir": "F"
+            },
+            {
+                "gpu": 1,
+                "bdf": "0001:c7:00.0",
+                "weight": 0,
+                "link_status": "ENABLED",
+                "link_type": "SELF",
+                "num_hops": 0,
+                "bandwidth": "N/A",
+                "coherent": "SELF",
+                "atomics": "SELF",
+                "dma": "SELF",
+                "bi_dir": "SELF"
+            }
+        ]
+    }
+]

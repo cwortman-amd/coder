@@ -1,0 +1,720 @@
+diff --git a/meson.build b/meson.build
+index 6e1f7ad7..1a9a9860 100644
+--- a/meson.build
++++ b/meson.build
+@@ -29,7 +29,7 @@ if enable_plugins_opt != '' and disable_plugins_opt != ''
+     error('Cannot specify both enable_plugins and disable_plugins options')
+ endif
+ 
+-all_plugins = ['UCX', 'LIBFABRIC', 'POSIX', 'OBJ', 'GDS', 'GDS_MT', 'MOONCAKE', 'HF3FS', 'GUSLI', 'GPUNETIO', 'UCCL', 'AZURE_BLOB', 'INFINIA', 'TELEMETRY_DOCA']
++all_plugins = ['UCX', 'HIP_IPC', 'LIBFABRIC', 'POSIX', 'OBJ', 'GDS', 'GDS_MT', 'MOONCAKE', 'HF3FS', 'GUSLI', 'GPUNETIO', 'UCCL', 'AZURE_BLOB', 'INFINIA', 'TELEMETRY_DOCA']
+ 
+ enabled_plugins = {}
+ 
+diff --git a/meson_options.txt b/meson_options.txt
+index eb875fc3..c289d83b 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -28,6 +28,7 @@ option('cudapath_lib', type: 'string', value: '', description: 'Library path for
+ option('cudapath_stub', type: 'string', value: '', description: 'Extra Stub path for CUDA')
+ option('nixl_cuda_arch_list', type: 'string', value: 'auto', description: 'Comma-separated CUDA SM targets (e.g. 90,100), or auto to select defaults (sm_80+ normally, sm_90+ when build_nixl_ep is enabled). Use a single target like 100 for faster single-GPU builds.')
+ option('wheel_variant', type: 'string', value: '', description: 'Override wheel variant suffix (e.g. -Dwheel_variant=rocm yields nixl_rocm). Empty = autodetect from CUDA major version.')
++option('hip_path', type: 'string', value: '/opt/rocm', description: 'ROCm installation prefix for the HIP_IPC plugin')
+ option('static_plugins', type: 'string', value: '', description: 'Plugins to be built-in, comma-separated')
+ option('enable_plugins', type: 'string', value: '', description: 'Comma-separated list of plugins to build. Default (empty) builds all available plugins.')
+ option('disable_plugins', type: 'string', value: '', description: 'Comma-separated list of plugins to exclude from build. Cannot be used with enable_plugins.')
+diff --git a/src/plugins/hip_ipc/hip_ipc_backend.cpp b/src/plugins/hip_ipc/hip_ipc_backend.cpp
+new file mode 100644
+index 00000000..9c9af0f0
+--- /dev/null
++++ b/src/plugins/hip_ipc/hip_ipc_backend.cpp
+@@ -0,0 +1,474 @@
++/*
++ * SPDX-License-Identifier: Apache-2.0
++ */
++#include "hip_ipc_backend.h"
++
++#include "common/nixl_log.h"
++
++#include <array>
++#include <cstring>
++#include <limits>
++#include <memory>
++#include <fcntl.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <unistd.h>
++
++namespace {
++
++constexpr uint32_t kMagic = 0x48495043; // HIPC
++constexpr uint16_t kVersion = 1;
++
++#pragma pack(push, 1)
++struct WireMD {
++    uint32_t magic;
++    uint16_t version;
++    uint16_t reserved;
++    uint64_t base;
++    uint64_t length;
++    uint64_t device;
++    hipIpcMemHandle_t handle;
++};
++#pragma pack(pop)
++
++std::string
++hostId() {
++    std::array<char, 256> name{};
++    if (gethostname(name.data(), name.size() - 1) != 0) {
++        return {};
++    }
++    return name.data();
++}
++
++nixl_status_t
++hipStatus(hipError_t status, const char *operation) {
++    if (status == hipSuccess) {
++        return NIXL_SUCCESS;
++    }
++    NIXL_ERROR << "HIP_IPC " << operation << " failed: " << hipGetErrorString(status);
++    return NIXL_ERR_BACKEND;
++}
++
++bool
++rangeContains(uintptr_t base, size_t extent, uintptr_t address, size_t length) {
++    if (address < base || length > extent) {
++        return false;
++    }
++    return address - base <= extent - length;
++}
++
++std::string
++mappingKey(const hipIpcMemHandle_t &handle, int device) {
++    std::string key(reinterpret_cast<const char *>(&handle), sizeof(handle));
++    key.append(reinterpret_cast<const char *>(&device), sizeof(device));
++    return key;
++}
++
++} // namespace
++
++nixlHipIpcMapping::~nixlHipIpcMapping() {
++    if (address) {
++        int previous = -1;
++        [[maybe_unused]] hipError_t get_status = hipGetDevice(&previous);
++        [[maybe_unused]] hipError_t set_status = hipSetDevice(importDevice);
++        hipError_t status = hipIpcCloseMemHandle(address);
++        if (status != hipSuccess) {
++            NIXL_ERROR << "HIP_IPC close failed: " << hipGetErrorString(status);
++        }
++        if (previous >= 0 && previous != importDevice) {
++            [[maybe_unused]] hipError_t restore_status = hipSetDevice(previous);
++        }
++    }
++}
++
++nixlHipIpcReqH::~nixlHipIpcReqH() {
++    if (stream && active) {
++        [[maybe_unused]] hipError_t set_status = hipSetDevice(copyDevice);
++        [[maybe_unused]] hipError_t sync_status = hipStreamSynchronize(stream);
++    }
++    if (completion) {
++        [[maybe_unused]] hipError_t event_status = hipEventDestroy(completion);
++    }
++    if (stream && ownsStream) {
++        [[maybe_unused]] hipError_t stream_status = hipStreamDestroy(stream);
++    }
++}
++
++nixlHipIpcEngine::nixlHipIpcEngine(const nixlBackendInitParams *init_params)
++    : nixlBackendEngine(init_params), hostId_(hostId()) {
++    if (init_params->customParams) {
++        auto stream_count = init_params->customParams->find("max_inflight_streams");
++        if (stream_count != init_params->customParams->end()) {
++            try {
++                streamCount_ = std::clamp<size_t>(
++                    std::stoull(stream_count->second), 1, 16);
++            } catch (const std::exception &) {
++                initErr = true;
++                return;
++            }
++        }
++    }
++    socketPath_ = "/tmp/nixl-hip-ipc-" + std::to_string(getuid()) + "-" +
++                  std::to_string(getpid()) + ".sock";
++    notifFd_ = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
++    sockaddr_un address{};
++    address.sun_family = AF_UNIX;
++    std::strncpy(address.sun_path, socketPath_.c_str(), sizeof(address.sun_path) - 1);
++    unlink(socketPath_.c_str());
++    initErr = hostId_.empty() || notifFd_ < 0 ||
++              bind(notifFd_, reinterpret_cast<sockaddr *>(&address), sizeof(address)) != 0;
++    if (!initErr) {
++        int flags = fcntl(notifFd_, F_GETFL, 0);
++        initErr = flags < 0 || fcntl(notifFd_, F_SETFL, flags | O_NONBLOCK) != 0;
++    }
++}
++
++nixlHipIpcEngine::~nixlHipIpcEngine() {
++    for (auto &[device, streams] : streamPools_) {
++        [[maybe_unused]] hipError_t set_status = hipSetDevice(device);
++        for (hipStream_t stream : streams) {
++            [[maybe_unused]] hipError_t sync_status = hipStreamSynchronize(stream);
++            [[maybe_unused]] hipError_t destroy_status = hipStreamDestroy(stream);
++        }
++    }
++    if (notifFd_ >= 0) {
++        close(notifFd_);
++    }
++    if (!socketPath_.empty()) {
++        unlink(socketPath_.c_str());
++    }
++}
++
++hipStream_t
++nixlHipIpcEngine::getStream(int device) const {
++    std::lock_guard lock(streamMutex_);
++    auto &pool = streamPools_[device];
++    if (pool.empty()) {
++        if (hipSetDevice(device) != hipSuccess) {
++            return nullptr;
++        }
++        pool.reserve(streamCount_);
++        for (size_t i = 0; i < streamCount_; ++i) {
++            hipStream_t stream = nullptr;
++            if (hipStreamCreateWithFlags(&stream, hipStreamNonBlocking) != hipSuccess) {
++                for (hipStream_t existing : pool) {
++                    [[maybe_unused]] hipError_t status = hipStreamDestroy(existing);
++                }
++                pool.clear();
++                return nullptr;
++            }
++            pool.push_back(stream);
++        }
++    }
++    return pool[nextStream_.fetch_add(1, std::memory_order_relaxed) % pool.size()];
++}
++
++nixl_status_t
++nixlHipIpcEngine::registerMem(const nixlBlobDesc &mem, const nixl_mem_t &type,
++                              nixlBackendMD *&out) {
++    if (type != VRAM_SEG || mem.addr == 0 || mem.len == 0 ||
++        mem.devId > static_cast<uint64_t>(std::numeric_limits<int>::max())) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    if (auto status = hipStatus(hipSetDevice(static_cast<int>(mem.devId)), "set export device");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    hipIpcMemHandle_t handle{};
++    if (auto status = hipStatus(
++            hipIpcGetMemHandle(&handle, reinterpret_cast<void *>(mem.addr)), "export allocation");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    out = new nixlHipIpcPrivateMD(mem.addr, mem.len, mem.devId, handle);
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::deregisterMem(nixlBackendMD *meta) {
++    delete static_cast<nixlHipIpcPrivateMD *>(meta);
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::getPublicData(const nixlBackendMD *meta, std::string &out) const {
++    const auto *md = dynamic_cast<const nixlHipIpcPrivateMD *>(meta);
++    if (!md) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    WireMD wire{kMagic, kVersion, 0, md->base, md->length, md->device, md->handle};
++    out.assign(reinterpret_cast<const char *>(&wire), sizeof(wire));
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::getConnInfo(std::string &out) const {
++    out = hostId_ + "|" + socketPath_;
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::loadRemoteConnInfo(const std::string &agent, const std::string &info) {
++    const size_t separator = info.find('|');
++    if (separator == std::string::npos || info.substr(0, separator) != hostId_) {
++        NIXL_ERROR << "HIP_IPC only supports agents on host " << hostId_;
++        return NIXL_ERR_NOT_SUPPORTED;
++    }
++    remoteSockets_[agent] = info.substr(separator + 1);
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::connect(const std::string &agent) {
++    return remoteSockets_.contains(agent) ? NIXL_SUCCESS : NIXL_ERR_NOT_FOUND;
++}
++
++nixl_status_t
++nixlHipIpcEngine::disconnect(const std::string &agent) {
++    remoteSockets_.erase(agent);
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::genNotif(const std::string &agent, const std::string &message) const {
++    auto remote = remoteSockets_.find(agent);
++    if (remote == remoteSockets_.end()) {
++        return NIXL_ERR_NOT_FOUND;
++    }
++    sockaddr_un address{};
++    address.sun_family = AF_UNIX;
++    if (remote->second.size() >= sizeof(address.sun_path)) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    std::strncpy(address.sun_path, remote->second.c_str(), sizeof(address.sun_path) - 1);
++    std::string payload = localAgent;
++    payload.push_back('\0');
++    payload.append(message);
++    ssize_t sent = sendto(notifFd_, payload.data(), payload.size(), MSG_DONTWAIT,
++                          reinterpret_cast<sockaddr *>(&address), sizeof(address));
++    return sent == static_cast<ssize_t>(payload.size()) ? NIXL_SUCCESS : NIXL_ERR_BACKEND;
++}
++
++nixl_status_t
++nixlHipIpcEngine::getNotifs(notif_list_t &notifications) {
++    if (!notifications.empty()) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    std::array<char, 65536> buffer{};
++    for (;;) {
++        ssize_t count = recv(notifFd_, buffer.data(), buffer.size(), MSG_DONTWAIT);
++        if (count < 0) {
++            return (errno == EAGAIN || errno == EWOULDBLOCK) ? NIXL_SUCCESS : NIXL_ERR_BACKEND;
++        }
++        const void *separator = std::memchr(buffer.data(), '\0', static_cast<size_t>(count));
++        if (!separator) {
++            continue;
++        }
++        const char *middle = static_cast<const char *>(separator);
++        const size_t agent_length = static_cast<size_t>(middle - buffer.data());
++        const size_t message_length =
++            static_cast<size_t>(buffer.data() + count - (middle + 1));
++        notifications.emplace_back(
++            std::string(buffer.data(), agent_length),
++            std::string(middle + 1, message_length));
++    }
++}
++
++std::shared_ptr<nixlHipIpcMapping>
++nixlHipIpcEngine::importMapping(const hipIpcMemHandle_t &handle, int device) const {
++    const std::string key = mappingKey(handle, device);
++    std::lock_guard lock(mappingMutex_);
++    if (auto existing = mappings_[key].lock()) {
++        return existing;
++    }
++
++    if (hipSetDevice(device) != hipSuccess) {
++        return {};
++    }
++    void *address = nullptr;
++    hipError_t status =
++        hipIpcOpenMemHandle(&address, handle, hipIpcMemLazyEnablePeerAccess);
++    if (status != hipSuccess) {
++        NIXL_ERROR << "HIP_IPC import failed: " << hipGetErrorString(status);
++        return {};
++    }
++    auto mapping = std::make_shared<nixlHipIpcMapping>();
++    mapping->address = address;
++    mapping->importDevice = device;
++    mappings_[key] = mapping;
++    return mapping;
++}
++
++nixl_status_t
++nixlHipIpcEngine::loadRemoteMD(const nixlBlobDesc &input, const nixl_mem_t &type,
++                               const std::string &agent, nixlBackendMD *&output) {
++    if (type != VRAM_SEG || !remoteSockets_.contains(agent) ||
++        input.metaInfo.size() != sizeof(WireMD)) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    WireMD wire{};
++    std::memcpy(&wire, input.metaInfo.data(), sizeof(wire));
++    if (wire.magic != kMagic || wire.version != kVersion || wire.length == 0) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++
++    int import_device = -1;
++    if (auto status = hipStatus(hipGetDevice(&import_device), "get import device");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    auto mapping = importMapping(wire.handle, import_device);
++    if (!mapping) {
++        return NIXL_ERR_BACKEND;
++    }
++    output = new nixlHipIpcPublicMD(wire.base, wire.length, wire.device, std::move(mapping));
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::unloadMD(nixlBackendMD *input) {
++    delete static_cast<nixlHipIpcPublicMD *>(input);
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::prepXfer(const nixl_xfer_op_t &operation,
++                           const nixl_meta_dlist_t &local,
++                           const nixl_meta_dlist_t &remote,
++                           const std::string &remote_agent, nixlBackendReqH *&handle,
++                           const nixl_opt_b_args_t *opt_args) const {
++    if ((operation != NIXL_READ && operation != NIXL_WRITE) ||
++        local.descCount() == 0 || local.descCount() != remote.descCount()) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++
++    auto request = std::make_unique<nixlHipIpcReqH>();
++    request->remoteAgent = remote_agent;
++    if (opt_args && opt_args->hasNotif) {
++        request->notification = opt_args->notifMsg;
++    }
++    const size_t descriptor_count = static_cast<size_t>(local.descCount());
++    for (size_t i = 0; i < descriptor_count; ++i) {
++        if (local[i].len != remote[i].len || local[i].len == 0) {
++            return NIXL_ERR_MISMATCH;
++        }
++        const auto *local_md = dynamic_cast<const nixlHipIpcPrivateMD *>(local[i].metadataP);
++        const auto *remote_md = dynamic_cast<const nixlHipIpcPublicMD *>(remote[i].metadataP);
++        if (!local_md || !remote_md ||
++            !rangeContains(local_md->base, local_md->length, local[i].addr, local[i].len) ||
++            !rangeContains(remote_md->remoteBase, remote_md->length,
++                           remote[i].addr, remote[i].len)) {
++            return NIXL_ERR_INVALID_PARAM;
++        }
++
++        void *local_address = reinterpret_cast<void *>(local[i].addr);
++        void *remote_address = static_cast<char *>(remote_md->mapping->address) +
++                               (remote[i].addr - remote_md->remoteBase);
++        nixlHipIpcCopy copy;
++        copy.dst = operation == NIXL_READ ? local_address : remote_address;
++        copy.src = operation == NIXL_READ ? remote_address : local_address;
++        copy.length = local[i].len;
++        copy.mapping = remote_md->mapping;
++
++        if (!request->copies.empty()) {
++            auto &previous = request->copies.back();
++            const auto *previous_src = static_cast<const char *>(previous.src);
++            auto *previous_dst = static_cast<char *>(previous.dst);
++            if (previous.mapping == copy.mapping &&
++                previous_src + previous.length == copy.src &&
++                previous_dst + previous.length == copy.dst) {
++                previous.length += copy.length;
++                continue;
++            }
++        }
++        request->copies.push_back(std::move(copy));
++    }
++
++    request->copyDevice = static_cast<int>(
++        operation == NIXL_READ ? local[0].devId : remote[0].devId);
++    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set copy device");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    request->stream = getStream(request->copyDevice);
++    if (!request->stream) {
++        return NIXL_ERR_BACKEND;
++    }
++    if (auto status = hipStatus(
++            hipEventCreateWithFlags(&request->completion, hipEventDisableTiming), "create event");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    handle = request.release();
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::postXfer(const nixl_xfer_op_t &, const nixl_meta_dlist_t &,
++                           const nixl_meta_dlist_t &, const std::string &remote_agent,
++                           nixlBackendReqH *&handle, const nixl_opt_b_args_t *opt_args) const {
++    auto *request = dynamic_cast<nixlHipIpcReqH *>(handle);
++    if (!request || request->active || request->copies.empty()) {
++        return NIXL_ERR_INVALID_PARAM;
++    }
++    request->remoteAgent = remote_agent;
++    if (opt_args && opt_args->hasNotif) {
++        request->notification = opt_args->notifMsg;
++    }
++    request->notificationSent = false;
++    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set post device");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    for (const auto &copy : request->copies) {
++        if (auto status = hipStatus(
++                hipMemcpyAsync(copy.dst, copy.src, copy.length,
++                               hipMemcpyDeviceToDevice, request->stream),
++                "post peer copy");
++            status != NIXL_SUCCESS) {
++            return status;
++        }
++    }
++    if (auto status = hipStatus(
++            hipEventRecord(request->completion, request->stream), "record completion");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    request->active = true;
++    return NIXL_IN_PROG;
++}
++
++nixl_status_t
++nixlHipIpcEngine::checkXfer(nixlBackendReqH *handle) const {
++    auto *request = dynamic_cast<nixlHipIpcReqH *>(handle);
++    if (!request || !request->active) {
++        return request ? NIXL_SUCCESS : NIXL_ERR_INVALID_PARAM;
++    }
++    if (auto status = hipStatus(hipSetDevice(request->copyDevice), "set query device");
++        status != NIXL_SUCCESS) {
++        return status;
++    }
++    hipError_t status = hipEventQuery(request->completion);
++    if (status == hipErrorNotReady) {
++        return NIXL_IN_PROG;
++    }
++    if (status != hipSuccess) {
++        return hipStatus(status, "query completion");
++    }
++    request->active = false;
++    if (!request->notification.empty() && !request->notificationSent) {
++        nixl_status_t notify_status =
++            genNotif(request->remoteAgent, request->notification);
++        if (notify_status != NIXL_SUCCESS) {
++            return notify_status;
++        }
++        request->notificationSent = true;
++    }
++    return NIXL_SUCCESS;
++}
++
++nixl_status_t
++nixlHipIpcEngine::releaseReqH(nixlBackendReqH *handle) const {
++    delete static_cast<nixlHipIpcReqH *>(handle);
++    return NIXL_SUCCESS;
++}
+diff --git a/src/plugins/hip_ipc/hip_ipc_backend.h b/src/plugins/hip_ipc/hip_ipc_backend.h
+new file mode 100644
+index 00000000..562f11f8
+--- /dev/null
++++ b/src/plugins/hip_ipc/hip_ipc_backend.h
+@@ -0,0 +1,127 @@
++/*
++ * SPDX-License-Identifier: Apache-2.0
++ */
++#ifndef NIXL_HIP_IPC_BACKEND_H
++#define NIXL_HIP_IPC_BACKEND_H
++
++#include "backend/backend_engine.h"
++
++#include <hip/hip_runtime.h>
++
++#include <memory>
++#include <mutex>
++#include <atomic>
++#include <string>
++#include <unordered_map>
++#include <vector>
++
++struct nixlHipIpcMapping;
++
++class nixlHipIpcPrivateMD final : public nixlBackendMD {
++public:
++    nixlHipIpcPrivateMD(uintptr_t base, size_t length, uint64_t device,
++                        const hipIpcMemHandle_t &ipc_handle)
++        : nixlBackendMD(true), base(base), length(length), device(device),
++          handle(ipc_handle) {}
++
++    uintptr_t base;
++    size_t length;
++    uint64_t device;
++    hipIpcMemHandle_t handle;
++};
++
++class nixlHipIpcPublicMD final : public nixlBackendMD {
++public:
++    nixlHipIpcPublicMD(uintptr_t remote_base, size_t length, uint64_t remote_device,
++                       std::shared_ptr<nixlHipIpcMapping> mapping)
++        : nixlBackendMD(false), remoteBase(remote_base), length(length),
++          remoteDevice(remote_device), mapping(std::move(mapping)) {}
++
++    uintptr_t remoteBase;
++    size_t length;
++    uint64_t remoteDevice;
++    std::shared_ptr<nixlHipIpcMapping> mapping;
++};
++
++struct nixlHipIpcMapping {
++    void *address = nullptr;
++    int importDevice = -1;
++
++    ~nixlHipIpcMapping();
++};
++
++struct nixlHipIpcCopy {
++    void *dst = nullptr;
++    const void *src = nullptr;
++    size_t length = 0;
++    std::shared_ptr<nixlHipIpcMapping> mapping;
++};
++
++class nixlHipIpcReqH final : public nixlBackendReqH {
++public:
++    ~nixlHipIpcReqH() override;
++
++    std::vector<nixlHipIpcCopy> copies;
++    hipStream_t stream = nullptr;
++    hipEvent_t completion = nullptr;
++    int copyDevice = -1;
++    bool active = false;
++    bool ownsStream = false;
++    bool notificationSent = false;
++    std::string remoteAgent;
++    std::string notification;
++};
++
++class nixlHipIpcEngine final : public nixlBackendEngine {
++public:
++    explicit nixlHipIpcEngine(const nixlBackendInitParams *init_params);
++    ~nixlHipIpcEngine() override;
++
++    bool supportsRemote() const override { return true; }
++    bool supportsLocal() const override { return false; }
++    bool supportsNotif() const override { return true; }
++    nixl_mem_list_t getSupportedMems() const override { return {VRAM_SEG}; }
++
++    nixl_status_t registerMem(const nixlBlobDesc &, const nixl_mem_t &,
++                              nixlBackendMD *&) override;
++    nixl_status_t deregisterMem(nixlBackendMD *) override;
++    nixl_status_t getPublicData(const nixlBackendMD *, std::string &) const override;
++    nixl_status_t getConnInfo(std::string &) const override;
++    nixl_status_t loadRemoteConnInfo(const std::string &, const std::string &) override;
++    nixl_status_t loadRemoteMD(const nixlBlobDesc &, const nixl_mem_t &,
++                               const std::string &, nixlBackendMD *&) override;
++    nixl_status_t unloadMD(nixlBackendMD *) override;
++    nixl_status_t connect(const std::string &) override;
++    nixl_status_t disconnect(const std::string &) override;
++    nixl_status_t getNotifs(notif_list_t &) override;
++    nixl_status_t genNotif(const std::string &, const std::string &) const override;
++
++    nixl_status_t prepXfer(const nixl_xfer_op_t &, const nixl_meta_dlist_t &,
++                           const nixl_meta_dlist_t &, const std::string &,
++                           nixlBackendReqH *&,
++                           const nixl_opt_b_args_t * = nullptr) const override;
++    nixl_status_t postXfer(const nixl_xfer_op_t &, const nixl_meta_dlist_t &,
++                           const nixl_meta_dlist_t &, const std::string &,
++                           nixlBackendReqH *&,
++                           const nixl_opt_b_args_t * = nullptr) const override;
++    nixl_status_t checkXfer(nixlBackendReqH *) const override;
++    nixl_status_t releaseReqH(nixlBackendReqH *) const override;
++
++private:
++    std::string hostId_;
++    std::string socketPath_;
++    int notifFd_ = -1;
++    mutable std::mutex mappingMutex_;
++    mutable std::unordered_map<std::string, std::weak_ptr<nixlHipIpcMapping>> mappings_;
++    std::unordered_map<std::string, std::string> remoteSockets_;
++    size_t streamCount_ = 4;
++    mutable std::mutex streamMutex_;
++    mutable std::unordered_map<int, std::vector<hipStream_t>> streamPools_;
++    mutable std::atomic_size_t nextStream_{0};
++
++    std::shared_ptr<nixlHipIpcMapping>
++    importMapping(const hipIpcMemHandle_t &, int import_device) const;
++    hipStream_t getStream(int device) const;
++};
++
++#endif
+diff --git a/src/plugins/hip_ipc/hip_ipc_plugin.cpp b/src/plugins/hip_ipc/hip_ipc_plugin.cpp
+new file mode 100644
+index 00000000..1953cdc6
+--- /dev/null
++++ b/src/plugins/hip_ipc/hip_ipc_plugin.cpp
+@@ -0,0 +1,17 @@
++/*
++ * SPDX-License-Identifier: Apache-2.0
++ */
++#include "backend/backend_plugin.h"
++#include "hip_ipc_backend.h"
++
++using hip_ipc_plugin_t = nixlBackendPluginCreator<nixlHipIpcEngine>;
++
++extern "C" NIXL_PLUGIN_EXPORT nixlBackendPlugin *
++nixl_plugin_init() {
++    return hip_ipc_plugin_t::create(
++        NIXL_PLUGIN_API_VERSION, "HIP_IPC", "0.1.0",
++        {{"max_inflight_streams", "4"}}, {VRAM_SEG});
++}
++
++extern "C" NIXL_PLUGIN_EXPORT void
++nixl_plugin_fini() {}
+diff --git a/src/plugins/hip_ipc/meson.build b/src/plugins/hip_ipc/meson.build
+new file mode 100644
+index 00000000..048f35c6
+--- /dev/null
++++ b/src/plugins/hip_ipc/meson.build
+@@ -0,0 +1,31 @@
++hip_path = get_option('hip_path')
++if hip_path == ''
++    hip_path = '/opt/rocm'
++endif
++
++hip_dep = declare_dependency(
++    link_args: ['-L' + hip_path + '/lib', '-lamdhip64'],
++    include_directories: include_directories(hip_path + '/include'))
++
++hip_ipc_backend_lib = shared_library(
++    'HIP_IPC',
++    'hip_ipc_backend.cpp',
++    'hip_ipc_backend.h',
++    'hip_ipc_plugin.cpp',
++    dependencies: [nixl_infra, nixl_common_dep, hip_dep],
++    include_directories: [nixl_inc_dirs, utils_inc_dirs],
++    install: true,
++    cpp_args: ['-fPIC', '-D__HIP_PLATFORM_AMD__'],
++    name_prefix: 'libplugin_',
++    install_dir: plugin_install_dir,
++    install_rpath: '$ORIGIN/..:' + hip_path + '/lib')
++
++if get_option('buildtype') == 'debug'
++    run_command(
++        'sh', '-c',
++        'echo "HIP_IPC=' + hip_ipc_backend_lib.full_path() + '" >> ' +
++        plugin_build_dir + '/pluginlist',
++        check: true)
++endif
++
++hip_ipc_backend_interface = declare_dependency(link_with: hip_ipc_backend_lib)
+diff --git a/src/plugins/meson.build b/src/plugins/meson.build
+index ce7103cb..d1b3d136 100644
+--- a/src/plugins/meson.build
++++ b/src/plugins/meson.build
+@@ -21,6 +21,17 @@ if enabled_plugins.get('UCX')
+     endif
+ endif
+ 
++if enabled_plugins.get('HIP_IPC')
++    hip_path = get_option('hip_path')
++    if hip_path == '' or not fs.exists(hip_path + '/include/hip/hip_runtime.h')
++        if is_explicit_enable
++            error('HIP_IPC plugin requested but ROCm headers were not found under hip_path')
++        endif
++    else
++        subdir('hip_ipc')
++    endif
++endif
++
+ if enabled_plugins.get('POSIX')
+     subdir('posix')
+ endif

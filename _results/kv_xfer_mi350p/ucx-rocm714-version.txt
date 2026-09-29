@@ -1,0 +1,5 @@
+# Library version: 1.22.0
+# Library path: /home/amd/workspace/coder/_opt/ucx-rocm714/lib/libucs.so.0
+# API headers version: 1.22.0
+# Git branch '', revision 8a6b06f
+# Configured with: --prefix=/home/amd/workspace/coder/_opt/ucx-rocm714 --with-rocm=/opt/rocm-7.14.0 --enable-mt --enable-shared --disable-static

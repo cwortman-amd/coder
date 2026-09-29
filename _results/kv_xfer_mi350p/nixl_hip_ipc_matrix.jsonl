@@ -1,0 +1,5 @@
+{"backend":"HIP_IPC","bytes":268435456,"descriptors":1,"iters":100,"ok":true,"mismatches":0,"cold_ms":5.8299,"latency_ms":{"p50":5.5535,"p95":56.9352,"p99":60.2188},"GBps_at_p50":48.3364}
+{"backend":"HIP_IPC","bytes":268435456,"descriptors":16,"iters":100,"ok":true,"mismatches":0,"cold_ms":5.6508,"latency_ms":{"p50":5.6708,"p95":57.0549,"p99":108.1724},"GBps_at_p50":47.3366}
+{"backend":"HIP_IPC","bytes":268435456,"descriptors":64,"iters":100,"ok":true,"mismatches":0,"cold_ms":6.0771,"latency_ms":{"p50":5.6624,"p95":57.1282,"p99":62.8790},"GBps_at_p50":47.4065}
+{"backend":"HIP_IPC","bytes":268435456,"descriptors":256,"iters":100,"ok":true,"mismatches":0,"cold_ms":5.5420,"latency_ms":{"p50":5.5579,"p95":57.2270,"p99":59.0941},"GBps_at_p50":48.2980}
+{"backend":"HIP_IPC","bytes":268435456,"descriptors":1,"iters":100,"ok":true,"mismatches":0,"cold_ms":114.2430,"latency_ms":{"p50":12.6828,"p95":174.8311,"p99":222.1202},"GBps_at_p50":21.1653}

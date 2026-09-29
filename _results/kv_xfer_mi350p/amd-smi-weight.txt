@@ -1,0 +1,14 @@
+WEIGHT TABLE:
+             0000:8b:00.0 0001:c7:00.0
+0000:8b:00.0 0            72
+0001:c7:00.0 72           0
+
+
+Legend:
+  SELF = Current GPU
+  ENABLED / DISABLED = Link is enabled or disabled
+  N/A = Not supported
+  T/F = True / False
+  C/NC = Coherent / Non-Coherent io links
+  64,32 = 64 bit and 32 bit atomic support
+  <BW from>-<BW to>

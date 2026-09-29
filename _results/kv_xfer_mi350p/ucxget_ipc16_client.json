@@ -1,0 +1,5 @@
+[1790687988.096524] [faede00001328os:1190596:0]     ucp_context.c:2725 UCX  INFO  Version 1.22.0 (loaded from /home/amd/workspace/coder/_opt/ucx-rocm714/lib/libucp.so.0)
+[1790687988.105973] [faede00001328os:1190596:0]          select.c:721  UCX  ERROR   no copy across memory types transport to <no debug data>: self/memory - not available, tcp/eno17395np0 - no put short, tcp/lo - no put short, cma/memory - no put short
+[1790687988.209710] [faede00001328os:1190596:0]           async.c:726  UCX  DIAG  async handler table is not empty during exit (contains 1 elems)
+[1790687988.209715] [faede00001328os:1190596:0]          thread.c:433  UCX  DIAG  async thread still running (use count 1)
+[1790687988.209716] [faede00001328os:1190596:0]          thread.c:433  UCX  DIAG  async thread still running (use count 1)

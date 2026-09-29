@@ -278,17 +278,16 @@ async def chat_completions(request: Request):
         # 2. Live P/D Choreography via persistent connection pool
         client = get_http_client(request)
 
-        # Step A: Prefill on GPU 0
+        # Step A: Prefill on GPU 0.
+        # vLLM 0.30 reads these as top-level request fields. Nesting them
+        # under extra_body drops both the token IDs and the Nixl handshake.
         metrics.prefill_start = time.time()
         prefill_payload = dict(body)
+        prefill_payload.pop("extra_body", None)
         prefill_payload["max_tokens"] = 1
         prefill_payload["stream"] = False
-        extra_body = prefill_payload.get("extra_body", {})
-        extra_body.update({
-            "return_token_ids": True,
-            "kv_transfer_params": {"do_remote_decode": True}
-        })
-        prefill_payload["extra_body"] = extra_body
+        prefill_payload["return_token_ids"] = True
+        prefill_payload["kv_transfer_params"] = {"do_remote_decode": True}
 
         try:
             prefill_resp = await client.post(
@@ -299,6 +298,8 @@ async def chat_completions(request: Request):
             if prefill_resp.status_code != 200:
                 raise HTTPException(status_code=prefill_resp.status_code, detail=f"Prefill engine error: {prefill_resp.text}")
             prefill_json = prefill_resp.json()
+        except HTTPException:
+            raise
         except httpx.PoolTimeout:
             ROUTER_TELEMETRY["pool_timeouts_total"] += 1
             raise HTTPException(status_code=504, detail="Connection pool timeout reaching prefill engine")
@@ -310,25 +311,27 @@ async def chat_completions(request: Request):
             raise HTTPException(status_code=502, detail=f"Prefill engine unreachable: {str(e)}")
 
         prompt_token_ids = prefill_json.get("prompt_token_ids") or []
-        if not prompt_token_ids:
+        kv_params = prefill_json.get("kv_transfer_params") or {}
+        remote_blocks = kv_params.get("remote_block_ids") or []
+        has_blocks = any(group for group in remote_blocks) if isinstance(remote_blocks, list) else bool(remote_blocks)
+        if not prompt_token_ids or not kv_params.get("do_remote_prefill") or not has_blocks:
             raise HTTPException(
                 status_code=502,
-                detail="Prefill engine did not return prompt_token_ids; cannot hand off KV to decode",
+                detail=(
+                    "Prefill engine did not return a Nixl KV handshake "
+                    f"(prompt_token_ids={len(prompt_token_ids)}, "
+                    f"kv_transfer_params={list(kv_params)})."
+                ),
             )
         prompt_tokens_count = prefill_json.get("usage", {}).get("prompt_tokens", len(prompt_token_ids) or 100)
         metrics.input_tokens = prompt_tokens_count
 
-        # Step B: Decode on GPU 1
+        # Step B: Decode on GPU 1. Forward the producer handshake unchanged.
         metrics.decode_start = time.time()
         decode_payload = dict(body)
-        extra_body_decode = decode_payload.get("extra_body", {})
-        extra_body_decode.update({
-            "kv_transfer_params": {
-                "do_remote_prefill": True,
-                "prompt_token_ids": prompt_token_ids
-            }
-        })
-        decode_payload["extra_body"] = extra_body_decode
+        decode_payload.pop("extra_body", None)
+        decode_payload["return_token_ids"] = True
+        decode_payload["kv_transfer_params"] = kv_params
 
         if stream:
             async def forward_stream():
@@ -422,6 +425,8 @@ async def chat_completions(request: Request):
                     ROUTER_TELEMETRY["finalization_failures_total"] += 1
                     logger.warning(f"[{req_id}] Defensive telemetry finalization failed: {te}")
                 return decode_json
+            except HTTPException:
+                raise
             except httpx.PoolTimeout:
                 ROUTER_TELEMETRY["pool_timeouts_total"] += 1
                 raise HTTPException(status_code=504, detail="Connection pool timeout reaching decode engine")

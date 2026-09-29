@@ -1,0 +1,1 @@
+{"bytes":268435456,"descriptors":64,"iters":100,"ok":true,"mismatches":0,"registration_ms":234.9284,"cold_transfer_ms":67.0563,"latency_ms":{"p50":10.1750,"p95":113.2513,"p99":164.1388,"min":7.2618,"mean":38.5390,"max":171.2309},"GBps_at_p50":26.3819,"GBps_at_mean":6.9653,"dst_dev":1}

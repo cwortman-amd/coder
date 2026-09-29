@@ -1,0 +1,228 @@
+Machine (31GB total)
+  Package L#0
+    NUMANode L#0 (P#0 15GB)
+    L3 L#0 (32MB)
+      L2 L#0 (1024KB) + L1d L#0 (48KB) + L1i L#0 (32KB) + Core L#0
+        PU L#0 (P#0)
+        PU L#1 (P#16)
+      L2 L#1 (1024KB) + L1d L#1 (48KB) + L1i L#1 (32KB) + Core L#1
+        PU L#2 (P#1)
+        PU L#3 (P#17)
+      L2 L#2 (1024KB) + L1d L#2 (48KB) + L1i L#2 (32KB) + Core L#2
+        PU L#4 (P#2)
+        PU L#5 (P#18)
+      L2 L#3 (1024KB) + L1d L#3 (48KB) + L1i L#3 (32KB) + Core L#3
+        PU L#6 (P#3)
+        PU L#7 (P#19)
+    L3 L#1 (32MB)
+      L2 L#4 (1024KB) + L1d L#4 (48KB) + L1i L#4 (32KB) + Core L#4
+        PU L#8 (P#4)
+        PU L#9 (P#20)
+      L2 L#5 (1024KB) + L1d L#5 (48KB) + L1i L#5 (32KB) + Core L#5
+        PU L#10 (P#5)
+        PU L#11 (P#21)
+      L2 L#6 (1024KB) + L1d L#6 (48KB) + L1i L#6 (32KB) + Core L#6
+        PU L#12 (P#6)
+        PU L#13 (P#22)
+      L2 L#7 (1024KB) + L1d L#7 (48KB) + L1i L#7 (32KB) + Core L#7
+        PU L#14 (P#7)
+        PU L#15 (P#23)
+    HostBridge
+      PCI 0000:00:00.0 (HostBridge)
+      PCI 0000:00:00.2 (IOMMU)
+      PCI 0000:00:00.3 (SystemPeripheral)
+      6 x { PCI 0000:00:01.0-02.0 (HostBridge) }
+      PCIBridge
+        PCI 0000:01:00.0 (Ethernet)
+          Net "eno17395np0"
+        PCI 0000:01:00.1 (Ethernet)
+          Net "eno17405np1"
+        PCI 0000:01:00.2 (Ethernet)
+          Net "eno17415np2"
+        PCI 0000:01:00.3 (Ethernet)
+          Net "eno17425np3"
+      PCIBridge
+        PCI 0000:02:00.0 (Instrumentation)
+      PCI 0000:00:14.0 (SMBus)
+      PCI 0000:00:14.3 (ISABridge)
+      PCI 0000:00:18.0 (HostBridge)
+      PCI 0000:00:18.1 (HostBridge)
+      PCI 0000:00:18.2 (HostBridge)
+      PCI 0000:00:18.3 (HostBridge)
+      PCI 0000:00:18.4 (HostBridge)
+      PCI 0000:00:18.5 (HostBridge)
+      PCI 0000:00:18.6 (HostBridge)
+      PCI 0000:00:18.7 (HostBridge)
+      PCI 0000:00:19.0 (HostBridge)
+      PCI 0000:00:19.1 (HostBridge)
+      PCI 0000:00:19.2 (HostBridge)
+      PCI 0000:00:19.3 (HostBridge)
+      PCI 0000:00:19.4 (HostBridge)
+      PCI 0000:00:19.5 (HostBridge)
+      PCI 0000:00:19.6 (HostBridge)
+      PCI 0000:00:19.7 (HostBridge)
+    HostBridge
+      PCI 0000:3e:00.0 (HostBridge)
+      PCI 0000:3e:00.3 (SystemPeripheral)
+      PCI 0000:3e:01.0 (HostBridge)
+      PCIBridge
+        PCI 0000:3f:00.0 (RAID)
+      PCI 0000:3e:02.0 (HostBridge)
+    HostBridge
+      PCI 0000:7a:00.0 (HostBridge)
+      PCI 0000:7a:00.2 (IOMMU)
+      6 x { PCI 0000:7a:01.0-07.0 (HostBridge) }
+      PCIBridge
+        PCI 0000:7b:00.0 (Instrumentation)
+    HostBridge
+      PCI 0000:7c:00.0 (HostBridge)
+      2 x { PCI 0000:7c:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0000:7e:00.0 (HostBridge)
+      2 x { PCI 0000:7e:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0000:80:00.0 (HostBridge)
+      PCI 0000:80:00.2 (IOMMU)
+      3 x { PCI 0000:80:01.0-03.0 (HostBridge) }
+      PCIBridge
+        PCIBridge
+          PCI 0000:82:00.0 (VGA)
+            GPU "card0"
+      PCIBridge
+        PCI 0000:83:00.0 (USB)
+      3 x { PCI 0000:80:04.0-07.0 (HostBridge) }
+      PCIBridge
+        PCI 0000:84:00.0 (Instrumentation)
+        PCI 0000:84:00.5 (Encryption)
+    HostBridge
+      PCI 0000:88:00.0 (HostBridge)
+      PCI 0000:88:00.3 (SystemPeripheral)
+      2 x { PCI 0000:88:01.0-00.0 (HostBridge) }
+      PCIBridge
+        PCIBridge
+          PCIBridge
+            PCI 0000:8b:00.0 (ProcessingAccelerator)
+              GPU "renderD128"
+              GPU "card1"
+    HostBridge
+      PCI 0000:c4:00.0 (HostBridge)
+      PCI 0000:c4:00.2 (IOMMU)
+      PCI 0000:c4:00.3 (SystemPeripheral)
+      6 x { PCI 0000:c4:01.0-07.0 (HostBridge) }
+      PCIBridge
+      PCIBridge
+      PCIBridge
+      PCIBridge
+      PCIBridge
+        PCI 0000:c9:00.0 (Instrumentation)
+      PCIBridge
+        2 x { PCI 0000:ca:00.0-1 (SATA) }
+  Package L#1
+    NUMANode L#1 (P#1 16GB)
+    L3 L#2 (32MB)
+      L2 L#8 (1024KB) + L1d L#8 (48KB) + L1i L#8 (32KB) + Core L#8
+        PU L#16 (P#8)
+        PU L#17 (P#24)
+      L2 L#9 (1024KB) + L1d L#9 (48KB) + L1i L#9 (32KB) + Core L#9
+        PU L#18 (P#9)
+        PU L#19 (P#25)
+      L2 L#10 (1024KB) + L1d L#10 (48KB) + L1i L#10 (32KB) + Core L#10
+        PU L#20 (P#10)
+        PU L#21 (P#26)
+      L2 L#11 (1024KB) + L1d L#11 (48KB) + L1i L#11 (32KB) + Core L#11
+        PU L#22 (P#11)
+        PU L#23 (P#27)
+    L3 L#3 (32MB)
+      L2 L#12 (1024KB) + L1d L#12 (48KB) + L1i L#12 (32KB) + Core L#12
+        PU L#24 (P#12)
+        PU L#25 (P#28)
+      L2 L#13 (1024KB) + L1d L#13 (48KB) + L1i L#13 (32KB) + Core L#13
+        PU L#26 (P#13)
+        PU L#27 (P#29)
+      L2 L#14 (1024KB) + L1d L#14 (48KB) + L1i L#14 (32KB) + Core L#14
+        PU L#28 (P#14)
+        PU L#29 (P#30)
+      L2 L#15 (1024KB) + L1d L#15 (48KB) + L1i L#15 (32KB) + Core L#15
+        PU L#30 (P#15)
+        PU L#31 (P#31)
+    HostBridge
+      PCI 0001:00:00.0 (HostBridge)
+      PCI 0001:00:00.2 (IOMMU)
+      PCI 0001:00:00.3 (SystemPeripheral)
+      6 x { PCI 0001:00:01.0-05.0 (HostBridge) }
+      PCIBridge
+      PCIBridge
+      PCIBridge
+        PCI 0001:03:00.0 (NVMExp)
+          Block(Disk) "nvme0n1"
+      PCIBridge
+      PCIBridge
+        PCI 0001:05:00.0 (Instrumentation)
+    HostBridge
+      PCI 0001:3e:00.0 (HostBridge)
+      PCI 0001:3e:00.3 (SystemPeripheral)
+      2 x { PCI 0001:3e:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0001:7a:00.0 (HostBridge)
+      PCI 0001:7a:00.2 (IOMMU)
+      6 x { PCI 0001:7a:01.0-07.0 (HostBridge) }
+      PCIBridge
+        PCI 0001:7b:00.0 (Instrumentation)
+    HostBridge
+      PCI 0001:7c:00.0 (HostBridge)
+      2 x { PCI 0001:7c:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0001:7e:00.0 (HostBridge)
+      2 x { PCI 0001:7e:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0001:80:00.0 (HostBridge)
+      PCI 0001:80:00.2 (IOMMU)
+      6 x { PCI 0001:80:01.0-07.0 (HostBridge) }
+      PCIBridge
+        PCI 0001:81:00.0 (Instrumentation)
+        PCI 0001:81:00.5 (Encryption)
+    HostBridge
+      PCI 0001:88:00.0 (HostBridge)
+      PCI 0001:88:00.3 (SystemPeripheral)
+      2 x { PCI 0001:88:01.0-02.0 (HostBridge) }
+    HostBridge
+      PCI 0001:c4:00.0 (HostBridge)
+      PCI 0001:c4:00.2 (IOMMU)
+      PCI 0001:c4:00.3 (SystemPeripheral)
+      6 x { PCI 0001:c4:01.0-05.0 (HostBridge) }
+      PCIBridge
+        PCIBridge
+          PCIBridge
+            PCI 0001:c7:00.0 (ProcessingAccelerator)
+              GPU "renderD136"
+              GPU "card9"
+      PCIBridge
+        PCI 0001:c8:00.0 (Instrumentation)
+  GPU "card5"
+  GPU "card16"
+  GPU "renderD138"
+  GPU "card3"
+  GPU "card14"
+  GPU "card12"
+  GPU "renderD134"
+  GPU "card10"
+  GPU "renderD142"
+  GPU "renderD132"
+  GPU "card8"
+  GPU "renderD140"
+  GPU "renderD130"
+  GPU "card6"
+  GPU "renderD139"
+  GPU "renderD129"
+  GPU "card4"
+  GPU "card15"
+  GPU "renderD137"
+  GPU "card2"
+  GPU "card13"
+  GPU "renderD135"
+  GPU "card11"
+  GPU "renderD143"
+  GPU "renderD133"
+  GPU "renderD141"
+  GPU "renderD131"
+  GPU "card7"

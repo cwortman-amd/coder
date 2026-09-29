@@ -1,0 +1,713 @@
+[
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "1MiB_d1",
+    "bytes_each": 1048576,
+    "total_bytes": 1048576,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 20,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 0.23558197426609695,
+      "p95": 5.226480821147596,
+      "p99": 42.15496895834798,
+      "min": 0.22433698177337646,
+      "max": 51.387090992648154,
+      "mean": 2.9218525043688715
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 4.451002685016986,
+      "p95": 0.20062754191256377,
+      "p99": 0.024874315553074313,
+      "min": 4.674111204095915,
+      "max": 0.02040543606856472,
+      "mean": 0.3588736934640359
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd184d830>",
+      "startTime": 406410289175,
+      "postDuration": 16,
+      "xferDuration": 233,
+      "totalBytes": 1048576,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "16MiB_d1",
+    "bytes_each": 16777216,
+    "total_bytes": 16777216,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 12,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 4.1317899886053056,
+      "p95": 28.139954860671388,
+      "p99": 48.18953740585132,
+      "min": 2.8694139909930527,
+      "max": 53.201933042146266,
+      "mean": 8.196062243465954
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 4.0605200279463345,
+      "p95": 0.5962062157906289,
+      "p99": 0.3481505924969278,
+      "min": 5.846913708744309,
+      "max": 0.3153497446551272,
+      "mean": 2.046984942479554
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd2638f70>",
+      "startTime": 406410881230,
+      "postDuration": 105,
+      "xferDuration": 2958,
+      "totalBytes": 16777216,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_d1",
+    "bytes_each": 67108864,
+    "total_bytes": 67108864,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 8,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 54.54768252093345,
+      "p95": 141.33608439296947,
+      "p99": 155.913891280652,
+      "min": 10.36659604869783,
+      "max": 159.55834300257266,
+      "mean": 58.5177592583932
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.2302789210934124,
+      "p95": 0.4748176255782718,
+      "p99": 0.43042260986996367,
+      "min": 6.473567956612883,
+      "max": 0.4205913820433568,
+      "mean": 1.1468119225767277
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd18e22f0>",
+      "startTime": 406412407450,
+      "postDuration": 463,
+      "xferDuration": 159548,
+      "totalBytes": 67108864,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "256MiB_d1",
+    "bytes_each": 268435456,
+    "total_bytes": 268435456,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 6,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 77.73565701791085,
+      "p95": 118.91325101896655,
+      "p99": 119.66319662460592,
+      "min": 67.27002997649834,
+      "max": 119.85068302601576,
+      "mean": 88.75782934289116
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 3.4531830860855854,
+      "p95": 2.2574057449424605,
+      "p99": 2.243258274656542,
+      "min": 3.99041677391524,
+      "max": 2.2397490712817314,
+      "mean": 3.024358053676306
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd18fb1f0>",
+      "startTime": 406416761306,
+      "postDuration": 1742,
+      "xferDuration": 73834,
+      "totalBytes": 268435456,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_d16",
+    "bytes_each": 67108864,
+    "total_bytes": 67108864,
+    "descriptors_each": 16,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 6,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 33.01772548002191,
+      "p95": 190.995751763694,
+      "p99": 226.76992795895788,
+      "min": 10.56478702230379,
+      "max": 235.71347200777382,
+      "mean": 63.316809003784634
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 2.032510205483587,
+      "p95": 0.3513631239454436,
+      "p99": 0.29593370075129954,
+      "min": 6.352126536798471,
+      "max": 0.2847052543428097,
+      "mean": 1.0598901785462482
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd18f9070>",
+      "startTime": 406417341805,
+      "postDuration": 54013,
+      "xferDuration": 54013,
+      "totalBytes": 67108864,
+      "descCount": 16
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_d64",
+    "bytes_each": 67108864,
+    "total_bytes": 67108864,
+    "descriptors_each": 64,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 6,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 57.91370550286956,
+      "p95": 104.76319350709673,
+      "p99": 104.95571870997082,
+      "min": 9.440811001695693,
+      "max": 105.00385001068935,
+      "mean": 57.43741099528658
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.1587734443390922,
+      "p95": 0.6405767307528096,
+      "p99": 0.6394016907782333,
+      "min": 7.108379141150731,
+      "max": 0.6391086040480263,
+      "mean": 1.1683824677527175
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd1910df0>",
+      "startTime": 406418379689,
+      "postDuration": 402,
+      "xferDuration": 9436,
+      "totalBytes": 67108864,
+      "descCount": 64
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_d256",
+    "bytes_each": 67108864,
+    "total_bytes": 67108864,
+    "descriptors_each": 256,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 6,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 57.13626751094125,
+      "p95": 61.347057766397484,
+      "p99": 62.2127555689076,
+      "min": 10.388405993580818,
+      "max": 62.429180019535124,
+      "mean": 49.94683267432265
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.1745405663250412,
+      "p95": 1.0939214763247949,
+      "p99": 1.0786994304675896,
+      "min": 6.459977020677452,
+      "max": 1.0749598822057334,
+      "mean": 1.3436059987543565
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd18e2930>",
+      "startTime": 406418817469,
+      "postDuration": 1174,
+      "xferDuration": 10382,
+      "totalBytes": 67108864,
+      "descCount": 256
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "256MiB_d64",
+    "bytes_each": 268435456,
+    "total_bytes": 268435456,
+    "descriptors_each": 64,
+    "inflight": 1,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 4,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 151.35295648360625,
+      "p95": 266.37620547844557,
+      "p99": 279.45043467741925,
+      "min": 115.98755000159144,
+      "max": 282.71899197716266,
+      "mean": 175.35311373649165
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.7735725963772337,
+      "p95": 1.0077306098638041,
+      "p99": 0.9605834262160505,
+      "min": 2.314347151882395,
+      "max": 0.9494779750123175,
+      "mean": 1.5308279977473678
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd18e03b0>",
+      "startTime": 406419579261,
+      "postDuration": 115960,
+      "xferDuration": 115960,
+      "totalBytes": 268435456,
+      "descCount": 64
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_x2",
+    "bytes_each": 67108864,
+    "total_bytes": 134217728,
+    "descriptors_each": 1,
+    "inflight": 2,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 4,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 41.55447951052338,
+      "p95": 156.55856969242447,
+      "p99": 169.6539091755403,
+      "min": 18.135830003302544,
+      "max": 172.92774404631928,
+      "mean": 68.54313326766714
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 3.2299220103577593,
+      "p95": 0.8573004228620933,
+      "p99": 0.7911266451345097,
+      "min": 7.400693983984129,
+      "max": 0.7761491872816506,
+      "mean": 1.9581498773315134
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd17f1ef0>",
+      "startTime": 406420285686,
+      "postDuration": 416,
+      "xferDuration": 18884,
+      "totalBytes": 67108864,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_x4",
+    "bytes_each": 67108864,
+    "total_bytes": 268435456,
+    "descriptors_each": 1,
+    "inflight": 4,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 4,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 105.24380349670537,
+      "p95": 216.05777197983113,
+      "p99": 228.4984983829781,
+      "min": 63.97033802932128,
+      "max": 231.6086799837649,
+      "mean": 126.51665625162423
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 2.550605803679485,
+      "p95": 1.2424244383352165,
+      "p99": 1.1747799565408301,
+      "min": 4.19624882827664,
+      "max": 1.1590042999200918,
+      "mean": 2.121740045564584
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd17f2030>",
+      "startTime": 406420968548,
+      "postDuration": 353,
+      "xferDuration": 126806,
+      "totalBytes": 67108864,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_x8",
+    "bytes_each": 67108864,
+    "total_bytes": 536870912,
+    "descriptors_each": 1,
+    "inflight": 8,
+    "src_dev": 0,
+    "dst_dev": 1,
+    "direction": "0to1",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 4,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 312.5905095075723,
+      "p95": 372.29955484508537,
+      "p99": 376.6987741633784,
+      "min": 209.7946080029942,
+      "max": 377.79857899295166,
+      "mean": 303.1935515027726
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.7174894811929493,
+      "p95": 1.4420401663477496,
+      "p99": 1.4251995196755092,
+      "min": 2.5590310309230526,
+      "max": 1.4210506387585327,
+      "mean": 1.770720087346879
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7fedd17f22b0>",
+      "startTime": 406424096192,
+      "postDuration": 409,
+      "xferDuration": 118133,
+      "totalBytes": 67108864,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "1MiB_d1",
+    "bytes_each": 1048576,
+    "total_bytes": 1048576,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 1,
+    "dst_dev": 0,
+    "direction": "1to0",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 20,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 0.21442299475893378,
+      "p95": 0.3728280280483904,
+      "p99": 2.2014335816493227,
+      "min": 0.2048599999397993,
+      "max": 2.65858497004956,
+      "mean": 0.3391052479855716
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 4.890221784183489,
+      "p95": 2.812492412356676,
+      "p99": 0.4763150742955428,
+      "min": 5.118500440828552,
+      "max": 0.3944113172280715,
+      "mean": 3.092184524506725
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7a085cb27030>",
+      "startTime": 406429789819,
+      "postDuration": 13,
+      "xferDuration": 209,
+      "totalBytes": 1048576,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "16MiB_d1",
+    "bytes_each": 16777216,
+    "total_bytes": 16777216,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 1,
+    "dst_dev": 0,
+    "direction": "1to0",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 12,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 2.837059524608776,
+      "p95": 54.871954987174824,
+      "p99": 57.423933415557265,
+      "min": 2.737974049523473,
+      "max": 58.061928022652864,
+      "mean": 19.766611090744846
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 5.9135932307636505,
+      "p95": 0.30575210968738625,
+      "p99": 0.29216417270807726,
+      "min": 6.127602269612442,
+      "max": 0.28895382174450646,
+      "mean": 0.8487654218003741
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7a085d0fdab0>",
+      "startTime": 406430213658,
+      "postDuration": 122,
+      "xferDuration": 52071,
+      "totalBytes": 16777216,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "64MiB_d1",
+    "bytes_each": 67108864,
+    "total_bytes": 67108864,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 1,
+    "dst_dev": 0,
+    "direction": "1to0",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 8,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 62.468218471622095,
+      "p95": 198.77662052167577,
+      "p99": 215.0193048804067,
+      "min": 11.241341999266297,
+      "max": 219.07997597008944,
+      "mean": 82.14194561151089
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 1.0742881042859584,
+      "p95": 0.3376094423170961,
+      "p99": 0.3121062271005192,
+      "min": 5.969826734599844,
+      "max": 0.30632130436769006,
+      "mean": 0.8169865408032867
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7a085cc858b0>",
+      "startTime": 406430980683,
+      "postDuration": 394,
+      "xferDuration": 116602,
+      "totalBytes": 67108864,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "backends": [
+      "UCX"
+    ],
+    "ucx_tls": "",
+    "label": "256MiB_d1",
+    "bytes_each": 268435456,
+    "total_bytes": 268435456,
+    "descriptors_each": 1,
+    "inflight": 1,
+    "src_dev": 1,
+    "dst_dev": 0,
+    "direction": "1to0",
+    "ok": true,
+    "mismatched_buffers": 0,
+    "iters": 6,
+    "clock": "host_perf_counter_plus_cuda_synchronize",
+    "latency_ms": {
+      "p50": 316.7104724852834,
+      "p95": 488.8115887733875,
+      "p99": 489.07980977965053,
+      "min": 81.56025101197883,
+      "max": 489.1468650312163,
+      "mean": 297.0310313394293
+    },
+    "bandwidth_GBps_aggregate": {
+      "p50": 0.8475736652897495,
+      "p95": 0.5491593533484052,
+      "p99": 0.5488581835364266,
+      "min": 3.2912534312893986,
+      "max": 0.5487829426911875,
+      "mean": 0.9037286602329707
+    },
+    "nixl_backend": "UCX",
+    "telemetry_last": {
+      "repr": "<nixl_rocm._bindings.nixlXferTelemetry object at 0x7a085cc86b70>",
+      "startTime": 406434722397,
+      "postDuration": 1187,
+      "xferDuration": 90227,
+      "totalBytes": 268435456,
+      "descCount": 1
+    },
+    "transport_mode": "ucx_auto"
+  },
+  {
+    "mode": "nixl_read",
+    "transport_mode": "ucx_rocm_ipc",
+    "direction": "0to1",
+    "ok": false,
+    "returncode_consumer": 1,
+    "returncode_producer": 1,
+    "log": "/workspace/_results/kv_xfer_mi350p/nixl_vram.json.ucx_rocm_ipc.0to1.log"
+  },
+  {
+    "mode": "nixl_read",
+    "transport_mode": "ucx_rocm_ipc",
+    "direction": "1to0",
+    "ok": false,
+    "returncode_consumer": 1,
+    "returncode_producer": 1,
+    "log": "/workspace/_results/kv_xfer_mi350p/nixl_vram.json.ucx_rocm_ipc.1to0.log"
+  },
+  {
+    "mode": "nixl_read",
+    "transport_mode": "ucx_rocm_copy",
+    "direction": "0to1",
+    "ok": false,
+    "returncode_consumer": 1,
+    "returncode_producer": 1,
+    "log": "/workspace/_results/kv_xfer_mi350p/nixl_vram.json.ucx_rocm_copy.0to1.log"
+  },
+  {
+    "mode": "nixl_read",
+    "transport_mode": "posix",
+    "direction": "0to1",
+    "ok": false,
+    "returncode_consumer": 1,
+    "returncode_producer": 1,
+    "log": "/workspace/_results/kv_xfer_mi350p/nixl_vram.json.posix.0to1.log"
+  }
+]
