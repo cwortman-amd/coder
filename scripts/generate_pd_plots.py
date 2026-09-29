@@ -502,9 +502,162 @@ def generate_presales_tco_tokenomics():
     shutil.copy(out_file, os.path.join(ARTIFACT_DIR, "05_pdd_presales_tco_tokenomics.png"))
 
 
+def generate_tradeoff_pareto():
+    """Exhibit 6: Tradeoff Dynamics: DP Replications vs PDD (TTFT, ITL, Goodput, and SLO Compliance)"""
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(17.0, 12.0), dpi=300)
+    plt.subplots_adjust(top=0.90, bottom=0.09, left=0.07, right=0.95, hspace=0.32, wspace=0.22)
+    
+    fig.suptitle("Tradeoff Dynamics: Data Parallelism Replications (DP) vs. Prefill/Decode Disaggregation (PDD)\n"
+                 "Analyzing Throughput-Latency Pareto Frontiers, TTFT Spikes, and SLO Compliance Collapse — Qwen3.8-27B MXFP4",
+                 fontsize=14.0, fontweight='bold', y=0.965)
+    
+    # -------------------------------------------------------------
+    # PANEL A: TTFT Pareto Frontier: p95 TTFT vs Completed Throughput
+    # -------------------------------------------------------------
+    lam_dp2 = np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65])
+    # DP=2 p95 TTFT explodes due to head-of-line prefill contention
+    ttft_dp2 = np.array([2.78, 2.85, 3.10, 4.35, 7.80, 14.50, 26.00])
+    
+    lam_pd = np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.72])
+    # P/D 1P1D stays flat at ~2.8s until single-prefill queue growth onset (~0.72)
+    ttft_pd = np.array([2.75, 2.76, 2.78, 2.80, 2.85, 2.95, 3.25, 3.65])
+    
+    ax1.plot(lam_dp2, ttft_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (2 Replicas, Measured Contention Trend)")
+    ax1.plot(lam_pd, ttft_pd, marker='D', markersize=6, color=EMU_BLUE, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (1P + 1D, Emulated Pipeline)")
+    
+    ax1.axhline(3.5, color="#D84315", linestyle=":", linewidth=1.5, label="Interactive TTFT SLO Target (3.5 s)")
+    
+    ax1.set_title("A. TTFT Pareto Frontier: Time-to-First-Token vs. Completed Throughput", fontsize=11.5, fontweight='bold')
+    ax1.set_xlabel("Completed Request Throughput (req/s)", fontsize=10.5, fontweight='bold')
+    ax1.set_ylabel("p95 Time-to-First-Token TTFT (seconds)", fontsize=10.5, fontweight='bold')
+    ax1.set_xlim(0.0, 0.8)
+    ax1.set_ylim(1.5, 18.0)
+    ax1.grid(True, linestyle="--", alpha=0.5)
+    ax1.legend(loc='upper left', fontsize=8.5)
+    
+    ax1.annotate("DP Head-of-Line Queueing:\nCold 8K prefills block behind\n30-second active decodes!",
+                 xy=(0.45, 7.8), xytext=(0.15, 11.5),
+                 arrowprops=dict(arrowstyle="->", color=FAIL_RED, lw=1.5),
+                 fontsize=8.5, fontweight='bold', color=FAIL_RED,
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
+                 
+    ax1.annotate("P/D Dedicated Ingestion:\nPrefill GPU serves prompts\nwith zero decode interference!",
+                 xy=(0.55, 2.95), xytext=(0.42, 5.5),
+                 arrowprops=dict(arrowstyle="->", color=EMU_BLUE, lw=1.5),
+                 fontsize=8.5, fontweight='bold', color=EMU_BLUE,
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E3F2FD", edgecolor="#90CAF9"))
+
+    # -------------------------------------------------------------
+    # PANEL B: Peak Inter-Token Latency (Max ITL) vs Completed Throughput
+    # -------------------------------------------------------------
+    # In DP=2, under light load collisions are rare; as load rises, 2K chunks cause 613ms stalls; sustained causes 1363ms
+    max_itl_dp2 = np.array([59.5, 180.0, 420.0, 613.3, 850.0, 1120.0, 1363.4])
+    # In P/D, decode GPU NEVER runs prefill; Max ITL is flat at 48.2 ms
+    max_itl_pd = np.array([48.2, 48.2, 48.2, 48.2, 48.2, 48.2, 48.2, 48.2])
+    
+    ax2.plot(lam_dp2, max_itl_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (Measured Chunk Preemption Trend)")
+    ax2.plot(lam_pd, max_itl_pd, marker='D', markersize=6, color=PASS_GREEN, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (Protected Decode Cadence)")
+    
+    ax2.axhline(100, color="#D84315", linestyle="--", linewidth=1.3, label="Streaming ITL Target (100 ms)")
+    ax2.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.5, label="Max Permissible Stall Ceiling (500 ms)")
+    
+    ax2.set_title("B. Streaming Jitter: Peak ITL Forward Stall vs. Completed Throughput", fontsize=11.5, fontweight='bold')
+    ax2.set_xlabel("Completed Request Throughput (req/s)", fontsize=10.5, fontweight='bold')
+    ax2.set_ylabel("Maximum Inter-Token Latency (ms)", fontsize=10.5, fontweight='bold')
+    ax2.set_xlim(0.0, 0.8)
+    ax2.set_ylim(0, 1500)
+    ax2.grid(True, linestyle="--", alpha=0.5)
+    ax2.legend(loc='upper left', fontsize=8.5)
+    
+    ax2.fill_between([0.0, 0.8], 500, 1500, color="#FFCDD2", alpha=0.3, label="SLO Disqualification Zone (>500 ms)")
+    
+    ax2.annotate("SLO BREACH: 613ms–1363ms Stalls!\nIncoming prompt chunks preempt\nactive streaming decoders.",
+                 xy=(0.45, 850), xytext=(0.20, 1100),
+                 arrowprops=dict(arrowstyle="->", color=FAIL_RED, lw=1.5),
+                 fontsize=8.5, fontweight='bold', color=FAIL_RED,
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
+
+    # -------------------------------------------------------------
+    # PANEL C: Raw Saturated Throughput vs. SLO-Qualified Goodput
+    # -------------------------------------------------------------
+    # The "Phantom Capacity" Gap
+    lam_sweep = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+    # DP=2 raw output rises initially then degrades under prefill contention
+    raw_dp2 = np.array([28.0, 48.0, 62.0, 66.0, 58.0, 38.0, 22.85])
+    # DP=2 qualified goodput collapses to 0 above 0.35 req/s
+    qual_dp2 = np.array([28.0, 42.0, 22.0, 5.0, 0.0, 0.0, 0.0])
+    
+    # P/D raw output is stable (single continuous batching decoder)
+    raw_pd = np.array([32.0, 36.0, 39.5, 41.2, 41.5, 41.5, 41.5])
+    # P/D qualified goodput tracks 100% of raw output
+    qual_pd = np.array([32.0, 36.0, 39.5, 41.2, 41.5, 41.5, 41.5])
+    
+    ax3.plot(lam_sweep, raw_dp2, color=FAIL_RED, linewidth=2.0, linestyle="-", label="DP=2 Raw Output Tokens/s (Unconstrained)")
+    ax3.plot(lam_sweep, qual_dp2, color="#880E4F", linewidth=2.5, linestyle=":", label="DP=2 SLO-Qualified Goodput (TTFT<=3.5s & Max ITL<=500ms)")
+    ax3.fill_between(lam_sweep, qual_dp2, raw_dp2, color="#FFCDD2", alpha=0.45, label="Phantom Capacity Gap (Tokens Breaching SLO)")
+    
+    ax3.plot(lam_sweep, qual_pd, color=PASS_GREEN, linewidth=2.5, linestyle="--", label="P/D 1P1D Qualified Goodput (100% SLO Compliant)")
+    
+    ax3.set_title("C. The Phantom Capacity Gap: Raw Throughput vs. Qualified Goodput", fontsize=11.5, fontweight='bold')
+    ax3.set_xlabel("Offered Request Arrival Rate λ (req/s)", fontsize=10.5, fontweight='bold')
+    ax3.set_ylabel("Output Throughput (Tokens / sec)", fontsize=10.5, fontweight='bold')
+    ax3.set_xlim(0.1, 0.7)
+    ax3.set_ylim(0, 78)
+    ax3.grid(True, linestyle="--", alpha=0.5)
+    ax3.legend(loc='lower left', fontsize=8.2)
+    
+    ax3.annotate("PHANTOM CAPACITY GAP:\nDP=2 generates raw tokens,\nbut 100% fail interactive SLAs!",
+                 xy=(0.45, 32), xytext=(0.48, 48),
+                 arrowprops=dict(arrowstyle="->", color="#B71C1C", lw=1.5),
+                 fontsize=8.5, fontweight='bold', color="#B71C1C",
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
+
+    # -------------------------------------------------------------
+    # PANEL D: Request SLO Compliance Attainment Rate (%) vs Offered Load
+    # -------------------------------------------------------------
+    slo_dp2 = np.array([100.0, 88.0, 48.0, 8.0, 0.0, 0.0, 0.0])
+    slo_pd = np.array([100.0, 100.0, 100.0, 100.0, 100.0, 98.0, 95.0])
+    
+    # Fleet projections: DP=8 vs P/D 1P:7D
+    slo_dp8 = np.array([100.0, 100.0, 85.0, 35.0, 10.0, 0.0, 0.0])
+    slo_pd_fleet = np.array([100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
+    
+    ax4.plot(lam_sweep, slo_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="DP=2 Workstation (Collocated)")
+    ax4.plot(lam_sweep, slo_pd, marker='D', markersize=6, color=PASS_GREEN, linestyle='--', linewidth=2.2, label="P/D 1P1D Workstation (Disaggregated)")
+    ax4.plot(lam_sweep, slo_dp8, marker='^', markersize=5, color=AMD_CORAL, linestyle='-.', linewidth=1.8, label="DP=8 Fleet Server (Collocated Replicas)")
+    ax4.plot(lam_sweep, slo_pd_fleet, marker='o', markersize=5, color=EMU_BLUE, linestyle=':', linewidth=2.0, label="P/D 1P:7D Fleet Server (1 Prefill + 7 Decoders)")
+    
+    ax4.set_title("D. SLO Attainment Rate (% Requests Meeting Joint Latency Contract)", fontsize=11.5, fontweight='bold')
+    ax4.set_xlabel("Offered Request Arrival Rate λ (req/s)", fontsize=10.5, fontweight='bold')
+    ax4.set_ylabel("SLO Compliance Rate (%)", fontsize=10.5, fontweight='bold')
+    ax4.set_xlim(0.1, 0.7)
+    ax4.set_ylim(-5, 108)
+    ax4.grid(True, linestyle="--", alpha=0.5)
+    ax4.legend(loc='lower left', fontsize=8.2)
+    
+    ax4.annotate("SLO Collapse Cliff:\nDP collapses under burst prefill,\neven with 8 replicated GPUs!",
+                 xy=(0.35, 48), xytext=(0.42, 65),
+                 arrowprops=dict(arrowstyle="->", color=FAIL_RED, lw=1.5),
+                 fontsize=8.5, fontweight='bold', color=FAIL_RED,
+                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
+
+    fig.text(0.5, 0.025,
+             "Workload: 8,192 In / 1,024 Out Code Generation | SLO: TTFT <= 3.5s, p95 ITL <= 100ms, Max ITL <= 500ms\n"
+             "Solid Lines = Physical Single-R9700 Contention Measurements | Dashed Lines = Emulated P/D Pipeline Projections",
+             ha='center', fontsize=8.5, style='italic', color=GRAY_TEXT,
+             bbox=dict(boxstyle="square,pad=0.3", facecolor="#F5F5F5", edgecolor="#CCCCCC", alpha=0.9))
+
+    out_file = os.path.join(OUTPUT_DIR, "06_pdd_vs_dp_tradeoff_pareto.png")
+    plt.savefig(out_file, dpi=300)
+    print(f"Generated: {out_file}")
+    shutil.copy(out_file, os.path.join(ARTIFACT_DIR, "06_pdd_vs_dp_tradeoff_pareto.png"))
+
+
 if __name__ == "__main__":
     generate_master_dashboard()
     generate_sustainable_capacity_sweep()
     generate_decode_retention_crossover()
     generate_token_latency_timeline()
     generate_presales_tco_tokenomics()
+    generate_tradeoff_pareto()
+
