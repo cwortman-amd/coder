@@ -22,8 +22,8 @@ To construct a presales-ready, defensible justification for **Prefill/Decode Dis
 ```
 
 1. **Phase Isolation Improves User Experience**: On a single or collocated GPU, heavy prompt prefill execution preempts the continuous batching decode loop, injecting forward stalls of **$59.5\text{ ms}$ (Chunk 4K)**, **$613.3\text{ ms}$ (Chunk 2K)**, and up to **$1,363.4\text{ ms}$ (Sustained Ingestion)**. Disaggregation isolates token generation onto a dedicated decode GPU, predicting an uninterrupted **$48.2\text{ ms}$** inter-token latency (ITL).
-2. **Phase Isolation Increases Sustainable SLO-Qualified Capacity**: Under strict interactive latency contracts ($\text{TTFT} \le 3,500\text{ ms} \land p95\text{ ITL} \le 100\text{ ms} \land \text{Max ITL} \le 500\text{ ms}$), collocated DP=2 suffers catastrophic request failure rates during prompt bursts. While DP=2 continues emitting raw output tokens, **$0\%$ of those streaming sessions satisfy the contract**. P/D achieves **$100\%$ compliance**, delivering an **$86\times\text{--}150\times$ goodput multiplier** in prompt-heavy regimes.
-3. **Capacity Improvement Justifies Hardware & Operating Costs**: By converting invalid/stalled token cycles into compliant completions, P/D reduces the **Cost per SLO-Qualified Completed Request from $\$3.98/\text{k-req}$ down to $\$0.49/\text{k-req}$** under bursty traffic, despite having one prefill GPU dedicated exclusively to prompt ingest.
+2. **Phase Isolation Increases Sustainable SLO-Qualified Capacity**: The 29 Sep contract is $\text{TTFT} \le 3{,}000\text{ ms}$, $\text{TPOT} \le 20\text{ ms}$, $p95\text{ ITL} \le 20\text{ ms}$, $p99\text{ ITL} \le 50\text{ ms}$, and peak ITL $\le 100\text{ ms}$. Isolated R9700 decode is 29.35 ms/token, so neither collocated DP=2 nor P/D qualifies a streaming session. P/D still removes the collocated 609.7 ms stall. The retired 3.5 s / 100 ms / 500 ms contract is not the qualification gate.
+3. **Capacity Improvement Justifies Hardware & Operating Costs**: The $\$3.98/\text{k-req}$ to $\$0.49/\text{k-req}$ comparison was scored on the retired 3.5 s / 100 ms contract. It is not a result under the 20 ms token gate.
 
 ---
 

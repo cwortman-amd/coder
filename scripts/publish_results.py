@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = ROOT / "_results"
 PUBLISHED_ROOT = ROOT / "docs" / "results"
+PROFILING_ROOT = ROOT / "docs" / "profiling"
 
 # Source path relative to _results, published path relative to docs/results.
 MEASUREMENTS = (
@@ -32,8 +33,19 @@ MEASUREMENTS = (
         "kv_xfer/dedicated_prefill_8k.json",
     ),
     (
-        "pd_emulator/pd_emulator_summary_20260929_042526.json",
-        "pd/pd_emulator_summary_20260929_042526.json",
+        "pd_emulator/pd_emulator_summary_20260929_225702.json",
+        "pd/pd_emulator_summary.json",
+    ),
+)
+
+R9700_PROFILING_SUMMARIES = (
+    (
+        "phase_profiling/phase_profile_summary_20260923_194752.json",
+        "r9700/prefix_cache_profile.json",
+    ),
+    (
+        "chunk_sweep/chunk_sweep_summary_20260923_195203.json",
+        "r9700/chunk_sweep_profile.json",
     ),
 )
 
@@ -47,6 +59,23 @@ def publish_measurements() -> list[Path]:
             if not published.is_file():
                 raise FileNotFoundError(
                     f"missing measurement {source_rel}; no published copy at {published}"
+                )
+            continue
+        published.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, published)
+        copied.append(published)
+    return copied
+
+
+def publish_r9700_profiling() -> list[Path]:
+    copied = []
+    for source_rel, published_rel in R9700_PROFILING_SUMMARIES:
+        source = SOURCE_ROOT / source_rel
+        published = PROFILING_ROOT / published_rel
+        if not source.is_file():
+            if not published.is_file():
+                raise FileNotFoundError(
+                    f"missing profiling summary {source_rel}; no published copy at {published}"
                 )
             continue
         published.parent.mkdir(parents=True, exist_ok=True)
@@ -182,6 +211,93 @@ def build_kv_summary() -> dict:
 
 POWER_BANDWIDTH_JSON = ROOT / "docs" / "profiling" / "power_bandwidth.json"
 CONCURRENCY_DIR = SOURCE_ROOT / "priority_eval" / "tco_mi350p" / "concurrency_20260929"
+R9700_RESULTS_DIR = SOURCE_ROOT / "concurrency_sweep"
+R9700_TELEMETRY_DIR = SOURCE_ROOT / "telemetry"
+R9700_RESULTS_JSON = PUBLISHED_ROOT / "r9700" / "concurrency.json"
+
+# Workload, concurrency, and timestamp are the three measured R9700 sweeps.
+R9700_RUNS = (
+    ("8k1k", 1, "20260928_145046", 76.3),
+    ("8k1k", 2, "20260928_145215", 75.4),
+    ("8k1k", 4, "20260928_145315", 71.8),
+    ("8k1k", 8, "20260928_145422", 75.6),
+    ("8k1k", 16, "20260928_145610", 71.1),
+    ("1k1k", 1, "20260928_161420", 75.9),
+    ("1k1k", 2, "20260928_161548", 74.8),
+    ("1k1k", 4, "20260928_161647", 74.3),
+    ("1k1k", 8, "20260928_161748", 74.3),
+    ("1k1k", 16, "20260928_161922", 74.2),
+    ("1k8k", 1, "20260929_042555", 73.6),
+    ("1k8k", 2, "20260929_043041", 74.8),
+    ("1k8k", 4, "20260929_043530", 74.9),
+)
+
+
+def publish_r9700_results() -> tuple[list[dict], list[dict]]:
+    """Reduce R9700 serving and telemetry runs to the fields used by plots."""
+    result_rows = []
+    profiling_rows = []
+    for workload, concurrency, stamp, bandwidth_util_pct in R9700_RUNS:
+        name = f"c{concurrency}_r1_{stamp}.json"
+        result_path = R9700_RESULTS_DIR / name
+        telemetry_path = R9700_TELEMETRY_DIR / name
+        if not result_path.is_file() or not telemetry_path.is_file():
+            if R9700_RESULTS_JSON.is_file() and POWER_BANDWIDTH_JSON.is_file():
+                published_results = json.loads(R9700_RESULTS_JSON.read_text())
+                published_profile = json.loads(POWER_BANDWIDTH_JSON.read_text())
+                return published_results["runs"], [
+                    row
+                    for row in published_profile["runs"]
+                    if row.get("gpu_profile") == "r9700"
+                ]
+            raise FileNotFoundError(f"missing R9700 run or telemetry summary: {name}")
+
+        result = json.loads(result_path.read_text())
+        telemetry = json.loads(telemetry_path.read_text())
+        output_tokens = int(result["total_output_tokens"])
+        joules_per_token = telemetry["total_energy_joules"] / output_tokens
+        result_rows.append(
+            {
+                "workload": workload,
+                "concurrency": concurrency,
+                "output_throughput_tok_s": round(result["output_throughput"], 3),
+                "server_output_throughput_tok_s": round(
+                    result["output_throughput"] * 8, 3
+                ),
+                "ttft_p50_ms": result["median_ttft_ms"],
+                "ttft_p99_ms": result["p99_ttft_ms"],
+                "tpot_p50_ms": result["median_tpot_ms"],
+                "tpot_p99_ms": result["p99_tpot_ms"],
+            }
+        )
+        profiling_rows.append(
+            {
+                "gpu_profile": "r9700",
+                "workload": workload,
+                "concurrency": concurrency,
+                "power_util_pct": round(telemetry["avg_power_w"] / 300 * 100, 2),
+                "avg_power_w": telemetry["avg_power_w"],
+                "bandwidth_util_pct": bandwidth_util_pct,
+                "bandwidth_gbs_estimate": round(bandwidth_util_pct / 100 * 640, 2),
+                "device_tdp_w": 300.0,
+                "device_peak_bw_gbs": 640.0,
+                "joules_per_token": round(joules_per_token, 3),
+            }
+        )
+
+    R9700_RESULTS_JSON.parent.mkdir(parents=True, exist_ok=True)
+    R9700_RESULTS_JSON.write_text(
+        json.dumps(
+            {
+                "gpu_profile": "r9700",
+                "note": "Reduced serving results for the TCO plots; raw benchmark rows are not published.",
+                "runs": result_rows,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+    return result_rows, profiling_rows
 
 
 def publish_power_bandwidth() -> Path:
@@ -190,14 +306,15 @@ def publish_power_bandwidth() -> Path:
     The per-sample JSONL traces stay in local scratch. Joules per token is
     the scalar already reduced onto each concurrency result.
     """
-    if not CONCURRENCY_DIR.is_dir():
+    if not CONCURRENCY_DIR.is_dir() and not R9700_RESULTS_DIR.is_dir():
         if not POWER_BANDWIDTH_JSON.is_file():
             raise FileNotFoundError(
                 f"missing {CONCURRENCY_DIR}; no published copy at {POWER_BANDWIDTH_JSON}"
             )
         return POWER_BANDWIDTH_JSON
 
-    runs = []
+    _, r9700_runs = publish_r9700_results()
+    runs = list(r9700_runs)
     for power_path in sorted(CONCURRENCY_DIR.glob("*_power.json")):
         stem = power_path.name[: -len("_power.json")]
         workload, separator, concurrency = stem.rpartition("_c")
@@ -211,6 +328,7 @@ def publish_power_bandwidth() -> Path:
             joules = bench.get("joules_per_token")
         runs.append(
             {
+                "gpu_profile": "mi350p",
                 "workload": workload,
                 "concurrency": int(concurrency),
                 "power_util_pct": power["power_util_pct"],
@@ -222,15 +340,21 @@ def publish_power_bandwidth() -> Path:
                 "joules_per_token": joules,
             }
         )
-    runs.sort(key=lambda row: (row["workload"], row["concurrency"]))
+    runs.sort(
+        key=lambda row: (
+            row["gpu_profile"],
+            row["workload"],
+            row["concurrency"],
+        )
+    )
     POWER_BANDWIDTH_JSON.parent.mkdir(parents=True, exist_ok=True)
     POWER_BANDWIDTH_JSON.write_text(
         json.dumps(
             {
-                "gpu_profile": "mi350p",
                 "note": (
-                    "Socket power and UMC activity for the power and bandwidth plots. "
-                    "UMC GB/s is UMC percent times the catalog peak and is not a calibrated HBM counter. "
+                    "Reduced R9700 and MI350P power and bandwidth inputs used by the plots. "
+                    "MI350P UMC GB/s is UMC percent times catalog peak and is not a calibrated HBM counter. "
+                    "R9700 bandwidth is the published weight-plus-state traffic estimate. "
                     "Sample traces are not published."
                 ),
                 "runs": runs,
@@ -244,5 +368,6 @@ def publish_power_bandwidth() -> Path:
 
 def publish_and_summarize() -> dict:
     publish_measurements()
+    publish_r9700_profiling()
     publish_power_bandwidth()
     return build_kv_summary()

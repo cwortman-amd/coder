@@ -15,8 +15,9 @@ Evaluation Primitives:
 
 Theorems Evaluated:
 - Raw Capacity Claim: P/D exceeds DP=2 raw output tok/s iff eta < 0.5 (D_collocated < 17.04 tok/s).
-- SLO-Qualified Goodput Claim: P/D preserves 29-30ms decode token cadence and achieves higher
-  qualified goodput under TTFT <= 3.5s, p95 ITL <= 100ms, p99 ITL <= 250ms, Max ITL < 500ms.
+- SLO-Qualified Goodput Claim: qualification uses the 29 Sep contract,
+  TTFT <= 3s, TPOT <= 20ms, p95 ITL <= 20ms, p99 ITL <= 50ms, peak ITL <= 100ms.
+  Single-GPU R9700 decode at 29.35 ms TPOT does not pass that token gate.
 """
 
 import argparse
@@ -65,10 +66,13 @@ class TraceRequest:
 
 @dataclass
 class SLOConfig:
-    max_ttft_ms: float = 3500.0
-    max_p95_itl_ms: float = 100.0
-    max_p99_itl_ms: float = 250.0
-    max_peak_itl_ms: float = 500.0
+    """Interactive contract from docs/TESTPLAN.md, 29 Sep 2026."""
+
+    max_ttft_ms: float = 3000.0
+    max_tpot_ms: float = 20.0
+    max_p95_itl_ms: float = 20.0
+    max_p99_itl_ms: float = 50.0
+    max_peak_itl_ms: float = 100.0
 
 
 @dataclass
@@ -669,8 +673,9 @@ class PD1P1DPipelineEmulator:
 
                 itls = slot["itls"] if slot["itls"] else [self.profile.decode_itl_p50_c1]
                 pct = self._eval_percentiles(itls)
+                tpot_ms = sum(itls) / len(itls)
                 passed_ttft, passed_p95, passed_p99, passed_peak, is_qual, reasons = self._eval_slo(
-                    ttft_ms, pct["p95"], pct["p99"], pct["max"], req.is_streaming_session
+                    ttft_ms, tpot_ms, pct["p95"], pct["p99"], pct["max"], req.is_streaming_session
                 )
 
                 results.append(RequestResult(
@@ -731,12 +736,14 @@ class PD1P1DPipelineEmulator:
     def _eval_slo(
         self,
         ttft_ms: float,
+        tpot_ms: float,
         p95_itl_ms: float,
         p99_itl_ms: float,
         peak_itl_ms: float,
         is_streaming: bool
     ) -> Tuple[bool, bool, bool, bool, bool, List[str]]:
         passed_ttft = ttft_ms <= self.slo_config.max_ttft_ms
+        passed_tpot = tpot_ms <= self.slo_config.max_tpot_ms
         passed_p95 = p95_itl_ms <= self.slo_config.max_p95_itl_ms
         passed_p99 = p99_itl_ms <= self.slo_config.max_p99_itl_ms
         passed_peak = peak_itl_ms <= self.slo_config.max_peak_itl_ms
@@ -745,11 +752,13 @@ class PD1P1DPipelineEmulator:
         if not is_streaming:
             is_qual = passed_ttft
         else:
-            is_qual = passed_ttft and passed_p95 and passed_p99 and passed_peak
+            is_qual = passed_ttft and passed_tpot and passed_p95 and passed_p99 and passed_peak
 
         reasons = []
         if not passed_ttft:
             reasons.append(f"TTFT {ttft_ms:.1f}ms > {self.slo_config.max_ttft_ms:.0f}ms")
+        if is_streaming and not passed_tpot:
+            reasons.append(f"TPOT {tpot_ms:.1f}ms > {self.slo_config.max_tpot_ms:.0f}ms")
         if is_streaming and not passed_p95:
             reasons.append(f"p95 ITL {p95_itl_ms:.1f}ms > {self.slo_config.max_p95_itl_ms:.0f}ms")
         if is_streaming and not passed_p99:
@@ -951,8 +960,9 @@ class DP2ClusterSimulator:
                     tok_s = (s_req.output_tokens / (d_service / 1000.0)) if d_service > 0 else 0.0
 
                 pct = self._eval_percentiles(itls)
+                tpot_ms = sum(itls) / len(itls) if itls else 0.0
                 p_ttft, p_p95, p_p99, p_peak, is_q, r_reasons = self._eval_slo(
-                    ttft_ms, pct["p95"], pct["p99"], pct["max"], is_streaming=True
+                    ttft_ms, tpot_ms, pct["p95"], pct["p99"], pct["max"], is_streaming=True
                 )
 
                 results.append(RequestResult(
@@ -1008,8 +1018,9 @@ class DP2ClusterSimulator:
                 ttft_ms = t_first_tok - b.arrival_ms
 
                 p_ttft, p_p95, p_p99, p_peak, is_q, r_reasons = self._eval_slo(
-                    ttft_ms, self.profile.decode_itl_p95_c1, self.profile.decode_itl_p99_c1,
-                    self.profile.decode_itl_max_c1, is_streaming=False
+                    ttft_ms, self.profile.tpot_c1_ms, self.profile.decode_itl_p95_c1,
+                    self.profile.decode_itl_p99_c1, self.profile.decode_itl_max_c1,
+                    is_streaming=False
                 )
 
                 results.append(RequestResult(
@@ -1070,12 +1081,14 @@ class DP2ClusterSimulator:
     def _eval_slo(
         self,
         ttft_ms: float,
+        tpot_ms: float,
         p95_itl_ms: float,
         p99_itl_ms: float,
         peak_itl_ms: float,
         is_streaming: bool
     ) -> Tuple[bool, bool, bool, bool, bool, List[str]]:
         passed_ttft = ttft_ms <= self.slo_config.max_ttft_ms
+        passed_tpot = tpot_ms <= self.slo_config.max_tpot_ms
         passed_p95 = p95_itl_ms <= self.slo_config.max_p95_itl_ms
         passed_p99 = p99_itl_ms <= self.slo_config.max_p99_itl_ms
         passed_peak = peak_itl_ms <= self.slo_config.max_peak_itl_ms
@@ -1083,11 +1096,13 @@ class DP2ClusterSimulator:
         if not is_streaming:
             is_qual = passed_ttft
         else:
-            is_qual = passed_ttft and passed_p95 and passed_p99 and passed_peak
+            is_qual = passed_ttft and passed_tpot and passed_p95 and passed_p99 and passed_peak
 
         reasons = []
         if not passed_ttft:
             reasons.append(f"TTFT {ttft_ms:.1f}ms > {self.slo_config.max_ttft_ms:.0f}ms")
+        if is_streaming and not passed_tpot:
+            reasons.append(f"TPOT {tpot_ms:.1f}ms > {self.slo_config.max_tpot_ms:.0f}ms")
         if is_streaming and not passed_p95:
             reasons.append(f"p95 ITL {p95_itl_ms:.1f}ms > {self.slo_config.max_p95_itl_ms:.0f}ms")
         if is_streaming and not passed_p99:
@@ -1215,7 +1230,7 @@ class CounterfactualModelSuite:
             "slo_config": asdict(self.slo_config),
             "theorems": {
                 "raw_capacity_threshold": "P/D raw tok/s exceeds DP=2 iff eta < 0.5 (D_collocated < 17.04 tok/s)",
-                "slo_goodput_claim": "P/D preserves 29-30ms decode cadence and exceeds DP=2 in qualified tokens/s"
+                "slo_goodput_claim": "Streaming qualifies only when TTFT <= 3s, TPOT <= 20ms, p95 ITL <= 20ms, p99 ITL <= 50ms, and peak ITL <= 100ms. R9700 single-GPU decode at 29.35 ms TPOT fails that token gate."
             },
             "workloads": {}
         }
@@ -1223,7 +1238,14 @@ class CounterfactualModelSuite:
         print("\n" + "=" * 125)
         print("  COUNTERFACTUAL CAPACITY & INTERFERENCE EVALUATION: P/D 1P1D vs. DP=2")
         print("  Methodology: single-GPU-measured service times + simulated two-R9700 pipeline projection")
-        print(f"  SLO Target: TTFT <= {self.slo_config.max_ttft_ms}ms | p95 ITL <= {self.slo_config.max_p95_itl_ms}ms | Peak ITL <= {self.slo_config.max_peak_itl_ms}ms")
+        print(
+            "  SLO Target: "
+            f"TTFT <= {self.slo_config.max_ttft_ms:.0f}ms | "
+            f"TPOT <= {self.slo_config.max_tpot_ms:.0f}ms | "
+            f"p95 ITL <= {self.slo_config.max_p95_itl_ms:.0f}ms | "
+            f"p99 ITL <= {self.slo_config.max_p99_itl_ms:.0f}ms | "
+            f"Peak ITL <= {self.slo_config.max_peak_itl_ms:.0f}ms"
+        )
         print("=" * 125)
         self._print_service_provenance_table()
 
@@ -1330,10 +1352,14 @@ class CounterfactualModelSuite:
             else:
                 arch_str = f"{s.architecture}"
 
-            if s.theorem_raw_claim_holds:
+            raw_win = s.theorem_raw_claim_holds
+            slo_win = s.streaming_slo_compliance_pct >= 90.0
+            if raw_win and slo_win:
                 th_verdict = "RAW + SLO WIN"
-            elif s.streaming_slo_compliance_pct >= 90.0:
+            elif slo_win:
                 th_verdict = "SLO WIN"
+            elif raw_win:
+                th_verdict = "RAW WIN"
             else:
                 th_verdict = "Contended Fail"
 
@@ -1365,8 +1391,8 @@ class CounterfactualModelSuite:
             r"   - **Empirical Verdict**: In the saturated prompt-bombardment regime ($J3$, measured at **11.42 tok/s**), $\eta = 0.335 < 0.5$. In this regime, **1P1D beats DP=2 in raw throughput by 1.49×** (34.07 tok/s vs 22.84 tok/s). In moderate burst regimes ($J2$, measured at **22.84 tok/s**), $\eta = 0.670 > 0.5$, so DP=2 retains raw output volume.",
             "",
             "2. **The SLO-Goodput Claim (Streaming Quality of Service)**:",
-            r"   - Under interactive streaming SLOs ($p95\text{ ITL} \le 100\text{ ms}$, $\text{Peak ITL} < 500\text{ ms}$, $\text{TTFT} \le 3.5\text{ s}$), **P/D dominates overwhelmingly across all workloads**.",
-            "   - While DP=2 suffers **609.7 ms forward prefill stalls** that cause extensive streaming SLO violations (0% to 50% streaming compliance under prompt arrivals), P/D achieves **100% streaming SLO compliance** by completely isolating token generation on GPU 1.",
+            r"   - The 29 Sep contract is TTFT $\le 3{,}000\text{ ms}$, TPOT $\le 20\text{ ms}$, p95 ITL $\le 20\text{ ms}$, p99 ITL $\le 50\text{ ms}$, and peak ITL $\le 100\text{ ms}$.",
+            "   - Isolated R9700 decode is **29.35 ms TPOT**. Both DP=2 and P/D therefore fail every streaming session. Qualified tokens are the non-streaming completions. P/D still removes the 609.7 ms collocated stall, but that cadence is not inside the 20 ms gate.",
             "",
             "### 1.1 Service Primitives Provenance Classification",
             "",
@@ -1406,10 +1432,14 @@ class CounterfactualModelSuite:
             for r in runs:
                 h_str = f"{r['handoff_ms']:.1f} ms" if r['handoff_ms'] > 0 else "N/A"
                 arch_str = f"**{r['architecture']}**"
-                if r['theorem_raw_claim_holds']:
+                raw_win = r['theorem_raw_claim_holds']
+                slo_win = r['streaming_slo_compliance_pct'] >= 90.0
+                if raw_win and slo_win:
                     th_verdict = "RAW + SLO WIN"
-                elif r['streaming_slo_compliance_pct'] >= 90.0:
+                elif slo_win:
                     th_verdict = "SLO WIN"
+                elif raw_win:
+                    th_verdict = "RAW WIN"
                 else:
                     th_verdict = "Contended Fail"
 
@@ -1438,7 +1468,7 @@ class CounterfactualModelSuite:
             "",
             "1. **Deploy TP=2 First**: Pool memory to **64 GB** to unlock 32K–64K context windows without external connector dependencies.",
             "2. **Deploy DP=2 with Cache-Affine Routing**: For workloads dominated by short/medium contexts (<=8K) and multi-turn sessions where raw aggregate volume is paramount.",
-            r"3. **Deploy P/D 1P1D for SLA-Critical Interactive Services**: When tail ITL ($p95 < 100\text{ ms}$) and jitter-free streaming are contractual SLOs in the presence of cold prompt ingestion bursts.",
+            r"3. **Deploy P/D 1P1D for SLA-Critical Interactive Services**: When the 29 Sep contract (TTFT p95 $\le 3{,}000\text{ ms}$, TPOT and p95 ITL $\le 20\text{ ms}$, peak ITL $\le 100\text{ ms}$) must hold through cold prompt bursts. Single-GPU R9700 decode at 29.35 ms TPOT does not meet the 20 ms token gate.",
             ""
         ])
 

@@ -12,32 +12,71 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from publish_results import publish_and_summarize, publish_power_bandwidth
+from publish_results import (
+    R9700_RESULTS_JSON,
+    publish_and_summarize,
+    publish_power_bandwidth,
+)
 
 _POWER_BANDWIDTH = None
+_R9700_RESULTS = None
 
 
 def power_bandwidth():
-    """Published MI350P power and UMC summary. Rebuilds it when scratch exists."""
+    """Published R9700 and MI350P profiling summary."""
     global _POWER_BANDWIDTH
     if _POWER_BANDWIDTH is None:
         _POWER_BANDWIDTH = json.loads(publish_power_bandwidth().read_text())
     return _POWER_BANDWIDTH
 
 
-def mi350_series(workload, field, max_concurrency=None):
-    rows = [row for row in power_bandwidth()["runs"] if row["workload"] == workload]
+def profile_series(gpu_profile, workload, field, max_concurrency=None):
+    rows = [
+        row
+        for row in power_bandwidth()["runs"]
+        if row["gpu_profile"] == gpu_profile and row["workload"] == workload
+    ]
     if max_concurrency is not None:
         rows = [row for row in rows if row["concurrency"] <= max_concurrency]
     rows.sort(key=lambda row: row["concurrency"])
     return [row["concurrency"] for row in rows], [row[field] for row in rows]
 
 
-def mi350_run(workload, concurrency):
+def profile_run(gpu_profile, workload, concurrency):
     for row in power_bandwidth()["runs"]:
-        if row["workload"] == workload and row["concurrency"] == concurrency:
+        if (
+            row["gpu_profile"] == gpu_profile
+            and row["workload"] == workload
+            and row["concurrency"] == concurrency
+        ):
             return row
-    raise KeyError(f"no {workload} C{concurrency} power summary")
+    raise KeyError(f"no {gpu_profile} {workload} C{concurrency} profiling summary")
+
+
+def mi350_series(workload, field, max_concurrency=None):
+    return profile_series("mi350p", workload, field, max_concurrency)
+
+
+def mi350_run(workload, concurrency):
+    return profile_run("mi350p", workload, concurrency)
+
+
+def r9700_series(workload, field, max_concurrency=None):
+    return profile_series("r9700", workload, field, max_concurrency)
+
+
+def r9700_result_series(workload, field, max_concurrency=None):
+    global _R9700_RESULTS
+    if _R9700_RESULTS is None:
+        publish_power_bandwidth()
+        _R9700_RESULTS = json.loads(R9700_RESULTS_JSON.read_text())
+    rows = [
+        row for row in _R9700_RESULTS["runs"] if row["workload"] == workload
+    ]
+    if max_concurrency is not None:
+        rows = [row for row in rows if row["concurrency"] <= max_concurrency]
+    rows.sort(key=lambda row: row["concurrency"])
+    return [row["concurrency"] for row in rows], [row[field] for row in rows]
 
 # Set styling
 plt.rcParams['font.sans-serif'] = ['Liberation Sans', 'DejaVu Sans', 'Arial', 'sans-serif']
@@ -133,7 +172,9 @@ def plot_cost_8k_1k():
     fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
     
     # Concurrency and cost points
-    c_r9700 = [1, 2, 4, 8, 16]
+    c_r9700, _ = r9700_result_series(
+        "8k1k", "server_output_throughput_tok_s"
+    )
     cost_r9700_peak = [2.12, 1.12, 0.68, 0.50, 0.51]
     cost_r9700_sla  = [2.12, 1.12, 0.68, 0.68, 0.70]
     
@@ -325,8 +366,9 @@ def plot_throughput():
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6.2), dpi=300)
     
     # Panel 1: 8k:1k
-    c_r9700 = [1, 2, 4, 8, 16]
-    tok_r9700_peak = [262, 498, 814, 1109, 1087]
+    c_r9700, tok_r9700_peak = r9700_result_series(
+        "8k1k", "server_output_throughput_tok_s"
+    )
     tok_r9700_sla  = [262, 498, 814, 815, 802]
     
     c_r9600 = [1, 2, 4, 8, 16]
@@ -356,7 +398,9 @@ def plot_throughput():
     ax1.legend(loc='upper left', frameon=True, fontsize=8.0)
     
     # Panel 2: 1k:1k
-    tok_r9700_1k = [266, 516, 976, 976, 977]
+    _, tok_r9700_1k = r9700_result_series(
+        "1k1k", "server_output_throughput_tok_s"
+    )
     tok_r9600_1k = [352, 842, 1558, 1273, 1128]
     tok_mi350_1k_prod = [635, 1179, 2342, 4437, 7229, 12035]
     tok_mi350_1k_df3  = [910, 2923, 4086, 5065, 7066]
@@ -377,12 +421,13 @@ def plot_throughput():
     ax2.legend(loc='upper left', frameon=True, fontsize=8.0)
     
     # Panel 3: 1k:8k (Deep Code Generation)
-    tok_r9700_1k8k = [254, 500, 942]
+    c_r9700_3, tok_r9700_1k8k = r9700_result_series(
+        "1k8k", "server_output_throughput_tok_s"
+    )
     tok_r9600_1k8k = [292, 576, 1085]
     tok_mi350_1k8k_prod = [425, 825, 1622, 3162, 5517, 9715]
     tok_mi350_1k8k_df3  = [759, 2156, 1337, 1656, 1926]
     
-    c_r9700_3 = [1, 2, 4]
     c_r9600_3 = [1, 2, 4]
     
     ax3.plot(c_r9700_3, tok_r9700_1k8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.5, ms=7, label="8× R9700S (Interactive SLA)")
@@ -486,7 +531,9 @@ def plot_executive_dashboard():
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF5350"))
     
     # 4. Throughput Comparison
-    tok_r9700_peak = [262, 498, 814, 1109, 1087]
+    _, tok_r9700_peak = r9700_result_series(
+        "8k1k", "server_output_throughput_tok_s"
+    )
     tok_mi350_prod = [314, 621, 1193, 2297, 4180, 7432]
     tok_r9600_peak = [348, 803, 1225, 1460, 1261]
     
@@ -522,14 +569,9 @@ def plot_power_utilization():
     
     # Concurrency and power utilization (% of device max TDP)
     # R9700S: Max TDP = 300 W
-    c_r9700_8k = [1, 2, 4, 8, 16]
-    pwr_r9700_8k = [226.5 / 300 * 100, 186.1 / 300 * 100, 199.4 / 300 * 100, 238.5 / 300 * 100, 265.1 / 300 * 100]
-    
-    c_r9700_1k = [1, 2, 4, 8, 16]
-    pwr_r9700_1k = [226.8 / 300 * 100, 183.7 / 300 * 100, 187.9 / 300 * 100, 230.0 / 300 * 100, 259.9 / 300 * 100]
-    
-    c_r9700_long = [1, 2, 4]
-    pwr_r9700_long = [195.3 / 300 * 100, 195.2 / 300 * 100, 195.4 / 300 * 100]
+    c_r9700_8k, pwr_r9700_8k = r9700_series("8k1k", "power_util_pct")
+    c_r9700_1k, pwr_r9700_1k = r9700_series("1k1k", "power_util_pct")
+    c_r9700_long, pwr_r9700_long = r9700_series("1k8k", "power_util_pct")
     
     # MI350P socket power from docs/profiling/power_bandwidth.json. TDP is 600 W.
     c_mi350, pwr_mi350_1k = mi350_series("1k1k", "power_util_pct", 32)
@@ -598,14 +640,9 @@ def plot_memory_bandwidth_utilization():
     
     # Memory Bandwidth Utilization (% of Device Max Peak)
     # R9700S: Peak = 640 GB/s (GDDR6)
-    c_r9700_8k = [1, 2, 4, 8, 16]
-    bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
-    
-    c_r9700_1k = [1, 2, 4, 8, 16]
-    bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
-    
-    c_r9700_long = [1, 2, 4]
-    bw_r9700_long = [73.6, 74.8, 74.9]
+    c_r9700_8k, bw_r9700_8k = r9700_series("8k1k", "bandwidth_util_pct")
+    c_r9700_1k, bw_r9700_1k = r9700_series("1k1k", "bandwidth_util_pct")
+    c_r9700_long, bw_r9700_long = r9700_series("1k8k", "bandwidth_util_pct")
     
     # MI350P UMC activity from docs/profiling/power_bandwidth.json.
     # umc_gbs_estimate = UMC% × catalog peak is not a calibrated HBM measurement.
@@ -673,12 +710,9 @@ def plot_hardware_utilization_dashboard():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6.5), dpi=300)
     
     # 1. Power Utilization
-    c_r9700_8k = [1, 2, 4, 8, 16]
-    pwr_r9700_8k = [75.5, 62.0, 66.5, 79.5, 88.4]
-    c_r9700_1k = [1, 2, 4, 8, 16]
-    pwr_r9700_1k = [75.6, 61.2, 62.6, 76.7, 86.6]
-    c_r9700_long = [1, 2, 4]
-    pwr_r9700_long = [65.1, 65.1, 65.1]
+    c_r9700_8k, pwr_r9700_8k = r9700_series("8k1k", "power_util_pct")
+    c_r9700_1k, pwr_r9700_1k = r9700_series("1k1k", "power_util_pct")
+    c_r9700_long, pwr_r9700_long = r9700_series("1k8k", "power_util_pct")
     c_mi350, pwr_mi350_1k = mi350_series("1k1k", "power_util_pct", 32)
     _, pwr_mi350_8k = mi350_series("8k1k", "power_util_pct", 32)
     _, pwr_mi350_long = mi350_series("1k8k", "power_util_pct", 32)
@@ -704,9 +738,9 @@ def plot_hardware_utilization_dashboard():
     ax1.legend(loc='lower right', frameon=True, fontsize=8.5)
     
     # 2. Memory Bandwidth Utilization
-    bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
-    bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
-    bw_r9700_long = [73.6, 74.8, 74.9]
+    _, bw_r9700_8k = r9700_series("8k1k", "bandwidth_util_pct")
+    _, bw_r9700_1k = r9700_series("1k1k", "bandwidth_util_pct")
+    _, bw_r9700_long = r9700_series("1k8k", "bandwidth_util_pct")
     _, bw_mi350_1k = mi350_series("1k1k", "umc_activity_pct", 32)
     _, bw_mi350_8k = mi350_series("8k1k", "umc_activity_pct", 32)
     _, bw_mi350_long = mi350_series("1k8k", "umc_activity_pct", 32)
@@ -819,9 +853,10 @@ def plot_slo_qualified_goodput():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15.5, 6.5), dpi=300)
     
     # Interactive SLA criteria: TTFT <= 3,000 ms AND TPOT <= 20 ms (1,024 in / 1,024 out)
-    c_r9700 = [1, 2, 4, 8, 16]
-    raw_tok_r9700 = [266, 516, 976, 976, 977]
-    goodput_r9700 = [266, 516, 976, 976, 977] # Capacity under max-num-seqs 4
+    c_r9700, raw_tok_r9700 = r9700_result_series(
+        "1k1k", "server_output_throughput_tok_s"
+    )
+    goodput_r9700 = raw_tok_r9700  # Capacity under max-num-seqs 4
     
     c_mi350 = [1, 2, 4, 8, 16, 32]
     raw_tok_mi350 = [635, 1179, 2342, 4437, 7229, 12035]
@@ -944,12 +979,10 @@ def plot_joules_per_token():
     _, j_mi350_long = mi350_series("1k8k", "joules_per_token", 32)
     c64 = mi350_run("1k1k", 64)
 
-    # R9700S empirical data from power-of-two sweeps
-    c_r9700 = [1, 2, 4, 8, 16]
-    j_r9700_8k = [9.28, 4.94, 3.01, 2.98, 3.01]       # 8,192 In / 1,024 Out
-    j_r9700_1k = [9.18, 4.79, 2.53, 2.49, 2.47]       # 1,024 In / 1,024 Out
-    c_r9700_long = [1, 2, 4]
-    j_r9700_long = [6.68, 3.38, 1.79]                  # 1,024 In / 8,192 Out
+    # R9700S empirical data from the published power-of-two sweep summary.
+    c_r9700, j_r9700_8k = r9700_series("8k1k", "joules_per_token")
+    _, j_r9700_1k = r9700_series("1k1k", "joules_per_token")
+    c_r9700_long, j_r9700_long = r9700_series("1k8k", "joules_per_token")
 
     # Plot R9700S curves
     ax.plot(c_r9700, j_r9700_8k, "o-", color=COLOR_R9700S_PEAK, lw=2.4, ms=7, label="R9700S 8,192 in / 1,024 out")

@@ -213,7 +213,7 @@ Workloads are specified as replayable `.jsonl` trace files to guarantee identica
 |---|---|---|---|
 | **1. Decode-Dominant Chat** | 1,024 : 4,096 | Low (< 25%) | **DP=2 Strong Win**: Two active decode replicas provide double the output token concurrency ($2\times D$). Prefill interference is negligible. |
 | **2. Balanced Agent** | 4,096 : 1,024 | Moderate (25–50%) | **Competitive Boundary**: Prefill chunks induce moderate stalls. DP=2 leads in raw volume; P/D leads in tail ITL stability. |
-| **3. Cold Long-Context Agent** | 8,192 : 1,024 | Cold (0%) | **P/D Strong Win**: Collocated DP degrades to $\eta < 0.5$ (J3 regime). P/D wins in both raw throughput (1.29×–1.71×) and SLO goodput (>86×). |
+| **3. Cold Long-Context Agent** | 8,192 : 1,024 | Cold (0%) | **Raw-capacity win only**: Collocated DP degrades to $\eta < 0.5$ (J3 regime). P/D wins raw throughput (1.29×–1.71×). Both fail the 20 ms token gate on this GPU. |
 | **4. Warm Coding Agent** | 8,192 : 1,024 | High (75–100%) | **Cache-Affine DP=2 Win**: Prefix hits reduce prefill service times to 300–913 ms (stall 253 ms), preserving decode cadence while retaining dual decode replicas. |
 | **5. Ingest-Heavy RAG** | 16,384 : 128 | Low (0–25%) | **P/D Pool Saturation Test**: Massive prefill compute; evaluates whether prefill worker saturates while decode worker starves. |
 

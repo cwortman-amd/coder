@@ -1,0 +1,136 @@
+{
+  "gpu_profile": "r9700",
+  "note": "Reduced serving results for the TCO plots; raw benchmark rows are not published.",
+  "runs": [
+    {
+      "workload": "8k1k",
+      "concurrency": 1,
+      "output_throughput_tok_s": 32.813,
+      "server_output_throughput_tok_s": 262.506,
+      "ttft_p50_ms": 304.7619515009501,
+      "ttft_p99_ms": 308.78467657077636,
+      "tpot_p50_ms": 30.206991794720242,
+      "tpot_p99_ms": 30.238372881484814
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 2,
+      "output_throughput_tok_s": 62.256,
+      "server_output_throughput_tok_s": 498.052,
+      "ttft_p50_ms": 443.90490499972657,
+      "ttft_p99_ms": 577.8066738398411,
+      "tpot_p50_ms": 31.707618092375114,
+      "tpot_p99_ms": 31.824738015473525
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 4,
+      "output_throughput_tok_s": 101.803,
+      "server_output_throughput_tok_s": 814.427,
+      "ttft_p50_ms": 3319.715841499601,
+      "ttft_p99_ms": 5914.290240528953,
+      "tpot_p50_ms": 35.977975245845464,
+      "tpot_p99_ms": 38.81176401811208
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 8,
+      "output_throughput_tok_s": 101.923,
+      "server_output_throughput_tok_s": 815.385,
+      "ttft_p50_ms": 20445.21965650074,
+      "ttft_p99_ms": 45939.03894692888,
+      "tpot_p50_ms": 33.89952628299064,
+      "tpot_p99_ms": 39.32687083777031
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 16,
+      "output_throughput_tok_s": 100.199,
+      "server_output_throughput_tok_s": 801.595,
+      "ttft_p50_ms": 58410.052820499914,
+      "ttft_p99_ms": 128953.87053370148,
+      "tpot_p50_ms": 36.44000806402627,
+      "tpot_p99_ms": 39.52086422536589
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 1,
+      "output_throughput_tok_s": 33.258,
+      "server_output_throughput_tok_s": 266.062,
+      "ttft_p50_ms": 259.54047049981455,
+      "ttft_p99_ms": 398.5686413909025,
+      "tpot_p50_ms": 29.843525543499812,
+      "tpot_p99_ms": 29.845800871671095
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 2,
+      "output_throughput_tok_s": 64.479,
+      "server_output_throughput_tok_s": 515.835,
+      "ttft_p50_ms": 194.85359699956462,
+      "ttft_p99_ms": 224.28708457946414,
+      "tpot_p50_ms": 30.842422881231798,
+      "tpot_p99_ms": 30.856863483469958
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 4,
+      "output_throughput_tok_s": 121.949,
+      "server_output_throughput_tok_s": 975.589,
+      "ttft_p50_ms": 808.7402439996367,
+      "ttft_p99_ms": 900.6609884703539,
+      "tpot_p50_ms": 32.02646635874908,
+      "tpot_p99_ms": 32.60120275417439
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 8,
+      "output_throughput_tok_s": 121.994,
+      "server_output_throughput_tok_s": 975.955,
+      "ttft_p50_ms": 17258.083292001174,
+      "ttft_p99_ms": 34397.94546692033,
+      "tpot_p50_ms": 32.01524753030389,
+      "tpot_p99_ms": 32.215408657370666
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 16,
+      "output_throughput_tok_s": 122.116,
+      "server_output_throughput_tok_s": 976.924,
+      "ttft_p50_ms": 50360.36087899993,
+      "ttft_p99_ms": 101410.4450621995,
+      "tpot_p50_ms": 32.04224522043023,
+      "tpot_p99_ms": 32.2151329976042
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 1,
+      "output_throughput_tok_s": 31.725,
+      "server_output_throughput_tok_s": 253.799,
+      "ttft_p50_ms": 164.6351310046157,
+      "ttft_p99_ms": 164.6351310046157,
+      "tpot_p50_ms": 31.504715779147144,
+      "tpot_p99_ms": 31.504715779147144
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 2,
+      "output_throughput_tok_s": 62.452,
+      "server_output_throughput_tok_s": 499.613,
+      "ttft_p50_ms": 189.07253550423775,
+      "ttft_p99_ms": 237.39215335444896,
+      "tpot_p50_ms": 32.00379728934173,
+      "tpot_p99_ms": 32.007968060107146
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 4,
+      "output_throughput_tok_s": 117.783,
+      "server_output_throughput_tok_s": 942.265,
+      "ttft_p50_ms": 936.665933997574,
+      "ttft_p99_ms": 1043.3420853918506,
+      "tpot_p50_ms": 33.84846044109416,
+      "tpot_p99_ms": 33.93436200503977
+    }
+  ]
+}

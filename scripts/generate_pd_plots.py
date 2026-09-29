@@ -29,7 +29,7 @@ from publish_results import PUBLISHED_ROOT, publish_and_summarize
 
 OUTPUT_DIR = "/home/amd/workspace/coder/docs/figures/pd"
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
-SUMMARY_JSON = os.path.join(str(PUBLISHED_ROOT), "pd", "pd_emulator_summary_20260929_042526.json")
+SUMMARY_JSON = os.path.join(str(PUBLISHED_ROOT), "pd", "pd_emulator_summary.json")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
@@ -92,12 +92,12 @@ def generate_master_dashboard():
             ax1.text(b1.get_x() + b1.get_width()/2, p95 * 1.15, f"{p95:.1f}", ha='center', va='bottom', fontsize=8.0, fontweight='bold', color=AMD_DARK_RED if not emu else EMU_BLUE)
             ax1.text(b2.get_x() + b2.get_width()/2, peak * 1.15, f"{peak:.1f}", ha='center', va='bottom', fontsize=8.0, fontweight='bold', color=AMD_DARK_RED if not emu else EMU_BLUE)
     
-    ax1.axhspan(100, 3500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (ITL > 100 ms)")
-    ax1.axhline(100, color="#D84315", linestyle="--", linewidth=1.5, label="Generative Streaming SLO (p95 ≤ 100 ms)")
-    ax1.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.5, label="Interactive Stall Ceiling (Max ITL ≤ 500 ms)")
+    ax1.axhspan(20, 3500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
+    ax1.axhline(20, color="#D84315", linestyle="--", linewidth=1.5, label="Interactive SLO (p95 ITL ≤ 20 ms)")
+    ax1.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.5, label="Peak stall ceiling (Max ITL ≤ 100 ms)")
     
     ax1.set_yscale('log')
-    ax1.set_ylim(20, 3500)
+    ax1.set_ylim(10, 3500)
     ax1.set_xticks(x)
     ax1.set_xticklabels(conditions, fontsize=9.0, fontweight='bold')
     ax1.set_ylabel("Inter-Token Latency (ITL in ms, Log Scale)", fontsize=10.5, fontweight='bold')
@@ -116,9 +116,9 @@ def generate_master_dashboard():
     # PANEL B: Usable Capacity
     workloads = ["Light (J1)", "Moderate (J2)", "Saturated", "J3 Sustained"]
     dp_raw = [24.11, 49.53, 22.85, 22.98]
-    dp_slo = [0.19, 0.26, 0.04, 0.28]
+    dp_slo = [0.19, 0.26, 0.03, 0.28]
     pd_raw = [24.11, 41.35, 41.53, 29.55]
-    pd_slo = [24.11, 41.29, 41.15, 29.52]
+    pd_slo = [0.19, 0.14, 0.02, 0.04]
     
     xw = np.arange(len(workloads))
     w_b = 0.20
@@ -144,9 +144,9 @@ def generate_master_dashboard():
     
     ax2.text(0.03, 0.74,
              "All-or-Nothing Goodput: G_output = (sum q_i * O_i) / T\n"
-             "• Any request failing TTFT > 3.0s or TPOT > 20ms counts 0 qualified tokens.\n"
-             "• DP=2 produces raw output, but streaming sessions fail latency SLA.\n"
-             "• P/D goodput advantage reflects stall isolation, not zero DP raw output.",
+             "• A stream fails when TTFT > 3.0s, TPOT > 20ms, or p95 ITL > 20ms.\n"
+             "• R9700 decode is 29.35 ms/token, so DP=2 and P/D streams both fail.\n"
+             "• Qualified tokens are the non-streaming completions.",
              transform=ax2.transAxes, fontsize=7.2,
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8F5E9", edgecolor="#81C784", alpha=0.95))
 
@@ -381,9 +381,9 @@ def generate_token_latency_timeline():
     # Panel 1: Collocated DP=2
     ax1.plot(tokens, dp_itl, color=AMD_RED, linewidth=1.5, label="Collocated DP=2 ITL (Measured Single-Card Pattern)")
     ax1.scatter([110], [613.31], color="#B71C1C", s=60, zorder=5)
-    ax1.axhspan(100, 720, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (ITL > 100 ms)")
-    ax1.axhline(100, color="#D84315", linestyle="--", linewidth=1.2, label="Streaming SLO (100 ms)")
-    ax1.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.2, label="Max Stall Ceiling (500 ms)")
+    ax1.axhspan(20, 720, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
+    ax1.axhline(20, color="#D84315", linestyle="--", linewidth=1.2, label="Interactive SLO (p95 ITL ≤ 20 ms)")
+    ax1.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.2, label="Peak stall ceiling (100 ms)")
     
     ax1.set_title("A. Collocated DP=2: Decode Engine Preempted by Incoming Prompt Chunk", fontsize=11, fontweight='bold')
     ax1.set_ylabel("Inter-Token Latency (ms)", fontsize=10, fontweight='bold')
@@ -400,9 +400,9 @@ def generate_token_latency_timeline():
     
     # Panel 2: Disaggregated P/D 1P1D
     ax2.plot(tokens, pd_itl, color=EMU_BLUE, linestyle="--", linewidth=1.5, label="Disaggregated 1P1D Decoder ITL (Emulated Pipeline)")
-    ax2.axhspan(100, 720, color="#FFCDD2", alpha=0.12, label="SLO Cut-Off Region (ITL > 100 ms)")
-    ax2.axhline(100, color="#D84315", linestyle="--", linewidth=1.2, label="Streaming SLO (100 ms)")
-    ax2.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.2, label="Max Stall Ceiling (500 ms)")
+    ax2.axhspan(20, 720, color="#FFCDD2", alpha=0.12, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
+    ax2.axhline(20, color="#D84315", linestyle="--", linewidth=1.2, label="Interactive SLO (p95 ITL ≤ 20 ms)")
+    ax2.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.2, label="Peak stall ceiling (100 ms)")
     
     ax2.set_title("B. Disaggregated P/D 1P1D: Phase Isolation Preserves Clockwork Streaming Cadence", fontsize=11, fontweight='bold')
     ax2.set_xlabel("Generated Token Index (Streaming Sequence)", fontsize=10, fontweight='bold')
@@ -566,9 +566,9 @@ def generate_tradeoff_pareto():
     ax2.plot(lam_dp2, max_itl_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (Measured Chunk Preemption Trend)")
     ax2.plot(lam_pd, max_itl_pd, marker='D', markersize=6, color=PASS_GREEN, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (Protected Decode Cadence)")
     
-    ax2.axhspan(100, 1500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (Peak ITL > 100 ms)")
-    ax2.axhline(100, color="#D84315", linestyle="--", linewidth=1.3, label="Streaming ITL Target (100 ms)")
-    ax2.axhline(500, color="#B71C1C", linestyle=":", linewidth=1.5, label="Max Permissible Stall Ceiling (500 ms)")
+    ax2.axhspan(20, 1500, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
+    ax2.axhline(20, color="#D84315", linestyle="--", linewidth=1.3, label="Interactive SLO (p95 ITL ≤ 20 ms)")
+    ax2.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.5, label="Peak stall ceiling (100 ms)")
     
     ax2.set_title("B. Streaming Jitter: Peak ITL Forward Stall vs. Completed Throughput", fontsize=11.5, fontweight='bold')
     ax2.set_xlabel("Completed Request Throughput (req/s)", fontsize=10.5, fontweight='bold')

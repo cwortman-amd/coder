@@ -1,8 +1,8 @@
 {
-  "gpu_profile": "mi350p",
-  "note": "Socket power and UMC activity for the power and bandwidth plots. UMC GB/s is UMC percent times the catalog peak and is not a calibrated HBM counter. Sample traces are not published.",
+  "note": "Reduced R9700 and MI350P power and bandwidth inputs used by the plots. MI350P UMC GB/s is UMC percent times catalog peak and is not a calibrated HBM counter. R9700 bandwidth is the published weight-plus-state traffic estimate. Sample traces are not published.",
   "runs": [
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 1,
       "power_util_pct": 65.0,
@@ -14,6 +14,7 @@
       "joules_per_token": 4.926
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 2,
       "power_util_pct": 65.75,
@@ -25,6 +26,7 @@
       "joules_per_token": 2.685
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 4,
       "power_util_pct": 63.69,
@@ -36,6 +38,7 @@
       "joules_per_token": 1.461
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 8,
       "power_util_pct": 67.15,
@@ -47,6 +50,7 @@
       "joules_per_token": 0.77
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 16,
       "power_util_pct": 61.47,
@@ -58,6 +62,7 @@
       "joules_per_token": 0.416
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 32,
       "power_util_pct": 67.08,
@@ -69,6 +74,7 @@
       "joules_per_token": 0.269
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k1k",
       "concurrency": 64,
       "power_util_pct": 75.01,
@@ -80,6 +86,7 @@
       "joules_per_token": 0.225
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 1,
       "power_util_pct": 53.05,
@@ -91,6 +98,7 @@
       "joules_per_token": 5.998
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 2,
       "power_util_pct": 54.62,
@@ -102,6 +110,7 @@
       "joules_per_token": 3.181
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 4,
       "power_util_pct": 57.39,
@@ -113,6 +122,7 @@
       "joules_per_token": 1.705
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 8,
       "power_util_pct": 61.15,
@@ -124,6 +134,7 @@
       "joules_per_token": 0.929
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 16,
       "power_util_pct": 59.3,
@@ -135,6 +146,7 @@
       "joules_per_token": 0.518
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "1k8k",
       "concurrency": 32,
       "power_util_pct": 68.98,
@@ -146,6 +158,7 @@
       "joules_per_token": 0.347
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 1,
       "power_util_pct": 45.87,
@@ -157,6 +170,7 @@
       "joules_per_token": 7.129
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 2,
       "power_util_pct": 46.49,
@@ -168,6 +182,7 @@
       "joules_per_token": 3.611
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 4,
       "power_util_pct": 47.59,
@@ -179,6 +194,7 @@
       "joules_per_token": 1.933
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 8,
       "power_util_pct": 50.7,
@@ -190,6 +206,7 @@
       "joules_per_token": 1.039
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 16,
       "power_util_pct": 51.0,
@@ -201,6 +218,7 @@
       "joules_per_token": 0.587
     },
     {
+      "gpu_profile": "mi350p",
       "workload": "8k1k",
       "concurrency": 32,
       "power_util_pct": 59.6,
@@ -210,6 +228,162 @@
       "device_tdp_w": 600.0,
       "device_peak_bw_gbs": 4096.0,
       "joules_per_token": 0.387
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k1k",
+      "concurrency": 1,
+      "power_util_pct": 75.58,
+      "avg_power_w": 226.75,
+      "bandwidth_util_pct": 75.9,
+      "bandwidth_gbs_estimate": 485.76,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 9.175
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k1k",
+      "concurrency": 2,
+      "power_util_pct": 61.22,
+      "avg_power_w": 183.65,
+      "bandwidth_util_pct": 74.8,
+      "bandwidth_gbs_estimate": 478.72,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 4.79
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k1k",
+      "concurrency": 4,
+      "power_util_pct": 62.63,
+      "avg_power_w": 187.9,
+      "bandwidth_util_pct": 74.3,
+      "bandwidth_gbs_estimate": 475.52,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 2.532
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k1k",
+      "concurrency": 8,
+      "power_util_pct": 76.67,
+      "avg_power_w": 230.01,
+      "bandwidth_util_pct": 74.3,
+      "bandwidth_gbs_estimate": 475.52,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 2.488
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k1k",
+      "concurrency": 16,
+      "power_util_pct": 86.65,
+      "avg_power_w": 259.95,
+      "bandwidth_util_pct": 74.2,
+      "bandwidth_gbs_estimate": 474.88,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 2.472
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k8k",
+      "concurrency": 1,
+      "power_util_pct": 65.11,
+      "avg_power_w": 195.34,
+      "bandwidth_util_pct": 73.6,
+      "bandwidth_gbs_estimate": 471.04,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 6.683
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k8k",
+      "concurrency": 2,
+      "power_util_pct": 65.07,
+      "avg_power_w": 195.22,
+      "bandwidth_util_pct": 74.8,
+      "bandwidth_gbs_estimate": 478.72,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 3.383
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "1k8k",
+      "concurrency": 4,
+      "power_util_pct": 65.15,
+      "avg_power_w": 195.45,
+      "bandwidth_util_pct": 74.9,
+      "bandwidth_gbs_estimate": 479.36,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 1.788
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "8k1k",
+      "concurrency": 1,
+      "power_util_pct": 75.5,
+      "avg_power_w": 226.5,
+      "bandwidth_util_pct": 76.3,
+      "bandwidth_gbs_estimate": 488.32,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 9.284
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "8k1k",
+      "concurrency": 2,
+      "power_util_pct": 62.02,
+      "avg_power_w": 186.05,
+      "bandwidth_util_pct": 75.4,
+      "bandwidth_gbs_estimate": 482.56,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 4.939
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "8k1k",
+      "concurrency": 4,
+      "power_util_pct": 66.45,
+      "avg_power_w": 199.36,
+      "bandwidth_util_pct": 71.8,
+      "bandwidth_gbs_estimate": 459.52,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 3.012
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "8k1k",
+      "concurrency": 8,
+      "power_util_pct": 79.51,
+      "avg_power_w": 238.53,
+      "bandwidth_util_pct": 75.6,
+      "bandwidth_gbs_estimate": 483.84,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 2.976
+    },
+    {
+      "gpu_profile": "r9700",
+      "workload": "8k1k",
+      "concurrency": 16,
+      "power_util_pct": 88.36,
+      "avg_power_w": 265.07,
+      "bandwidth_util_pct": 71.1,
+      "bandwidth_gbs_estimate": 455.04,
+      "device_tdp_w": 300.0,
+      "device_peak_bw_gbs": 640.0,
+      "joules_per_token": 3.009
     }
   ]
 }

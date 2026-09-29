@@ -1,17 +1,18 @@
 {
-  "timestamp": "20260929_042526",
+  "timestamp": "20260929_225702",
   "system": "AMD Radeon\u2122 AI PRO R9700 (gfx1201) Single-Card Counterfactual P/D vs DP=2",
   "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
   "methodology": "single-GPU-measured service times + simulated two-R9700 pipeline projection",
   "slo_config": {
-    "max_ttft_ms": 3500.0,
-    "max_p95_itl_ms": 100.0,
-    "max_p99_itl_ms": 250.0,
-    "max_peak_itl_ms": 500.0
+    "max_ttft_ms": 3000.0,
+    "max_tpot_ms": 20.0,
+    "max_p95_itl_ms": 20.0,
+    "max_p99_itl_ms": 50.0,
+    "max_peak_itl_ms": 100.0
   },
   "theorems": {
     "raw_capacity_threshold": "P/D raw tok/s exceeds DP=2 iff eta < 0.5 (D_collocated < 17.04 tok/s)",
-    "slo_goodput_claim": "P/D preserves 29-30ms decode cadence and exceeds DP=2 in qualified tokens/s"
+    "slo_goodput_claim": "Streaming qualifies only when TTFT <= 3s, TPOT <= 20ms, p95 ITL <= 20ms, p99 ITL <= 50ms, and peak ITL <= 100ms. R9700 single-GPU decode at 29.35 ms TPOT fails that token gate."
   },
   "workloads": {
     "light": [
@@ -101,10 +102,10 @@
         "itl_p95_ms": 29.35,
         "itl_p99_ms": 29.35,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 24.11,
-        "slo_qualified_req_s": 0.21,
-        "slo_qualification_rate_pct": 100.0,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.19,
+        "slo_qualified_req_s": 0.187,
+        "slo_qualification_rate_pct": 88.89,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 52.7,
         "decode_gpu_util_pct": 71.2,
         "per_gpu_output_tok_s": {
@@ -112,7 +113,7 @@
           "GPU_1_Decode": 24.11
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -134,10 +135,10 @@
         "itl_p95_ms": 29.35,
         "itl_p99_ms": 29.35,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 24.09,
-        "slo_qualified_req_s": 0.21,
-        "slo_qualification_rate_pct": 100.0,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.19,
+        "slo_qualified_req_s": 0.187,
+        "slo_qualification_rate_pct": 88.89,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 52.7,
         "decode_gpu_util_pct": 71.2,
         "per_gpu_output_tok_s": {
@@ -145,7 +146,7 @@
           "GPU_1_Decode": 24.09
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -167,10 +168,10 @@
         "itl_p95_ms": 29.35,
         "itl_p99_ms": 29.35,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 24.08,
-        "slo_qualified_req_s": 0.21,
-        "slo_qualification_rate_pct": 100.0,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.19,
+        "slo_qualified_req_s": 0.187,
+        "slo_qualification_rate_pct": 88.89,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 52.6,
         "decode_gpu_util_pct": 71.1,
         "per_gpu_output_tok_s": {
@@ -178,7 +179,7 @@
           "GPU_1_Decode": 24.08
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -200,10 +201,10 @@
         "itl_p95_ms": 29.35,
         "itl_p99_ms": 29.35,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 24.05,
-        "slo_qualified_req_s": 0.21,
-        "slo_qualification_rate_pct": 100.0,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.19,
+        "slo_qualified_req_s": 0.186,
+        "slo_qualification_rate_pct": 88.89,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 52.6,
         "decode_gpu_util_pct": 71.0,
         "per_gpu_output_tok_s": {
@@ -211,7 +212,7 @@
           "GPU_1_Decode": 24.05
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -233,10 +234,10 @@
         "itl_p95_ms": 29.35,
         "itl_p99_ms": 29.35,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 23.97,
-        "slo_qualified_req_s": 0.209,
-        "slo_qualification_rate_pct": 100.0,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.0,
+        "slo_qualified_req_s": 0.0,
+        "slo_qualification_rate_pct": 0.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 52.4,
         "decode_gpu_util_pct": 70.8,
         "per_gpu_output_tok_s": {
@@ -244,7 +245,7 @@
           "GPU_1_Decode": 23.97
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       }
     ],
     "moderate": [
@@ -334,10 +335,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.29,
-        "slo_qualified_req_s": 0.221,
-        "slo_qualification_rate_pct": 78.57,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.14,
+        "slo_qualified_req_s": 0.141,
+        "slo_qualification_rate_pct": 50.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 47.6,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -345,7 +346,7 @@
           "GPU_1_Decode": 41.35
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -367,10 +368,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.27,
-        "slo_qualified_req_s": 0.221,
-        "slo_qualification_rate_pct": 78.57,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.14,
+        "slo_qualified_req_s": 0.14,
+        "slo_qualification_rate_pct": 50.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 47.6,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -378,7 +379,7 @@
           "GPU_1_Decode": 41.33
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -400,10 +401,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.25,
-        "slo_qualified_req_s": 0.221,
-        "slo_qualification_rate_pct": 78.57,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.14,
+        "slo_qualified_req_s": 0.14,
+        "slo_qualification_rate_pct": 50.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 47.5,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -411,7 +412,7 @@
           "GPU_1_Decode": 41.31
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -433,10 +434,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.21,
-        "slo_qualified_req_s": 0.22,
-        "slo_qualification_rate_pct": 78.57,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.14,
+        "slo_qualified_req_s": 0.14,
+        "slo_qualification_rate_pct": 50.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 47.5,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -444,7 +445,7 @@
           "GPU_1_Decode": 41.27
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -466,10 +467,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.09,
-        "slo_qualified_req_s": 0.22,
-        "slo_qualification_rate_pct": 78.57,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.1,
+        "slo_qualified_req_s": 0.1,
+        "slo_qualification_rate_pct": 35.71,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 47.4,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -477,7 +478,7 @@
           "GPU_1_Decode": 41.15
         },
         "theorem_raw_claim_holds": false,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       }
     ],
     "saturated": [
@@ -501,9 +502,9 @@
         "itl_p95_ms": 1363.38,
         "itl_p99_ms": 1363.38,
         "itl_max_ms": 1363.38,
-        "slo_qualified_tok_s": 0.04,
-        "slo_qualified_req_s": 0.044,
-        "slo_qualification_rate_pct": 18.18,
+        "slo_qualified_tok_s": 0.03,
+        "slo_qualified_req_s": 0.033,
+        "slo_qualification_rate_pct": 13.64,
         "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 50.0,
         "decode_gpu_util_pct": 50.0,
@@ -534,9 +535,9 @@
         "itl_p95_ms": 1363.38,
         "itl_p99_ms": 1363.38,
         "itl_max_ms": 1363.38,
-        "slo_qualified_tok_s": 0.12,
-        "slo_qualified_req_s": 0.122,
-        "slo_qualification_rate_pct": 50.0,
+        "slo_qualified_tok_s": 0.07,
+        "slo_qualified_req_s": 0.066,
+        "slo_qualification_rate_pct": 27.27,
         "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 50.0,
         "decode_gpu_util_pct": 50.0,
@@ -567,10 +568,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.15,
-        "slo_qualified_req_s": 0.06,
-        "slo_qualification_rate_pct": 13.64,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.02,
+        "slo_qualified_req_s": 0.02,
+        "slo_qualification_rate_pct": 4.55,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 64.3,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -578,7 +579,7 @@
           "GPU_1_Decode": 41.53
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -600,10 +601,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.13,
-        "slo_qualified_req_s": 0.06,
-        "slo_qualification_rate_pct": 13.64,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.02,
+        "slo_qualified_req_s": 0.02,
+        "slo_qualification_rate_pct": 4.55,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 64.3,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -611,7 +612,7 @@
           "GPU_1_Decode": 41.51
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -633,10 +634,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.11,
-        "slo_qualified_req_s": 0.06,
-        "slo_qualification_rate_pct": 13.64,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.02,
+        "slo_qualified_req_s": 0.02,
+        "slo_qualification_rate_pct": 4.55,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 64.2,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -644,7 +645,7 @@
           "GPU_1_Decode": 41.49
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -666,10 +667,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 41.07,
-        "slo_qualified_req_s": 0.06,
-        "slo_qualification_rate_pct": 13.64,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.02,
+        "slo_qualified_req_s": 0.02,
+        "slo_qualification_rate_pct": 4.55,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 64.2,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -677,7 +678,7 @@
           "GPU_1_Decode": 41.45
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -699,10 +700,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 40.95,
-        "slo_qualified_req_s": 0.06,
-        "slo_qualification_rate_pct": 13.64,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.0,
+        "slo_qualified_req_s": 0.0,
+        "slo_qualification_rate_pct": 0.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 64.0,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -710,7 +711,7 @@
           "GPU_1_Decode": 41.33
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       }
     ],
     "j3_sustained": [
@@ -800,10 +801,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 29.52,
-        "slo_qualified_req_s": 0.356,
-        "slo_qualification_rate_pct": 92.59,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.04,
+        "slo_qualified_req_s": 0.043,
+        "slo_qualification_rate_pct": 11.11,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 100.0,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -811,7 +812,7 @@
           "GPU_1_Decode": 29.55
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -833,10 +834,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 29.51,
-        "slo_qualified_req_s": 0.356,
-        "slo_qualification_rate_pct": 92.59,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.03,
+        "slo_qualified_req_s": 0.029,
+        "slo_qualification_rate_pct": 7.41,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 99.9,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -844,7 +845,7 @@
           "GPU_1_Decode": 29.54
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -866,10 +867,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 29.5,
-        "slo_qualified_req_s": 0.356,
-        "slo_qualification_rate_pct": 92.59,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.01,
+        "slo_qualified_req_s": 0.014,
+        "slo_qualification_rate_pct": 3.7,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 99.9,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -877,7 +878,7 @@
           "GPU_1_Decode": 29.53
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -899,10 +900,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 29.43,
-        "slo_qualified_req_s": 0.299,
-        "slo_qualification_rate_pct": 77.78,
-        "streaming_slo_compliance_pct": 100.0,
+        "slo_qualified_tok_s": 0.0,
+        "slo_qualified_req_s": 0.0,
+        "slo_qualification_rate_pct": 0.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 99.8,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {
@@ -910,7 +911,7 @@
           "GPU_1_Decode": 29.51
         },
         "theorem_raw_claim_holds": true,
-        "theorem_slo_claim_holds": true
+        "theorem_slo_claim_holds": false
       },
       {
         "architecture": "P/D 1P1D Disaggregated",
@@ -932,10 +933,10 @@
         "itl_p95_ms": 48.16,
         "itl_p99_ms": 48.16,
         "itl_max_ms": 48.16,
-        "slo_qualified_tok_s": 14.72,
-        "slo_qualified_req_s": 0.185,
-        "slo_qualification_rate_pct": 48.15,
-        "streaming_slo_compliance_pct": 50.0,
+        "slo_qualified_tok_s": 0.0,
+        "slo_qualified_req_s": 0.0,
+        "slo_qualification_rate_pct": 0.0,
+        "streaming_slo_compliance_pct": 0.0,
         "prefill_gpu_util_pct": 99.6,
         "decode_gpu_util_pct": 100.0,
         "per_gpu_output_tok_s": {

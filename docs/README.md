@@ -42,10 +42,10 @@ Benches write under `_results`. That directory, plus the local NIXL checkout `_s
 | Command | Published input | Figure |
 |---|---|---|
 | `python3 scripts/generate_kv_plots.py` | `docs/results/` | `docs/figures/kv/` |
-| `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` for MI350P power, UMC, and joules | `docs/figures/tco/` |
-| `python3 scripts/generate_pd_plots.py` | `docs/results/pd/` | `docs/figures/pd/` |
+| `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` and `docs/results/r9700/concurrency.json` | `docs/figures/tco/` |
+| `python3 scripts/generate_pd_plots.py` | `docs/results/pd/pd_emulator_summary.json` | `docs/figures/pd/` |
 
-`docs/profiling/power_bandwidth.json` is the socket-power and UMC summary. Sample traces are not kept. When `_results` is absent, the scripts use the copies already in `docs/`.
+`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P power and bandwidth summaries. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Sample traces are not kept. When `_results` is absent, the scripts use the copies already in `docs/`.
 
 ## How to run
 
