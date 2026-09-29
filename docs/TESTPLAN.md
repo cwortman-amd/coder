@@ -67,25 +67,26 @@ Performance cannot be collapsed into a single "tokens/sec" metric. All evaluatio
 
 ```text
 ================================================================================
-SERVICE OBJECTIVE SPECIFICATIONS
+SERVICE OBJECTIVE SPECIFICATIONS (UPDATED 29 SEP 2026)
 ================================================================================
 
-1. Standard Interactive Tier (Default Agentic & Chat Workloads):
-   • Time to First Token (TTFT) p95 : ≤ 3,500 ms (includes queue + prefill + handoff)
-   • Inter-Token Latency (ITL) p95  : ≤ 100 ms
-   • Inter-Token Latency (ITL) p99  : ≤ 250 ms
-   • Peak ITL Ceiling (Max Stall)   : < 500 ms (hard disconnect / timeout threshold)
+1. Core Interactive SLO Target (Default Production Standard):
+   • Time to First Token (TTFT) p95 : ≤ 3,000 ms (includes queue + prefill + handoff)
+   • Time Per Output Token (TPOT)   : ≤ 20 ms (≥ 50 tok/s per stream)
+   • Inter-Token Latency (ITL) p95  : ≤ 20 ms
+   • Inter-Token Latency (ITL) p99  : ≤ 50 ms
+   • Peak ITL Ceiling (Max Stall)   : < 100 ms (hard disconnect / timeout threshold)
 
-2. Premium Streaming Tier (Low-Latency Code Completion & Interactive IDE):
-   • Time to First Token (TTFT) p95 : ≤ 3,500 ms
-   • Inter-Token Latency (ITL) p95  : ≤ 50 ms
-   • Inter-Token Latency (ITL) p99  : ≤ 100 ms
+2. Relaxed / Reading-Paced Tier (Chat & Long-Form Reading):
+   • Time to First Token (TTFT) p95 : ≤ 3,000 ms
+   • Time Per Output Token (TPOT)   : ≤ 35 ms (~30 tok/s human reading pace)
+   • Inter-Token Latency (ITL) p95  : ≤ 35 ms
    • Peak ITL Ceiling (Max Stall)   : < 250 ms
 ================================================================================
 ```
 
 > [!IMPORTANT]
-> **Boundary Calibration Note:** Single-GPU mixed-load profiling on `gfx1201` demonstrates that at concurrency $C=2$, the median ITL is already $p50 \approx 51.0\text{ ms}$ due to memory-bus sharing across concurrent sequences. Therefore, **50 ms must NOT be used as a general standard-tier ITL goal** for $C \ge 2$. It is reserved strictly for $C=1$ dedicated streaming tiers or scaled-out decoder pools.
+> **Boundary Calibration Note:** Single-GPU standalone decode on `gfx1201` running Qwen3.8-27B MXFP4 sustains $\approx 29.35\text{ ms}$ TPOT ($34.1\text{ tok/s}$) at $C=1$ and $\approx 30.8\text{--}32.0\text{ ms}$ at $C=2 \dots 4$ due to GDDR6 memory bandwidth physical boundaries (640 GB/s peak, ~480 GB/s sustained). Consequently, meeting the strict **$\text{TPOT} \le 20\text{ ms}$** target on R9700 requires **Dual-GPU Tensor Parallelism (TP=2)** or **Speculative Decoding (DFlash)**, which halves the memory bandwidth bottleneck to $\approx 14.9\text{--}16.0\text{ ms}$ TPOT. In contrast, Instinct MI350P satisfies $\text{TPOT} \le 20\text{ ms}$ natively across $C=1 \dots 16$ (and $20.1\text{ ms}$ at $C=32$) via its 4,096 GB/s HBM3E bandwidth.
 
 ### 2.3 Engine Metrics (vLLM) vs. Physical Hardware Telemetry Instrumentation
 

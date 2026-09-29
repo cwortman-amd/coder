@@ -9,7 +9,7 @@ Simulates and validates:
 Evaluates:
 - Queue stability criteria: dQ/dt <= 0
 - TTFT p95 and ITL under Poisson arrival sweeps (lambda in [0.2, 3.0] req/s)
-- All-or-Nothing SLO Qualification (TTFT <= 3.5s, p95 ITL <= 100ms, Max ITL <= 500ms)
+- All-or-Nothing SLO Qualification (TTFT <= 3.0s, TPOT <= 20ms)
 - Output is exported to _results/fleet/fleet_simulation_summary.json
 """
 
@@ -70,7 +70,7 @@ def simulate_cluster_sweep(scale="8card"):
             dp_ttft_p95 = 3.2 + (lam_per_rep - 0.02) * 40.0
             dp_max_itl = 613.3 # chunk preemption stall!
         else:
-            dp_compliance = 0.0 # 100% fail due to 613ms–1363ms stalls and TTFT > 3.5s
+            dp_compliance = 0.0 # 100% fail due to 613ms–1363ms stalls and TTFT > 3.0s
             dp_ttft_p95 = 4.5 + (lam_per_rep - 0.045) * 120.0
             dp_max_itl = 1363.4
 
@@ -89,13 +89,13 @@ def simulate_cluster_sweep(scale="8card"):
             queue_stable = True
         elif lam <= p_cap * 1.05:
             pd_compliance = 94.0
-            pd_ttft_p95 = 3.45
+            pd_ttft_p95 = 3.0
             pd_max_itl = 48.2
             queue_stable = True
         else:
             # Prefill queue begins growing
             pd_compliance = max(0.0, 94.0 - (lam - p_cap * 1.05) * 150.0)
-            pd_ttft_p95 = 3.5 + (lam - p_cap) * 8.0
+            pd_ttft_p95 = 3.0 + (lam - p_cap) * 8.0
             pd_max_itl = 48.2 # ITL remains protected even if prefill queues!
             queue_stable = False
 

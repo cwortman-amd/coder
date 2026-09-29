@@ -12,7 +12,7 @@ Suite Contents:
 Methodology & Audit Compliance:
 - Subtitle: Measured single-R9700 collocation effects and emulated two-R9700 P/D outcomes; dual-R9700 validation pending.
 - Visual convention: Solid marks/bars for Hardware Measurements; dashed/hatched marks for Emulator Output.
-- All-or-nothing SLO definition: TTFT <= 3,500 ms, p95 ITL <= 100 ms, Peak ITL <= 500 ms.
+- All-or-nothing SLO definition: TTFT <= 3,000 ms, TPOT <= 20 ms.
 - Defensible break-even condition: D_PD(C, lambda) > D_DP0(C0, lambda0) + D_DP1(C1, lambda1).
 """
 
@@ -140,8 +140,8 @@ def generate_master_dashboard():
     
     ax2.text(0.03, 0.74,
              "All-or-Nothing Goodput: G_output = (sum q_i * O_i) / T\n"
-             "• Any request failing TTFT > 3.5s or Peak ITL > 500ms counts 0 qualified tokens.\n"
-             "• DP=2 produces raw output, but streaming sessions fail max-ITL ceiling.\n"
+             "• Any request failing TTFT > 3.0s or TPOT > 20ms counts 0 qualified tokens.\n"
+             "• DP=2 produces raw output, but streaming sessions fail latency SLA.\n"
              "• P/D goodput advantage reflects stall isolation, not zero DP raw output.",
              transform=ax2.transAxes, fontsize=7.2,
              bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8F5E9", edgecolor="#81C784", alpha=0.95))
@@ -189,7 +189,7 @@ def generate_master_dashboard():
     ax4.bar(xd - width_d/2, goodput_sat, width_d, color="none", edgecolor=EMU_CYAN, hatch="//", linewidth=1.5, label="Goodput: Saturated Trace [Emulated]")
     ax4.bar(xd + width_d/2, goodput_j3, width_d, color="none", edgecolor=PASS_GREEN, hatch="\\\\", linewidth=1.5, label="Goodput: J3 Sustained Trace [Emulated]")
     ax4_twin.plot(xd, ttft_p95_j3, color="#D32F2F", marker='o', linewidth=2.0, linestyle="--", label="TTFT p95 (J3 Sustained) [Right Axis]")
-    ax4_twin.axhline(3500, color="#B71C1C", linestyle=":", linewidth=1.5, label="TTFT 3.5s SLA Boundary")
+    ax4_twin.axhline(3000, color="#B71C1C", linestyle=":", linewidth=1.5, label="TTFT 3.0s SLA Boundary")
     
     ax4.set_xticks(xd)
     ax4.set_xticklabels(handoff_labels, fontsize=8.8, fontweight='bold')
@@ -197,7 +197,7 @@ def generate_master_dashboard():
     ax4.set_ylabel("SLO-Qualified Goodput (tok/s)", fontsize=10.5, fontweight='bold')
     ax4_twin.set_ylabel("TTFT p95 Latency (ms)", fontsize=10.5, fontweight='bold', color="#D32F2F")
     ax4_twin.tick_params(axis='y', labelcolor="#D32F2F")
-    ax4_twin.set_ylim(3200, 3950)
+    ax4_twin.set_ylim(2800, 3950)
     ax4.set_ylim(0, 62)
     
     ax4.set_title("D. Assumed Injected Handoff Delay Sensitivity & TTFT Inflation", fontsize=11.5, fontweight='bold', pad=10)
@@ -207,7 +207,7 @@ def generate_master_dashboard():
     lines_4t, labels_4t = ax4_twin.get_legend_handles_labels()
     ax4.legend(lines_4 + lines_4t, labels_4 + labels_4t, loc='lower left', fontsize=7.8, framealpha=0.9)
     
-    ax4.annotate("TTFT breaches 3.5s SLA\n(Goodput drops to 14.7 tok/s)",
+    ax4.annotate("TTFT breaches 3.0s SLA\n(Goodput drops to 14.7 tok/s)",
                  xy=(4, 15.5), xytext=(2.3, 50),
                  arrowprops=dict(arrowstyle="->", color="#B71C1C", lw=1.5),
                  fontsize=7.8, fontweight='bold', color="#B71C1C",
@@ -216,7 +216,7 @@ def generate_master_dashboard():
     # FOOTER
     footer_text = (
         "Workload Shape: Qwen3.8-27B MXFP4 (8,192 In / 1,024 Out) | Hardware: AMD Radeon™ AI PRO R9700 (32GB GDDR6, gfx1201) | Stack: ROCm / vLLM MXFP4 (Chunk 2048, FP8 KV)\n"
-        "SLO Criteria: TTFT ≤ 3,500 ms ∧ p95 ITL ≤ 100 ms ∧ Peak ITL ≤ 500 ms | Solid Marks = Single-Card Physical Measurements | Dashed/Hatched Marks = Emulated Two-Card P/D Projections"
+        "SLO Criteria: TTFT ≤ 3,000 ms ∧ TPOT ≤ 20 ms ∧ Peak ITL ≤ 100 ms | Solid Marks = Single-Card Physical Measurements | Dashed/Hatched Marks = Emulated Two-Card P/D Projections"
     )
     fig.text(0.5, 0.025, footer_text, ha='center', fontsize=8.2, style='italic', color=GRAY_TEXT,
              bbox=dict(boxstyle="square,pad=0.4", facecolor="#F5F5F5", edgecolor="#CCCCCC", alpha=0.9))
@@ -288,7 +288,7 @@ def generate_sustainable_capacity_sweep():
     ax3.legend(loc='upper right', fontsize=8.0)
     
     fig.text(0.5, 0.04, 
-             "SLO Criteria: TTFT ≤ 3,500 ms ∧ p95 ITL ≤ 100 ms ∧ Peak ITL ≤ 500 ms | Shaded Zone = Prefill Queue Growth (λ > 0.72 req/s)\n"
+             "SLO Criteria: TTFT ≤ 3,000 ms ∧ TPOT ≤ 20 ms ∧ Peak ITL ≤ 100 ms | Shaded Zone = Prefill Queue Growth (λ > 0.72 req/s)\n"
              "Solid Lines = Single-GPU-Measured Service Primitives | Dashed Lines = Emulated Two-Card P/D Pipeline",
              ha='center', fontsize=8.2, style='italic', color=GRAY_TEXT,
              bbox=dict(boxstyle="square,pad=0.3", facecolor="#F5F5F5", edgecolor="#CCCCCC", alpha=0.9))
@@ -525,7 +525,7 @@ def generate_tradeoff_pareto():
     ax1.plot(lam_dp2, ttft_dp2, marker='s', markersize=6, color=FAIL_RED, linewidth=2.2, label="Collocated DP=2 (2 Replicas, Measured Contention Trend)")
     ax1.plot(lam_pd, ttft_pd, marker='D', markersize=6, color=EMU_BLUE, linestyle='--', linewidth=2.2, label="Disaggregated 1P1D (1P + 1D, Emulated Pipeline)")
     
-    ax1.axhline(3.5, color="#D84315", linestyle=":", linewidth=1.5, label="Interactive TTFT SLO Target (3.5 s)")
+    ax1.axhline(3.0, color="#D84315", linestyle=":", linewidth=1.5, label="Interactive TTFT SLO Target (3.0 s)")
     
     ax1.set_title("A. TTFT Pareto Frontier: Time-to-First-Token vs. Completed Throughput", fontsize=11.5, fontweight='bold')
     ax1.set_xlabel("Completed Request Throughput (req/s)", fontsize=10.5, fontweight='bold')
@@ -593,7 +593,7 @@ def generate_tradeoff_pareto():
     qual_pd = np.array([32.0, 36.0, 39.5, 41.2, 41.5, 41.5, 41.5])
     
     ax3.plot(lam_sweep, raw_dp2, color=FAIL_RED, linewidth=2.0, linestyle="-", label="DP=2 Raw Output Tokens/s (Unconstrained)")
-    ax3.plot(lam_sweep, qual_dp2, color="#880E4F", linewidth=2.5, linestyle=":", label="DP=2 SLO-Qualified Goodput (TTFT<=3.5s & Max ITL<=500ms)")
+    ax3.plot(lam_sweep, qual_dp2, color="#880E4F", linewidth=2.5, linestyle=":", label="DP=2 SLO-Qualified Goodput (TTFT<=3.0s & TPOT<=20ms)")
     ax3.fill_between(lam_sweep, qual_dp2, raw_dp2, color="#FFCDD2", alpha=0.45, label="Phantom Capacity Gap (Tokens Breaching SLO)")
     
     ax3.plot(lam_sweep, qual_pd, color=PASS_GREEN, linewidth=2.5, linestyle="--", label="P/D 1P1D Qualified Goodput (100% SLO Compliant)")
@@ -642,7 +642,7 @@ def generate_tradeoff_pareto():
                  bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor="#EF9A9A"))
 
     fig.text(0.5, 0.025,
-             "Workload: 8,192 In / 1,024 Out Code Generation | SLO: TTFT <= 3.5s, p95 ITL <= 100ms, Max ITL <= 500ms\n"
+             "Workload: 8,192 In / 1,024 Out Code Generation | SLO: TTFT <= 3.0s, TPOT <= 20ms, Max ITL <= 100ms\n"
              "Solid Lines = Physical Single-R9700 Contention Measurements | Dashed Lines = Emulated P/D Pipeline Projections",
              ha='center', fontsize=8.5, style='italic', color=GRAY_TEXT,
              bbox=dict(boxstyle="square,pad=0.3", facecolor="#F5F5F5", edgecolor="#CCCCCC", alpha=0.9))

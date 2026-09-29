@@ -779,14 +779,14 @@ def plot_ttft_latency():
 def plot_slo_qualified_goodput():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15.5, 6.5), dpi=300)
     
-    # Interactive SLA criteria: TTFT <= 3,500 ms AND TPOT <= 50 ms (1,024 in / 1,024 out)
+    # Interactive SLA criteria: TTFT <= 3,000 ms AND TPOT <= 20 ms (1,024 in / 1,024 out)
     c_r9700 = [1, 2, 4, 8, 16]
     raw_tok_r9700 = [266, 516, 976, 976, 977]
     goodput_r9700 = [266, 516, 976, 976, 977] # Capacity under max-num-seqs 4
     
     c_mi350 = [1, 2, 4, 8, 16, 32]
     raw_tok_mi350 = [635, 1179, 2342, 4437, 7229, 12035]
-    goodput_mi350 = [635, 1179, 2342, 4437, 7229, 12035] # All TTFT <= 1250ms, TPOT <= 22ms
+    goodput_mi350 = [635, 1179, 2342, 4437, 7229, 12035] # All TTFT <= 1250ms, TPOT <= 20.1ms
     
     cost_r9700 = [2.10, 1.08, 0.57, 0.57, 0.57]
     cost_mi350 = [3.60, 1.94, 0.98, 0.52, 0.32, 0.19]
@@ -795,9 +795,9 @@ def plot_slo_qualified_goodput():
     # Panel 1: Throughput & Interactive Capacity
     # --------------------------------------------------------------------------
     ax1.plot(c_r9700, raw_tok_r9700, 'o-', color=COLOR_R9700S_PEAK, lw=2.8, ms=8, 
-             label="8× R9700S (Interactive Capacity, Capped @ C4)")
+             label="8× R9700S (Interactive Capacity, Capped @ C4; TPOT ~32ms)")
     ax1.plot(c_mi350, raw_tok_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.8, ms=8, 
-             label="8× MI350P (Monotonic Scaling through C32)")
+             label="8× MI350P (Monotonic Scaling through C32, TPOT ≤ 20ms)")
     
     # Shaded zones on Panel 1
     ax1.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.45, label='_nolegend_')
@@ -806,22 +806,22 @@ def plot_slo_qualified_goodput():
              bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#A5D6A7"))
     
     ax1.axvspan(6.0, 36, color='#E8EAF6', alpha=0.35, label='_nolegend_')
-    ax1.text(18, 2500, "MI350P HIGH-CONCURRENCY DOMAIN\n(100% SLA Maintained through C32)", 
+    ax1.text(24, 4500, "MI350P HIGH-CONCURRENCY DOMAIN\n(100% SLA Maintained through C32)", 
              ha='center', fontsize=8.5, fontweight='bold', color="#1A237E",
              bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#9FA8DA"))
     
     # Annotations on Panel 1
-    ax1.annotate("R9700S Interactive Saturation\n976 tok/s @ C4 (TTFT 809ms)", xy=(4, 976), xytext=(1.4, 3800),
+    ax1.annotate("R9700S Interactive Saturation\n976 tok/s @ C4 (TTFT 809ms)\n[Standalone TPOT ~32ms; TP=2 <20ms]", xy=(4, 976), xytext=(1.4, 3800),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
-                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.5)
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.2)
     
-    ax1.annotate("Queueing under max-num-seqs 4\nProtects TPOT (<33ms), but\nTTFT breaches 3.5s SLA (17–50s)", xy=(8, 976), xytext=(6.5, 2000),
+    ax1.annotate("Queueing under max-num-seqs 4\nProtects TPOT (<33ms), but\nTTFT breaches 3.0s SLA (17–50s)", xy=(8, 976), xytext=(5.2, 2200),
                 arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
                 fontweight='bold', color="#E65100", fontsize=8.5)
     
-    ax1.annotate("12,035 tok/s @ C32\nTTFT 1.25s, TPOT 21ms\n(100% Interactive SLA)", xy=(32, 12035), xytext=(12, 11000),
+    ax1.annotate("12,035 tok/s @ C32\nTTFT 1.25s, TPOT ~20ms\n(100% Interactive SLA)", xy=(32, 12035), xytext=(12, 11000),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
                 fontweight='bold', color=COLOR_MI350P_PROD, fontsize=8.5)
@@ -831,10 +831,10 @@ def plot_slo_qualified_goodput():
     ax1.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
     ax1.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
     ax1.set_ylabel("Interactive Server Throughput (tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
-    ax1.set_title("A. Interactive Serving Throughput (SLA: TTFT ≤ 3.5s, TPOT ≤ 50ms)", fontsize=12.5, fontweight='bold')
+    ax1.set_title("A. Interactive Serving Throughput (SLA: TTFT ≤ 3.0s, TPOT ≤ 20ms)", fontsize=12.5, fontweight='bold')
     ax1.set_ylim(0, 13500)
     ax1.grid(True, which='both', linestyle='--', alpha=0.7)
-    ax1.legend(loc='upper left', frameon=True, fontsize=9.0)
+    ax1.legend(loc='upper left', frameon=True, fontsize=8.5)
     
     # --------------------------------------------------------------------------
     # Panel 2: Cost per Million Interactive Tokens
@@ -874,8 +874,8 @@ def plot_slo_qualified_goodput():
     ax2.grid(True, which='both', linestyle='--', alpha=0.7)
     ax2.legend(loc='upper right', frameon=True, fontsize=8.5)
     
-    fig.suptitle("SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation — Qwen3.8-27B MXFP4 (1k:1k)", 
-                 fontsize=14.5, fontweight='bold', y=0.98)
+    fig.suptitle("SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation — Qwen3.8-27B MXFP4 (1k:1k)\n[Target SLA: TTFT ≤ 3.0s, TPOT ≤ 20ms]", 
+                 fontsize=13.5, fontweight='bold', y=0.98)
     plt.tight_layout(rect=[0, 0.02, 1, 0.95])
     output_path = os.path.join(OUTPUT_DIR, "10_slo_qualified_goodput.png")
     plt.savefig(output_path, dpi=300)

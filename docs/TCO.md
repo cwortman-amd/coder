@@ -314,9 +314,12 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 ![Time-to-First-Token Latency vs Concurrency](figures/tco/09_ttft_latency.png)
 
 4. **SLO-Qualified Interactive Goodput vs. Batch Saturated Throughput**:
-   - **Interactive Concurrency Sweet Spot ($C = 1 \dots 4$)**: For standard $1,024\text{ In} / 1,024\text{ Out}$ serving, 8× R9700S operates with 100% interactive SLA compliance ($\text{TTFT} \le 3.5\text{ s}$ and $\text{TPOT} \le 50\text{ ms}$) from C1 through C4, delivering up to **976 interactive tok/s** at sub-second TTFT (165–809 ms) and ~32 ms TPOT. In this interactive regime, 8× R9700S serves requests at **$0.57/M**, beating 8× MI350P ($0.98/M) by **1.7×**.
-   - **Admission Queueing Trade-Off ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing by holding surplus incoming requests in an admission queue (17.3s at C8, 50.4s at C16). This caps active interactive capacity at 976 tok/s while shifting excess requests into batch completion mode.
-   - **MI350P 1,024/1,024**: Wave TTFT p50 stays under 1.2 s through C32, and ITL p50 stays under 21 ms, at the published **12,035 tok/s** and **$0.19/M**. At C64 the same recipe is still inside a 3.5 s / 50 ms window (TTFT p50 1.7 s, ITL p50 30 ms) at 2,017 tok/s per card.
+   - **Interactive SLA Target**: $\text{TTFT} \le 3.0\text{ s}$ and $\text{TPOT} \le 20\text{ ms}$ ($\ge 50\text{ tok/s per stream}$).
+   - **Instinct MI350P Conformance**: At $1,024\text{ In} / 1,024\text{ Out}$, wave TTFT p50 remains well below 1.2 s through C32 (119 ms at C1, 516 ms at C2, 528 ms at C4, 467 ms at C8, 710 ms at C16, and 1,159 ms at C32). Per-stream TPOT stays at 12.5–17.7 ms from C1 through C16, achieving **100% compliance with the 3s TTFT / 20ms TPOT SLA** up to **7,229 interactive tok/s** at $0.32/M. At C32, TPOT is 20.1 ms (12,035 tok/s at $0.19/M).
+   - **Radeon AI PRO R9700S**:
+     - *Standalone Single-GPU Mode ($DP=8$)*: On 1k:1k prompts, TTFT is sub-second (165–809 ms) from C1 to C4. Autoregressive decode runs at 29.8–32.0 ms TPOT (31–34 tok/s/stream), bounded by the physical GDDR6 bus. This provides smooth reading-speed interaction (~32 ms TPOT at $0.57/M, 1.7× less expensive than MI350P at C4), but exceeds the tightened $\le 20\text{ ms}$ streaming threshold.
+     - *Scale-Out Tensor Parallelism ($TP=2$)*: To satisfy $\text{TPOT} \le 20\text{ ms}$ on RDNA 4, pairing two R9700S cards in TP=2 doubles aggregate memory bandwidth to 1,280 GB/s, cutting per-stream TPOT to $\approx 15\text{ ms}$ ($> 60\text{ tok/s}$).
+   - **Admission Queueing Trade-Off ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing by holding surplus incoming requests in an admission queue (17.3s at C8, 50.4s at C16). While this protects decode cadence (<33 ms TPOT), it breaches the 3.0 s TTFT boundary, shifting excess requests into batch completion mode.
 
 ![SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation](figures/tco/10_slo_qualified_goodput.png)
 

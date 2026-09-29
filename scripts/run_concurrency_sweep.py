@@ -317,7 +317,7 @@ def main():
             print(f"\n[Marginal Transition C={prev['concurrency']} -> C={curr['concurrency']}]")
             print(f"  • Throughput Gain: +{tp_gain*100:.1f}% {'(Plateau: <10%)' if tp_gain < 0.10 else '(Scaling)'}")
             print(f"  • Efficiency Gain: +{eff_gain*100:.1f}% {'(Plateau: <5%)' if eff_gain < 0.05 else '(Scaling)'}")
-            print(f"  • Latency TPOT p95: {curr['tpot_p95_ms']} ms {'(Interactive SLO exceeded >50ms)' if curr['tpot_p95_ms'] > 50 else '(Interactive OK)'}")
+            print(f"  • Latency TPOT p95: {curr['tpot_p95_ms']} ms {'(Interactive SLO exceeded >20ms)' if curr['tpot_p95_ms'] > 20 else '(Interactive OK)'}")
 
     # Save summary report markdown
     report_prefix = "MI350P-SWEEP" if "mi350" in prof else "R9700-SWEEP"

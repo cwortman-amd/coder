@@ -205,12 +205,12 @@ In enterprise customer deployments, evaluating raw tokens per second is insuffic
 
 ### 5.2 Strict Interactive SLO Contract
 A streaming interactive session is contractually acceptable if and only if it satisfies all three constraints:
-$$\text{SLO Satisfied} \iff \boxed{\text{TTFT} \le 3,500\text{ ms} \quad\land\quad p95(\text{ITL}) \le 100\text{ ms} \quad\land\quad \max(\text{ITL}) \le 500\text{ ms}}$$
+$$\text{SLO Satisfied} \iff \boxed{\text{TTFT} \le 3,000\text{ ms} \quad\land\quad \text{TPOT} \le 20\text{ ms} \quad (\text{or } p95(\text{ITL}) \le 20\text{ ms}) \quad\land\quad \max(\text{ITL}) \le 100\text{ ms}}$$
 
 ### 5.3 All-or-Nothing Goodput Formulation
 For every completed request $i \in [1, N]$, define the binary qualification indicator $q_i$:
 $$q_i = \begin{cases} 
-1, & \text{if } \text{TTFT}_i \le 3,500\text{ ms} \;\land\; p95(\text{ITL}_i) \le 100\text{ ms} \;\land\; \max(\text{ITL}_i) \le 500\text{ ms} \\
+1, & \text{if } \text{TTFT}_i \le 3,000\text{ ms} \;\land\; \text{TPOT}_i \le 20\text{ ms} \;\land\; \max(\text{ITL}_i) \le 100\text{ ms} \\
 0, & \text{otherwise (SLA Breached)}
 \end{cases}$$
 
@@ -221,15 +221,15 @@ Under this definition:
   $$G_{\text{output}} = \frac{\sum_{i=1}^N q_i \cdot O_i}{T_{\text{test}}} \quad (\text{qualified output tokens/sec})$$
 
 > [!IMPORTANT]
-> If a request violates any condition (e.g. experiences a single $613.3\text{ ms}$ freeze during a chunk prefill), **all $O_i$ tokens from that request count as unqualified (0 tokens)**. This separates usable interactive capacity from raw, non-compliant hardware throughput.
+> If a request violates any condition (e.g. experiences a single $613.3\text{ ms}$ freeze during a chunk prefill or TPOT exceeds $20\text{ ms}$), **all $O_i$ tokens from that request count as unqualified (0 tokens)**. This separates usable interactive capacity from raw, non-compliant hardware throughput.
 
 ### 5.4 Diagnostic Disqualification Metrics
 Alongside all-or-nothing goodput, report granular failure attribution:
-- **Token Interval Violation Rate ($R_{>100\text{ms}}, R_{>500\text{ms}}$)**: Fraction of all emitted tokens whose ITL exceeded $100\text{ ms}$ or $500\text{ ms}$.
+- **Token Interval Violation Rate ($R_{>20\text{ms}}, R_{>100\text{ms}}$)**: Fraction of all emitted tokens whose ITL exceeded $20\text{ ms}$ or $100\text{ ms}$.
 - **Failure Cause Breakdown**: Percentage of failed requests caused by:
-  1. $\text{TTFT} > 3,500\text{ ms}$ (prefill queue saturation).
-  2. $p95(\text{ITL}) > 100\text{ ms}$ (continuous decode oversubscription).
-  3. $\max(\text{ITL}) > 500\text{ ms}$ (prefill preemption forward stalls).
+  1. $\text{TTFT} > 3,000\text{ ms}$ (prefill queue saturation).
+  2. $\text{TPOT} > 20\text{ ms}$ (decode bandwidth oversubscription).
+  3. $\max(\text{ITL}) > 100\text{ ms}$ (prefill preemption forward stalls).
 
 ---
 
