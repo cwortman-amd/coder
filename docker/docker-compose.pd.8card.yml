@@ -1,0 +1,239 @@
+# ==============================================================================
+# 8-Card Server Node: Prefill/Decode Disaggregation (1P : 7D)
+# Target Architecture: 1x 8-GPU Host (8x AMD Radeon AI PRO R9700 or Instinct MI350P)
+# Topology:
+#   - GPU 0: Dedicated Prefill Engine (Port 8100, max_num_batched_tokens=8192)
+#   - GPUs 1-7: Dedicated Decode Engines (Ports 8201-8207, continuous batching)
+#   - Router: P/D Fleet Router (Port 8000)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Prefill Pool (1 GPU: GPU 0)
+  # ----------------------------------------------------------------------------
+  prefill-0:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-prefill-0
+    ipc: host
+    network_mode: host
+    shm_size: 32g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=0
+      - ROCR_VISIBLE_DEVICES=0
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - ../_results:/results
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization 0.90
+        --max-num-seqs 4
+        --max-num-batched-tokens 8192
+        --host 127.0.0.1
+        --port 8100
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Decode Pool (7 GPUs: GPUs 1 to 7)
+  # ----------------------------------------------------------------------------
+  decode-1:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-1
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=1
+      - ROCR_VISIBLE_DEVICES=1
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+      - RADIANCE_MXFP4=1
+      - RADIANCE_FP8_KV=1
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization 0.90
+        --max-num-seqs 8
+        --max-num-batched-tokens 2048
+        --host 127.0.0.1
+        --port 8201
+    restart: unless-stopped
+
+  decode-2:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-2
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    security_opt:
+      - seccomp=unconfined
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-109}"
+    environment:
+      - HIP_VISIBLE_DEVICES=2
+      - ROCR_VISIBLE_DEVICES=2
+      - PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-gfx1201}
+      - GPU_PROFILE=${GPU_PROFILE:-r9700}
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --attention-backend ROCM_AITER_UNIFIED_ATTN
+        --max-model-len ${MAX_MODEL_LEN:-12288}
+        --gpu-memory-utilization 0.90
+        --max-num-seqs 8
+        --max-num-batched-tokens 2048
+        --host 127.0.0.1
+        --port 8202
+    restart: unless-stopped
+
+  decode-3:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-3
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=3
+      - ROCR_VISIBLE_DEVICES=3
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --port 8203
+    restart: unless-stopped
+
+  decode-4:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-4
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=4
+      - ROCR_VISIBLE_DEVICES=4
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --port 8204
+    restart: unless-stopped
+
+  decode-5:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-5
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=5
+      - ROCR_VISIBLE_DEVICES=5
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --port 8205
+    restart: unless-stopped
+
+  decode-6:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-6
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=6
+      - ROCR_VISIBLE_DEVICES=6
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --port 8206
+    restart: unless-stopped
+
+  decode-7:
+    image: ${MXFP4_IMAGE:-local/vllm-mxfp4:gfx1201}
+    container_name: rocm-pd-8card-decode-7
+    ipc: host
+    network_mode: host
+    shm_size: 16g
+    environment:
+      - HIP_VISIBLE_DEVICES=7
+      - ROCR_VISIBLE_DEVICES=7
+    volumes:
+      - ${MODELS_DIR:-../models}:/models:ro
+      - ${HF_HOME:-$HOME/.cache/huggingface}:/root/.cache/huggingface
+      - /dev/shm:/dev/shm
+    command: >
+      ${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --served-model-name ${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}
+        --quantization quark
+        --kv-cache-dtype fp8
+        --port 8207
+    restart: unless-stopped

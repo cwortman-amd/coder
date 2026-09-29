@@ -27,9 +27,17 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | [R9700-PD.md](R9700-PD.md) | Dual-GPU plan and capacity model |
 | [TESTPLAN.md](TESTPLAN.md) | Dual-card method and acceptance criteria |
 
+## Disaggregated Serving & Architecture Evaluation (PDD vs. DP)
+
+| File | Contents |
+|---|---|
+| [PDD-FRAMEWORK.md](PDD-FRAMEWORK.md) | Theoretical & presales evaluation framework, three-part value narrative, 5-level evidence ladder, break-even crossover analysis ($\eta < 0.50$), and enterprise tokenomics model |
+| [PDD-EVAL.md](PDD-EVAL.md) | Comprehensive evaluation process, testbed architectures (2-card 1P1D, 8-card 1P:7D, 16-card 2P:14D), interactive SLO metrics, queue stability criteria, and 6-exhibit visual suite |
+
 ## How to run
 
 | File | Contents |
 |---|---|
 | [OPS.md](OPS.md) | Compose files and troubleshooting |
 | [BENCH.md](BENCH.md) | SWE-bench and GPQA harness |
+
