@@ -221,10 +221,75 @@ def plot_cost_1k_1k():
     return output_path
 
 # ==============================================================================
-# PLOT 4: Aggregate Server Throughput (Side-by-Side)
+# PLOT 3b: Cost per Million Tokens vs Concurrency (1,024 In / 8,192 Out)
+# ==============================================================================
+def plot_cost_1k_8k():
+    fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
+    
+    # Concurrency and cost points
+    c_r9700 = [1, 2, 4]
+    cost_r9700 = [2.20, 1.12, 0.59]
+    
+    c_r9600 = [1, 2, 4]
+    cost_r9600 = [2.77, 1.41, 0.75]
+    
+    c_mi350 = [1, 4, 8, 16, 32]
+    cost_mi350_prod = [5.39, 1.41, 0.72, 0.41, 0.24]
+    cost_mi350_df3  = [3.01, 1.06, 1.71, 1.38, 1.19]
+    
+    # Plot lines with cohesive presentation styling
+    ax.plot(c_r9700, cost_r9700, 'o-', color=COLOR_R9700S_PEAK, linewidth=2.8, markersize=8, label="8× R9700S (Interactive SLA, $1.5k/GPU)")
+    ax.plot(c_r9600, cost_r9600, '^--', color=COLOR_R9600D_PEAK, linewidth=2.2, markersize=7, label="16× R9600D (150W Projected)")
+    ax.plot(c_mi350, cost_mi350_prod, 'D-', color=COLOR_MI350P_PROD, linewidth=2.8, markersize=8, label="8× MI350P (Production Quark MXFP4)")
+    ax.plot(c_mi350, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
+    
+    # Annotations
+    ax.annotate("$2.20/M", xy=(1, 2.20), xytext=(0.85, 1.45),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.2),
+                fontweight='bold', color=COLOR_R9700S_PEAK)
+    ax.annotate("$5.39/M", xy=(1, 5.39), xytext=(1.2, 5.55),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
+                fontweight='bold', color=COLOR_MI350P_PROD)
+    ax.annotate("R9700S Cost Leadership\n$0.59/M @ C4 (2.4× less expensive)", xy=(4, 0.59), xytext=(2.2, 0.25),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.5),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.5)
+    ax.annotate("MI350P HBM Scaling\n$0.24/M @ C32", xy=(32, 0.24), xytext=(20, 0.8),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.5),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.5)
+    ax.annotate("DFlash-3 Regression @ C8+\nSpeculative verification overhead\ncauses throughput drop on 8k output", xy=(8, 1.71), xytext=(5.8, 3.2),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_DF3, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#F3E5F5", edgecolor=COLOR_MI350P_DF3),
+                fontweight='bold', color=COLOR_MI350P_DF3, fontsize=8.5)
+    
+    # Background shaded zone
+    ax.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.35, label='_nolegend_')
+    ax.text(2.0, 4.6, "RADEON ADVANTAGE\n(2.4× – 2.5× Less Expensive)", ha='center', fontsize=9.5, fontweight='bold', color='#2E7D32',
+            bbox=dict(boxstyle="square,pad=0.3", facecolor='white', alpha=0.8, edgecolor='#A5D6A7'))
+    
+    ax.set_xscale('log', base=2)
+    ax.set_xticks([1, 2, 4, 8, 16, 32])
+    ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontsize=12, fontweight='bold')
+    ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight='bold', labelpad=8)
+    ax.set_ylabel("Serving Cost ($ / Million Output Tokens)  [Lower is better]", fontsize=12.5, fontweight='bold', labelpad=8)
+    ax.set_title("Serving Cost vs Concurrency: Deep Code Generation (1,024 In / 8,192 Out)", fontsize=15, fontweight='bold', pad=15)
+    ax.set_ylim(0, 6.2)
+    ax.set_xlim(0.8, 36)
+    ax.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax.legend(loc='upper right', frameon=True, framealpha=0.95, facecolor='white', fontsize=10)
+    
+    plt.tight_layout()
+    output_path = os.path.join(OUTPUT_DIR, "03b_cost_per_token_1k_8k.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
+# ==============================================================================
+# PLOT 4: Aggregate Server Throughput (3-Panel Across All Workload Shapes)
 # ==============================================================================
 def plot_throughput():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6.5), dpi=300)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6.2), dpi=300)
     
     # Panel 1: 8k:1k
     c_r9700 = [1, 2, 4, 8, 16]
@@ -251,10 +316,10 @@ def plot_throughput():
     ax1.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
     ax1.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
     ax1.set_ylabel("Full Server Throughput (Output tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
-    ax1.set_title("8,192 In / 1,024 Out (Long Context)", fontsize=13, fontweight='bold')
+    ax1.set_title("8,192 In / 1,024 Out (Long Context)", fontsize=12.5, fontweight='bold')
     ax1.set_ylim(0, 8000)
     ax1.grid(True, which='both', linestyle='--', alpha=0.7)
-    ax1.legend(loc='upper left', frameon=True, fontsize=8.5)
+    ax1.legend(loc='upper left', frameon=True, fontsize=8.0)
     
     # Panel 2: 1k:1k
     tok_r9700_1k = [266, 516, 976, 976, 977]
@@ -272,12 +337,36 @@ def plot_throughput():
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
     ax2.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
     ax2.set_ylabel("Full Server Throughput (Output tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
-    ax2.set_title("1,024 In / 1,024 Out (Standard Workload)", fontsize=13, fontweight='bold')
+    ax2.set_title("1,024 In / 1,024 Out (Standard Workload)", fontsize=12.5, fontweight='bold')
     ax2.set_ylim(0, 13000)
     ax2.grid(True, which='both', linestyle='--', alpha=0.7)
-    ax2.legend(loc='upper left', frameon=True, fontsize=8.5)
+    ax2.legend(loc='upper left', frameon=True, fontsize=8.0)
     
-    fig.suptitle("Full Server Aggregate Throughput Scaling Across Concurrency (Higher is better)", fontsize=15, fontweight='bold', y=0.98)
+    # Panel 3: 1k:8k (Deep Code Generation)
+    tok_r9700_1k8k = [254, 500, 942]
+    tok_r9600_1k8k = [292, 576, 1085]
+    tok_mi350_1k8k_prod = [425, 1622, 3162, 5517, 9715]
+    tok_mi350_1k8k_df3  = [759, 2156, 1337, 1656, 1926]
+    
+    c_r9700_3 = [1, 2, 4]
+    c_r9600_3 = [1, 2, 4]
+    
+    ax3.plot(c_r9700_3, tok_r9700_1k8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.5, ms=7, label="8× R9700S (Interactive SLA)")
+    ax3.plot(c_r9600_3, tok_r9600_1k8k, '^-.', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="16× R9600D (Projected)")
+    ax3.plot(c_mi350, tok_mi350_1k8k_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.5, ms=7, label="8× MI350P (Production)")
+    ax3.plot(c_mi350, tok_mi350_1k8k_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
+    
+    ax3.set_xscale('log', base=2)
+    ax3.set_xticks([1, 2, 4, 8, 16, 32])
+    ax3.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
+    ax3.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
+    ax3.set_ylabel("Full Server Throughput (Output tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
+    ax3.set_title("1,024 In / 8,192 Out (Deep Code Generation)", fontsize=12.5, fontweight='bold')
+    ax3.set_ylim(0, 11000)
+    ax3.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax3.legend(loc='upper left', frameon=True, fontsize=8.0)
+    
+    fig.suptitle("Full Server Aggregate Throughput Scaling Across Workload Shapes (Higher is better)", fontsize=15, fontweight='bold', y=0.98)
     plt.tight_layout(rect=[0, 0.02, 1, 0.95])
     output_path = os.path.join(OUTPUT_DIR, "04_aggregate_throughput.png")
     plt.savefig(output_path, dpi=300)
@@ -659,19 +748,131 @@ def plot_ttft_latency():
     plt.close()
     return output_path
 
+# ==============================================================================
+# PLOT 10: SLO-Qualified Interactive Goodput vs Raw Saturated Throughput & Cost
+# ==============================================================================
+def plot_slo_qualified_goodput():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15.5, 6.5), dpi=300)
+    
+    # Interactive SLA criteria: TTFT <= 3,500 ms AND TPOT <= 50 ms (1,024 in / 1,024 out)
+    c_r9700 = [1, 2, 4, 8, 16]
+    raw_tok_r9700 = [266, 516, 976, 976, 977]
+    goodput_r9700 = [266, 516, 976, 976, 977] # Capacity under max-num-seqs 4
+    
+    c_mi350 = [1, 4, 8, 16, 32]
+    raw_tok_mi350 = [635, 2342, 4437, 7229, 12035]
+    goodput_mi350 = [635, 2342, 4437, 7229, 12035] # All TTFT <= 1250ms, TPOT <= 22ms
+    
+    cost_r9700 = [2.10, 1.08, 0.57, 0.57, 0.57]
+    cost_mi350 = [3.60, 0.98, 0.52, 0.32, 0.19]
+    
+    # --------------------------------------------------------------------------
+    # Panel 1: Throughput & Interactive Capacity
+    # --------------------------------------------------------------------------
+    ax1.plot(c_r9700, raw_tok_r9700, 'o-', color=COLOR_R9700S_PEAK, lw=2.8, ms=8, 
+             label="8× R9700S (Interactive Capacity, Capped @ C4)")
+    ax1.plot(c_mi350, raw_tok_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.8, ms=8, 
+             label="8× MI350P (Monotonic Scaling through C32)")
+    
+    # Shaded zones on Panel 1
+    ax1.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.45, label='_nolegend_')
+    ax1.text(2.0, 7500, "R9700S INTERACTIVE SWEET SPOT\n(Sub-Second TTFT, 100% SLA)", 
+             ha='center', fontsize=8.5, fontweight='bold', color="#2E7D32",
+             bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#A5D6A7"))
+    
+    ax1.axvspan(6.0, 36, color='#E8EAF6', alpha=0.35, label='_nolegend_')
+    ax1.text(18, 2500, "MI350P HIGH-CONCURRENCY DOMAIN\n(100% SLA Maintained through C32)", 
+             ha='center', fontsize=8.5, fontweight='bold', color="#1A237E",
+             bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#9FA8DA"))
+    
+    # Annotations on Panel 1
+    ax1.annotate("R9700S Interactive Saturation\n976 tok/s @ C4 (TTFT 809ms)", xy=(4, 976), xytext=(1.8, 2200),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.5)
+    
+    ax1.annotate("Queueing under max-num-seqs 4\nProtects TPOT (<33ms), but\nTTFT breaches 3.5s SLA (17–50s)", xy=(8, 976), xytext=(5.5, 4500),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_SLA, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3E0", edgecolor=COLOR_R9700S_SLA),
+                fontweight='bold', color="#E65100", fontsize=8.5)
+    
+    ax1.annotate("12,035 tok/s @ C32\nTTFT 1.25s, TPOT 21ms\n(100% Interactive SLA)", xy=(32, 12035), xytext=(12, 11000),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=8.5)
+    
+    ax1.set_xscale('log', base=2)
+    ax1.set_xticks([1, 2, 4, 8, 16, 32])
+    ax1.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
+    ax1.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
+    ax1.set_ylabel("Interactive Server Throughput (tok/s)  [Higher is better]", fontsize=11, fontweight='bold')
+    ax1.set_title("A. Interactive Serving Throughput (SLA: TTFT ≤ 3.5s, TPOT ≤ 50ms)", fontsize=12.5, fontweight='bold')
+    ax1.set_ylim(0, 13500)
+    ax1.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax1.legend(loc='upper left', frameon=True, fontsize=9.0)
+    
+    # --------------------------------------------------------------------------
+    # Panel 2: Cost per Million Interactive Tokens
+    # --------------------------------------------------------------------------
+    ax2.plot(c_r9700[:3], cost_r9700[:3], 'o-', color=COLOR_R9700S_PEAK, lw=2.8, ms=8, 
+             label="8× R9700S (Interactive SLA Qualified: C1–C4)")
+    ax2.plot(c_r9700[2:], cost_r9700[2:], 'o--', color=COLOR_R9700S_SLA, lw=2.0, ms=7, alpha=0.6,
+             label="8× R9700S (Batch Completion Mode: C8–C16)")
+    ax2.plot(c_mi350, cost_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.8, ms=8, 
+             label="8× MI350P (100% Interactive Qualified: C1–C32)")
+    
+    # Shaded zones on Panel 2
+    ax2.axvspan(0.8, 4.5, color='#E8F5E9', alpha=0.45, label='_nolegend_')
+    ax2.text(2.0, 3.2, "RADEON INTERACTIVE COST LEADERSHIP\n(1.7× Less Expensive per Token)", 
+             ha='center', fontsize=8.5, fontweight='bold', color="#2E7D32",
+             bbox=dict(boxstyle="square,pad=0.25", facecolor='white', alpha=0.9, edgecolor="#A5D6A7"))
+    
+    # Annotations on Panel 2
+    ax2.annotate("$0.57/M @ C4\n1.7× less expensive\nthan MI350P ($0.98)", xy=(4, 0.57), xytext=(2.2, 1.4),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=8.5)
+    
+    ax2.annotate("MI350P Ultra-Scale Cost\n$0.19/M @ C32\n(Sustained Interactive)", xy=(32, 0.19), xytext=(16, 1.0),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
+                fontweight='bold', color=COLOR_MI350P_PROD, fontsize=8.5)
+    
+    ax2.set_xscale('log', base=2)
+    ax2.set_xticks([1, 2, 4, 8, 16, 32])
+    ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
+    ax2.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight='bold')
+    ax2.set_ylabel("Serving Cost ($ / Million Output Tokens)  [Lower is better]", fontsize=11, fontweight='bold')
+    ax2.set_title("B. Cost per Million Tokens: Interactive vs Batch Serving", fontsize=12.5, fontweight='bold')
+    ax2.set_ylim(0, 4.2)
+    ax2.set_xlim(0.8, 36)
+    ax2.grid(True, which='both', linestyle='--', alpha=0.7)
+    ax2.legend(loc='upper right', frameon=True, fontsize=8.5)
+    
+    fig.suptitle("SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation (1,024 In / 1,024 Out)", 
+                 fontsize=15, fontweight='bold', y=0.98)
+    plt.tight_layout(rect=[0, 0.02, 1, 0.95])
+    output_path = os.path.join(OUTPUT_DIR, "10_slo_qualified_goodput.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
 if __name__ == "__main__":
-    p1 = plot_capex_and_tco()
-    p2 = plot_cost_8k_1k()
-    p3 = plot_cost_1k_1k()
-    p4 = plot_throughput()
-    p5 = plot_executive_dashboard()
-    p6 = plot_power_utilization()
-    p7 = plot_memory_bandwidth_utilization()
-    p8 = plot_hardware_utilization_dashboard()
-    p9 = plot_ttft_latency()
+    p1  = plot_capex_and_tco()
+    p2  = plot_cost_8k_1k()
+    p3  = plot_cost_1k_1k()
+    p3b = plot_cost_1k_8k()
+    p4  = plot_throughput()
+    p5  = plot_executive_dashboard()
+    p6  = plot_power_utilization()
+    p7  = plot_memory_bandwidth_utilization()
+    p8  = plot_hardware_utilization_dashboard()
+    p9  = plot_ttft_latency()
+    p10 = plot_slo_qualified_goodput()
     
     # Also copy to artifact directory for presentation / embedding
-    for p in [p1, p2, p3, p4, p5, p6, p7, p8, p9]:
+    all_plots = [p1, p2, p3, p3b, p4, p5, p6, p7, p8, p9, p10]
+    for p in all_plots:
         dest = os.path.join(ARTIFACT_DIR, os.path.basename(p))
         shutil.copy(p, dest)
         print(f"Generated: {p} -> {dest}")

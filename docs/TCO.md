@@ -254,6 +254,8 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | | 8× MI350P (Production Quark MXFP4) | $5.39 | — | $1.41 | $0.72 | $0.41 | $0.24 |
 | | 8× MI350P (DFlash-3 Speculative) | $3.01 | — | $1.06 | $1.71 | $1.38 | $1.19 |
 
+![Serving Cost vs Concurrency: Deep Code Generation (1,024 In / 8,192 Out)](figures/tco/03b_cost_per_token_1k_8k.png)
+
 ### Aggregate server throughput (tok/s) across shapes
 
 | Shape | System | C1 | C2 | C4 | C8 | C16 | C32 |
@@ -309,6 +311,13 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
    - **Admission Queueing at High Concurrency ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing and protects decode TPOT (<34 ms) by holding incoming streams in an admission queue (17–20 s at C8, 50–58 s at C16).
 
 ![Time-to-First-Token Latency vs Concurrency](figures/tco/09_ttft_latency.png)
+
+4. **SLO-Qualified Interactive Goodput vs. Batch Saturated Throughput**:
+   - **Interactive Concurrency Sweet Spot ($C = 1 \dots 4$)**: For standard $1,024\text{ In} / 1,024\text{ Out}$ serving, 8× R9700S operates with 100% interactive SLA compliance ($\text{TTFT} \le 3.5\text{ s}$ and $\text{TPOT} \le 50\text{ ms}$) from C1 through C4, delivering up to **976 interactive tok/s** at sub-second TTFT (165–809 ms) and ~32 ms TPOT. In this interactive regime, 8× R9700S serves requests at **$0.57/M**, beating 8× MI350P ($0.98/M) by **1.7×**.
+   - **Admission Queueing Trade-Off ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing by holding surplus incoming requests in an admission queue (17.3s at C8, 50.4s at C16). This caps active interactive capacity at 976 tok/s while shifting excess requests into batch completion mode.
+   - **MI350P High-Concurrency Domain ($C = 16 \dots 32$)**: Backed by 144 GB HBM3E per card and a 32 TB/s server bus, 8× MI350P maintains sub-1.3s TTFT and <22 ms TPOT all the way through C32, sustaining **12,035 interactive tok/s** at **$0.19/M**.
+
+![SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation](figures/tco/10_slo_qualified_goodput.png)
 
 ## How to read the servers
 
