@@ -1,0 +1,1 @@
+{"start_unix": 1790678386.9762533, "gpu": 0, "profile": "mi350p", "interval": 0.25, "samples": "/home/amd/workspace/coder/_results/priority_eval/tco_mi350p/concurrency_20260929/1k8k_c8_power.json.samples.jsonl", "gpus_json": "", "exporter": false, "prometheus": false, "node_exporter": false}

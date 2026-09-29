@@ -1,0 +1,5229 @@
+{
+  "profile": "rocm_attn",
+  "model": "awq",
+  "seed": 1234,
+  "temperature": 0,
+  "thresholds": {
+    "small_margin_nats": 1.0,
+    "large_margin_nats": 2.0,
+    "page_proximity_tokens": 2,
+    "page_size": 784
+  },
+  "mismatches": [
+    {
+      "id": "short_chat_04",
+      "category": "short_chat",
+      "first_diff_index": 2,
+      "stage": "early_decode",
+      "stored_control_token": 24655,
+      "stored_candidate_token": 8432,
+      "live_token": 24655,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " Yellow",
+          "logprob": -0.4756050705909729,
+          "bytes": [
+            32,
+            89,
+            101,
+            108,
+            108,
+            111,
+            119
+          ],
+          "token_ids": [
+            24655
+          ],
+          "single_token": true,
+          "token_id": 24655
+        },
+        {
+          "piece": " Blue",
+          "logprob": -1.7256050109863281,
+          "bytes": [
+            32,
+            66,
+            108,
+            117,
+            101
+          ],
+          "token_ids": [
+            8432
+          ],
+          "single_token": true,
+          "token_id": 8432
+        },
+        {
+          "piece": " yellow",
+          "logprob": -1.8506050109863281,
+          "bytes": [
+            32,
+            121,
+            101,
+            108,
+            108,
+            111,
+            119
+          ],
+          "token_ids": [
+            13358
+          ],
+          "single_token": true,
+          "token_id": 13358
+        },
+        {
+          "piece": " blue",
+          "logprob": -3.475605010986328,
+          "bytes": [
+            32,
+            98,
+            108,
+            117,
+            101
+          ],
+          "token_ids": [
+            6105
+          ],
+          "single_token": true,
+          "token_id": 6105
+        },
+        {
+          "piece": " Green",
+          "logprob": -4.850605010986328,
+          "bytes": [
+            32,
+            71,
+            114,
+            101,
+            101,
+            110
+          ],
+          "token_ids": [
+            7592
+          ],
+          "single_token": true,
+          "token_id": 7592
+        }
+      ],
+      "top1_top2_margin_nats": 1.2499999403953552,
+      "prompt_tokens": 23,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.07970870399731211,
+      "context_tokens_before_prediction": 25,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 25,
+      "tokens_from_page_boundary": 25,
+      "near_page_boundary": false
+    },
+    {
+      "id": "short_chat_06",
+      "category": "short_chat",
+      "first_diff_index": 8,
+      "stage": "early_decode",
+      "stored_control_token": 5073,
+      "stored_candidate_token": 1622,
+      "live_token": 5073,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " cause",
+          "logprob": -1.0710859298706055,
+          "bytes": [
+            32,
+            99,
+            97,
+            117,
+            115,
+            101
+          ],
+          "token_ids": [
+            5073
+          ],
+          "single_token": true,
+          "token_id": 5073
+        },
+        {
+          "piece": " request",
+          "logprob": -1.3210859298706055,
+          "bytes": [
+            32,
+            114,
+            101,
+            113,
+            117,
+            101,
+            115,
+            116
+          ],
+          "token_ids": [
+            1622
+          ],
+          "single_token": true,
+          "token_id": 1622
+        },
+        {
+          "piece": " stimulus",
+          "logprob": -2.3210859298706055,
+          "bytes": [
+            32,
+            115,
+            116,
+            105,
+            109,
+            117,
+            108,
+            117,
+            115
+          ],
+          "token_ids": [
+            37159
+          ],
+          "single_token": true,
+          "token_id": 37159
+        },
+        {
+          "piece": " specific",
+          "logprob": -2.4460859298706055,
+          "bytes": [
+            32,
+            115,
+            112,
+            101,
+            99,
+            105,
+            102,
+            105,
+            99
+          ],
+          "token_ids": [
+            3050
+          ],
+          "single_token": true,
+          "token_id": 3050
+        },
+        {
+          "piece": " trigger",
+          "logprob": -2.8210859298706055,
+          "bytes": [
+            32,
+            116,
+            114,
+            105,
+            103,
+            103,
+            101,
+            114
+          ],
+          "token_ids": [
+            7926
+          ],
+          "single_token": true,
+          "token_id": 7926
+        }
+      ],
+      "top1_top2_margin_nats": 0.25,
+      "prompt_tokens": 21,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.11966927099274471,
+      "context_tokens_before_prediction": 29,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 29,
+      "tokens_from_page_boundary": 29,
+      "near_page_boundary": false
+    },
+    {
+      "id": "short_chat_11",
+      "category": "short_chat",
+      "first_diff_index": 10,
+      "stage": "early_decode",
+      "stored_control_token": 4777,
+      "stored_candidate_token": 1831,
+      "live_token": 4777,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " simply",
+          "logprob": -0.9722809195518494,
+          "bytes": [
+            32,
+            115,
+            105,
+            109,
+            112,
+            108,
+            121
+          ],
+          "token_ids": [
+            4777
+          ],
+          "single_token": true,
+          "token_id": 4777
+        },
+        {
+          "piece": " reverse",
+          "logprob": -1.4722809791564941,
+          "bytes": [
+            32,
+            114,
+            101,
+            118,
+            101,
+            114,
+            115,
+            101
+          ],
+          "token_ids": [
+            9637
+          ],
+          "single_token": true,
+          "token_id": 9637
+        },
+        {
+          "piece": " take",
+          "logprob": -1.7222809791564941,
+          "bytes": [
+            32,
+            116,
+            97,
+            107,
+            101
+          ],
+          "token_ids": [
+            1831
+          ],
+          "single_token": true,
+          "token_id": 1831
+        },
+        {
+          "piece": " start",
+          "logprob": -2.222280979156494,
+          "bytes": [
+            32,
+            115,
+            116,
+            97,
+            114,
+            116
+          ],
+          "token_ids": [
+            1151
+          ],
+          "single_token": true,
+          "token_id": 1151
+        },
+        {
+          "piece": " read",
+          "logprob": -2.972280979156494,
+          "bytes": [
+            32,
+            114,
+            101,
+            97,
+            100
+          ],
+          "token_ids": [
+            1301
+          ],
+          "single_token": true,
+          "token_id": 1301
+        }
+      ],
+      "top1_top2_margin_nats": 0.5000000596046448,
+      "prompt_tokens": 20,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.13982496998505667,
+      "context_tokens_before_prediction": 30,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 30,
+      "tokens_from_page_boundary": 30,
+      "near_page_boundary": false
+    },
+    {
+      "id": "short_chat_14",
+      "category": "short_chat",
+      "first_diff_index": 11,
+      "stage": "early_decode",
+      "stored_control_token": 7489,
+      "stored_candidate_token": 3905,
+      "live_token": 7489,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " symbol",
+          "logprob": -0.8124284744262695,
+          "bytes": [
+            32,
+            115,
+            121,
+            109,
+            98,
+            111,
+            108
+          ],
+          "token_ids": [
+            7489
+          ],
+          "single_token": true,
+          "token_id": 7489
+        },
+        {
+          "piece": " comes",
+          "logprob": -0.9374284744262695,
+          "bytes": [
+            32,
+            99,
+            111,
+            109,
+            101,
+            115
+          ],
+          "token_ids": [
+            3905
+          ],
+          "single_token": true,
+          "token_id": 3905
+        },
+        {
+          "piece": " derives",
+          "logprob": -2.4374284744262695,
+          "bytes": [
+            32,
+            100,
+            101,
+            114,
+            105,
+            118,
+            101,
+            115
+          ],
+          "token_ids": [
+            71915
+          ],
+          "single_token": true,
+          "token_id": 71915
+        },
+        {
+          "piece": " is",
+          "logprob": -2.9374284744262695,
+          "bytes": [
+            32,
+            105,
+            115
+          ],
+          "token_ids": [
+            369
+          ],
+          "single_token": true,
+          "token_id": 369
+        },
+        {
+          "piece": " originates",
+          "logprob": -4.3124284744262695,
+          "bytes": [
+            32,
+            111,
+            114,
+            105,
+            103,
+            105,
+            110,
+            97,
+            116,
+            101,
+            115
+          ],
+          "token_ids": [
+            95451
+          ],
+          "single_token": true,
+          "token_id": 95451
+        }
+      ],
+      "top1_top2_margin_nats": 0.125,
+      "prompt_tokens": 19,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.14871321301325224,
+      "context_tokens_before_prediction": 30,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 30,
+      "tokens_from_page_boundary": 30,
+      "near_page_boundary": false
+    },
+    {
+      "id": "short_chat_18",
+      "category": "short_chat",
+      "first_diff_index": 15,
+      "stage": "early_decode",
+      "stored_control_token": 3428,
+      "stored_candidate_token": 2894,
+      "live_token": 3428,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " often",
+          "logprob": -1.4337166547775269,
+          "bytes": [
+            32,
+            111,
+            102,
+            116,
+            101,
+            110
+          ],
+          "token_ids": [
+            3428
+          ],
+          "single_token": true,
+          "token_id": 3428
+        },
+        {
+          "piece": " also",
+          "logprob": -1.5587166547775269,
+          "bytes": [
+            32,
+            97,
+            108,
+            115,
+            111
+          ],
+          "token_ids": [
+            1048
+          ],
+          "single_token": true,
+          "token_id": 1048
+        },
+        {
+          "piece": " derived",
+          "logprob": -1.8087166547775269,
+          "bytes": [
+            32,
+            100,
+            101,
+            114,
+            105,
+            118,
+            101,
+            100
+          ],
+          "token_ids": [
+            13849
+          ],
+          "single_token": true,
+          "token_id": 13849
+        },
+        {
+          "piece": " the",
+          "logprob": -1.9337166547775269,
+          "bytes": [
+            32,
+            116,
+            104,
+            101
+          ],
+          "token_ids": [
+            279
+          ],
+          "single_token": true,
+          "token_id": 279
+        },
+        {
+          "piece": " sometimes",
+          "logprob": -2.9337167739868164,
+          "bytes": [
+            32,
+            115,
+            111,
+            109,
+            101,
+            116,
+            105,
+            109,
+            101,
+            115
+          ],
+          "token_ids": [
+            6807
+          ],
+          "single_token": true,
+          "token_id": 6807
+        }
+      ],
+      "top1_top2_margin_nats": 0.125,
+      "prompt_tokens": 21,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.1895852760062553,
+      "context_tokens_before_prediction": 36,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 36,
+      "tokens_from_page_boundary": 36,
+      "near_page_boundary": false
+    },
+    {
+      "id": "code_04",
+      "category": "code",
+      "first_diff_index": 0,
+      "stage": "prefill_first_token",
+      "stored_control_token": 727,
+      "stored_candidate_token": 71093,
+      "live_token": 727,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "def",
+          "logprob": -0.44514867663383484,
+          "bytes": [
+            100,
+            101,
+            102
+          ],
+          "token_ids": [
+            727
+          ],
+          "single_token": true,
+          "token_id": 727
+        },
+        {
+          "piece": "```",
+          "logprob": -1.0701487064361572,
+          "bytes": [
+            96,
+            96,
+            96
+          ],
+          "token_ids": [
+            71093
+          ],
+          "single_token": true,
+          "token_id": 71093
+        },
+        {
+          "piece": "The",
+          "logprob": -5.320148468017578,
+          "bytes": [
+            84,
+            104,
+            101
+          ],
+          "token_ids": [
+            760
+          ],
+          "single_token": true,
+          "token_id": 760
+        },
+        {
+          "piece": "Here",
+          "logprob": -6.070148468017578,
+          "bytes": [
+            72,
+            101,
+            114,
+            101
+          ],
+          "token_ids": [
+            8160
+          ],
+          "single_token": true,
+          "token_id": 8160
+        },
+        {
+          "piece": " def",
+          "logprob": -6.757648468017578,
+          "bytes": [
+            32,
+            100,
+            101,
+            102
+          ],
+          "token_ids": [
+            687
+          ],
+          "single_token": true,
+          "token_id": 687
+        }
+      ],
+      "top1_top2_margin_nats": 0.6250000298023224,
+      "prompt_tokens": 31,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.036489491001702845,
+      "context_tokens_before_prediction": 31,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 31,
+      "tokens_from_page_boundary": 31,
+      "near_page_boundary": false
+    },
+    {
+      "id": "code_08",
+      "category": "code",
+      "first_diff_index": 1,
+      "stage": "early_decode",
+      "stored_control_token": 12,
+      "stored_candidate_token": 7368,
+      "live_token": 12,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "-",
+          "logprob": -0.3631783723831177,
+          "bytes": [
+            45
+          ],
+          "token_ids": [
+            12
+          ],
+          "single_token": true,
+          "token_id": 12
+        },
+        {
+          "piece": "[-",
+          "logprob": -1.3631783723831177,
+          "bytes": [
+            91,
+            45
+          ],
+          "token_ids": [
+            7368
+          ],
+          "single_token": true,
+          "token_id": 7368
+        },
+        {
+          "piece": "-\\",
+          "logprob": -3.238178253173828,
+          "bytes": [
+            45,
+            92
+          ],
+          "token_ids": [
+            29533
+          ],
+          "single_token": true,
+          "token_id": 29533
+        },
+        {
+          "piece": "(-",
+          "logprob": -5.738178253173828,
+          "bytes": [
+            40,
+            45
+          ],
+          "token_ids": [
+            3944
+          ],
+          "single_token": true,
+          "token_id": 3944
+        },
+        {
+          "piece": "[\\",
+          "logprob": -5.863178253173828,
+          "bytes": [
+            91,
+            92
+          ],
+          "token_ids": [
+            25223
+          ],
+          "single_token": true,
+          "token_id": 25223
+        }
+      ],
+      "top1_top2_margin_nats": 1.0,
+      "prompt_tokens": 25,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.04635373901692219,
+      "context_tokens_before_prediction": 26,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 26,
+      "tokens_from_page_boundary": 26,
+      "near_page_boundary": false
+    },
+    {
+      "id": "json_tool_03",
+      "category": "json_tool",
+      "first_diff_index": 2,
+      "stage": "early_decode",
+      "stored_control_token": 763,
+      "stored_candidate_token": 3147,
+      "live_token": 763,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "\":",
+          "logprob": -0.47433561086654663,
+          "bytes": [
+            34,
+            58
+          ],
+          "token_ids": [
+            763
+          ],
+          "single_token": true,
+          "token_id": 763
+        },
+        {
+          "piece": "\":\"",
+          "logprob": -0.9743356108665466,
+          "bytes": [
+            34,
+            58,
+            34
+          ],
+          "token_ids": [
+            3147
+          ],
+          "single_token": true,
+          "token_id": 3147
+        },
+        {
+          "piece": "\",\"",
+          "logprob": -9.536835670471191,
+          "bytes": [
+            34,
+            44,
+            34
+          ],
+          "token_ids": [
+            2129
+          ],
+          "single_token": true,
+          "token_id": 2129
+        },
+        {
+          "piece": "\":{\"",
+          "logprob": -9.849335670471191,
+          "bytes": [
+            34,
+            58,
+            123,
+            34
+          ],
+          "token_ids": [
+            21624
+          ],
+          "single_token": true,
+          "token_id": 21624
+        },
+        {
+          "piece": "\"",
+          "logprob": -10.036835670471191,
+          "bytes": [
+            34
+          ],
+          "token_ids": [
+            1
+          ],
+          "single_token": true,
+          "token_id": 1
+        }
+      ],
+      "top1_top2_margin_nats": 0.5,
+      "prompt_tokens": 31,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.05636138198315166,
+      "context_tokens_before_prediction": 33,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 33,
+      "tokens_from_page_boundary": 33,
+      "near_page_boundary": false
+    },
+    {
+      "id": "json_tool_10",
+      "category": "json_tool",
+      "first_diff_index": 0,
+      "stage": "prefill_first_token",
+      "stored_control_token": 90,
+      "stored_candidate_token": 4754,
+      "live_token": 90,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "{",
+          "logprob": -0.21707208454608917,
+          "bytes": [
+            123
+          ],
+          "token_ids": [
+            90
+          ],
+          "single_token": true,
+          "token_id": 90
+        },
+        {
+          "piece": "```",
+          "logprob": -1.8420721292495728,
+          "bytes": [
+            96,
+            96,
+            96
+          ],
+          "token_ids": [
+            71093
+          ],
+          "single_token": true,
+          "token_id": 71093
+        },
+        {
+          "piece": "{\"",
+          "logprob": -3.342072010040283,
+          "bytes": [
+            123,
+            34
+          ],
+          "token_ids": [
+            4754
+          ],
+          "single_token": true,
+          "token_id": 4754
+        },
+        {
+          "piece": "<tool_call>",
+          "logprob": -8.342072486877441,
+          "bytes": [
+            60,
+            116,
+            111,
+            111,
+            108,
+            95,
+            99,
+            97,
+            108,
+            108,
+            62
+          ],
+          "token_ids": [
+            248058
+          ],
+          "single_token": true,
+          "token_id": 248058
+        },
+        {
+          "piece": "[",
+          "logprob": -9.029572486877441,
+          "bytes": [
+            91
+          ],
+          "token_ids": [
+            58
+          ],
+          "single_token": true,
+          "token_id": 58
+        }
+      ],
+      "top1_top2_margin_nats": 1.6250000447034836,
+      "prompt_tokens": 33,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.03594049098319374,
+      "context_tokens_before_prediction": 33,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 33,
+      "tokens_from_page_boundary": 33,
+      "near_page_boundary": false
+    },
+    {
+      "id": "math_04",
+      "category": "math",
+      "first_diff_index": 29,
+      "stage": "late_decode",
+      "stored_control_token": 3742,
+      "stored_candidate_token": 3036,
+      "live_token": 3742,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "Is",
+          "logprob": -0.34921133518218994,
+          "bytes": [
+            73,
+            115
+          ],
+          "token_ids": [
+            3742
+          ],
+          "single_token": true,
+          "token_id": 3742
+        },
+        {
+          "piece": "Sub",
+          "logprob": -1.22421133518219,
+          "bytes": [
+            83,
+            117,
+            98
+          ],
+          "token_ids": [
+            3036
+          ],
+          "single_token": true,
+          "token_id": 3036
+        },
+        {
+          "piece": "Add",
+          "logprob": -8.224211692810059,
+          "bytes": [
+            65,
+            100,
+            100
+          ],
+          "token_ids": [
+            2143
+          ],
+          "single_token": true,
+          "token_id": 2143
+        },
+        {
+          "piece": "Move",
+          "logprob": -8.724211692810059,
+          "bytes": [
+            77,
+            111,
+            118,
+            101
+          ],
+          "token_ids": [
+            9568
+          ],
+          "single_token": true,
+          "token_id": 9568
+        },
+        {
+          "piece": "Start",
+          "logprob": -9.724211692810059,
+          "bytes": [
+            83,
+            116,
+            97,
+            114,
+            116
+          ],
+          "token_ids": [
+            3367
+          ],
+          "single_token": true,
+          "token_id": 3367
+        }
+      ],
+      "top1_top2_margin_nats": 0.875,
+      "prompt_tokens": 31,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.33341777601162903,
+      "context_tokens_before_prediction": 60,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 60,
+      "tokens_from_page_boundary": 60,
+      "near_page_boundary": false
+    },
+    {
+      "id": "math_10",
+      "category": "math",
+      "first_diff_index": 31,
+      "stage": "late_decode",
+      "stored_control_token": 561,
+      "stored_candidate_token": 1368,
+      "live_token": 561,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " The",
+          "logprob": -0.6308163404464722,
+          "bytes": [
+            32,
+            84,
+            104,
+            101
+          ],
+          "token_ids": [
+            561
+          ],
+          "single_token": true,
+          "token_id": 561
+        },
+        {
+          "piece": " **",
+          "logprob": -1.6308163404464722,
+          "bytes": [
+            32,
+            42,
+            42
+          ],
+          "token_ids": [
+            2972
+          ],
+          "single_token": true,
+          "token_id": 2972
+        },
+        {
+          "piece": " Since",
+          "logprob": -1.8808163404464722,
+          "bytes": [
+            32,
+            83,
+            105,
+            110,
+            99,
+            101
+          ],
+          "token_ids": [
+            8439
+          ],
+          "single_token": true,
+          "token_id": 8439
+        },
+        {
+          "piece": " If",
+          "logprob": -2.5058164596557617,
+          "bytes": [
+            32,
+            73,
+            102
+          ],
+          "token_ids": [
+            1368
+          ],
+          "single_token": true,
+          "token_id": 1368
+        },
+        {
+          "piece": " According",
+          "logprob": -4.255816459655762,
+          "bytes": [
+            32,
+            65,
+            99,
+            99,
+            111,
+            114,
+            100,
+            105,
+            110,
+            103
+          ],
+          "token_ids": [
+            10235
+          ],
+          "single_token": true,
+          "token_id": 10235
+        }
+      ],
+      "top1_top2_margin_nats": 1.0,
+      "prompt_tokens": 22,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.35334471199894324,
+      "context_tokens_before_prediction": 53,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 53,
+      "tokens_from_page_boundary": 53,
+      "near_page_boundary": false
+    },
+    {
+      "id": "math_16",
+      "category": "math",
+      "first_diff_index": 44,
+      "stage": "late_decode",
+      "stored_control_token": 553,
+      "stored_candidate_token": 8,
+      "live_token": 553,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": ").",
+          "logprob": -0.36753204464912415,
+          "bytes": [
+            41,
+            46
+          ],
+          "token_ids": [
+            553
+          ],
+          "single_token": true,
+          "token_id": 553
+        },
+        {
+          "piece": "),",
+          "logprob": -1.4925320148468018,
+          "bytes": [
+            41,
+            44
+          ],
+          "token_ids": [
+            681
+          ],
+          "single_token": true,
+          "token_id": 681
+        },
+        {
+          "piece": ")",
+          "logprob": -2.4925320148468018,
+          "bytes": [
+            41
+          ],
+          "token_ids": [
+            8
+          ],
+          "single_token": true,
+          "token_id": 8
+        },
+        {
+          "piece": ",",
+          "logprob": -10.742531776428223,
+          "bytes": [
+            44
+          ],
+          "token_ids": [
+            11
+          ],
+          "single_token": true,
+          "token_id": 11
+        },
+        {
+          "piece": " and",
+          "logprob": -12.367531776428223,
+          "bytes": [
+            32,
+            97,
+            110,
+            100
+          ],
+          "token_ids": [
+            321
+          ],
+          "single_token": true,
+          "token_id": 321
+        }
+      ],
+      "top1_top2_margin_nats": 1.1249999701976776,
+      "prompt_tokens": 27,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.4874009240011219,
+      "context_tokens_before_prediction": 71,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 71,
+      "tokens_from_page_boundary": 71,
+      "near_page_boundary": false
+    },
+    {
+      "id": "math_18",
+      "category": "math",
+      "first_diff_index": 9,
+      "stage": "early_decode",
+      "stored_control_token": 1083,
+      "stored_candidate_token": 310,
+      "live_token": 1083,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " into",
+          "logprob": -0.07913869619369507,
+          "bytes": [
+            32,
+            105,
+            110,
+            116,
+            111
+          ],
+          "token_ids": [
+            1083
+          ],
+          "single_token": true,
+          "token_id": 1083
+        },
+        {
+          "piece": " to",
+          "logprob": -2.57913875579834,
+          "bytes": [
+            32,
+            116,
+            111
+          ],
+          "token_ids": [
+            310
+          ],
+          "single_token": true,
+          "token_id": 310
+        },
+        {
+          "piece": " (",
+          "logprob": -8.45413875579834,
+          "bytes": [
+            32,
+            40
+          ],
+          "token_ids": [
+            318
+          ],
+          "single_token": true,
+          "token_id": 318
+        },
+        {
+          "piece": " as",
+          "logprob": -10.82913875579834,
+          "bytes": [
+            32,
+            97,
+            115
+          ],
+          "token_ids": [
+            430
+          ],
+          "single_token": true,
+          "token_id": 430
+        },
+        {
+          "piece": " a",
+          "logprob": -12.57913875579834,
+          "bytes": [
+            32,
+            97
+          ],
+          "token_ids": [
+            264
+          ],
+          "single_token": true,
+          "token_id": 264
+        }
+      ],
+      "top1_top2_margin_nats": 2.5000000596046448,
+      "prompt_tokens": 25,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.12795534101314843,
+      "context_tokens_before_prediction": 34,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 34,
+      "tokens_from_page_boundary": 34,
+      "near_page_boundary": false
+    },
+    {
+      "id": "rag_01",
+      "category": "rag",
+      "first_diff_index": 0,
+      "stage": "prefill_first_token",
+      "stored_control_token": 14006,
+      "stored_candidate_token": 28463,
+      "live_token": 14006,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "AW",
+          "logprob": -0.25477784872055054,
+          "bytes": [
+            65,
+            87
+          ],
+          "token_ids": [
+            14006
+          ],
+          "single_token": true,
+          "token_id": 14006
+        },
+        {
+          "piece": "MX",
+          "logprob": -1.6297779083251953,
+          "bytes": [
+            77,
+            88
+          ],
+          "token_ids": [
+            28463
+          ],
+          "single_token": true,
+          "token_id": 28463
+        },
+        {
+          "piece": "MW",
+          "logprob": -5.817277908325195,
+          "bytes": [
+            77,
+            87
+          ],
+          "token_ids": [
+            52352
+          ],
+          "single_token": true,
+          "token_id": 52352
+        },
+        {
+          "piece": "Mixed",
+          "logprob": -6.129777908325195,
+          "bytes": [
+            77,
+            105,
+            120,
+            101,
+            100
+          ],
+          "token_ids": [
+            83445
+          ],
+          "single_token": true,
+          "token_id": 83445
+        },
+        {
+          "piece": "FP",
+          "logprob": -6.192277908325195,
+          "bytes": [
+            70,
+            80
+          ],
+          "token_ids": [
+            11361
+          ],
+          "single_token": true,
+          "token_id": 11361
+        }
+      ],
+      "top1_top2_margin_nats": 1.3750000596046448,
+      "prompt_tokens": 37,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.03586818199255504,
+      "context_tokens_before_prediction": 37,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 37,
+      "tokens_from_page_boundary": 37,
+      "near_page_boundary": false
+    },
+    {
+      "id": "reasoning_00",
+      "category": "reasoning",
+      "first_diff_index": 0,
+      "stage": "prefill_first_token",
+      "stored_control_token": 20,
+      "stored_candidate_token": 9764,
+      "live_token": 20,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "5",
+          "logprob": -0.498624712228775,
+          "bytes": [
+            53
+          ],
+          "token_ids": [
+            20
+          ],
+          "single_token": true,
+          "token_id": 20
+        },
+        {
+          "piece": "Let",
+          "logprob": -1.1236246824264526,
+          "bytes": [
+            76,
+            101,
+            116
+          ],
+          "token_ids": [
+            9764
+          ],
+          "single_token": true,
+          "token_id": 9764
+        },
+        {
+          "piece": "<|im_end|>",
+          "logprob": -3.873624801635742,
+          "bytes": [
+            60,
+            124,
+            105,
+            109,
+            95,
+            101,
+            110,
+            100,
+            124,
+            62
+          ],
+          "token_ids": [
+            248046
+          ],
+          "single_token": true,
+          "token_id": 248046
+        },
+        {
+          "piece": "0",
+          "logprob": -3.998624801635742,
+          "bytes": [
+            48
+          ],
+          "token_ids": [
+            15
+          ],
+          "single_token": true,
+          "token_id": 15
+        },
+        {
+          "piece": "1",
+          "logprob": -4.623624801635742,
+          "bytes": [
+            49
+          ],
+          "token_ids": [
+            16
+          ],
+          "single_token": true,
+          "token_id": 16
+        }
+      ],
+      "top1_top2_margin_nats": 0.6249999701976776,
+      "prompt_tokens": 44,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.03592271698289551,
+      "context_tokens_before_prediction": 44,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 44,
+      "tokens_from_page_boundary": 44,
+      "near_page_boundary": false
+    },
+    {
+      "id": "reasoning_04",
+      "category": "reasoning",
+      "first_diff_index": 8,
+      "stage": "early_decode",
+      "stored_control_token": 1083,
+      "stored_candidate_token": 424,
+      "live_token": 1083,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " into",
+          "logprob": -0.5461511015892029,
+          "bytes": [
+            32,
+            105,
+            110,
+            116,
+            111
+          ],
+          "token_ids": [
+            1083
+          ],
+          "single_token": true,
+          "token_id": 1083
+        },
+        {
+          "piece": " it",
+          "logprob": -0.9211511015892029,
+          "bytes": [
+            32,
+            105,
+            116
+          ],
+          "token_ids": [
+            424
+          ],
+          "single_token": true,
+          "token_id": 424
+        },
+        {
+          "piece": " from",
+          "logprob": -4.671151161193848,
+          "bytes": [
+            32,
+            102,
+            114,
+            111,
+            109
+          ],
+          "token_ids": [
+            494
+          ],
+          "single_token": true,
+          "token_id": 494
+        },
+        {
+          "piece": " ",
+          "logprob": -4.796151161193848,
+          "bytes": [
+            32
+          ],
+          "token_ids": [
+            220
+          ],
+          "single_token": true,
+          "token_id": 220
+        },
+        {
+          "piece": " its",
+          "logprob": -5.671151161193848,
+          "bytes": [
+            32,
+            105,
+            116,
+            115
+          ],
+          "token_ids": [
+            1141
+          ],
+          "single_token": true,
+          "token_id": 1141
+        }
+      ],
+      "top1_top2_margin_nats": 0.375,
+      "prompt_tokens": 44,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.11778865999076515,
+      "context_tokens_before_prediction": 52,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 52,
+      "tokens_from_page_boundary": 52,
+      "near_page_boundary": false
+    },
+    {
+      "id": "reasoning_05",
+      "category": "reasoning",
+      "first_diff_index": 2,
+      "stage": "early_decode",
+      "stored_control_token": 279,
+      "stored_candidate_token": 6681,
+      "live_token": 279,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": true,
+      "matches_stored_candidate": false,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": " the",
+          "logprob": -0.6331647634506226,
+          "bytes": [
+            32,
+            116,
+            104,
+            101
+          ],
+          "token_ids": [
+            279
+          ],
+          "single_token": true,
+          "token_id": 279
+        },
+        {
+          "piece": " exactly",
+          "logprob": -0.7581647634506226,
+          "bytes": [
+            32,
+            101,
+            120,
+            97,
+            99,
+            116,
+            108,
+            121
+          ],
+          "token_ids": [
+            6681
+          ],
+          "single_token": true,
+          "token_id": 6681
+        },
+        {
+          "piece": " equally",
+          "logprob": -7.508164882659912,
+          "bytes": [
+            32,
+            101,
+            113,
+            117,
+            97,
+            108,
+            108,
+            121
+          ],
+          "token_ids": [
+            17763
+          ],
+          "single_token": true,
+          "token_id": 17763
+        },
+        {
+          "piece": " both",
+          "logprob": -13.133164405822754,
+          "bytes": [
+            32,
+            98,
+            111,
+            116,
+            104
+          ],
+          "token_ids": [
+            2107
+          ],
+          "single_token": true,
+          "token_id": 2107
+        },
+        {
+          "piece": " precisely",
+          "logprob": -13.195664405822754,
+          "bytes": [
+            32,
+            112,
+            114,
+            101,
+            99,
+            105,
+            115,
+            101,
+            108,
+            121
+          ],
+          "token_ids": [
+            22898
+          ],
+          "single_token": true,
+          "token_id": 22898
+        }
+      ],
+      "top1_top2_margin_nats": 0.125,
+      "prompt_tokens": 30,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.056257560005178675,
+      "context_tokens_before_prediction": 32,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 32,
+      "tokens_from_page_boundary": 32,
+      "near_page_boundary": false
+    },
+    {
+      "id": "long_8k_02",
+      "category": "long_context",
+      "first_diff_index": 0,
+      "stage": "prefill_first_token",
+      "stored_control_token": 760,
+      "stored_candidate_token": 57508,
+      "live_token": 57508,
+      "live_prefix_matches_stored_control": true,
+      "matches_stored_control": false,
+      "matches_stored_candidate": true,
+      "special_or_format_token": false,
+      "top": [
+        {
+          "piece": "needle",
+          "logprob": -0.0020753054413944483,
+          "bytes": [
+            110,
+            101,
+            101,
+            100,
+            108,
+            101
+          ],
+          "token_ids": [
+            57508
+          ],
+          "single_token": true,
+          "token_id": 57508
+        },
+        {
+          "piece": " needle",
+          "logprob": -7.3770751953125,
+          "bytes": [
+            32,
+            110,
+            101,
+            101,
+            100,
+            108,
+            101
+          ],
+          "token_ids": [
+            29321
+          ],
+          "single_token": true,
+          "token_id": 29321
+        },
+        {
+          "piece": "The",
+          "logprob": -7.8770751953125,
+          "bytes": [
+            84,
+            104,
+            101
+          ],
+          "token_ids": [
+            760
+          ],
+          "single_token": true,
+          "token_id": 760
+        },
+        {
+          "piece": "-",
+          "logprob": -8.3770751953125,
+          "bytes": [
+            45
+          ],
+          "token_ids": [
+            12
+          ],
+          "single_token": true,
+          "token_id": 12
+        },
+        {
+          "piece": "need",
+          "logprob": -8.8145751953125,
+          "bytes": [
+            110,
+            101,
+            101,
+            100
+          ],
+          "token_ids": [
+            16546
+          ],
+          "single_token": true,
+          "token_id": 16546
+        }
+      ],
+      "top1_top2_margin_nats": 7.3749998898711056,
+      "prompt_tokens": 13489,
+      "batch_shape": "C1",
+      "serving_path": "chat",
+      "latency_s": 0.4781984610017389,
+      "context_tokens_before_prediction": 13489,
+      "page_size": 784,
+      "page_index": 17,
+      "offset_in_page": 161,
+      "tokens_from_page_boundary": 161,
+      "near_page_boundary": false
+    }
+  ],
+  "page_probes": [
+    {
+      "requested_context": 783,
+      "actual_context": 783,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.5435429811477661,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.7935429811477661,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 1.25,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.5435429811477661,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.7935429811477661,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 1.25
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.46609044075012207,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " appears",
+              "logprob": -1.466090440750122,
+              "bytes": [
+                32,
+                97,
+                112,
+                112,
+                101,
+                97,
+                114,
+                115
+              ],
+              "token_ids": [
+                7701
+              ],
+              "single_token": true,
+              "token_id": 7701
+            }
+          ],
+          "top1_top2_margin_nats": 1.0
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.00023719837190583348,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " you",
+              "logprob": -10.000237464904785,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            }
+          ],
+          "top1_top2_margin_nats": 10.00000026653288
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.027612265199422836,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " a",
+              "logprob": -5.027612209320068,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            }
+          ],
+          "top1_top2_margin_nats": 4.9999999441206455
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.11901961266994476,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "\u2019ve",
+              "logprob": -3.1190195083618164,
+              "bytes": [
+                226,
+                128,
+                153,
+                118,
+                101
+              ],
+              "token_ids": [
+                3849
+              ],
+              "single_token": true,
+              "token_id": 3849
+            }
+          ],
+          "top1_top2_margin_nats": 2.9999998956918716
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -1.1750829219818115,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.6750829219818115,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 0.5
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.010724173858761787,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -5.135724067687988,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 5.1249998938292265
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.5903618931770325,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.2153618335723877,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.6249999403953552
+        }
+      ],
+      "context_tokens_before_prediction": 783,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 784,
+      "actual_context": 784,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.23128919303417206,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -2.1062891483306885,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 1.8749999552965164,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.23128919303417206,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -2.1062891483306885,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 1.8749999552965164
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.48221784830093384,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -1.357217788696289,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 0.8749999403953552
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.0003405229654163122,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": "<|im_end|>",
+              "logprob": -9.312840461730957,
+              "bytes": [
+                60,
+                124,
+                105,
+                109,
+                95,
+                101,
+                110,
+                100,
+                124,
+                62
+              ],
+              "token_ids": [
+                248046
+              ],
+              "single_token": true,
+              "token_id": 248046
+            }
+          ],
+          "top1_top2_margin_nats": 9.31249993876554
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.03234877437353134,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -4.0323486328125,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 3.9999998584389687
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.09353304654359818,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "\u2019ve",
+              "logprob": -2.8435330390930176,
+              "bytes": [
+                226,
+                128,
+                153,
+                118,
+                101
+              ],
+              "token_ids": [
+                3849
+              ],
+              "single_token": true,
+              "token_id": 3849
+            }
+          ],
+          "top1_top2_margin_nats": 2.7499999925494194
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.826919674873352,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.701919674873352,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 0.875
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.0035701366141438484,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " the",
+              "logprob": -6.753570079803467,
+              "bytes": [
+                32,
+                116,
+                104,
+                101
+              ],
+              "token_ids": [
+                279
+              ],
+              "single_token": true,
+              "token_id": 279
+            }
+          ],
+          "top1_top2_margin_nats": 6.749999943189323
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.3109094500541687,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.9359095096588135,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 1.6250000596046448
+        }
+      ],
+      "context_tokens_before_prediction": 784,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 785,
+      "actual_context": 785,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.5087094902992249,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.50870943069458,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 0.9999999403953552,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.5087094902992249,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.50870943069458,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 0.9999999403953552
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.25832754373550415,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -2.0083274841308594,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 1.7499999403953552
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.00015877415717113763,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " that",
+              "logprob": -10.562658309936523,
+              "bytes": [
+                32,
+                116,
+                104,
+                97,
+                116
+              ],
+              "token_ids": [
+                421
+              ],
+              "single_token": true,
+              "token_id": 421
+            }
+          ],
+          "top1_top2_margin_nats": 10.562499535779352
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.026060527190566063,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " we",
+              "logprob": -5.276060581207275,
+              "bytes": [
+                32,
+                119,
+                101
+              ],
+              "token_ids": [
+                567
+              ],
+              "single_token": true,
+              "token_id": 567
+            }
+          ],
+          "top1_top2_margin_nats": 5.250000054016709
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.06552658975124359,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "'re",
+              "logprob": -3.9405264854431152,
+              "bytes": [
+                39,
+                114,
+                101
+              ],
+              "token_ids": [
+                2224
+              ],
+              "single_token": true,
+              "token_id": 2224
+            }
+          ],
+          "top1_top2_margin_nats": 3.8749998956918716
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.5347686409950256,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " shared",
+              "logprob": -1.6597685813903809,
+              "bytes": [
+                32,
+                115,
+                104,
+                97,
+                114,
+                101,
+                100
+              ],
+              "token_ids": [
+                5904
+              ],
+              "single_token": true,
+              "token_id": 5904
+            }
+          ],
+          "top1_top2_margin_nats": 1.1249999403953552
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.019925082102417946,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -4.144925117492676,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 4.125000035390258
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.4353640079498291,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.310364007949829,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.875
+        }
+      ],
+      "context_tokens_before_prediction": 785,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1567,
+      "actual_context": 1567,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.5863786935806274,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.7113786935806274,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 1.125,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.5863786935806274,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.7113786935806274,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 1.125
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.6086569428443909,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -1.108656883239746,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 0.4999999403953552
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.0008716359734535217,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": "<|im_end|>",
+              "logprob": -8.125871658325195,
+              "bytes": [
+                60,
+                124,
+                105,
+                109,
+                95,
+                101,
+                110,
+                100,
+                124,
+                62
+              ],
+              "token_ids": [
+                248046
+              ],
+              "single_token": true,
+              "token_id": 248046
+            }
+          ],
+          "top1_top2_margin_nats": 8.125000022351742
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.02425519749522209,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -4.274255275726318,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 4.250000078231096
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.1420271247625351,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "\u2019ve",
+              "logprob": -2.2670271396636963,
+              "bytes": [
+                226,
+                128,
+                153,
+                118,
+                101
+              ],
+              "token_ids": [
+                3849
+              ],
+              "single_token": true,
+              "token_id": 3849
+            }
+          ],
+          "top1_top2_margin_nats": 2.125000014901161
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.5769321918487549,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.9519321918487549,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 1.375
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.009025136940181255,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " the",
+              "logprob": -5.2590250968933105,
+              "bytes": [
+                32,
+                116,
+                104,
+                101
+              ],
+              "token_ids": [
+                279
+              ],
+              "single_token": true,
+              "token_id": 279
+            }
+          ],
+          "top1_top2_margin_nats": 5.249999959953129
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.8096901774406433,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.434690237045288,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.6250000596046448
+        }
+      ],
+      "context_tokens_before_prediction": 1567,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1568,
+      "actual_context": 1568,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        4816,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.5364373922348022,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -2.536437511444092,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 2.0000001192092896,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.5364373922348022,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -2.536437511444092,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 2.0000001192092896
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " seems",
+              "logprob": -0.8145120143890381,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            },
+            {
+              "piece": " looks",
+              "logprob": -0.8145120143890381,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            }
+          ],
+          "top1_top2_margin_nats": 0.0
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.24066811800003052,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " you",
+              "logprob": -1.6156680583953857,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            }
+          ],
+          "top1_top2_margin_nats": 1.3749999403953552
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.05600457638502121,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -3.556004524230957,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 3.499999947845936
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.043073903769254684,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "'re",
+              "logprob": -4.043074131011963,
+              "bytes": [
+                39,
+                114,
+                101
+              ],
+              "token_ids": [
+                2224
+              ],
+              "single_token": true,
+              "token_id": 2224
+            }
+          ],
+          "top1_top2_margin_nats": 4.000000227242708
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.9814457893371582,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.8564457893371582,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 0.875
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.011902503669261932,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -5.386902332305908,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 5.374999828636646
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.48851168155670166,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " lot",
+              "logprob": -1.6135116815567017,
+              "bytes": [
+                32,
+                108,
+                111,
+                116
+              ],
+              "token_ids": [
+                2609
+              ],
+              "single_token": true,
+              "token_id": 2609
+            }
+          ],
+          "top1_top2_margin_nats": 1.125
+        }
+      ],
+      "context_tokens_before_prediction": 1568,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1569,
+      "actual_context": 1569,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -1.2833017110824585,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.9083017110824585,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 0.625,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -1.2833017110824585,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.9083017110824585,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 0.625
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.8020642995834351,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -1.177064299583435,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 0.375
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.0004134515766054392,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " to",
+              "logprob": -9.18791389465332,
+              "bytes": [
+                32,
+                116,
+                111
+              ],
+              "token_ids": [
+                310
+              ],
+              "single_token": true,
+              "token_id": 310
+            }
+          ],
+          "top1_top2_margin_nats": 9.187500443076715
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.01732337288558483,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -5.3923234939575195,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 5.375000121071935
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.14418329298496246,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": " have",
+              "logprob": -3.269183397293091,
+              "bytes": [
+                32,
+                104,
+                97,
+                118,
+                101
+              ],
+              "token_ids": [
+                599
+              ],
+              "single_token": true,
+              "token_id": 599
+            }
+          ],
+          "top1_top2_margin_nats": 3.1250001043081284
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.9816216826438904,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.3566217422485352,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 0.3750000596046448
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.03978011757135391,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -3.6647801399230957,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 3.625000022351742
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.7459433078765869,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.245943307876587,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.5
+        }
+      ],
+      "context_tokens_before_prediction": 1569,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2351,
+      "actual_context": 2351,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.4551725387573242,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.7051725387573242,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 1.25,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.4551725387573242,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.7051725387573242,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 1.25
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.4838404953479767,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -1.3588404655456543,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 0.8749999701976776
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.00012396997772157192,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": "<|im_end|>",
+              "logprob": -10.500123977661133,
+              "bytes": [
+                60,
+                124,
+                105,
+                109,
+                95,
+                101,
+                110,
+                100,
+                124,
+                62
+              ],
+              "token_ids": [
+                248046
+              ],
+              "single_token": true,
+              "token_id": 248046
+            }
+          ],
+          "top1_top2_margin_nats": 10.500000007683411
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.024160834029316902,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -4.149160861968994,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 4.125000027939677
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.09293793886899948,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "\u2019ve",
+              "logprob": -2.84293794631958,
+              "bytes": [
+                226,
+                128,
+                153,
+                118,
+                101
+              ],
+              "token_ids": [
+                3849
+              ],
+              "single_token": true,
+              "token_id": 3849
+            }
+          ],
+          "top1_top2_margin_nats": 2.7500000074505806
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.6201969981193542,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " shared",
+              "logprob": -1.745197057723999,
+              "bytes": [
+                32,
+                115,
+                104,
+                97,
+                114,
+                101,
+                100
+              ],
+              "token_ids": [
+                5904
+              ],
+              "single_token": true,
+              "token_id": 5904
+            }
+          ],
+          "top1_top2_margin_nats": 1.1250000596046448
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.024022119119763374,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -4.274022102355957,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 4.249999983236194
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -0.8920595049858093,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -0.8920595049858093,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.0
+        }
+      ],
+      "context_tokens_before_prediction": 2351,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2352,
+      "actual_context": 2352,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        4816,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1248
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.6735638380050659,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.798563838005066,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 1.125,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.6735638380050659,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.798563838005066,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 1.125
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " seems",
+              "logprob": -0.9635314345359802,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            },
+            {
+              "piece": " looks",
+              "logprob": -0.9635314345359802,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            }
+          ],
+          "top1_top2_margin_nats": 0.0
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -0.3435017466545105,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " you",
+              "logprob": -1.3435018062591553,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            }
+          ],
+          "top1_top2_margin_nats": 1.0000000596046448
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.08828812837600708,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -2.8382880687713623,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 2.7499999403953552
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.08183719217777252,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "'re",
+              "logprob": -3.2068371772766113,
+              "bytes": [
+                39,
+                114,
+                101
+              ],
+              "token_ids": [
+                2224
+              ],
+              "single_token": true,
+              "token_id": 2224
+            }
+          ],
+          "top1_top2_margin_nats": 3.124999985098839
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.9305424094200134,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " shared",
+              "logprob": -1.9305424690246582,
+              "bytes": [
+                32,
+                115,
+                104,
+                97,
+                114,
+                101,
+                100
+              ],
+              "token_ids": [
+                5904
+              ],
+              "single_token": true,
+              "token_id": 5904
+            }
+          ],
+          "top1_top2_margin_nats": 1.0000000596046448
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.008712966926395893,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " the",
+              "logprob": -6.0087127685546875,
+              "bytes": [
+                32,
+                116,
+                104,
+                101
+              ],
+              "token_ids": [
+                279
+              ],
+              "single_token": true,
+              "token_id": 279
+            }
+          ],
+          "top1_top2_margin_nats": 5.999999801628292
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " long",
+              "logprob": -1.0007238388061523,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            },
+            {
+              "piece": " very",
+              "logprob": -1.2507238388061523,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            }
+          ],
+          "top1_top2_margin_nats": 0.25
+        }
+      ],
+      "context_tokens_before_prediction": 2352,
+      "page_size": 784,
+      "page_index": 3,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2353,
+      "actual_context": 2353,
+      "exact": true,
+      "generated_token_ids": [
+        2064,
+        5686,
+        1040,
+        488,
+        2908,
+        3106,
+        264,
+        1546
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.4466255307197571,
+          "bytes": [
+            73,
+            116
+          ],
+          "token_ids": [
+            2064
+          ],
+          "single_token": true,
+          "token_id": 2064
+        },
+        {
+          "piece": "I",
+          "logprob": -1.3216254711151123,
+          "bytes": [
+            73
+          ],
+          "token_ids": [
+            40
+          ],
+          "single_token": true,
+          "token_id": 40
+        }
+      ],
+      "top1_top2_margin_nats": 0.8749999403953552,
+      "positions": [
+        {
+          "index": 0,
+          "top": [
+            {
+              "piece": "It",
+              "logprob": -0.4466255307197571,
+              "bytes": [
+                73,
+                116
+              ],
+              "token_ids": [
+                2064
+              ],
+              "single_token": true,
+              "token_id": 2064
+            },
+            {
+              "piece": "I",
+              "logprob": -1.3216254711151123,
+              "bytes": [
+                73
+              ],
+              "token_ids": [
+                40
+              ],
+              "single_token": true,
+              "token_id": 40
+            }
+          ],
+          "top1_top2_margin_nats": 0.8749999403953552
+        },
+        {
+          "index": 1,
+          "top": [
+            {
+              "piece": " looks",
+              "logprob": -0.3012978434562683,
+              "bytes": [
+                32,
+                108,
+                111,
+                111,
+                107,
+                115
+              ],
+              "token_ids": [
+                5686
+              ],
+              "single_token": true,
+              "token_id": 5686
+            },
+            {
+              "piece": " seems",
+              "logprob": -1.926297903060913,
+              "bytes": [
+                32,
+                115,
+                101,
+                101,
+                109,
+                115
+              ],
+              "token_ids": [
+                4816
+              ],
+              "single_token": true,
+              "token_id": 4816
+            }
+          ],
+          "top1_top2_margin_nats": 1.6250000596046448
+        },
+        {
+          "index": 2,
+          "top": [
+            {
+              "piece": " like",
+              "logprob": -9.595887968316674e-05,
+              "bytes": [
+                32,
+                108,
+                105,
+                107,
+                101
+              ],
+              "token_ids": [
+                1040
+              ],
+              "single_token": true,
+              "token_id": 1040
+            },
+            {
+              "piece": " you",
+              "logprob": -10.812596321105957,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            }
+          ],
+          "top1_top2_margin_nats": 10.812500362226274
+        },
+        {
+          "index": 3,
+          "top": [
+            {
+              "piece": " you",
+              "logprob": -0.023901889100670815,
+              "bytes": [
+                32,
+                121,
+                111,
+                117
+              ],
+              "token_ids": [
+                488
+              ],
+              "single_token": true,
+              "token_id": 488
+            },
+            {
+              "piece": " your",
+              "logprob": -4.52390193939209,
+              "bytes": [
+                32,
+                121,
+                111,
+                117,
+                114
+              ],
+              "token_ids": [
+                678
+              ],
+              "single_token": true,
+              "token_id": 678
+            }
+          ],
+          "top1_top2_margin_nats": 4.500000050291419
+        },
+        {
+          "index": 4,
+          "top": [
+            {
+              "piece": "'ve",
+              "logprob": -0.05268962308764458,
+              "bytes": [
+                39,
+                118,
+                101
+              ],
+              "token_ids": [
+                2908
+              ],
+              "single_token": true,
+              "token_id": 2908
+            },
+            {
+              "piece": "\u2019ve",
+              "logprob": -3.802689552307129,
+              "bytes": [
+                226,
+                128,
+                153,
+                118,
+                101
+              ],
+              "token_ids": [
+                3849
+              ],
+              "single_token": true,
+              "token_id": 3849
+            }
+          ],
+          "top1_top2_margin_nats": 3.7499999292194843
+        },
+        {
+          "index": 5,
+          "top": [
+            {
+              "piece": " sent",
+              "logprob": -0.7663325667381287,
+              "bytes": [
+                32,
+                115,
+                101,
+                110,
+                116
+              ],
+              "token_ids": [
+                3106
+              ],
+              "single_token": true,
+              "token_id": 3106
+            },
+            {
+              "piece": " past",
+              "logprob": -1.6413326263427734,
+              "bytes": [
+                32,
+                112,
+                97,
+                115,
+                116
+              ],
+              "token_ids": [
+                3162
+              ],
+              "single_token": true,
+              "token_id": 3162
+            }
+          ],
+          "top1_top2_margin_nats": 0.8750000596046448
+        },
+        {
+          "index": 6,
+          "top": [
+            {
+              "piece": " a",
+              "logprob": -0.048440948128700256,
+              "bytes": [
+                32,
+                97
+              ],
+              "token_ids": [
+                264
+              ],
+              "single_token": true,
+              "token_id": 264
+            },
+            {
+              "piece": " me",
+              "logprob": -3.298440933227539,
+              "bytes": [
+                32,
+                109,
+                101
+              ],
+              "token_ids": [
+                728
+              ],
+              "single_token": true,
+              "token_id": 728
+            }
+          ],
+          "top1_top2_margin_nats": 3.249999985098839
+        },
+        {
+          "index": 7,
+          "top": [
+            {
+              "piece": " very",
+              "logprob": -0.9055099487304688,
+              "bytes": [
+                32,
+                118,
+                101,
+                114,
+                121
+              ],
+              "token_ids": [
+                1546
+              ],
+              "single_token": true,
+              "token_id": 1546
+            },
+            {
+              "piece": " long",
+              "logprob": -1.1555099487304688,
+              "bytes": [
+                32,
+                108,
+                111,
+                110,
+                103
+              ],
+              "token_ids": [
+                1248
+              ],
+              "single_token": true,
+              "token_id": 1248
+            }
+          ],
+          "top1_top2_margin_nats": 0.25
+        }
+      ],
+      "context_tokens_before_prediction": 2353,
+      "page_size": 784,
+      "page_index": 3,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    }
+  ],
+  "nested_page_probes": [
+    {
+      "requested_context": 783,
+      "actual_context": 783,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -0.005240038502961397,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": " alpha",
+          "logprob": -5.255239963531494,
+          "token_id": 8029,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 5.249999925028533,
+      "context_tokens_before_prediction": 783,
+      "page_size": 784,
+      "page_index": 0,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 784,
+      "actual_context": 784,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -0.00023958196106832474,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": " varied",
+          "logprob": -9.625239372253418,
+          "token_id": 26832,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 9.62499979029235,
+      "context_tokens_before_prediction": 784,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 785,
+      "actual_context": 785,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -7.152555099310121e-07,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": " \"",
+          "logprob": -15.375000953674316,
+          "token_id": 328,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 15.375000238418806,
+      "context_tokens_before_prediction": 785,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1567,
+      "actual_context": 1567,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -0.0004929280839860439,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": " alpha",
+          "logprob": -7.625493049621582,
+          "token_id": 8029,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 7.625000121537596,
+      "context_tokens_before_prediction": 1567,
+      "page_size": 784,
+      "page_index": 1,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1568,
+      "actual_context": 1568,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -1.752361458784435e-05,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": " thousands",
+          "logprob": -11.687517166137695,
+          "token_id": 8765,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 11.687499642523107,
+      "context_tokens_before_prediction": 1568,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 1569,
+      "actual_context": 1569,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248046
+      ],
+      "top": [
+        {
+          "piece": "<|im_end|>",
+          "logprob": -8.940656698541716e-06,
+          "token_id": 248046,
+          "single_token": true
+        },
+        {
+          "piece": "\n",
+          "logprob": -12.125008583068848,
+          "token_id": 198,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 12.12499964241215,
+      "context_tokens_before_prediction": 1569,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2351,
+      "actual_context": 2351,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        248069
+      ],
+      "top": [
+        {
+          "piece": "</think>",
+          "logprob": 0.0,
+          "token_id": 248069,
+          "single_token": true
+        },
+        {
+          "piece": "<|im_end|>",
+          "logprob": -16.875,
+          "token_id": 248046,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 16.875,
+      "context_tokens_before_prediction": 2351,
+      "page_size": 784,
+      "page_index": 2,
+      "offset_in_page": 783,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2352,
+      "actual_context": 2352,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        271
+      ],
+      "top": [
+        {
+          "piece": "\n\n",
+          "logprob": -7.629365427419543e-06,
+          "token_id": 271,
+          "single_token": true
+        },
+        {
+          "piece": "<|im_end|>",
+          "logprob": -12.375007629394531,
+          "token_id": 248046,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 12.375000000029104,
+      "context_tokens_before_prediction": 2352,
+      "page_size": 784,
+      "page_index": 3,
+      "offset_in_page": 0,
+      "tokens_from_page_boundary": 0,
+      "near_page_boundary": true
+    },
+    {
+      "requested_context": 2353,
+      "actual_context": 2353,
+      "nested_prefix": true,
+      "serving_path": "completions_token_ids",
+      "generated_token_ids": [
+        2064
+      ],
+      "top": [
+        {
+          "piece": "It",
+          "logprob": -0.4466255307197571,
+          "token_id": 2064,
+          "single_token": true
+        },
+        {
+          "piece": "I",
+          "logprob": -1.3216254711151123,
+          "token_id": 40,
+          "single_token": true
+        }
+      ],
+      "top1_top2_margin_nats": 0.8749999403953552,
+      "context_tokens_before_prediction": 2353,
+      "page_size": 784,
+      "page_index": 3,
+      "offset_in_page": 1,
+      "tokens_from_page_boundary": 1,
+      "near_page_boundary": true
+    }
+  ]
+}

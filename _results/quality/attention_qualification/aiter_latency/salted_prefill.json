@@ -1,0 +1,101 @@
+[
+  {
+    "input_len": 1024,
+    "prompt_tokens": 1033,
+    "over_8192": -7159,
+    "mod_832": 201,
+    "warmup_ttft_ms": 85.62201197491959,
+    "cold_ttft_ms": 68.13271099235862,
+    "hot_ttft_ms": 61.794744979124516
+  },
+  {
+    "input_len": 7000,
+    "prompt_tokens": 7009,
+    "over_8192": -1183,
+    "mod_832": 353,
+    "warmup_ttft_ms": 1045.1701789861545,
+    "cold_ttft_ms": 699.9908320140094,
+    "hot_ttft_ms": 69.83208400197327
+  },
+  {
+    "input_len": 7479,
+    "prompt_tokens": 7488,
+    "over_8192": -704,
+    "mod_832": 0,
+    "warmup_ttft_ms": 731.9184429943562,
+    "cold_ttft_ms": 732.3856720468029,
+    "hot_ttft_ms": 778.6873850272968
+  },
+  {
+    "input_len": 7480,
+    "prompt_tokens": 7489,
+    "over_8192": -703,
+    "mod_832": 1,
+    "warmup_ttft_ms": 743.715621996671,
+    "cold_ttft_ms": 744.1617720178328,
+    "hot_ttft_ms": 29.320686997380108
+  },
+  {
+    "input_len": 8183,
+    "prompt_tokens": 8192,
+    "over_8192": 0,
+    "mod_832": 704,
+    "warmup_ttft_ms": 852.1770699881017,
+    "cold_ttft_ms": 854.2482319753617,
+    "hot_ttft_ms": 142.38255395321175
+  },
+  {
+    "input_len": 8184,
+    "prompt_tokens": 8193,
+    "over_8192": 1,
+    "mod_832": 705,
+    "warmup_ttft_ms": 854.6915780170821,
+    "cold_ttft_ms": 855.4120630142279,
+    "hot_ttft_ms": 141.52516197646037
+  },
+  {
+    "input_len": 8192,
+    "prompt_tokens": 8201,
+    "over_8192": 9,
+    "mod_832": 713,
+    "warmup_ttft_ms": 853.9848320069723,
+    "cold_ttft_ms": 855.6346579571255,
+    "hot_ttft_ms": 142.12017599493265
+  },
+  {
+    "input_len": 8300,
+    "prompt_tokens": 8309,
+    "over_8192": 117,
+    "mod_832": 821,
+    "warmup_ttft_ms": 865.3960329829715,
+    "cold_ttft_ms": 865.1772839948535,
+    "hot_ttft_ms": 152.19229698413983
+  },
+  {
+    "input_len": 8311,
+    "prompt_tokens": 8320,
+    "over_8192": 128,
+    "mod_832": 0,
+    "warmup_ttft_ms": 866.0779860219918,
+    "cold_ttft_ms": 877.9077299986966,
+    "hot_ttft_ms": 156.91532398341224
+  },
+  {
+    "input_len": 12288,
+    "prompt_tokens": 12297,
+    "over_8192": 4105,
+    "mod_832": 649,
+    "warmup_ttft_ms": 1413.1565479910932,
+    "cold_ttft_ms": 1412.3562840395607,
+    "hot_ttft_ms": 163.5358550120145
+  },
+  {
+    "input_len": 15300,
+    "prompt_tokens": 15309,
+    "over_8192": 7117,
+    "mod_832": 333,
+    "warmup_ttft_ms": 1801.3345829676837,
+    "cold_ttft_ms": 1800.2915669931099,
+    "hot_ttft_ms": 98.68541196919978
+  }
+]

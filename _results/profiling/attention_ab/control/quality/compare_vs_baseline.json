@@ -1,0 +1,19 @@
+{
+  "n_compared": 116,
+  "both_ok": 116,
+  "exact_token_id_matches": 116,
+  "exact_text_matches": 116,
+  "token_match_rate": 1.0,
+  "text_match_rate": 1.0,
+  "by_category": {
+    "code:match": 20,
+    "json_tool:match": 15,
+    "long_context:match": 6,
+    "math:match": 20,
+    "multilingual:match": 10,
+    "rag:match": 15,
+    "reasoning:match": 10,
+    "short_chat:match": 20
+  },
+  "mismatches": []
+}

@@ -1,0 +1,359 @@
+{
+  "quality": {
+    "aiter": {
+      "pass": true,
+      "failures": [],
+      "overall": {
+        "n": 100,
+        "stock_correct": 86,
+        "candidate_correct": 87,
+        "delta": 0.01,
+        "wins": 3,
+        "losses": 2,
+        "ties": 95,
+        "bootstrap_95_ci": [
+          -0.03,
+          0.05
+        ]
+      },
+      "categories": {
+        "code": {
+          "n": 21,
+          "stock_correct": 20,
+          "candidate_correct": 20,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 21,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "json_tool": {
+          "n": 20,
+          "stock_correct": 20,
+          "candidate_correct": 20,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 20,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "long_context": {
+          "n": 15,
+          "stock_correct": 15,
+          "candidate_correct": 15,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 15,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "math": {
+          "n": 24,
+          "stock_correct": 18,
+          "candidate_correct": 18,
+          "delta": 0.0,
+          "wins": 1,
+          "losses": 1,
+          "ties": 22,
+          "bootstrap_95_ci": [
+            -0.125,
+            0.125
+          ]
+        },
+        "reasoning": {
+          "n": 20,
+          "stock_correct": 13,
+          "candidate_correct": 14,
+          "delta": 0.05,
+          "wins": 2,
+          "losses": 1,
+          "ties": 17,
+          "bootstrap_95_ci": [
+            -0.1,
+            0.2
+          ]
+        }
+      },
+      "long_bands": {
+        "16k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "2k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "8k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "triton": {
+      "pass": false,
+      "failures": [
+        "reasoning_delta=-0.100",
+        "reasoning_net_losses=2"
+      ],
+      "overall": {
+        "n": 100,
+        "stock_correct": 86,
+        "candidate_correct": 85,
+        "delta": -0.01,
+        "wins": 2,
+        "losses": 3,
+        "ties": 95,
+        "bootstrap_95_ci": [
+          -0.05,
+          0.03
+        ]
+      },
+      "categories": {
+        "code": {
+          "n": 21,
+          "stock_correct": 20,
+          "candidate_correct": 21,
+          "delta": 0.047619047619047616,
+          "wins": 1,
+          "losses": 0,
+          "ties": 20,
+          "bootstrap_95_ci": [
+            0.0,
+            0.14285714285714285
+          ]
+        },
+        "json_tool": {
+          "n": 20,
+          "stock_correct": 20,
+          "candidate_correct": 20,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 20,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "long_context": {
+          "n": 15,
+          "stock_correct": 15,
+          "candidate_correct": 15,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 15,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "math": {
+          "n": 24,
+          "stock_correct": 18,
+          "candidate_correct": 18,
+          "delta": 0.0,
+          "wins": 1,
+          "losses": 1,
+          "ties": 22,
+          "bootstrap_95_ci": [
+            -0.125,
+            0.125
+          ]
+        },
+        "reasoning": {
+          "n": 20,
+          "stock_correct": 13,
+          "candidate_correct": 11,
+          "delta": -0.1,
+          "wins": 0,
+          "losses": 2,
+          "ties": 18,
+          "bootstrap_95_ci": [
+            -0.25,
+            0.0
+          ]
+        }
+      },
+      "long_bands": {
+        "16k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "2k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        },
+        "8k": {
+          "n": 5,
+          "stock_correct": 5,
+          "candidate_correct": 5,
+          "delta": 0.0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 5,
+          "bootstrap_95_ci": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "sampling": {
+    "stock": {
+      "code": {
+        "correct": 61,
+        "n": 63,
+        "accuracy": 0.9682539682539683,
+        "validity": 1.0
+      },
+      "json_tool": {
+        "correct": 60,
+        "n": 60,
+        "accuracy": 1.0,
+        "validity": 1.0
+      },
+      "math": {
+        "correct": 54,
+        "n": 72,
+        "accuracy": 0.75,
+        "validity": 1.0
+      },
+      "reasoning": {
+        "correct": 37,
+        "n": 60,
+        "accuracy": 0.6166666666666667,
+        "validity": 1.0
+      }
+    },
+    "aiter": {
+      "code": {
+        "correct": 61,
+        "n": 63,
+        "accuracy": 0.9682539682539683,
+        "validity": 1.0
+      },
+      "json_tool": {
+        "correct": 60,
+        "n": 60,
+        "accuracy": 1.0,
+        "validity": 1.0
+      },
+      "math": {
+        "correct": 54,
+        "n": 72,
+        "accuracy": 0.75,
+        "validity": 1.0
+      },
+      "reasoning": {
+        "correct": 36,
+        "n": 60,
+        "accuracy": 0.6,
+        "validity": 1.0
+      }
+    },
+    "aiter_gate": {
+      "pass": true,
+      "failures": []
+    }
+  },
+  "latency": {
+    "aiter": {
+      "pass": false,
+      "failures": [
+        "c4_1k_512:itl_p95 11.20>11.00",
+        "c4_8k_128:ttft_p95 567.86>427.15",
+        "c8_1k_512:itl_p95 11.80>11.00",
+        "c1_8k_128:ttft_p95 155.01>98.46",
+        "c8_8k_128:ttft_p95 996.34>827.11"
+      ]
+    },
+    "triton": {
+      "pass": false,
+      "failures": [
+        "c8_1k_512:itl_p95 11.51>11.00"
+      ]
+    }
+  },
+  "throughput_reference": {
+    "stock": {
+      "c1": 79.35,
+      "c8": 553.58
+    },
+    "aiter": {
+      "c1": 99.58,
+      "c8": 653.96
+    },
+    "triton": {
+      "c1": 100.36,
+      "c8": 660.53
+    }
+  },
+  "decision": {
+    "aiter": {
+      "quality_pass": true,
+      "latency_pass": false,
+      "promote": false
+    },
+    "triton": {
+      "quality_pass": false,
+      "latency_pass": false,
+      "promote": false
+    }
+  }
+}

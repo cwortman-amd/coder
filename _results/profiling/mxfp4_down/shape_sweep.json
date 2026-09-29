@@ -1,0 +1,398 @@
+{
+  "shape": {
+    "M": 1,
+    "N": 5120,
+    "K": 17408,
+    "projection": "down"
+  },
+  "library_default_ms": 0.06595196127891541,
+  "ranked": [
+    {
+      "config": "ks1_bn64_bk512_w4",
+      "ok": true,
+      "ms": 0.032473450899124144,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 2.0309501901657834
+    },
+    {
+      "config": "ks1_bn64_bk1024_w4",
+      "ok": true,
+      "ms": 0.032540449500083925,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 1024,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 2.02676860006944
+    },
+    {
+      "config": "ks1_bn64_bk512_w2",
+      "ok": true,
+      "ms": 0.03263444900512695,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 2,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 2.0209307431099632
+    },
+    {
+      "config": "ks1_bn32_bk512_w4",
+      "ok": true,
+      "ms": 0.03421905040740967,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 32,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 1.9273463317566057
+    },
+    {
+      "config": "ks1_bn64_bk512_w8",
+      "ok": true,
+      "ms": 0.037253725528717044,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 1.7703453907737716
+    },
+    {
+      "config": "ks1_bn128_bk512_w4",
+      "ok": true,
+      "ms": 0.04046192467212677,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 1.6299758801228776
+    },
+    {
+      "config": "ks1_bn64_bk256_w4",
+      "ok": true,
+      "ms": 0.04919044971466065,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 1.3407472723157314
+    },
+    {
+      "config": "ks2_bn64_bk512_w4",
+      "ok": true,
+      "ms": 0.052639663219451904,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 2
+      },
+      "vs_library_default": 1.2528948181899504
+    },
+    {
+      "config": "stock_m_leq_8",
+      "ok": true,
+      "ms": 0.05556883811950684,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 4
+      },
+      "vs_library_default": 1.1868515432530464
+    },
+    {
+      "config": "ks1_bn256_bk512_w4",
+      "ok": true,
+      "ms": 0.0641773521900177,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      },
+      "vs_library_default": 1.0276516407788747
+    },
+    {
+      "config": "library_default",
+      "ok": true,
+      "ms": 0.06595196127891541,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": null,
+      "vs_library_default": 1.0
+    }
+  ],
+  "rows": [
+    {
+      "config": "library_default",
+      "ok": true,
+      "ms": 0.06595196127891541,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": null
+    },
+    {
+      "config": "stock_m_leq_8",
+      "ok": true,
+      "ms": 0.05556883811950684,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 4
+      }
+    },
+    {
+      "config": "ks1_bn64_bk512_w4",
+      "ok": true,
+      "ms": 0.032473450899124144,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks2_bn64_bk512_w4",
+      "ok": true,
+      "ms": 0.052639663219451904,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 2
+      }
+    },
+    {
+      "config": "ks1_bn32_bk512_w4",
+      "ok": true,
+      "ms": 0.03421905040740967,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 32,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn128_bk512_w4",
+      "ok": true,
+      "ms": 0.04046192467212677,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 128,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn256_bk512_w4",
+      "ok": true,
+      "ms": 0.0641773521900177,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 256,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn64_bk256_w4",
+      "ok": true,
+      "ms": 0.04919044971466065,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 256,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn64_bk1024_w4",
+      "ok": true,
+      "ms": 0.032540449500083925,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 1024,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 4,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn64_bk512_w2",
+      "ok": true,
+      "ms": 0.03263444900512695,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 2,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    },
+    {
+      "config": "ks1_bn64_bk512_w8",
+      "ok": true,
+      "ms": 0.037253725528717044,
+      "max_abs_vs_library_default": 0.0,
+      "cfg": {
+        "BLOCK_SIZE_M": 8,
+        "BLOCK_SIZE_N": 64,
+        "BLOCK_SIZE_K": 512,
+        "GROUP_SIZE_M": 1,
+        "num_warps": 8,
+        "num_stages": 2,
+        "waves_per_eu": 2,
+        "matrix_instr_nonkdim": 32,
+        "cache_modifier": ".cg",
+        "NUM_KSPLIT": 1
+      }
+    }
+  ]
+}

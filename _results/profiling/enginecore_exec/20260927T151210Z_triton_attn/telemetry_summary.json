@@ -1,0 +1,33 @@
+{
+  "samples": 35,
+  "gfx_activity_pct": {
+    "min": 1.0,
+    "median": 98.0,
+    "mean": 73.65714285714286,
+    "max": 100.0
+  },
+  "umc_activity_pct": {
+    "min": 0.0,
+    "median": 33.0,
+    "mean": 24.34285714285714,
+    "max": 34.0
+  },
+  "socket_power_w": {
+    "min": 105.0,
+    "median": 395.0,
+    "mean": 326.85714285714283,
+    "max": 417.0
+  },
+  "gfx_clock_mhz": {
+    "min": 169.0,
+    "median": 2153.0,
+    "mean": 1707.2285714285715,
+    "max": 2199.0
+  },
+  "mem_clock_mhz": {
+    "min": 2000.0,
+    "median": 2000.0,
+    "mean": 2000.0,
+    "max": 2000.0
+  }
+}

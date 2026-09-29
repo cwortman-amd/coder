@@ -1,0 +1,4013 @@
+{
+  "heads_q": 24,
+  "heads_kv": 4,
+  "head_dim": 256,
+  "scale": 0.0625,
+  "page_triton": 784,
+  "page_aiter": 832,
+  "seq_threshold_3d": 32,
+  "segments": 16,
+  "dtype": "bfloat16",
+  "reference": "fp32 softmax over the logical token sequence",
+  "cases": [
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        32
+      ],
+      "max_length": 32,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.308849513530731,
+        "graph_error": null,
+        "max_abs": 4.76837158203125e-07,
+        "mean_abs": 1.1955853551626205e-07,
+        "max_rel": 1.5894573834884795e-07
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.282749593257904,
+        "graph_error": null,
+        "max_abs": 4.76837158203125e-07,
+        "mean_abs": 1.1955853551626205e-07,
+        "max_rel": 1.5894573834884795e-07
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        44
+      ],
+      "max_length": 44,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 12.874749302864075,
+        "graph_error": null,
+        "max_abs": 7.152557373046875e-07,
+        "mean_abs": 2.3888424038887024e-07,
+        "max_rel": 2.3841863594498136e-07
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 12.736700475215912,
+        "graph_error": null,
+        "max_abs": 7.152557373046875e-07,
+        "mean_abs": 2.3888424038887024e-07,
+        "max_rel": 2.3841863594498136e-07
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        128
+      ],
+      "max_length": 128,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.272800087928772,
+        "graph_error": null,
+        "max_abs": 2.384185791015625e-06,
+        "mean_abs": 8.359784260392189e-07,
+        "max_rel": 8.344657089764951e-07
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 12.96669989824295,
+        "graph_error": null,
+        "max_abs": 2.384185791015625e-06,
+        "mean_abs": 8.359784260392189e-07,
+        "max_rel": 8.344657089764951e-07
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        256
+      ],
+      "max_length": 256,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.128849446773529,
+        "graph_error": null,
+        "max_abs": 5.245208740234375e-06,
+        "mean_abs": 1.7915153875946999e-06,
+        "max_rel": 1.788142526493175e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 17.46695041656494,
+        "graph_error": null,
+        "max_abs": 5.245208740234375e-06,
+        "mean_abs": 1.7915153875946999e-06,
+        "max_rel": 1.788142526493175e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        512
+      ],
+      "max_length": 512,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.478749990463257,
+        "graph_error": null,
+        "max_abs": 1.0728836059570312e-05,
+        "mean_abs": 3.5832636058330536e-06,
+        "max_rel": 3.5762914194492623e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 26.959499716758728,
+        "graph_error": null,
+        "max_abs": 1.0728836059570312e-05,
+        "mean_abs": 3.5832636058330536e-06,
+        "max_rel": 3.5762914194492623e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        513
+      ],
+      "max_length": 513,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.190700113773346,
+        "graph_error": null,
+        "max_abs": 1.0728836059570312e-05,
+        "mean_abs": 3.5832636058330536e-06,
+        "max_rel": 3.5762914194492623e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.73869925737381,
+        "graph_error": null,
+        "max_abs": 1.0728836059570312e-05,
+        "mean_abs": 3.5832636058330536e-06,
+        "max_rel": 3.5762914194492623e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        783
+      ],
+      "max_length": 783,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.246700167655945,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.242749869823456,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        784
+      ],
+      "max_length": 784,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.18269968032837,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.204750418663025,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        785
+      ],
+      "max_length": 785,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.724750280380249,
+        "graph_error": null,
+        "max_abs": 1.7642974853515625e-05,
+        "mean_abs": 5.852780304849148e-06,
+        "max_rel": 5.881026027054759e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.534750044345856,
+        "graph_error": null,
+        "max_abs": 1.7642974853515625e-05,
+        "mean_abs": 5.852780304849148e-06,
+        "max_rel": 5.881026027054759e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        785
+      ],
+      "max_length": 785,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.512749969959259,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.354749977588654,
+        "graph_error": null,
+        "max_abs": 1.71661376953125e-05,
+        "mean_abs": 5.733221769332886e-06,
+        "max_rel": 5.722078640246764e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        785
+      ],
+      "max_length": 785,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.506749272346497,
+        "graph_error": null,
+        "max_abs": 1.7642974853515625e-05,
+        "mean_abs": 5.852780304849148e-06,
+        "max_rel": 5.881026027054759e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.22070062160492,
+        "graph_error": null,
+        "max_abs": 1.7642974853515625e-05,
+        "mean_abs": 5.852780304849148e-06,
+        "max_rel": 5.881026027054759e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        831
+      ],
+      "max_length": 831,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.55074942111969,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.93280029296875,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        831
+      ],
+      "max_length": 831,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.468749821186066,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.330750167369843,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        831
+      ],
+      "max_length": 831,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.502749800682068,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.500750064849854,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        832
+      ],
+      "max_length": 832,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.72079998254776,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.166749477386475,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        832
+      ],
+      "max_length": 832,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.490749895572662,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.296699523925781,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        832
+      ],
+      "max_length": 832,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.446749746799469,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          1,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.27269971370697,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        833
+      ],
+      "max_length": 833,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.49875032901764,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.744750618934631,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        833
+      ],
+      "max_length": 833,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.644799590110779,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.294750452041626,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        833
+      ],
+      "max_length": 833,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.464750349521637,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.24470043182373,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        833
+      ],
+      "max_length": 833,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.514749705791473,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.150699436664581,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        833
+      ],
+      "max_length": 833,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.542750477790833,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.284750282764435,
+        "graph_error": null,
+        "max_abs": 1.811981201171875e-05,
+        "mean_abs": 6.091431714594364e-06,
+        "max_rel": 6.0797106016252656e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.276749849319458,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.208700716495514,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.276700675487518,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.238750398159027,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.240750133991241,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.252750039100647,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.236750662326813,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.168750703334808,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.210749626159668,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.210700452327728,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.962900221347809,
+        "graph_error": null,
+        "max_abs": 4.4345855712890625e-05,
+        "mean_abs": 1.4810822904109955e-05,
+        "max_rel": 1.47821701830253e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.230750501155853,
+        "graph_error": null,
+        "max_abs": 4.4345855712890625e-05,
+        "mean_abs": 1.4810822904109955e-05,
+        "max_rel": 1.47821701830253e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.26890003681183,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.990749418735504,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.01485013961792,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.118799567222595,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.994900465011597,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.020800590515137,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.01489931344986,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          3,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 13.94679993391037,
+        "graph_error": null,
+        "max_abs": 4.38690185546875e-05,
+        "mean_abs": 1.4691264368593693e-05,
+        "max_rel": 1.4662957255495712e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        3072
+      ],
+      "max_length": 3072,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 18.75305026769638,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.822950541973114,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        3072
+      ],
+      "max_length": 3072,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 19.35504972934723,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.74090027809143,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        3072
+      ],
+      "max_length": 3072,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 19.075049459934235,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.81089997291565,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        3072
+      ],
+      "max_length": 3072,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 19.185049831867218,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.696900129318237,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        3072
+      ],
+      "max_length": 3072,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 19.071049988269806,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          4,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.714900732040405,
+        "graph_error": null,
+        "max_abs": 6.580352783203125e-05,
+        "mean_abs": 2.1977350115776062e-05,
+        "max_rel": 2.193499130953569e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 36.215999722480774,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 30.7437002658844,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 36.47404909133911,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 30.143699049949646,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 36.386048793792725,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 30.317699909210205,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 36.19605004787445,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 30.407699942588806,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 36.02199852466583,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 30.387648940086365,
+        "graph_error": null,
+        "max_abs": 0.0001766681671142578,
+        "mean_abs": 5.900440737605095e-05,
+        "max_rel": 5.8892856031889096e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 1,
+      "lengths": [
+        16384
+      ],
+      "max_length": 16384,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          21,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 60.74334979057312,
+        "graph_error": null,
+        "max_abs": 0.00035381317138671875,
+        "mean_abs": 0.00011812837328761816,
+        "max_rel": 0.00011795163300121203
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 40.38025140762329,
+        "graph_error": null,
+        "max_abs": 0.00035381317138671875,
+        "mean_abs": 0.00011812837328761816,
+        "max_rel": 0.00011795163300121203
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_784",
+      "batch": 1,
+      "lengths": [
+        16384
+      ],
+      "max_length": 16384,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          21,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 60.129302740097046,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 40.53620100021362,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_784",
+      "batch": 1,
+      "lengths": [
+        16384
+      ],
+      "max_length": 16384,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          21,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 60.22934913635254,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 40.36025106906891,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:before_832",
+      "batch": 1,
+      "lengths": [
+        16384
+      ],
+      "max_length": 16384,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          21,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 60.90735197067261,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 40.29819965362549,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:at_832",
+      "batch": 1,
+      "lengths": [
+        16384
+      ],
+      "max_length": 16384,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          21,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 60.90335249900818,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 40.46024978160858,
+        "graph_error": null,
+        "max_abs": 0.0003528594970703125,
+        "mean_abs": 0.00011788925621658564,
+        "max_rel": 0.00011767341493396088
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 1,
+      "lengths": [
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.608800411224365,
+        "graph_error": null,
+        "max_abs": 0.0005458295345306396,
+        "mean_abs": 7.81360940891318e-05,
+        "max_rel": 2.555555582046509
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          2,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 14.274850487709045,
+        "graph_error": null,
+        "max_abs": 0.0005812942981719971,
+        "mean_abs": 8.166626503225416e-05,
+        "max_rel": 2.22959041595459
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0009765625,
+        "mean_abs": 4.2085226596100256e-05,
+        "max_rel": 6.147058963775635
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 4,
+      "lengths": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          8,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.38689935207367,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          8,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.80284982919693,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 8,
+      "lengths": [
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          16,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 23.189300298690796,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          16,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 24.621400237083435,
+        "graph_error": null,
+        "max_abs": 2.2172927856445312e-05,
+        "mean_abs": 7.405411452054977e-06,
+        "max_rel": 7.391030521830544e-06
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 4,
+      "lengths": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          8,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 15.96284955739975,
+        "graph_error": null,
+        "max_abs": 0.0005907416343688965,
+        "mean_abs": 7.889451808296144e-05,
+        "max_rel": 22.104299545288086
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          8,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 16.530950367450714,
+        "graph_error": null,
+        "max_abs": 0.0005816519260406494,
+        "mean_abs": 8.156210969900712e-05,
+        "max_rel": 22.54022979736328
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0009765625,
+        "mean_abs": 4.1553445043973625e-05,
+        "max_rel": 21.100000381469727
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 8,
+      "lengths": [
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "max_length": 1024,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          16,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 23.173299431800842,
+        "graph_error": null,
+        "max_abs": 0.0006091594696044922,
+        "mean_abs": 7.926527905510738e-05,
+        "max_rel": 28.063488006591797
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          16,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 24.88739937543869,
+        "graph_error": null,
+        "max_abs": 0.0006794631481170654,
+        "mean_abs": 8.193789108190686e-05,
+        "max_rel": 49.4959831237793
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0009765625,
+        "mean_abs": 4.108596476726234e-05,
+        "max_rel": 42.80172348022461
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 1,
+      "lengths": [
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          11,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 37.11409866809845,
+        "graph_error": null,
+        "max_abs": 0.0002235621213912964,
+        "mean_abs": 3.08397357002832e-05,
+        "max_rel": 1.359229564666748
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          10,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 29.991701245307922,
+        "graph_error": null,
+        "max_abs": 0.0002235621213912964,
+        "mean_abs": 2.912911440944299e-05,
+        "max_rel": 10.924588203430176
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.000244140625,
+        "mean_abs": 2.476076770108193e-05,
+        "max_rel": 11.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 4,
+      "lengths": [
+        8192,
+        8192,
+        8192,
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          44,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 54.66905236244202,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          40,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 76.86229944229126,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 8,
+      "lengths": [
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          88,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 133.519446849823,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          80,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 111.29025220870972,
+        "graph_error": null,
+        "max_abs": 0.00017690658569335938,
+        "mean_abs": 5.912373308092356e-05,
+        "max_rel": 5.9012079873355106e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 4,
+      "lengths": [
+        8192,
+        8192,
+        8192,
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          44,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 56.57914876937866,
+        "graph_error": null,
+        "max_abs": 0.00023202598094940186,
+        "mean_abs": 3.0061415600357577e-05,
+        "max_rel": 21.793535232543945
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          40,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 75.62419772148132,
+        "graph_error": null,
+        "max_abs": 0.00023202598094940186,
+        "mean_abs": 2.863598638214171e-05,
+        "max_rel": 28.869871139526367
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.000244140625,
+        "mean_abs": 2.411006425973028e-05,
+        "max_rel": 48.632652282714844
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 8,
+      "lengths": [
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192,
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          88,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 135.15349626541138,
+        "graph_error": null,
+        "max_abs": 0.0002969503402709961,
+        "mean_abs": 3.0447661629295908e-05,
+        "max_rel": 22.16082000732422
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          80,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 110.28209924697876,
+        "graph_error": null,
+        "max_abs": 0.0002969503402709961,
+        "mean_abs": 2.9509596060961485e-05,
+        "max_rel": 14.33536148071289
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.2793356038164347e-05,
+        "max_rel": 21.517276763916016
+      }
+    },
+    {
+      "kind": "spike:last",
+      "batch": 4,
+      "lengths": [
+        783,
+        784,
+        832,
+        2048
+      ],
+      "max_length": 2048,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          7,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 18.855050206184387,
+        "graph_error": null,
+        "max_abs": 4.4345855712890625e-05,
+        "mean_abs": 8.092174539342523e-06,
+        "max_rel": 1.47821701830253e-05
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          6,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 22.307200729846954,
+        "graph_error": null,
+        "max_abs": 4.4345855712890625e-05,
+        "mean_abs": 8.092174539342523e-06,
+        "max_rel": 1.47821701830253e-05
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "max_rel": 0.0
+      }
+    },
+    {
+      "kind": "random",
+      "batch": 4,
+      "lengths": [
+        512,
+        1024,
+        4096,
+        8192
+      ],
+      "max_length": 8192,
+      "triton": {
+        "page": 784,
+        "cache_stride_blocks_heads_page_dim": [
+          1605632,
+          401408,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          20,
+          784,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1605632,
+          512,
+          401408,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 38.21614980697632,
+        "graph_error": null,
+        "max_abs": 0.0011300146579742432,
+        "mean_abs": 6.560748443007469e-05,
+        "max_rel": 20.556018829345703
+      },
+      "aiter": {
+        "page": 832,
+        "cache_stride_blocks_heads_page_dim": [
+          1703936,
+          425984,
+          512,
+          1
+        ],
+        "key_cache_shape": [
+          18,
+          832,
+          4,
+          256
+        ],
+        "key_cache_stride": [
+          1703936,
+          512,
+          425984,
+          1
+        ],
+        "eager_or_graph": "graph",
+        "us_per_call": 66.5076494216919,
+        "graph_error": null,
+        "max_abs": 0.0009822249412536621,
+        "mean_abs": 6.714966002618894e-05,
+        "max_rel": 44.092529296875
+      },
+      "triton_vs_aiter": {
+        "max_abs": 0.001953125,
+        "mean_abs": 4.134689152124338e-05,
+        "max_rel": 62.264503479003906
+      }
+    }
+  ]
+}

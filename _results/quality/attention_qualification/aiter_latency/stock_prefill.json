@@ -1,0 +1,93 @@
+{
+  "salted": [
+    {
+      "input_len": 1024,
+      "prompt_tokens": 1033,
+      "mod_784": 249,
+      "mod_832": 201,
+      "warmup_ttft_ms": 217.41153800394386,
+      "cold_ttft_ms": 156.61231201374903,
+      "hot_ttft_ms": 44.17377396021038
+    },
+    {
+      "input_len": 7047,
+      "prompt_tokens": 7056,
+      "mod_784": 0,
+      "mod_832": 400,
+      "warmup_ttft_ms": 610.5645119678229,
+      "cold_ttft_ms": 609.8020289791748,
+      "hot_ttft_ms": 668.2598530314863
+    },
+    {
+      "input_len": 7048,
+      "prompt_tokens": 7057,
+      "mod_784": 1,
+      "mod_832": 401,
+      "warmup_ttft_ms": 631.8306369939819,
+      "cold_ttft_ms": 631.9067809963599,
+      "hot_ttft_ms": 39.10446399822831
+    },
+    {
+      "input_len": 7479,
+      "prompt_tokens": 7488,
+      "mod_784": 432,
+      "mod_832": 0,
+      "warmup_ttft_ms": 668.9449700061232,
+      "cold_ttft_ms": 668.1189509690739,
+      "hot_ttft_ms": 77.62116502271965
+    },
+    {
+      "input_len": 7480,
+      "prompt_tokens": 7489,
+      "mod_784": 433,
+      "mod_832": 1,
+      "warmup_ttft_ms": 668.2438710122369,
+      "cold_ttft_ms": 674.768032040447,
+      "hot_ttft_ms": 77.29479897534475
+    },
+    {
+      "input_len": 8183,
+      "prompt_tokens": 8192,
+      "mod_784": 352,
+      "mod_832": 704,
+      "warmup_ttft_ms": 728.9595829788595,
+      "cold_ttft_ms": 728.4927340224385,
+      "hot_ttft_ms": 73.52400297531858
+    },
+    {
+      "input_len": 8192,
+      "prompt_tokens": 8201,
+      "mod_784": 361,
+      "mod_832": 713,
+      "warmup_ttft_ms": 728.8159769959748,
+      "cold_ttft_ms": 728.7250820081681,
+      "hot_ttft_ms": 73.73915798962116
+    },
+    {
+      "input_len": 15300,
+      "prompt_tokens": 15309,
+      "mod_784": 413,
+      "mod_832": 333,
+      "warmup_ttft_ms": 1570.7297420012765,
+      "cold_ttft_ms": 1570.064191997517,
+      "hot_ttft_ms": 108.20226604118943
+    }
+  ],
+  "shared_prefix_sequence": [
+    {
+      "input_len": 1024,
+      "prompt_tokens": 1033,
+      "ttft_ms": 143.97925097728148
+    },
+    {
+      "input_len": 8192,
+      "prompt_tokens": 8201,
+      "ttft_ms": 690.8982649911195
+    },
+    {
+      "input_len": 15300,
+      "prompt_tokens": 15309,
+      "ttft_ms": 916.8114960193634
+    }
+  ]
+}
