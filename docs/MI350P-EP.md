@@ -101,7 +101,7 @@ MI350P cells are the eager run on 28 September 2026, both arms `--enforce-eager 
 
 EP / TP on this host is **0.93×** output tok/s. Mean TTFT got longer (14.2 s to 21.2 s, TP/EP **0.67×**). Mean TPOT went from 898 ms to 962 ms (EP/TP **1.07×**). The peak of 48 tok/s is the bench client's short window. Sustained output is the 17.54 and 16.28 tok/s row, about 16 sequences at a ~900 ms inter-token time. That is the B200 direction, where expert parallel did not fix prefill, and it is far from the 6000 pair’s 2.30× output and 27× shorter TTFT. These milliseconds are an eager stack. They are not a CUDA-graph comparison with the forum.
 
-RCCL initialized both arms as P2P/IPC across `8b000` and `1c7000` (`tp.rccl.txt`, `ep.rccl.txt`). At startup both workers held similar memory: TP0 consumed 35.95 GiB of weights and non-torch memory plus 92.42 GiB of KV cache, and TP1 consumed 35.83 GiB plus 92.54 GiB (`ep.server.log`). That burst did not save a per-GPU utilization series. Later runs write `{tag}.gpus.json` from `rocm-smi` for the duration of `vllm bench serve`.
+RCCL initialized both arms as P2P/IPC across `8b000` and `1c7000` (`tp.rccl.txt`, `ep.rccl.txt`). At startup both workers held similar memory: TP0 consumed 35.95 GiB of weights and non-torch memory plus 92.42 GiB of KV cache, and TP1 consumed 35.83 GiB plus 92.54 GiB (`ep.server.log`). That burst did not save a per-GPU utilization series. Later runs write `{tag}.gpus.json` from `amd-smi metric` for the duration of `vllm bench serve`.
 
 A useful reading of the forum columns:
 

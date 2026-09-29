@@ -40,7 +40,7 @@ The architecture consists of four primary software and hardware layers:
 2. **OpenCode Agent Client (`opencode`)**:
    - Interactive Web UI (`http://localhost:4096`) and Terminal TUI (`./setup.sh -i`) featuring automated multi-file editing, git diff synthesis, workspace search, and terminal tool execution.
 3. **Hardware Telemetry & Profiling Stack (`scripts/`)**:
-   - High-frequency sysfs/SMI power collector (`collect_amd_power.py`), continuous power monitoring (% TDP, Joules/tok), memory bandwidth utilization (% Peak), and streaming client TTFT benchmark harnesses (`bench_openai_chat.py`, `run_concurrency_sweep.py`).
+   - High-frequency sysfs/SMI power collector (`collect_amd_power.py`), `amd-smi` monitoring, continuous power monitoring (% TDP, Joules/tok), memory bandwidth utilization (% Peak), streaming client TTFT benchmark harnesses (`bench_openai_chat.py`, `run_concurrency_sweep.py`), and GPU architecture profile auto-detection (`gpu_profile.py`).
 4. **Evaluation & Benchmarking Harness (`benchmark/`)**:
    - Automated SWE-bench Lite/Verified GitHub issue resolution pipeline, GPQA Diamond scientific reasoning harness, and multi-engine throughput sweeper.
 

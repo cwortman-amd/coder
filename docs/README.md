@@ -12,6 +12,7 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | [MI350P-PD.md](MI350P-PD.md) | Two-GPU prefill/decode on this host |
 | [MI350P-EP.md](MI350P-EP.md) | Qwen3.5-35B-A3B TP vs EP, same burst as the RTX PRO 6000 / B200 post. Eager result on this host: **0.93×** output tok/s. Scorecard: [`_results/ep_mi350p/COMPARE.md`](../_results/ep_mi350p/COMPARE.md) |
 | [MI350P-AIMS.md](MI350P-AIMS.md) | GPT-OSS-120B AIM RC (vLLM 0.19.1, ROCm 7.13), one MI350P, random-dataset concurrency sweep |
+| [MI350P-MLPERF.md](MI350P-MLPERF.md) | GPT-OSS-120B MLPerf Inference v6.1. One-GPU Offline 5,736 tok/s VALID. Server at 5 QPS INVALID |
 | [FLASH-NEXT.md](FLASH-NEXT.md) | Qwen3.8-Flash-Next, separate from the dense control |
 
 ## R9700

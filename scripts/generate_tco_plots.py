@@ -111,8 +111,9 @@ def plot_cost_8k_1k():
     cost_r9600_peak = [2.33, 1.01, 0.66, 0.56, 0.64]
     cost_r9600_sla  = [2.33, 1.01, 0.66, 0.79, 0.89]
     
-    c_mi350 = [1, 4, 8, 16, 32]
-    cost_mi350_prod = [7.30, 1.92, 1.00, 0.55, 0.31]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    c_mi350_df3 = [1, 4, 8, 16, 32]
+    cost_mi350_prod = [7.30, 3.68, 1.92, 1.00, 0.55, 0.31]
     cost_mi350_df3  = [5.23, 1.18, 1.00, 0.74, 0.69]
     
     # Plot lines with styling
@@ -121,7 +122,7 @@ def plot_cost_8k_1k():
     ax.plot(c_r9600, cost_r9600_peak, '^-.', color=COLOR_R9600D_PEAK, linewidth=2.2, markersize=7, label="16× R9600D (150W Projected Peak)")
     ax.plot(c_r9600, cost_r9600_sla,  'v:', color=COLOR_R9600D_SLA, linewidth=2.0, markersize=7, label="16× R9600D (150W Projected SLA)")
     ax.plot(c_mi350, cost_mi350_prod, 'D-', color=COLOR_MI350P_PROD, linewidth=2.8, markersize=8, label="8× MI350P (Production Quark MXFP4)")
-    ax.plot(c_mi350, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
+    ax.plot(c_mi350_df3, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
     
     # Data callouts
     ax.annotate("$2.12/M", xy=(1, 2.12), xytext=(1.3, 2.7),
@@ -173,14 +174,15 @@ def plot_cost_1k_1k():
     c_r9600 = [1, 2, 4, 8, 16]
     cost_r9600 = [2.30, 0.96, 0.52, 0.64, 0.72]
     
-    c_mi350 = [1, 4, 8, 16, 32]
-    cost_mi350_prod = [3.60, 0.98, 0.52, 0.32, 0.19]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    c_mi350_df3 = [1, 4, 8, 16, 32]
+    cost_mi350_prod = [3.60, 1.94, 0.98, 0.52, 0.32, 0.19]
     cost_mi350_df3  = [2.51, 0.78, 0.56, 0.45, 0.32]
     
     ax.plot(c_r9700, cost_r9700, 'o-', color=COLOR_R9700S_PEAK, linewidth=2.8, markersize=8, label="8× R9700S (Interactive SLA @ ~32ms TPOT)")
     ax.plot(c_r9600, cost_r9600, '^-.', color=COLOR_R9600D_PEAK, linewidth=2.2, markersize=7, label="16× R9600D (150W Projected)")
     ax.plot(c_mi350, cost_mi350_prod, 'D-', color=COLOR_MI350P_PROD, linewidth=2.8, markersize=8, label="8× MI350P (Production Quark MXFP4)")
-    ax.plot(c_mi350, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
+    ax.plot(c_mi350_df3, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
     
     # Annotations
     ax.annotate("$2.10/M", xy=(1, 2.10), xytext=(1.2, 2.3),
@@ -233,15 +235,16 @@ def plot_cost_1k_8k():
     c_r9600 = [1, 2, 4]
     cost_r9600 = [2.77, 1.41, 0.75]
     
-    c_mi350 = [1, 4, 8, 16, 32]
-    cost_mi350_prod = [5.39, 1.41, 0.72, 0.41, 0.24]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    c_mi350_df3 = [1, 4, 8, 16, 32]
+    cost_mi350_prod = [5.39, 2.77, 1.41, 0.72, 0.41, 0.24]
     cost_mi350_df3  = [3.01, 1.06, 1.71, 1.38, 1.19]
     
     # Plot lines with cohesive presentation styling
     ax.plot(c_r9700, cost_r9700, 'o-', color=COLOR_R9700S_PEAK, linewidth=2.8, markersize=8, label="8× R9700S (Interactive SLA, $1.5k/GPU)")
     ax.plot(c_r9600, cost_r9600, '^--', color=COLOR_R9600D_PEAK, linewidth=2.2, markersize=7, label="16× R9600D (150W Projected)")
     ax.plot(c_mi350, cost_mi350_prod, 'D-', color=COLOR_MI350P_PROD, linewidth=2.8, markersize=8, label="8× MI350P (Production Quark MXFP4)")
-    ax.plot(c_mi350, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
+    ax.plot(c_mi350_df3, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, linewidth=2.0, markersize=7, label="8× MI350P (DFlash-3 Speculative)")
     
     # Annotations
     ax.annotate("$2.20/M", xy=(1, 2.20), xytext=(0.85, 1.45),
@@ -300,8 +303,9 @@ def plot_throughput():
     tok_r9600_peak = [348, 803, 1225, 1460, 1261]
     tok_r9600_sla  = [348, 803, 1225, 1026, 907]
     
-    c_mi350 = [1, 4, 8, 16, 32]
-    tok_mi350_prod = [314, 1193, 2297, 4180, 7432]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    c_mi350_df3 = [1, 4, 8, 16, 32]
+    tok_mi350_prod = [314, 621, 1193, 2297, 4180, 7432]
     tok_mi350_df3  = [437, 1933, 2296, 3109, 3293]
     
     ax1.plot(c_r9700, tok_r9700_peak, 'o-', color=COLOR_R9700S_PEAK, lw=2.5, ms=7, label="8× R9700S (Batch Peak)")
@@ -309,7 +313,7 @@ def plot_throughput():
     ax1.plot(c_r9600, tok_r9600_peak, '^-.', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="16× R9600D (Projected Peak)")
     ax1.plot(c_r9600, tok_r9600_sla,  'v:', color=COLOR_R9600D_SLA, lw=1.8, ms=6, label="16× R9600D (Projected SLA)")
     ax1.plot(c_mi350, tok_mi350_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.5, ms=7, label="8× MI350P (Production)")
-    ax1.plot(c_mi350, tok_mi350_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
+    ax1.plot(c_mi350_df3, tok_mi350_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
     
     ax1.set_xscale('log', base=2)
     ax1.set_xticks([1, 2, 4, 8, 16, 32])
@@ -324,13 +328,13 @@ def plot_throughput():
     # Panel 2: 1k:1k
     tok_r9700_1k = [266, 516, 976, 976, 977]
     tok_r9600_1k = [352, 842, 1558, 1273, 1128]
-    tok_mi350_1k_prod = [635, 2342, 4437, 7229, 12035]
+    tok_mi350_1k_prod = [635, 1179, 2342, 4437, 7229, 12035]
     tok_mi350_1k_df3  = [910, 2923, 4086, 5065, 7066]
     
     ax2.plot(c_r9700, tok_r9700_1k, 'o-', color=COLOR_R9700S_PEAK, lw=2.5, ms=7, label="8× R9700S (Interactive SLA)")
     ax2.plot(c_r9600, tok_r9600_1k, '^-.', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="16× R9600D (Projected)")
     ax2.plot(c_mi350, tok_mi350_1k_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.5, ms=7, label="8× MI350P (Production)")
-    ax2.plot(c_mi350, tok_mi350_1k_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
+    ax2.plot(c_mi350_df3, tok_mi350_1k_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
     
     ax2.set_xscale('log', base=2)
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
@@ -345,7 +349,7 @@ def plot_throughput():
     # Panel 3: 1k:8k (Deep Code Generation)
     tok_r9700_1k8k = [254, 500, 942]
     tok_r9600_1k8k = [292, 576, 1085]
-    tok_mi350_1k8k_prod = [425, 1622, 3162, 5517, 9715]
+    tok_mi350_1k8k_prod = [425, 825, 1622, 3162, 5517, 9715]
     tok_mi350_1k8k_df3  = [759, 2156, 1337, 1656, 1926]
     
     c_r9700_3 = [1, 2, 4]
@@ -354,7 +358,7 @@ def plot_throughput():
     ax3.plot(c_r9700_3, tok_r9700_1k8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.5, ms=7, label="8× R9700S (Interactive SLA)")
     ax3.plot(c_r9600_3, tok_r9600_1k8k, '^-.', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="16× R9600D (Projected)")
     ax3.plot(c_mi350, tok_mi350_1k8k_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.5, ms=7, label="8× MI350P (Production)")
-    ax3.plot(c_mi350, tok_mi350_1k8k_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
+    ax3.plot(c_mi350_df3, tok_mi350_1k8k_df3,  'P--', color=COLOR_MI350P_DF3, lw=2.0, ms=6, label="8× MI350P (DFlash-3)")
     
     ax3.set_xscale('log', base=2)
     ax3.set_xticks([1, 2, 4, 8, 16, 32])
@@ -404,8 +408,9 @@ def plot_executive_dashboard():
     # 2. Cost 8k:1k
     c_r9700 = [1, 2, 4, 8, 16]
     cost_r9700_peak = [2.12, 1.12, 0.68, 0.50, 0.51]
-    c_mi350 = [1, 4, 8, 16, 32]
-    cost_mi350_prod = [7.30, 1.92, 1.00, 0.55, 0.31]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    c_mi350_df3 = [1, 4, 8, 16, 32]
+    cost_mi350_prod = [7.30, 3.68, 1.92, 1.00, 0.55, 0.31]
     cost_mi350_df3  = [5.23, 1.18, 1.00, 0.74, 0.69]
     c_r9600 = [1, 2, 4, 8, 16]
     cost_r9600_peak = [2.33, 1.01, 0.66, 0.56, 0.64]
@@ -413,7 +418,7 @@ def plot_executive_dashboard():
     ax2.plot(c_r9700, cost_r9700_peak, 'o-', color=COLOR_R9700S_PEAK, lw=2.2, ms=6, label="8× R9700S (Batch Peak, $1.5k)")
     ax2.plot(c_r9600, cost_r9600_peak, '^-.', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="16× R9600D (Projected Peak)")
     ax2.plot(c_mi350, cost_mi350_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.2, ms=6, label="8× MI350P (Production)")
-    ax2.plot(c_mi350, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, lw=1.6, ms=5, label="8× MI350P (DFlash-3)")
+    ax2.plot(c_mi350_df3, cost_mi350_df3,  'P--', color=COLOR_MI350P_DF3, lw=1.6, ms=5, label="8× MI350P (DFlash-3)")
     ax2.set_xscale('log', base=2)
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
@@ -430,13 +435,13 @@ def plot_executive_dashboard():
     # 3. Cost 1k:1k
     cost_r9700_1k = [2.10, 1.08, 0.57, 0.57, 0.57]
     cost_r9600_1k = [2.30, 0.96, 0.52, 0.64, 0.72]
-    cost_mi350_1k_prod = [3.60, 0.98, 0.52, 0.32, 0.19]
+    cost_mi350_1k_prod = [3.60, 1.94, 0.98, 0.52, 0.32, 0.19]
     cost_mi350_1k_df3  = [2.51, 0.78, 0.56, 0.45, 0.32]
     
     ax3.plot(c_r9700, cost_r9700_1k, 'o-', color=COLOR_R9700S_PEAK, lw=2.2, ms=6, label="8× R9700S (Interactive SLA)")
     ax3.plot(c_r9600, cost_r9600_1k, '^-.', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="16× R9600D (Projected)")
     ax3.plot(c_mi350, cost_mi350_1k_prod, 'D-', color=COLOR_MI350P_PROD, lw=2.2, ms=6, label="8× MI350P (Production)")
-    ax3.plot(c_mi350, cost_mi350_1k_df3,  'P--', color=COLOR_MI350P_DF3, lw=1.6, ms=5, label="8× MI350P (DFlash-3)")
+    ax3.plot(c_mi350_df3, cost_mi350_1k_df3,  'P--', color=COLOR_MI350P_DF3, lw=1.6, ms=5, label="8× MI350P (DFlash-3)")
     ax3.set_xscale('log', base=2)
     ax3.set_xticks([1, 2, 4, 8, 16, 32])
     ax3.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold', fontsize=9.5)
@@ -452,7 +457,7 @@ def plot_executive_dashboard():
     
     # 4. Throughput Comparison
     tok_r9700_peak = [262, 498, 814, 1109, 1087]
-    tok_mi350_prod = [314, 1193, 2297, 4180, 7432]
+    tok_mi350_prod = [314, 621, 1193, 2297, 4180, 7432]
     tok_r9600_peak = [348, 803, 1225, 1460, 1261]
     
     ax4.plot(c_r9700, tok_r9700_peak, 'o-', color=COLOR_R9700S_PEAK, lw=2.2, ms=6, label="8× R9700S (8k:1k Peak)")
@@ -496,9 +501,12 @@ def plot_power_utilization():
     c_r9700_long = [1, 2, 4]
     pwr_r9700_long = [195.3 / 300 * 100, 195.2 / 300 * 100, 195.4 / 300 * 100]
     
-    # MI350P: Max TDP = 600 W (Control 1k/1k: 400W @ C1, 410W @ C8)
-    c_mi350 = [1, 8]
-    pwr_mi350 = [400.0 / 600 * 100, 410.0 / 600 * 100]
+    # MI350P: Max TDP = 600 W. Socket power, 29 Sep 2026, GPU 0,
+    # _results/priority_eval/tco_mi350p/concurrency_20260929/.
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    pwr_mi350_1k = [65.0, 65.75, 63.69, 67.15, 61.47, 67.08]
+    pwr_mi350_8k = [45.87, 46.49, 47.59, 50.7, 51.0, 59.6]
+    pwr_mi350_long = [53.05, 54.62, 57.39, 61.15, 59.3, 68.98]
     
     # R9600D: Max TDP = 150 W (Operating at 150W Cap = 100%)
     c_r9600 = [1, 2, 4, 8, 16]
@@ -508,7 +516,9 @@ def plot_power_utilization():
     ax.plot(c_r9700_8k, pwr_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out, 300W Max)")
     ax.plot(c_r9700_1k, pwr_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out, 300W Max)")
     ax.plot(c_r9700_long, pwr_r9700_long, '^-.', color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out, 300W Max)")
-    ax.plot(c_mi350, pwr_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (CDNA 4, 600W Max TDP)")
+    ax.plot(c_mi350, pwr_mi350_1k, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (1,024 In / 1,024 Out, 600W Max)")
+    ax.plot(c_mi350, pwr_mi350_8k, 's--', color="#3949AB", lw=2.2, ms=7, label="Instinct MI350P (8,192 In / 1,024 Out, 600W Max)")
+    ax.plot(c_mi350, pwr_mi350_long, '^-.', color="#5C6BC0", lw=2.2, ms=7, label="Instinct MI350P (1,024 In / 8,192 Out, 600W Max)")
     ax.plot(c_r9600, pwr_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="Radeon AI PRO R9600D (150W Capped Envelope)")
     
     # 100% Device TDP Ceiling line
@@ -526,7 +536,7 @@ def plot_power_utilization():
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
     
-    ax.annotate("MI350P: 66.7%–68.3% TDP\n(400W–410W of 600W Cap)", xy=(8, 68.3), xytext=(5.5, 75),
+    ax.annotate("MI350P 1k/1k: 61%–67% TDP through C32\n(75% / 450 W at C64)", xy=(32, 67.08), xytext=(8, 78),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
                 fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
@@ -565,10 +575,12 @@ def plot_memory_bandwidth_utilization():
     c_r9700_long = [1, 2, 4]
     bw_r9700_long = [73.6, 74.8, 74.9]
     
-    # MI350P: Peak = 4,096 GB/s (HBM3E)
-    # Measured weight traffic: 1,530 GB/s @ C1 (37.4%), 1,340 GB/s @ C8 (32.7%)
-    c_mi350 = [1, 8]
-    bw_mi350 = [37.4, 32.7]
+    # MI350P: UMC activity percent. umc_gbs_estimate = UMC% × 4,096 is an
+    # estimate, not a calibrated HBM measurement. 29 Sep 2026, GPU 0.
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    bw_mi350_1k = [30.86, 29.29, 27.63, 30.16, 29.7, 32.32]
+    bw_mi350_8k = [15.64, 16.01, 16.09, 17.51, 18.17, 20.73]
+    bw_mi350_long = [21.05, 21.26, 22.44, 25.14, 26.87, 32.4]
     
     # R9600D: Peak = 640 GB/s (GDDR6), 150W Capped
     # 48 CUs & 150W cap yields ~344–353 GB/s sustained (53.8%–55.2%)
@@ -586,7 +598,9 @@ def plot_memory_bandwidth_utilization():
     ax.plot(c_r9700_1k, bw_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out, 640 GB/s Max)")
     ax.plot(c_r9700_long, bw_r9700_long, '^-.', color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out, 640 GB/s Max)")
     ax.plot(c_r9600, bw_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=2.0, ms=6, label="Radeon AI PRO R9600D (150W Capped, 640 GB/s Max)")
-    ax.plot(c_mi350, bw_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (CDNA 4, 4,096 GB/s Max HBM3E)")
+    ax.plot(c_mi350, bw_mi350_1k, 'D-', color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="Instinct MI350P (1,024/1,024, UMC activity)")
+    ax.plot(c_mi350, bw_mi350_8k, 's--', color="#3949AB", lw=2.2, ms=7, label="Instinct MI350P (8,192/1,024, UMC activity)")
+    ax.plot(c_mi350, bw_mi350_long, '^-.', color="#5C6BC0", lw=2.2, ms=7, label="Instinct MI350P (1,024/8,192, UMC activity)")
     
     # Data Callouts
     ax.annotate("Near-Optimal GDDR6 Saturation\n~470–488 GB/s (74%–76%)", xy=(1, 75.9), xytext=(1.3, 86.5),
@@ -594,7 +608,7 @@ def plot_memory_bandwidth_utilization():
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
     
-    ax.annotate("MI350P HBM3E Headroom\n33%–37% Utilized @ C1–C8\n(Massive Headroom for C32+)", xy=(8, 32.7), xytext=(4.0, 18),
+    ax.annotate("MI350P UMC stays 16%–32% through C32\n(C64 1k/1k is 31%; not a calibrated GB/s)", xy=(32, 32.32), xytext=(6.0, 42),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
                 fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
@@ -629,15 +643,19 @@ def plot_hardware_utilization_dashboard():
     pwr_r9700_1k = [75.6, 61.2, 62.6, 76.7, 86.6]
     c_r9700_long = [1, 2, 4]
     pwr_r9700_long = [65.1, 65.1, 65.1]
-    c_mi350 = [1, 8]
-    pwr_mi350 = [66.7, 68.3]
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    pwr_mi350_1k = [65.0, 65.75, 63.69, 67.15, 61.47, 67.08]
+    pwr_mi350_8k = [45.87, 46.49, 47.59, 50.7, 51.0, 59.6]
+    pwr_mi350_long = [53.05, 54.62, 57.39, 61.15, 59.3, 68.98]
     c_r9600 = [1, 2, 4, 8, 16]
     pwr_r9600 = [100.0, 100.0, 100.0, 100.0, 100.0]
     
     ax1.plot(c_r9700_8k, pwr_r9700_8k, 'o-', color=COLOR_R9700S_PEAK, lw=2.4, ms=6, label="R9700S (8k:1k, 300W)")
     ax1.plot(c_r9700_1k, pwr_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.0, ms=6, label="R9700S (1k:1k, 300W)")
     ax1.plot(c_r9700_long, pwr_r9700_long, '^-.', color="#C2185B", lw=2.0, ms=6, label="R9700S (1k:8k, 300W)")
-    ax1.plot(c_mi350, pwr_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (CDNA 4, 600W)")
+    ax1.plot(c_mi350, pwr_mi350_1k, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (1k/1k, 600W)")
+    ax1.plot(c_mi350, pwr_mi350_8k, 's--', color="#3949AB", lw=2.0, ms=6, label="MI350P (8k/1k, 600W)")
+    ax1.plot(c_mi350, pwr_mi350_long, '^-.', color="#5C6BC0", lw=2.0, ms=6, label="MI350P (1k/8k, 600W)")
     ax1.plot(c_r9600, pwr_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="R9600D (150W Cap)")
     ax1.axhline(100.0, color="#78909C", linestyle="--", lw=1.3, alpha=0.85)
     ax1.set_xscale('log', base=2)
@@ -654,7 +672,9 @@ def plot_hardware_utilization_dashboard():
     bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
     bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
     bw_r9700_long = [73.6, 74.8, 74.9]
-    bw_mi350 = [37.4, 32.7]
+    bw_mi350_1k = [30.86, 29.29, 27.63, 30.16, 29.7, 32.32]
+    bw_mi350_8k = [15.64, 16.01, 16.09, 17.51, 18.17, 20.73]
+    bw_mi350_long = [21.05, 21.26, 22.44, 25.14, 26.87, 32.4]
     c_r9600_bw = [1, 2, 4]
     bw_r9600 = [53.8, 54.5, 55.2]
     
@@ -663,7 +683,9 @@ def plot_hardware_utilization_dashboard():
     ax2.plot(c_r9700_1k, bw_r9700_1k, 's--', color=COLOR_R9700S_SLA, lw=2.0, ms=6, label="R9700S (1k:1k, 640 GB/s)")
     ax2.plot(c_r9700_long, bw_r9700_long, '^-.', color="#C2185B", lw=2.0, ms=6, label="R9700S (1k:8k, 640 GB/s)")
     ax2.plot(c_r9600_bw, bw_r9600, 'v:', color=COLOR_R9600D_PEAK, lw=1.8, ms=5, label="R9600D (150W Cap, 640 GB/s)")
-    ax2.plot(c_mi350, bw_mi350, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (CDNA 4, 4,096 GB/s)")
+    ax2.plot(c_mi350, bw_mi350_1k, 'D-', color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P (1k/1k, UMC)")
+    ax2.plot(c_mi350, bw_mi350_8k, 's--', color="#3949AB", lw=2.0, ms=6, label="MI350P (8k/1k, UMC)")
+    ax2.plot(c_mi350, bw_mi350_long, '^-.', color="#5C6BC0", lw=2.0, ms=6, label="MI350P (1k/8k, UMC)")
     ax2.set_xscale('log', base=2)
     ax2.set_xticks([1, 2, 4, 8, 16, 32])
     ax2.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32"], fontweight='bold')
@@ -697,11 +719,14 @@ def plot_ttft_latency():
     c_1k8k = [1, 2, 4]
     ttft_1k8k = [164.6, 189.1, 936.7]
 
-    c_mi350_1k = [1, 8]
-    ttft_mi350_1k = [100.7, 245.0]
+    # 29 Sep GPU 0. C1 is the first request (later prompts in that cell hit
+    # the prefix cache). C2+ is the wave p50. 8k later cells reuse the
+    # same prompt, so only the first 8,192-token request is plotted.
+    c_mi350_1k = [1, 2, 4, 8, 16, 32]
+    ttft_mi350_1k = [119.4, 528.0, 515.8, 466.9, 710.4, 1159.0]
 
     c_mi350_8k = [1]
-    ttft_mi350_8k = [925.0]
+    ttft_mi350_8k = [705.4]
 
     # Shaded interactive zone (< 1,000 ms)
     ax.axhspan(80, 1000, color="#E8F5E9", alpha=0.55, label="_nolegend_")
@@ -712,8 +737,8 @@ def plot_ttft_latency():
     ax.plot(c_8k1k, ttft_8k1k, "o-", color=COLOR_R9700S_PEAK, lw=2.6, ms=7, label="Radeon AI PRO R9700S (8,192 In / 1,024 Out)")
     ax.plot(c_1k1k, ttft_1k1k, "s--", color=COLOR_R9700S_SLA, lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 1,024 Out)")
     ax.plot(c_1k8k, ttft_1k8k, "^-.", color="#C2185B", lw=2.2, ms=7, label="Radeon AI PRO R9700S (1,024 In / 8,192 Out)")
-    ax.plot(c_mi350_1k, ttft_mi350_1k, "D-", color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="Instinct MI350P (1,024 In Reference)")
-    ax.plot(c_mi350_8k, ttft_mi350_8k, "P", color=COLOR_MI350P_DF3, ms=9, label="Instinct MI350P (8,192 In Reference)")
+    ax.plot(c_mi350_1k, ttft_mi350_1k, "D-", color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="Instinct MI350P (1,024/1,024; C1 first request, else wave p50)")
+    ax.plot(c_mi350_8k, ttft_mi350_8k, "P", color="#3949AB", ms=9, label="Instinct MI350P (8,192/1,024 first request)")
 
     # Annotations
     ax.annotate("C1–C4 Sub-Second Ingestion\n165–937 ms (1k Input)", xy=(2, 194.9), xytext=(1.5, 420),
@@ -759,12 +784,12 @@ def plot_slo_qualified_goodput():
     raw_tok_r9700 = [266, 516, 976, 976, 977]
     goodput_r9700 = [266, 516, 976, 976, 977] # Capacity under max-num-seqs 4
     
-    c_mi350 = [1, 4, 8, 16, 32]
-    raw_tok_mi350 = [635, 2342, 4437, 7229, 12035]
-    goodput_mi350 = [635, 2342, 4437, 7229, 12035] # All TTFT <= 1250ms, TPOT <= 22ms
+    c_mi350 = [1, 2, 4, 8, 16, 32]
+    raw_tok_mi350 = [635, 1179, 2342, 4437, 7229, 12035]
+    goodput_mi350 = [635, 1179, 2342, 4437, 7229, 12035] # All TTFT <= 1250ms, TPOT <= 22ms
     
     cost_r9700 = [2.10, 1.08, 0.57, 0.57, 0.57]
-    cost_mi350 = [3.60, 0.98, 0.52, 0.32, 0.19]
+    cost_mi350 = [3.60, 1.94, 0.98, 0.52, 0.32, 0.19]
     
     # --------------------------------------------------------------------------
     # Panel 1: Throughput & Interactive Capacity
@@ -857,6 +882,48 @@ def plot_slo_qualified_goodput():
     plt.close()
     return output_path
 
+# ==============================================================================
+# PLOT 11: Socket energy per output token (29 Sep MI350P sweep)
+# ==============================================================================
+def plot_joules_per_token():
+    fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
+
+    c = [1, 2, 4, 8, 16, 32]
+    j_1k = [4.93, 2.69, 1.46, 0.77, 0.42, 0.27]
+    j_8k = [7.13, 3.61, 1.93, 1.04, 0.59, 0.39]
+    j_long = [6.00, 3.18, 1.71, 0.93, 0.52, 0.35]
+
+    ax.plot(c, j_8k, "s--", color="#3949AB", lw=2.4, ms=7, label="MI350P 8,192 in / 1,024 out")
+    ax.plot(c, j_long, "^-.", color="#5C6BC0", lw=2.4, ms=7, label="MI350P 1,024 in / 8,192 out")
+    ax.plot(c, j_1k, "D-", color=COLOR_MI350P_PROD, lw=2.6, ms=8, label="MI350P 1,024 in / 1,024 out")
+    ax.plot([64], [0.23], "D", color=COLOR_MI350P_PROD, ms=8)
+
+    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(28, 0.7),
+                arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
+                fontweight="bold", color=COLOR_MI350P_PROD, fontsize=9.5)
+    ax.annotate("R9700S 3.01 J/tok\nat 8k/1k C4", xy=(4, 3.01), xytext=(6.5, 4.6),
+                arrowprops=dict(arrowstyle="->", color=COLOR_R9700S_PEAK, lw=1.2),
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
+                fontweight="bold", color=COLOR_R9700S_PEAK, fontsize=9.0)
+    ax.plot([4], [3.01], "o", color=COLOR_R9700S_PEAK, ms=8)
+
+    ax.set_xscale("log", base=2)
+    ax.set_xticks([1, 2, 4, 8, 16, 32, 64])
+    ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32", "C64"], fontsize=12, fontweight="bold")
+    ax.set_xlabel("Concurrency per GPU (C)", fontsize=13, fontweight="bold", labelpad=8)
+    ax.set_ylabel("Socket energy (J / output token)  [Lower is better]", fontsize=12.5, fontweight="bold", labelpad=8)
+    ax.set_title("Socket Energy per Output Token — Qwen3.8-27B MXFP4 on MI350P [Lower is better]", fontsize=14, fontweight="bold", pad=15)
+    ax.set_ylim(0, 8.2)
+    ax.set_xlim(0.8, 80)
+    ax.grid(True, which="both", linestyle="--", alpha=0.7)
+    ax.legend(loc="upper right", frameon=True, framealpha=0.95, facecolor="white", fontsize=10)
+
+    plt.tight_layout()
+    output_path = os.path.join(OUTPUT_DIR, "11_joules_per_token.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    return output_path
+
 if __name__ == "__main__":
     p1  = plot_capex_and_tco()
     p2  = plot_cost_8k_1k()
@@ -869,9 +936,10 @@ if __name__ == "__main__":
     p8  = plot_hardware_utilization_dashboard()
     p9  = plot_ttft_latency()
     p10 = plot_slo_qualified_goodput()
+    p11 = plot_joules_per_token()
     
     # Also copy to artifact directory for presentation / embedding
-    all_plots = [p1, p2, p3, p3b, p4, p5, p6, p7, p8, p9, p10]
+    all_plots = [p1, p2, p3, p3b, p4, p5, p6, p7, p8, p9, p10, p11]
     for p in all_plots:
         dest = os.path.join(ARTIFACT_DIR, os.path.basename(p))
         shutil.copy(p, dest)

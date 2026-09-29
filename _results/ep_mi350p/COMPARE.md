@@ -30,15 +30,18 @@ A TTFT ratio above 1 means expert parallel shortened time to first token. The fo
 
 ## GPU use during the burst
 
-`rocm-smi` samples every 2 s while `vllm bench serve` runs. Use is mean / max of `GPU use (%)`. VRAM is the mean of used bytes.
+`amd-smi metric` samples every 2 s while `vllm bench serve` runs. Use is mean / max of GFX activity. VRAM is the mean of used bytes.
 
-The eager `tp.json` / `ep.json` pair has no `*.gpus.json`. Per-GPU use during that burst was not recorded.
+| File | GPU | Use mean / max | VRAM mean | Samples |
+|---|---|---:|---:|---:|
+| `mxfp4_triton_text_tp.gpus.json` | card0 | 92% / 100% | 133.5 GiB | 386 |
+| `mxfp4_triton_text_tp.gpus.json` | card1 | 44% / 100% | 133.5 GiB | 386 |
 
 ## Link snapshot
 
 ```json
 {
-  "recorded_at": "2026-09-28T14:47:17Z",
+  "recorded_at": "2026-09-28T17:18:25Z",
   "cpu": {
     "Model name": "AMD EPYC 9015 8-Core Processor",
     "Core(s) per socket": "8",

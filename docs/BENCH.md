@@ -205,7 +205,7 @@ This automated script:
 1. Recreates the `inference` container with model 1 (e.g. `Qwen/Qwen2.5-Coder-7B-Instruct`).
 2. Waits for the vLLM server to report healthy on port 8000.
 3. Executes the SWE-bench benchmark suite and logs throughput and patch validity.
-4. Records GPU VRAM usage via `rocm-smi`.
+4. Records GPU VRAM usage via `amd-smi metric -m`.
 5. Repeats for model 2 (`Qwen/Qwen2.5-Coder-14B-Instruct`) and model 3 (`Qwen/Qwen2.5-Coder-32B-Instruct-AWQ`).
 6. Saves aggregated reports in `_results/`.
 

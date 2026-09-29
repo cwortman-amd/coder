@@ -338,9 +338,9 @@ This document provides resolutions for common issues, error messages, device nod
 
 #### 2. Integrated GPU Collision (iGPU selected instead of dGPU)
 - **Symptom**: vLLM crashes with `CUDA out of memory` after only allocating 2 GB or 3 GB, or selects `gfx1103` (Radeon 780M) instead of `gfx1201`.
-- **Remedy**: Specify `HIP_VISIBLE_DEVICES=0` in `.env` or in `docker/docker-compose.yml`. Device 0 corresponds to the discrete Radeon AI PRO R9700 GPU. Verify with `rocm-smi`:
+- **Remedy**: Specify `HIP_VISIBLE_DEVICES=0` in `.env` or in `docker/docker-compose.yml`. Device 0 corresponds to the discrete Radeon AI PRO R9700 GPU. Verify with `amd-smi`:
   ```bash
-  rocm-smi
+  amd-smi list
   ```
 
 ---

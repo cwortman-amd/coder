@@ -62,10 +62,10 @@ These are required to reproduce the numbers, not optional polish.
 | `rocminfo` exit 8 / `HSA_STATUS_ERROR_OUT_OF_RESOURCES` inside the container | Compose exported **empty** `HSA_OVERRIDE_GFX_VERSION=` on MI350P; empty override breaks HSA | Omit the variable on gfx950 (`unset` in `lib/gpu_profile.sh` for `mi350p`) |
 | AITER `Get GPU arch from rocminfo failed` | `get_gfx_runtime()` always shells out to `rocminfo` unless architecture is explicit | Set `GPU_ARCHS=gfx950` (compose now mirrors `PYTORCH_ROCM_ARCH`) |
 | Decode engine: `No CUDA GPUs are available` on HIP=1 | `HIP_VISIBLE_DEVICES=1` **and** `ROCR_VISIBLE_DEVICES=1` double-filtered the device list | HIP only; do not set ROCR to the same index |
-| Dual-card preflight counted 0 GPUs | `rocminfo` requires `render` on `/dev/kfd`; user `amd` is not in that group | `gpu_profile.py` falls back to `rocm-smi` / `lspci` (`1002:75a8`) |
+| Dual-card preflight counted 0 GPUs | `rocminfo` requires `render` on `/dev/kfd`; user `amd` is not in that group | `gpu_profile.py` falls back to `amd-smi static --asic` / `lspci` (`1002:75a8`) |
 | Compilation JSON parse error | Unquoted `{cudagraph_mode:...}` eaten by Compose YAML | `--compilation-config='{"cudagraph_mode":"NONE"}'` |
 
-Host user groups: `amd` is in `docker` but **not** `render` (GID 993). Docker `group_add` 44/993 is enough for the containers. Host `amd-smi` / energy collectors from the login user still see permission denied; **all power fields in the JSON are 0.0 W**.
+Host user `amd` is in `docker` and `render` (GID 993). Host `amd-smi` can sample socket power. The PD study JSON still has 0.0 W power fields because those collectors ran before the login user could read the device.
 
 ---
 

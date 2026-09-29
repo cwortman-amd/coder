@@ -12,7 +12,7 @@ This page is the AIM tech-preview record. It is separate from the Quark Qwen cam
 
 `vllm bench serve` inside the serving container, random dataset, exact input and output lengths, `--ignore-eos`, `--percentile-metrics ttft,tpot,itl,e2el`, percentiles 75/90/99. Prompt count is `10 × concurrency`. Warmup count is `2 × concurrency`. One run per cell. JSON: `_results/aim_mi350p/`. Runner: `scripts/bench_aim_gptoss_mi350p.sh`.
 
-Four cells were still in progress when this page was written, so they are absent: 65,536/1,024 at concurrency 8 and 16, and 122,880/1,024 at concurrency 1 and 4.
+Three cells were still in progress when the sweep was stopped: 65,536/1,024 at concurrency 16, and 122,880/1,024 at concurrency 1 and 4.
 
 At 32,768/1,024 concurrency 32, one of 320 requests failed. The tok/s below is the client’s completed-token rate (319 finished).
 
@@ -27,7 +27,7 @@ At 32,768/1,024 concurrency 32, one of 320 requests failed. The tok/s below is t
 | 8192/1024 | 213.36 | 558.73 | 796.45 | 1,127.85 | 1,449.02 | 1,737.42 | 1,989.80 | | |
 | 8192/3072 | 220.15 | 606.61 | 899.24 | 1,334.69 | 1,804.53 | 2,275.34 | 2,704.29 | 2,799.02 | |
 | 32768/1024 | 163.67 | 301.84 | 360.68 | 417.07 | 453.41 | | | | |
-| 65536/1024 | 111.02 | 152.24 | | | | | | | |
+| 65536/1024 | 111.02 | 152.24 | 165.83 | | | | | | |
 
 ## Median TTFT (ms)
 
@@ -40,7 +40,7 @@ At 32,768/1,024 concurrency 32, one of 320 requests failed. The tok/s below is t
 | 8192/1024 | 252.88 | 483.78 | 479.90 | 501.92 | 490.31 | 531.85 | 537.20 | | |
 | 8192/3072 | 255.44 | 527.62 | 543.83 | 510.92 | 492.83 | 542.43 | 560.95 | 42,328.15 | |
 | 32768/1024 | 1,407.80 | 2,568.11 | 2,518.58 | 2,507.58 | 2,353.53 | | | | |
-| 65536/1024 | 3,926.82 | 7,435.15 | | | | | | | |
+| 65536/1024 | 3,926.82 | 7,435.15 | 6,905.88 | | | | | | |
 
 Short-output cells flatten once prefill dominates. 2,048/128 stops rising after C128 (1,902 tok/s at C128, 1,895 at C256) and median TTFT at C256 is 9.2 s. 8,192/3,072 reaches 2,799 tok/s at C256 with median TTFT 42.3 s.
 

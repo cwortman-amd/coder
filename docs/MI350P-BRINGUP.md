@@ -155,7 +155,7 @@ There is **no FP8 or MXFP4 GGUF** in `models/` on this host (the directory is em
 | llama.cpp × MXFP4 | Needs MXFP4 GGUF + kernels | Not measured |
 | llama.cpp × Q4_K_M | Supported by compose | Not measured on gfx950; R9700 only (§9) |
 
-**CDNA-4 notes:** HIP builds must target `gfx950`. A gfx1201 binary with `HSA_OVERRIDE_GFX_VERSION` is the wrong approach (that override is what broke vLLM here when left empty, and 12.0.1 is RDNA4). Flash attention (`-fa on`) must be confirmed on Instinct; if FA is CPU-fallback, decode collapses (R9700 showed both **75 tok/s** smoke and **2.2 tok/s** “all-engine” smokes — treat llama.cpp numbers as invalid until `rocm-smi` shows GPU% during generate).
+**CDNA-4 notes:** HIP builds must target `gfx950`. A gfx1201 binary with `HSA_OVERRIDE_GFX_VERSION` is the wrong approach (that override is what broke vLLM here when left empty, and 12.0.1 is RDNA4). Flash attention (`-fa on`) must be confirmed on Instinct; if FA is CPU-fallback, decode collapses (R9700 showed both **75 tok/s** smoke and **2.2 tok/s** “all-engine” smokes — treat llama.cpp numbers as invalid until `amd-smi metric -u` shows GFX activity during generate).
 
 ---
 
