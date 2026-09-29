@@ -112,7 +112,79 @@ On a single dual-R9700 host, server chassis, motherboard, CPU, and facility rack
 
 ---
 
-## 6. Concrete Presales Decision Matrix
+## 6. Sizing & Balancing the Prefill-to-Decode (P:D) Pool Ratio
+
+### 6.1 Derivation for 8K In / 1K Out Workload
+For an 8,192-token prompt ingestion and 1,024-token generation workload, the single-stream ($C=1$) service-time balance is calculated from physical microbenchmarks:
+* **Dedicated Prefill Service Time ($T_P$)**: Measured cold 8K prefill takes $\approx 2.6\text{--}3.0\text{ seconds}$:
+  $$\mu_P \approx \frac{1}{2.8\text{ s}} \approx 0.33\text{--}0.38\text{ prefills/s per GPU}$$
+* **Dedicated Decode Service Time ($T_D$)**: At isolated single-stream decode speed ($\approx 33\text{--}34\text{ tok/s}$), generating 1,024 tokens takes $\approx 30.1\text{--}31.0\text{ seconds}$:
+  $$\mu_{D,C1} \approx \frac{1}{30.5\text{ s}} \approx 0.033\text{ requests/s per GPU}$$
+* **Single-Stream Capacity Ratio**:
+  $$\frac{N_D}{N_P} \approx \frac{T_{D,C1}}{T_{P,C1}} \approx \frac{30.5}{2.8} \approx 10\text{--}12$$
+
+### 6.2 Sizing Hypothesis vs. Production Pool Architecture
+While the $C=1$ estimate suggests $1\text{P}:10\text{--}12\text{D}$, production deployments must account for:
+1. **Continuous Batching Acceleration**: Decode throughput scales under batching ($C=4\dots 8$ increases completed req/s per card), pulling the ratio back toward more prefill cards.
+2. **Burst Ingestion Headroom**: A prefill pool operating at $\approx 100\%$ utilization under average load will experience unbounded queue growth during arrival bursts.
+3. **Prefix Hit Dynamics**: A $75\%$ prefix hit rate reduces prefill computation by $\approx 4\times$, shifting demand back toward decode capacity.
+
+**Recommended Starting Configurations for Production Validation**:
+* **8-Card Server (1 Node, 8× R9700)**: **1P : 7D** (Control: Cache-Affine DP=8). Provides decode dominance while guaranteeing prefill headroom.
+* **16-Card Server (2 Nodes, 16× R9700)**: **2P : 14D** (Control: Cache-Affine DP=16). Eliminates single-point-of-failure prefill bottlenecks.
+* **Alternative Sensitivity Arms**: Test **2P:6D** (8 cards) and **3P:13D** (16 cards) to measure queue stability under cold burst sweeps.
+
+### 6.3 Queue Stability & Sustainable Capacity Balance Formula
+At each offered request arrival rate $\lambda$, production capacity is balanced when:
+$$R_{\text{prefill capacity}} = N_P \times \mu_P(\lambda) \ge \lambda \quad \land \quad R_{\text{decode capacity}} = N_D \times \mu_D(\lambda) \ge \lambda$$
+Where:
+- A configuration whose prefill queue grows continuously over a 60-minute test is prefill-starved.
+- A configuration whose decode queue grows continuously is decode-starved.
+- True sustainable capacity is the maximum $\lambda$ where both queues remain bounded and latency contracts are satisfied.
+
+---
+
+## 7. Comprehensive Enterprise TCO Numerator Breakdown
+
+A complete presales TCO model must capture the full deployment cost structure, not merely the hardware purchase price:
+
+| Cost Category | Key Cost Elements Included | Treatment in 2-Card Workstation vs. Multi-Node Fleet |
+| :--- | :--- | :--- |
+| **1. Capital (CapEx)** | GPUs, host server, CPU, ECC RAM, PCIe Gen 5 switches, high-speed NICs (RoCE/CX7), rack infrastructure, spares, assembly labor. | Workstation host cancels between DP=2 and 1P1D. At fleet scale, 1P:7D and DP=8 utilize identical chassis. |
+| **2. Energy & Facilities** | Whole-node active wall-power draw, idle duty cycle, cooling / datacenter PUE ($1.3\times$), local electricity tariff ($\$0.12/\text{kWh}$). | Instrument whole-node wall draw. Board-level power (300W TDP) monitored for diagnostic efficiency. |
+| **3. Software & Operations** | Connector development, vLLM upstream qualification, MoRI-IO / UCX drivers, hash-router maintenance, metrics monitoring, support tier. | Incremental connector maintenance is charged against 1P1D until turnkey upstream integration is verified. |
+| **4. Capacity Overhead** | Stranded prefill compute during quiet hours, duplicated model weights across nodes, reserved KV headroom, HA failover spares. | Quantified via Diurnal Demand Factor $u_{\text{demand}} \in [0.25, 0.75]$. 1P1D model residency is 1 copy on P, 1 copy on D. |
+| **5. Operational Risk** | Connector transport errors, packet drops, request retries, invalid KV state reuse, context cache invalidation bugs. | Reflected in effective SLA availability parameter ($T_{\text{available}} = 99.0\%$). |
+| **6. Financing & Lifecycle** | 3-year straight-line depreciation, enterprise discount rate ($8\%$), vendor hardware maintenance escalation, zero residual salvage value. | Annualized Capex amortized over 36 months ($33.3\%/\text{year}$). |
+
+### Sizing Equation for Target Annual Demand
+To determine the required number of physical R9700 cards ($N_{\text{cards}}$) to serve $D_{\text{annual}}$ qualified requests:
+$$N_{\text{cards}} = \frac{D_{\text{annual}}}{T_{\text{available}} \times u_{\text{demand}} \times G_{\text{qualified, sustainable}}} \times N_{\text{cluster\_unit}}$$
+
+---
+
+## 8. Customer-Facing Deliverables & Appendix Structure
+
+The complete presales package is organized into an **Executive Briefing** backed by an **Engineering Audit Appendix**:
+
+### 8.1 Executive Suite (Five Core Exhibits)
+1. **Exhibit 1: The Master 4-Panel Dashboard** ([`01_pdd_benefits_master_dashboard.png`](file:///home/amd/workspace/coder/docs/figures/pd/01_pdd_benefits_master_dashboard.png)) — Stalls, goodput, crossover break-even, and handoff delay tolerance.
+2. **Exhibit 2: Sustainable Capacity & Queue Stability Boundary** ([`02_pdd_sustainable_capacity_sweep.png`](file:///home/amd/workspace/coder/docs/figures/pd/02_pdd_sustainable_capacity_sweep.png)) — Completed vs. qualified req/s and queue growth onset ($\lambda > 0.72\text{ req/s}$).
+3. **Exhibit 3: Decode Retention Crossover ($\eta < 0.50$)** ([`03_pdd_decode_retention_crossover.png`](file:///home/amd/workspace/coder/docs/figures/pd/03_pdd_decode_retention_crossover.png)) — Empirical condition where 1 dedicated decoder beats 2 collocated cards in raw output.
+4. **Exhibit 4: Real-Time Inter-Token Latency Timeline** ([`04_pdd_token_latency_timeline.png`](file:///home/amd/workspace/coder/docs/figures/pd/04_pdd_token_latency_timeline.png)) — Waterfall trace of $613.3\text{ ms}$ stall during prompt chunking vs. uninterrupted 48.2 ms cadence.
+5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](file:///home/amd/workspace/coder/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)) — Cost per 1,000 qualified requests ($0.49 vs. $3.98) and fleet sizing curves.
+
+### 8.2 Engineering Audit Appendix
+* **System Immutability**: Docker container hash, ROCm 6.3/7.0 driver version, HIP runtime, vLLM commit, Qwen3.8-27B MXFP4 safetensors checksum.
+* **Trace Schema**: Poisson arrival logs, prompt token lengths, generated token lengths, seed values, timestamped replay harness.
+* **Stage Service Curves**: Isolated TTFT vs. prompt length ($512\dots 16384$), isolated TPOT vs. decode batch size ($C=1\dots 16$).
+* **KV Transport Profiling**: MoRI-IO / UCX transfer latency distribution (p50, p95, p99) over PCIe Gen 5.0 x16, memory pinning overhead.
+* **Queue Depth & Soak Logging**: 60-minute time-series of queue occupancy, GPU thermal telemetry, and whole-node wall power draw.
+* **Sensitivity Matrix**: Low/Base/High electricity tariffs ($\$0.08, \$0.12, \$0.24/\text{kWh}$) and demand utilization factors ($25\%, 50\%, 75\%$).
+
+---
+
+## 9. Concrete Presales Decision Matrix
 
 ```
                           Dual R9700 Deployment Decision Logic
@@ -143,3 +215,4 @@ On a single dual-R9700 host, server chassis, motherboard, CPU, and facility rack
    - P/D increases qualified capacity sufficiently to offset KV transport and operational overhead.
 3. **Deploy Tensor Parallelism (TP=2) When**:
    - Serving 32K–64K long-context models or larger parameter footprints exceeding 32 GB physical VRAM.
+
