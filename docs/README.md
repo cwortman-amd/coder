@@ -35,6 +35,18 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | [PDD-EVAL.md](PDD-EVAL.md) | Comprehensive evaluation process, testbed architectures (2-card 1P1D, 8-card 1P:7D, 16-card 2P:14D), interactive SLO metrics, queue stability criteria, 6-exhibit visual suite, fleet router/simulator tooling, live connector diagnostics, and 4-track execution roadmap |
 | [KV_CONNECTOR.md](KV_CONNECTOR.md) | MI350P 1P1D KV connector: HIP-IPC patch apply script, GPU 1→GPU 0 serving (72.49 tok/s, token-ID gate still open) |
 
+## Published measurements
+
+Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. The plot scripts copy the records they need into `docs/` and then plot those copies.
+
+| Command | Published input | Figure |
+|---|---|---|
+| `python3 scripts/generate_kv_plots.py` | `docs/results/` | `docs/figures/kv/` |
+| `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` for MI350P power, UMC, and joules | `docs/figures/tco/` |
+| `python3 scripts/generate_pd_plots.py` | `docs/results/pd/` | `docs/figures/pd/` |
+
+`docs/profiling/power_bandwidth.json` is the socket-power and UMC summary. Sample traces are not kept. When `_results` is absent, the scripts use the copies already in `docs/`.
+
 ## How to run
 
 | File | Contents |

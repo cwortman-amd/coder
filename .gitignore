@@ -25,3 +25,8 @@ models/*
 
 # Build artifacts
 build/
+
+# Local scratch. Plot scripts copy the records they need into docs/results first.
+_opt/
+_src/
+_results/

@@ -1,0 +1,215 @@
+{
+  "gpu_profile": "mi350p",
+  "note": "Socket power and UMC activity for the power and bandwidth plots. UMC GB/s is UMC percent times the catalog peak and is not a calibrated HBM counter. Sample traces are not published.",
+  "runs": [
+    {
+      "workload": "1k1k",
+      "concurrency": 1,
+      "power_util_pct": 65.0,
+      "avg_power_w": 390.01,
+      "umc_activity_pct": 30.86,
+      "umc_gbs_estimate": 1264.22,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 4.926
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 2,
+      "power_util_pct": 65.75,
+      "avg_power_w": 394.48,
+      "umc_activity_pct": 29.29,
+      "umc_gbs_estimate": 1199.54,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 2.685
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 4,
+      "power_util_pct": 63.69,
+      "avg_power_w": 382.11,
+      "umc_activity_pct": 27.63,
+      "umc_gbs_estimate": 1131.93,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 1.461
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 8,
+      "power_util_pct": 67.15,
+      "avg_power_w": 402.92,
+      "umc_activity_pct": 30.16,
+      "umc_gbs_estimate": 1235.3,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.77
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 16,
+      "power_util_pct": 61.47,
+      "avg_power_w": 368.8,
+      "umc_activity_pct": 29.7,
+      "umc_gbs_estimate": 1216.62,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.416
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 32,
+      "power_util_pct": 67.08,
+      "avg_power_w": 402.49,
+      "umc_activity_pct": 32.32,
+      "umc_gbs_estimate": 1323.75,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.269
+    },
+    {
+      "workload": "1k1k",
+      "concurrency": 64,
+      "power_util_pct": 75.01,
+      "avg_power_w": 450.06,
+      "umc_activity_pct": 31.43,
+      "umc_gbs_estimate": 1287.27,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.225
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 1,
+      "power_util_pct": 53.05,
+      "avg_power_w": 318.28,
+      "umc_activity_pct": 21.05,
+      "umc_gbs_estimate": 862.05,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 5.998
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 2,
+      "power_util_pct": 54.62,
+      "avg_power_w": 327.74,
+      "umc_activity_pct": 21.26,
+      "umc_gbs_estimate": 870.92,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 3.181
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 4,
+      "power_util_pct": 57.39,
+      "avg_power_w": 344.33,
+      "umc_activity_pct": 22.44,
+      "umc_gbs_estimate": 919.21,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 1.705
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 8,
+      "power_util_pct": 61.15,
+      "avg_power_w": 366.9,
+      "umc_activity_pct": 25.14,
+      "umc_gbs_estimate": 1029.61,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.929
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 16,
+      "power_util_pct": 59.3,
+      "avg_power_w": 355.79,
+      "umc_activity_pct": 26.87,
+      "umc_gbs_estimate": 1100.77,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.518
+    },
+    {
+      "workload": "1k8k",
+      "concurrency": 32,
+      "power_util_pct": 68.98,
+      "avg_power_w": 413.9,
+      "umc_activity_pct": 32.4,
+      "umc_gbs_estimate": 1327.29,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.347
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 1,
+      "power_util_pct": 45.87,
+      "avg_power_w": 275.24,
+      "umc_activity_pct": 15.64,
+      "umc_gbs_estimate": 640.71,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 7.129
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 2,
+      "power_util_pct": 46.49,
+      "avg_power_w": 278.94,
+      "umc_activity_pct": 16.01,
+      "umc_gbs_estimate": 655.75,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 3.611
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 4,
+      "power_util_pct": 47.59,
+      "avg_power_w": 285.57,
+      "umc_activity_pct": 16.09,
+      "umc_gbs_estimate": 659.05,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 1.933
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 8,
+      "power_util_pct": 50.7,
+      "avg_power_w": 304.2,
+      "umc_activity_pct": 17.51,
+      "umc_gbs_estimate": 717.17,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 1.039
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 16,
+      "power_util_pct": 51.0,
+      "avg_power_w": 306.01,
+      "umc_activity_pct": 18.17,
+      "umc_gbs_estimate": 744.11,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.587
+    },
+    {
+      "workload": "8k1k",
+      "concurrency": 32,
+      "power_util_pct": 59.6,
+      "avg_power_w": 357.62,
+      "umc_activity_pct": 20.73,
+      "umc_gbs_estimate": 848.91,
+      "device_tdp_w": 600.0,
+      "device_peak_bw_gbs": 4096.0,
+      "joules_per_token": 0.387
+    }
+  ]
+}

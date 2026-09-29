@@ -1,0 +1,89 @@
+{
+  "serving_8k1k": {
+    "output_throughput_tok_s": 72.49,
+    "itl_p50_ms": 10.58,
+    "itl_p95_ms": 10.64,
+    "ttft_p50_ms": 1467.2,
+    "ttft_p95_ms": 4479.0,
+    "duration_s": 56.5,
+    "generated_tokens": 4096,
+    "requests": [
+      {
+        "tok_s": 61.42,
+        "ttft_ms": 4986.6,
+        "mean_itl_ms": 11.42,
+        "max_itl_ms": 308.8
+      },
+      {
+        "tok_s": 73.41,
+        "ttft_ms": 1603.0,
+        "mean_itl_ms": 12.06,
+        "max_itl_ms": 1314.7
+      },
+      {
+        "tok_s": 84.43,
+        "ttft_ms": 1331.4,
+        "mean_itl_ms": 10.54,
+        "max_itl_ms": 11.2
+      },
+      {
+        "tok_s": 74.46,
+        "ttft_ms": 1261.7,
+        "mean_itl_ms": 12.2,
+        "max_itl_ms": 917.5
+      }
+    ]
+  },
+  "waterfall_8k_cold": {
+    "prefill_ms": {
+      "n": 8,
+      "p50": 854.5,
+      "p95": 860.421,
+      "p99": 861.86
+    },
+    "post_ms": {
+      "n": 8,
+      "p50": 24.812,
+      "p95": 43.953,
+      "p99": 44.494
+    },
+    "xfer_ms": {
+      "n": 8,
+      "p50": 100.018,
+      "p95": 234.78,
+      "p99": 264.545
+    },
+    "client_ms": {
+      "n": 8,
+      "p50": 1188.726,
+      "p95": 1443.029,
+      "p99": 1447.375
+    },
+    "bytes": 699203584,
+    "failed": 0
+  },
+  "waterfall_8k_concurrent": {
+    "client_ms": {
+      "n": 4,
+      "p50": 3232.838,
+      "p95": 3710.428,
+      "p99": 3758.88
+    },
+    "prefill_ms": {
+      "n": 4,
+      "p50": 3012.02,
+      "p95": 3260.252,
+      "p99": 3274.89
+    },
+    "xfer_ms_sum": 74.806,
+    "bytes_sum": 2796814336,
+    "failed": 0
+  },
+  "dedicated_prefill_8k_s": 0.728,
+  "token_gate": {
+    "short_prompt_equal": true,
+    "short_first_diff": 2,
+    "long_prompt_equal": true,
+    "long_first_diff": 5
+  }
+}

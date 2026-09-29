@@ -4,10 +4,40 @@ Generate high-resolution presentation plots for TCO and serving performance anal
 Includes updated $1,500 price point for Radeon AI PRO R9700S.
 """
 
+import json
 import os
 import shutil
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from publish_results import publish_and_summarize, publish_power_bandwidth
+
+_POWER_BANDWIDTH = None
+
+
+def power_bandwidth():
+    """Published MI350P power and UMC summary. Rebuilds it when scratch exists."""
+    global _POWER_BANDWIDTH
+    if _POWER_BANDWIDTH is None:
+        _POWER_BANDWIDTH = json.loads(publish_power_bandwidth().read_text())
+    return _POWER_BANDWIDTH
+
+
+def mi350_series(workload, field, max_concurrency=None):
+    rows = [row for row in power_bandwidth()["runs"] if row["workload"] == workload]
+    if max_concurrency is not None:
+        rows = [row for row in rows if row["concurrency"] <= max_concurrency]
+    rows.sort(key=lambda row: row["concurrency"])
+    return [row["concurrency"] for row in rows], [row[field] for row in rows]
+
+
+def mi350_run(workload, concurrency):
+    for row in power_bandwidth()["runs"]:
+        if row["workload"] == workload and row["concurrency"] == concurrency:
+            return row
+    raise KeyError(f"no {workload} C{concurrency} power summary")
 
 # Set styling
 plt.rcParams['font.sans-serif'] = ['Liberation Sans', 'DejaVu Sans', 'Arial', 'sans-serif']
@@ -501,12 +531,11 @@ def plot_power_utilization():
     c_r9700_long = [1, 2, 4]
     pwr_r9700_long = [195.3 / 300 * 100, 195.2 / 300 * 100, 195.4 / 300 * 100]
     
-    # MI350P: Max TDP = 600 W. Socket power, 29 Sep 2026, GPU 0,
-    # _results/priority_eval/tco_mi350p/concurrency_20260929/.
-    c_mi350 = [1, 2, 4, 8, 16, 32]
-    pwr_mi350_1k = [65.0, 65.75, 63.69, 67.15, 61.47, 67.08]
-    pwr_mi350_8k = [45.87, 46.49, 47.59, 50.7, 51.0, 59.6]
-    pwr_mi350_long = [53.05, 54.62, 57.39, 61.15, 59.3, 68.98]
+    # MI350P socket power from docs/profiling/power_bandwidth.json. TDP is 600 W.
+    c_mi350, pwr_mi350_1k = mi350_series("1k1k", "power_util_pct", 32)
+    _, pwr_mi350_8k = mi350_series("8k1k", "power_util_pct", 32)
+    _, pwr_mi350_long = mi350_series("1k8k", "power_util_pct", 32)
+    c64 = mi350_run("1k1k", 64)
     
     # R9600D: Max TDP = 150 W (Operating at 150W Cap = 100%)
     c_r9600 = [1, 2, 4, 8, 16]
@@ -536,7 +565,10 @@ def plot_power_utilization():
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
     
-    ax.annotate("MI350P 1k/1k: 61%–67% TDP through C32\n(75% / 450 W at C64)", xy=(32, 67.08), xytext=(18, 48),
+    ax.annotate(
+        f"MI350P 1k/1k: {min(pwr_mi350_1k):.0f}%–{max(pwr_mi350_1k):.0f}% TDP through C32\n"
+        f"({c64['power_util_pct']:.0f}% / {c64['avg_power_w']:.0f} W at C64)",
+        xy=(32, pwr_mi350_1k[-1]), xytext=(18, 48),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
                 fontweight='bold', color=COLOR_MI350P_PROD, fontsize=8.5)
@@ -575,12 +607,13 @@ def plot_memory_bandwidth_utilization():
     c_r9700_long = [1, 2, 4]
     bw_r9700_long = [73.6, 74.8, 74.9]
     
-    # MI350P: UMC activity percent. umc_gbs_estimate = UMC% × 4,096 is an
-    # estimate, not a calibrated HBM measurement. 29 Sep 2026, GPU 0.
-    c_mi350 = [1, 2, 4, 8, 16, 32]
-    bw_mi350_1k = [30.86, 29.29, 27.63, 30.16, 29.7, 32.32]
-    bw_mi350_8k = [15.64, 16.01, 16.09, 17.51, 18.17, 20.73]
-    bw_mi350_long = [21.05, 21.26, 22.44, 25.14, 26.87, 32.4]
+    # MI350P UMC activity from docs/profiling/power_bandwidth.json.
+    # umc_gbs_estimate = UMC% × catalog peak is not a calibrated HBM measurement.
+    c_mi350, bw_mi350_1k = mi350_series("1k1k", "umc_activity_pct", 32)
+    _, bw_mi350_8k = mi350_series("8k1k", "umc_activity_pct", 32)
+    _, bw_mi350_long = mi350_series("1k8k", "umc_activity_pct", 32)
+    c64 = mi350_run("1k1k", 64)
+    umc_through_c32 = bw_mi350_1k + bw_mi350_8k + bw_mi350_long
     
     # R9600D: Peak = 640 GB/s (GDDR6), 150W Capped
     # 48 CUs & 150W cap yields ~344–353 GB/s sustained (53.8%–55.2%)
@@ -608,7 +641,10 @@ def plot_memory_bandwidth_utilization():
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEBEE", edgecolor=COLOR_R9700S_PEAK),
                 fontweight='bold', color=COLOR_R9700S_PEAK, fontsize=9.0)
     
-    ax.annotate("MI350P UMC stays 16%–32% through C32\n(C64 1k/1k is 31%; not a calibrated GB/s)", xy=(32, 32.32), xytext=(6.0, 42),
+    ax.annotate(
+        f"MI350P UMC stays {min(umc_through_c32):.0f}%–{max(umc_through_c32):.0f}% through C32\n"
+        f"(C64 1k/1k is {c64['umc_activity_pct']:.0f}%; not a calibrated GB/s)",
+        xy=(32, bw_mi350_1k[-1]), xytext=(6.0, 42),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.3),
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="#E8EAF6", edgecolor=COLOR_MI350P_PROD),
                 fontweight='bold', color=COLOR_MI350P_PROD, fontsize=9.0)
@@ -643,10 +679,9 @@ def plot_hardware_utilization_dashboard():
     pwr_r9700_1k = [75.6, 61.2, 62.6, 76.7, 86.6]
     c_r9700_long = [1, 2, 4]
     pwr_r9700_long = [65.1, 65.1, 65.1]
-    c_mi350 = [1, 2, 4, 8, 16, 32]
-    pwr_mi350_1k = [65.0, 65.75, 63.69, 67.15, 61.47, 67.08]
-    pwr_mi350_8k = [45.87, 46.49, 47.59, 50.7, 51.0, 59.6]
-    pwr_mi350_long = [53.05, 54.62, 57.39, 61.15, 59.3, 68.98]
+    c_mi350, pwr_mi350_1k = mi350_series("1k1k", "power_util_pct", 32)
+    _, pwr_mi350_8k = mi350_series("8k1k", "power_util_pct", 32)
+    _, pwr_mi350_long = mi350_series("1k8k", "power_util_pct", 32)
     c_r9600 = [1, 2, 4, 8, 16]
     pwr_r9600 = [100.0, 100.0, 100.0, 100.0, 100.0]
     
@@ -672,9 +707,9 @@ def plot_hardware_utilization_dashboard():
     bw_r9700_8k = [76.3, 75.4, 71.8, 75.6, 71.1]
     bw_r9700_1k = [75.9, 74.8, 74.3, 74.3, 74.2]
     bw_r9700_long = [73.6, 74.8, 74.9]
-    bw_mi350_1k = [30.86, 29.29, 27.63, 30.16, 29.7, 32.32]
-    bw_mi350_8k = [15.64, 16.01, 16.09, 17.51, 18.17, 20.73]
-    bw_mi350_long = [21.05, 21.26, 22.44, 25.14, 26.87, 32.4]
+    _, bw_mi350_1k = mi350_series("1k1k", "umc_activity_pct", 32)
+    _, bw_mi350_8k = mi350_series("8k1k", "umc_activity_pct", 32)
+    _, bw_mi350_long = mi350_series("1k8k", "umc_activity_pct", 32)
     c_r9600_bw = [1, 2, 4]
     bw_r9600 = [53.8, 54.5, 55.2]
     
@@ -903,11 +938,11 @@ def plot_slo_qualified_goodput():
 def plot_joules_per_token():
     fig, ax = plt.subplots(figsize=(11, 6.5), dpi=300)
 
-    # MI350P empirical data
-    c_mi350 = [1, 2, 4, 8, 16, 32]
-    j_mi350_1k = [4.93, 2.69, 1.46, 0.77, 0.42, 0.27]
-    j_mi350_8k = [7.13, 3.61, 1.93, 1.04, 0.59, 0.39]
-    j_mi350_long = [6.00, 3.18, 1.71, 0.93, 0.52, 0.35]
+    # MI350P joules from the same published power window.
+    c_mi350, j_mi350_1k = mi350_series("1k1k", "joules_per_token", 32)
+    _, j_mi350_8k = mi350_series("8k1k", "joules_per_token", 32)
+    _, j_mi350_long = mi350_series("1k8k", "joules_per_token", 32)
+    c64 = mi350_run("1k1k", 64)
 
     # R9700S empirical data from power-of-two sweeps
     c_r9700 = [1, 2, 4, 8, 16]
@@ -925,10 +960,10 @@ def plot_joules_per_token():
     ax.plot(c_mi350, j_mi350_8k, "s--", color="#3949AB", lw=2.2, ms=6, label="MI350P 8,192 in / 1,024 out")
     ax.plot(c_mi350, j_mi350_long, "^-.", color="#5C6BC0", lw=2.0, ms=6, label="MI350P 1,024 in / 8,192 out")
     ax.plot(c_mi350, j_mi350_1k, "D-", color=COLOR_MI350P_PROD, lw=2.4, ms=7, label="MI350P 1,024 in / 1,024 out")
-    ax.plot([64], [0.23], "D", color=COLOR_MI350P_PROD, ms=8)
+    ax.plot([c64["concurrency"]], [c64["joules_per_token"]], "D", color=COLOR_MI350P_PROD, ms=8)
 
     # Annotations
-    ax.annotate("C64 0.23 J/tok", xy=(64, 0.23), xytext=(40, 1.2),
+    ax.annotate(f"C64 {c64['joules_per_token']:.2f} J/tok", xy=(64, c64["joules_per_token"]), xytext=(40, 1.2),
                 arrowprops=dict(arrowstyle="->", color=COLOR_MI350P_PROD, lw=1.2),
                 fontweight="bold", color=COLOR_MI350P_PROD, fontsize=9.0)
     ax.annotate("R9700S Energy Plateau\n~2.5–3.0 J/tok @ C4–C16", xy=(4, 3.01), xytext=(6.0, 5.0),
@@ -954,6 +989,7 @@ def plot_joules_per_token():
     return output_path
 
 if __name__ == "__main__":
+    publish_and_summarize()
     p1  = plot_capex_and_tco()
     p2  = plot_cost_8k_1k()
     p3  = plot_cost_1k_1k()

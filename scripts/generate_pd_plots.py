@@ -18,15 +18,18 @@ Methodology & Audit Compliance:
 
 import os
 import shutil
-import json
+import sys
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from publish_results import PUBLISHED_ROOT, publish_and_summarize
+
 OUTPUT_DIR = "/home/amd/workspace/coder/docs/figures/pd"
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
-SUMMARY_JSON = "/home/amd/workspace/coder/_results/pd_emulator/pd_emulator_summary_20260929_042526.json"
+SUMMARY_JSON = os.path.join(str(PUBLISHED_ROOT), "pd", "pd_emulator_summary_20260929_042526.json")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
@@ -656,6 +659,7 @@ def generate_tradeoff_pareto():
 
 
 if __name__ == "__main__":
+    publish_and_summarize()
     generate_master_dashboard()
     generate_sustainable_capacity_sweep()
     generate_decode_retention_crossover()
