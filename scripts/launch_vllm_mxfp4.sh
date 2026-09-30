@@ -11,7 +11,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck disable=SC1091
 source "${ROOT}/lib/serve.sh"
-serve_gpu_flags "${HIP_VISIBLE_DEVICES:-0}"
+TP_SIZE="${VLLM_TP_SIZE:-1}"
+if [[ "${TP_SIZE}" -gt 1 ]]; then
+  GPU_LIST="${HIP_VISIBLE_DEVICES:-0,1}"
+else
+  GPU_LIST="${HIP_VISIBLE_DEVICES:-0}"
+fi
+serve_gpu_flags "${GPU_LIST}"
 NAME="${VLLM_CONTAINER_NAME:-rocm-inference-server}"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai-rocm:latest}"
 MODEL="${VLLM_MODEL:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded}"
@@ -32,11 +38,21 @@ COMMON=(
   -e PYTHONUNBUFFERED=1
   -e TOKENIZERS_PARALLELISM=false
   -e ROCP_TOOL_ATTACH=1
+  -e HSA_FORCE_FINE_GRAIN_PCIE=1
+  -e HSA_NO_SCRATCH_RECLAIM=1
+  -e NCCL_P2P_DISABLE=0
+  -e NCCL_IB_DISABLE=1
+  -e "NCCL_DEBUG=${NCCL_DEBUG:-WARN}"
+  -e "NCCL_DEBUG_SUBSYS=${NCCL_DEBUG_SUBSYS:-INIT,P2P,COLL,GRAPH,TUNING}"
   -v /home/amd/.cache/huggingface:/root/.cache/huggingface
   -v "${ROOT}/models:/models"
   -v "${ROOT}/_results:/results"
 )
 
+if [[ "${VLLM_ALLOW_PTRACE:-0}" == "1" ]]; then
+  # Required for rocprofv3 --pid. Does not change vLLM serving flags.
+  COMMON+=(--cap-add SYS_PTRACE)
+fi
 if [[ -n "${VLLM_CPUSET_CPUS:-}" ]]; then
   COMMON+=(--cpuset-cpus "${VLLM_CPUSET_CPUS}")
 fi
@@ -77,6 +93,11 @@ if [[ "${ENGINECORE_ROCP_EXEC:-0}" == "1" ]]; then
     -e "ENGINECORE_ROCPROF_DIR=${ENGINECORE_ROCPROF_DIR:-/results/profiling/enginecore_exec}"
     -v "${ROOT}/scripts/enginecore_rocprof_exec.sh:/opt/vllm-enginecore-attach/enginecore_rocprof_exec.sh:ro"
   )
+  if [[ -n "${ENGINECORE_ROCPROF_GATE_FILE:-}" ]]; then
+    COMMON+=(
+      -e "ENGINECORE_ROCPROF_GATE_FILE=${ENGINECORE_ROCPROF_GATE_FILE}"
+    )
+  fi
 fi
 
 if [[ -n "${VLLM_ROCM_USE_AITER:-}" ]]; then
@@ -98,11 +119,11 @@ SERVE_ARGS=(
   "${MODEL}"
   --served-model-name "${SERVED}"
   --trust-remote-code
-  --tensor-parallel-size 1
-  --max-model-len 16384
+  --tensor-parallel-size "${TP_SIZE}"
+  --max-model-len "${VLLM_MAX_MODEL_LEN:-16384}"
   --host 127.0.0.1
   --port "${PORT}"
-  --kv-cache-memory-bytes 103223724237
+  --kv-cache-memory-bytes "${VLLM_KV_CACHE_MEMORY_BYTES:-103223724237}"
   "$@"
 )
 

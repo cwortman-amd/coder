@@ -84,6 +84,12 @@ def main() -> int:
     parser.add_argument("--concurrency", type=int, default=1)
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument("--out", required=True)
+    parser.add_argument(
+        "--publish-gpu-profile",
+        default="",
+        help="Publish Qwen raw samples under docs/results for this GPU profile",
+    )
+    parser.add_argument("--repetition", type=int, default=1)
     args = parser.parse_args()
 
     started = time.perf_counter()
@@ -104,6 +110,7 @@ def main() -> int:
     ttfts = [row["ttft_s"] for row in ok if row["ttft_s"] is not None]
     itls = [itl for row in ok for itl in row["itl_s"]]
     chunk_itls = [itl for row in ok for itl in row["chunk_itl_s"]]
+    e2els = [row["latency_s"] for row in ok]
     generated = sum(row["completion_tokens"] for row in ok)
     result = {
         "base_url": args.base_url,
@@ -118,12 +125,23 @@ def main() -> int:
         "total_generated_tokens": generated,
         "output_throughput": generated / wall if wall else 0,
         "ttft_p50_ms": percentile(ttfts, 0.50) * 1000 if ttfts else None,
+        "ttft_p90_ms": percentile(ttfts, 0.90) * 1000 if ttfts else None,
         "ttft_p95_ms": percentile(ttfts, 0.95) * 1000 if ttfts else None,
+        "ttft_p99_ms": percentile(ttfts, 0.99) * 1000 if ttfts else None,
+        "ttft_max_ms": max(ttfts) * 1000 if ttfts else None,
         "itl_mean_ms": statistics.mean(itls) * 1000 if itls else None,
         "itl_p50_ms": percentile(itls, 0.50) * 1000 if itls else None,
+        "itl_p90_ms": percentile(itls, 0.90) * 1000 if itls else None,
         "itl_p95_ms": percentile(itls, 0.95) * 1000 if itls else None,
+        "itl_p99_ms": percentile(itls, 0.99) * 1000 if itls else None,
+        "itl_max_ms": max(itls) * 1000 if itls else None,
         "chunk_itl_p50_ms": percentile(chunk_itls, 0.50) * 1000 if chunk_itls else None,
         "chunk_itl_p95_ms": percentile(chunk_itls, 0.95) * 1000 if chunk_itls else None,
+        "e2el_p50_ms": percentile(e2els, 0.50) * 1000 if e2els else None,
+        "e2el_p90_ms": percentile(e2els, 0.90) * 1000 if e2els else None,
+        "e2el_p95_ms": percentile(e2els, 0.95) * 1000 if e2els else None,
+        "e2el_p99_ms": percentile(e2els, 0.99) * 1000 if e2els else None,
+        "e2el_max_ms": max(e2els) * 1000 if e2els else None,
         "mean_latency_s": statistics.mean(row["latency_s"] for row in ok) if ok else None,
         "rows": rows,
         "note": (
@@ -133,6 +151,23 @@ def main() -> int:
     }
     with open(args.out, "w", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2)
+    if args.publish_gpu_profile:
+        from pathlib import Path
+
+        from publish_latency_results import publish_latency_result
+
+        def short(value: int) -> str:
+            return f"{value // 1024}k" if value % 1024 == 0 else str(value)
+
+        raw_path, profile_path = publish_latency_result(
+            Path(args.out),
+            gpu_profile=args.publish_gpu_profile,
+            workload=f"{short(args.input_len)}{short(args.output_len)}",
+            concurrency=args.concurrency,
+            repetition=args.repetition,
+        )
+        print(f"published raw latency: {raw_path}")
+        print(f"updated latency profile: {profile_path}")
     print(json.dumps({key: value for key, value in result.items() if key != "rows"}, indent=2))
     return 0 if ok else 1
 

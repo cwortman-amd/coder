@@ -42,6 +42,7 @@ for C in "${LIST[@]}"; do
     --num-prompts "${C}" --concurrency "${C}" \
     --timeout "${TIMEOUT}" \
     --stream \
+    --publish-latency \
     --monitor-power \
     --gpu-profile "${GPU_PROFILE:-mi350p}" \
     --out "${OUT}/bench_c${C}.json" | tee -a "${OUT}/run.log"
@@ -90,6 +91,7 @@ if [[ "${STREAM_C32:-1}" == "1" ]]; then
     --input-len "${ILEN}" --output-len 64 \
     --num-prompts 8 --concurrency 1 \
     --timeout 600 \
+    --publish-gpu-profile "${GPU_PROFILE:-mi350p}" \
     --out "${OUT}/stream_c1_sample.json" || true
 fi
 

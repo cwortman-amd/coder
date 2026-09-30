@@ -30,11 +30,23 @@ mkdir -p "${OUT_DIR}"
   printf '\n'
 } >>"${OUT_DIR}/spawn.log"
 
+TRACE_ARGS=(--process-sync)
+OUT_FILE="enginecore"
+if [[ -n "${ENGINECORE_ROCPROF_GATE_FILE:-}" ]]; then
+  # ROCTx pause/resume inside the worker. Startup stays untraced.
+  # Skip --process-sync: TP=2 ranks do not exit together, and the wait
+  # drops the trace when the container stops.
+  export ROCPROF_GATED=1
+  TRACE_ARGS=(--rccl-trace --selected-regions)
+  OUT_FILE="decode-$$"
+fi
+
 exec /opt/rocm/bin/rocprofv3 \
   --kernel-trace --hip-runtime-trace --memory-copy-trace \
-  --process-sync --stats --summary \
-  --output-format csv pftrace \
+  "${TRACE_ARGS[@]}" \
+  --stats --summary \
+  --output-format csv \
   --output-directory "${OUT_DIR}" \
-  --output-file enginecore \
+  --output-file "${OUT_FILE}" \
   -- \
   "${PYTHON}" "$@"

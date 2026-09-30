@@ -29,6 +29,11 @@ def bench_serve_args(
     result_dir: Optional[str] = None,
     result_filename: Optional[str] = None,
     percentile_metrics: str = "tpot,ttft,itl,e2el",
+    metric_percentiles: str = "75,90,95,99",
+    save_detailed: bool = True,
+    random_prefix_len: Optional[int] = None,
+    burstiness: Optional[float] = None,
+    seed: Optional[int] = None,
 ) -> list[str]:
     args = ["bench", "serve", "--model", model]
     if backend:
@@ -41,6 +46,7 @@ def bench_serve_args(
         "--host", host,
         "--port", str(port),
         "--percentile-metrics", percentile_metrics,
+        "--metric-percentiles", metric_percentiles,
         "--dataset-name", "random",
         "--random-input-len", str(input_len),
         "--random-output-len", str(output_len),
@@ -49,6 +55,12 @@ def bench_serve_args(
     ]
     if request_rate:
         args += ["--request-rate", request_rate]
+    if random_prefix_len:
+        args += ["--random-prefix-len", str(random_prefix_len)]
+    if burstiness is not None:
+        args += ["--burstiness", str(burstiness)]
+    if seed is not None:
+        args += ["--seed", str(seed)]
     if ignore_eos:
         args.append("--ignore-eos")
     if temperature is not None:
@@ -59,6 +71,8 @@ def bench_serve_args(
             "--result-dir", result_dir,
             "--result-filename", result_filename,
         ]
+        if save_detailed:
+            args.append("--save-detailed")
     return args
 
 
@@ -79,9 +93,14 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--result-dir", default="")
     parser.add_argument("--result-filename", default="")
+    parser.add_argument("--metric-percentiles", default="75,90,95,99")
+    parser.add_argument("--no-save-detailed", action="store_true")
     parser.add_argument("--no-backend", action="store_true")
     parser.add_argument("--no-endpoint", action="store_true")
     parser.add_argument("--no-request-rate", action="store_true")
+    parser.add_argument("--random-prefix-len", type=int, default=0)
+    parser.add_argument("--burstiness", type=float, default=None)
+    parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
     built = bench_serve_args(
         model=args.model,
@@ -99,6 +118,11 @@ def main() -> int:
         temperature=args.temperature,
         result_dir=args.result_dir or None,
         result_filename=args.result_filename or None,
+        metric_percentiles=args.metric_percentiles,
+        save_detailed=not args.no_save_detailed,
+        random_prefix_len=args.random_prefix_len or None,
+        burstiness=args.burstiness,
+        seed=args.seed,
     )
     sys.stdout.write("\n".join(built) + "\n")
     return 0

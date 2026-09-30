@@ -1,0 +1,2573 @@
+{
+  "schema_version": 1,
+  "model": "Qwen3.8-27B MXFP4",
+  "note": "Report-ready index. Exact request and token samples are in the referenced compressed files under docs/results.",
+  "runs": [
+    {
+      "run_id": "1k1k_c1",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 1,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c1.json.gz",
+      "benchmark": {
+        "duration": 51.63346092199208,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 65.389,
+        "max": 119.418,
+        "p50": 47.424,
+        "p75": 65.471,
+        "p90": 97.839,
+        "p95": 108.629,
+        "p99": 117.26
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 12.554,
+        "max": 12.662,
+        "p50": 12.527,
+        "p75": 12.58,
+        "p90": 12.629,
+        "p95": 12.646,
+        "p99": 12.659
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 12908.012,
+        "max": 13000.498,
+        "p50": 12897.31,
+        "p75": 12929.366,
+        "p90": 12972.045,
+        "p95": 12986.271,
+        "p99": 12997.652
+      },
+      "itl_ms": {
+        "n": 4100,
+        "mean": 12.529,
+        "max": 112.258,
+        "p50": 12.498,
+        "p75": 12.955,
+        "p90": 13.227,
+        "p95": 13.307,
+        "p99": 13.375
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          3,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          8,
+          0,
+          4087,
+          2,
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k1k_c2",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c2.json.gz",
+      "benchmark": {
+        "duration": 13.894264089991339,
+        "num_prompts": 2,
+        "successful": 2,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 2,
+        "successful": 2,
+        "failed": 0,
+        "tail_resolution_pct": 50.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 2,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 2,
+        "mean": 528.019,
+        "max": 529.857,
+        "p50": 528.019,
+        "p75": 528.938,
+        "p90": 529.489,
+        "p95": 529.673,
+        "p99": 529.82
+      },
+      "tpot_ms": {
+        "n": 2,
+        "mean": 13.058,
+        "max": 13.063,
+        "p50": 13.058,
+        "p75": 13.06,
+        "p90": 13.062,
+        "p95": 13.062,
+        "p99": 13.062
+      },
+      "e2el_ms": {
+        "n": 2,
+        "mean": 13886.595,
+        "max": 13892.825,
+        "p50": 13886.595,
+        "p75": 13889.71,
+        "p90": 13891.579,
+        "p95": 13892.202,
+        "p99": 13892.7
+      },
+      "itl_ms": {
+        "n": 2050,
+        "mean": 13.033,
+        "max": 14.274,
+        "p50": 13.055,
+        "p75": 13.508,
+        "p90": 13.781,
+        "p95": 13.861,
+        "p99": 13.935
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          5,
+          0,
+          2045,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": true
+      }
+    },
+    {
+      "run_id": "1k1k_c4",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c4.json.gz",
+      "benchmark": {
+        "duration": 15.638644834049046,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 502.246,
+        "max": 516.811,
+        "p50": 515.774,
+        "p75": 516.247,
+        "p90": 516.585,
+        "p95": 516.698,
+        "p99": 516.788
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 14.791,
+        "max": 14.82,
+        "p50": 14.781,
+        "p75": 14.791,
+        "p90": 14.809,
+        "p95": 14.814,
+        "p99": 14.819
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 15633.348,
+        "max": 15637.831,
+        "p50": 15636.86,
+        "p75": 15637.303,
+        "p90": 15637.62,
+        "p95": 15637.726,
+        "p99": 15637.81
+      },
+      "itl_ms": {
+        "n": 4100,
+        "mean": 14.762,
+        "max": 507.971,
+        "p50": 13.392,
+        "p75": 13.837,
+        "p90": 14.102,
+        "p95": 14.198,
+        "p99": 14.329
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          8,
+          0,
+          4075,
+          0,
+          0,
+          0,
+          1,
+          0,
+          12,
+          4,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k1k_c8",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c8.json.gz",
+      "benchmark": {
+        "duration": 15.683066732017323,
+        "num_prompts": 8,
+        "successful": 8,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 8,
+        "successful": 8,
+        "failed": 0,
+        "tail_resolution_pct": 12.5,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 8,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 8,
+        "mean": 454.287,
+        "max": 467.477,
+        "p50": 466.876,
+        "p75": 467.14,
+        "p90": 467.469,
+        "p95": 467.473,
+        "p99": 467.476
+      },
+      "tpot_ms": {
+        "n": 8,
+        "mean": 14.881,
+        "max": 14.956,
+        "p50": 14.871,
+        "p75": 14.871,
+        "p90": 14.897,
+        "p95": 14.927,
+        "p99": 14.95
+      },
+      "e2el_ms": {
+        "n": 8,
+        "mean": 15677.959,
+        "max": 15681.122,
+        "p50": 15679.347,
+        "p75": 15679.926,
+        "p90": 15680.421,
+        "p95": 15680.772,
+        "p99": 15681.052
+      },
+      "itl_ms": {
+        "n": 8200,
+        "mean": 14.852,
+        "max": 457.16,
+        "p50": 13.902,
+        "p75": 14.36,
+        "p90": 14.645,
+        "p95": 14.747,
+        "p99": 14.883
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          16,
+          5,
+          8130,
+          24,
+          0,
+          0,
+          0,
+          9,
+          16,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k1k_c16",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c16.json.gz",
+      "benchmark": {
+        "duration": 18.30401233304292,
+        "num_prompts": 16,
+        "successful": 16,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 16,
+        "successful": 16,
+        "failed": 0,
+        "tail_resolution_pct": 6.25,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 16,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 16,
+        "mean": 631.56,
+        "max": 715.152,
+        "p50": 710.405,
+        "p75": 712.09,
+        "p90": 713.163,
+        "p95": 713.911,
+        "p99": 714.904
+      },
+      "tpot_ms": {
+        "n": 16,
+        "mean": 17.263,
+        "max": 17.435,
+        "p50": 17.193,
+        "p75": 17.369,
+        "p90": 17.37,
+        "p95": 17.386,
+        "p99": 17.425
+      },
+      "e2el_ms": {
+        "n": 16,
+        "mean": 18291.337,
+        "max": 18302.505,
+        "p50": 18298.469,
+        "p75": 18299.762,
+        "p90": 18300.164,
+        "p95": 18300.894,
+        "p99": 18302.183
+      },
+      "itl_ms": {
+        "n": 16400,
+        "mean": 17.229,
+        "max": 225.761,
+        "p50": 16.978,
+        "p75": 17.428,
+        "p90": 17.688,
+        "p95": 17.801,
+        "p99": 18.037
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          32,
+          0,
+          16,
+          16329,
+          0,
+          0,
+          1,
+          22,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k1k_c32",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 32,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c32.json.gz",
+      "benchmark": {
+        "duration": 21.988456568971742,
+        "num_prompts": 32,
+        "successful": 32,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 32,
+        "successful": 32,
+        "failed": 0,
+        "tail_resolution_pct": 3.125,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 32,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 32,
+        "mean": 1004.924,
+        "max": 1168.645,
+        "p50": 1158.991,
+        "p75": 1163.888,
+        "p90": 1166.322,
+        "p95": 1167.292,
+        "p99": 1168.487
+      },
+      "tpot_ms": {
+        "n": 32,
+        "mean": 20.494,
+        "max": 20.917,
+        "p50": 20.348,
+        "p75": 20.805,
+        "p90": 20.806,
+        "p95": 20.807,
+        "p99": 20.883
+      },
+      "e2el_ms": {
+        "n": 32,
+        "mean": 21970.574,
+        "max": 21984.461,
+        "p50": 21974.14,
+        "p75": 21979.394,
+        "p90": 21982.917,
+        "p95": 21983.357,
+        "p99": 21984.216
+      },
+      "itl_ms": {
+        "n": 32800,
+        "mean": 20.453,
+        "max": 490.238,
+        "p50": 20.14,
+        "p75": 20.536,
+        "p90": 20.743,
+        "p95": 20.84,
+        "p99": 21.151
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          10,
+          22,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          64,
+          1,
+          31,
+          12816,
+          19845,
+          0,
+          0,
+          33,
+          10,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k1k_c64",
+      "gpu_profile": "mi350p",
+      "workload": "1k1k",
+      "input_len": 1024,
+      "output_len": 1024,
+      "concurrency": 64,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k1k/1k1k_c64.json.gz",
+      "benchmark": {
+        "duration": 32.55291347304592,
+        "num_prompts": 64,
+        "successful": 64,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 64,
+        "successful": 64,
+        "failed": 0,
+        "tail_resolution_pct": 1.562,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 64,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 64,
+        "mean": 1665.839,
+        "max": 2144.578,
+        "p50": 1720.525,
+        "p75": 2076.229,
+        "p90": 2123.568,
+        "p95": 2133.023,
+        "p99": 2141.888
+      },
+      "tpot_ms": {
+        "n": 64,
+        "mean": 30.135,
+        "max": 30.878,
+        "p50": 30.112,
+        "p75": 30.115,
+        "p90": 30.706,
+        "p95": 30.769,
+        "p99": 30.862
+      },
+      "e2el_ms": {
+        "n": 64,
+        "mean": 32493.853,
+        "max": 32549.08,
+        "p50": 32501.924,
+        "p75": 32527.3,
+        "p90": 32532.618,
+        "p95": 32538.266,
+        "p99": 32545.482
+      },
+      "itl_ms": {
+        "n": 65472,
+        "mean": 30.134,
+        "max": 639.157,
+        "p50": 29.561,
+        "p75": 30.459,
+        "p90": 31.008,
+        "p95": 31.324,
+        "p99": 32.041
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          6,
+          39,
+          19,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          128,
+          65,
+          13,
+          28,
+          39846,
+          25131,
+          135,
+          67,
+          45,
+          14,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c1",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 1,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c1.json.gz",
+      "benchmark": {
+        "duration": 617.8073155759485,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 51.047,
+        "max": 63.112,
+        "p50": 47.077,
+        "p75": 51.132,
+        "p90": 58.32,
+        "p95": 60.716,
+        "p99": 62.633
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 18.85,
+        "max": 18.917,
+        "p50": 18.84,
+        "p75": 18.863,
+        "p90": 18.896,
+        "p95": 18.907,
+        "p99": 18.915
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 154451.188,
+        "max": 154999.924,
+        "p50": 154367.643,
+        "p75": 154554.927,
+        "p90": 154821.925,
+        "p95": 154910.924,
+        "p99": 154982.124
+      },
+      "itl_ms": {
+        "n": 32772,
+        "mean": 18.845,
+        "max": 358.831,
+        "p50": 18.798,
+        "p75": 22.405,
+        "p90": 24.551,
+        "p95": 25.279,
+        "p99": 25.876
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          8,
+          0,
+          7743,
+          11346,
+          13667,
+          0,
+          0,
+          6,
+          2,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c2",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c2.json.gz",
+      "benchmark": {
+        "duration": 158.92847713601077,
+        "num_prompts": 2,
+        "successful": 2,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 2,
+        "successful": 2,
+        "failed": 0,
+        "tail_resolution_pct": 50.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 2,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 2,
+        "mean": 138.613,
+        "max": 141.632,
+        "p50": 138.613,
+        "p75": 140.123,
+        "p90": 141.028,
+        "p95": 141.33,
+        "p99": 141.572
+      },
+      "tpot_ms": {
+        "n": 2,
+        "mean": 19.384,
+        "max": 19.385,
+        "p50": 19.384,
+        "p75": 19.385,
+        "p90": 19.385,
+        "p95": 19.385,
+        "p99": 19.385
+      },
+      "e2el_ms": {
+        "n": 2,
+        "mean": 158914.243,
+        "max": 158927.361,
+        "p50": 158914.243,
+        "p75": 158920.802,
+        "p90": 158924.737,
+        "p95": 158926.049,
+        "p99": 158927.098
+      },
+      "itl_ms": {
+        "n": 16386,
+        "mean": 19.379,
+        "max": 199.492,
+        "p50": 19.356,
+        "p75": 22.979,
+        "p90": 25.121,
+        "p95": 25.844,
+        "p99": 26.425
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          4,
+          1,
+          3227,
+          5695,
+          7457,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c4",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c4.json.gz",
+      "benchmark": {
+        "duration": 162.52394367899979,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 242.21,
+        "max": 248.477,
+        "p50": 247.739,
+        "p75": 248.141,
+        "p90": 248.342,
+        "p95": 248.41,
+        "p99": 248.464
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 19.811,
+        "max": 19.811,
+        "p50": 19.811,
+        "p75": 19.811,
+        "p90": 19.811,
+        "p95": 19.811,
+        "p99": 19.811
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 162514.996,
+        "max": 162521.963,
+        "p50": 162521.37,
+        "p75": 162521.922,
+        "p90": 162521.947,
+        "p95": 162521.955,
+        "p99": 162521.962
+      },
+      "itl_ms": {
+        "n": 32772,
+        "mean": 19.806,
+        "max": 543.662,
+        "p50": 19.678,
+        "p75": 23.282,
+        "p90": 25.497,
+        "p95": 26.249,
+        "p99": 26.797
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          8,
+          0,
+          5716,
+          11436,
+          15600,
+          0,
+          0,
+          4,
+          4,
+          4,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c8",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c8.json.gz",
+      "benchmark": {
+        "duration": 165.81338098301785,
+        "num_prompts": 8,
+        "successful": 8,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 8,
+        "successful": 8,
+        "failed": 0,
+        "tail_resolution_pct": 12.5,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 8,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 8,
+        "mean": 446.78,
+        "max": 462.382,
+        "p50": 460.457,
+        "p75": 461.274,
+        "p90": 462.023,
+        "p95": 462.203,
+        "p99": 462.346
+      },
+      "tpot_ms": {
+        "n": 8,
+        "mean": 20.188,
+        "max": 20.197,
+        "p50": 20.187,
+        "p75": 20.187,
+        "p90": 20.19,
+        "p95": 20.193,
+        "p99": 20.196
+      },
+      "e2el_ms": {
+        "n": 8,
+        "mean": 165805.966,
+        "max": 165810.21,
+        "p50": 165809.544,
+        "p75": 165810.129,
+        "p90": 165810.206,
+        "p95": 165810.208,
+        "p99": 165810.21
+      },
+      "itl_ms": {
+        "n": 65544,
+        "mean": 20.183,
+        "max": 244.993,
+        "p50": 20.187,
+        "p75": 23.687,
+        "p90": 25.805,
+        "p95": 26.588,
+        "p99": 27.12
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          8,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          16,
+          0,
+          9003,
+          22896,
+          33611,
+          9,
+          0,
+          9,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c16",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c16.json.gz",
+      "benchmark": {
+        "duration": 190.6452093750122,
+        "num_prompts": 16,
+        "successful": 16,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 16,
+        "successful": 16,
+        "failed": 0,
+        "tail_resolution_pct": 6.25,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 16,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 16,
+        "mean": 631.008,
+        "max": 737.273,
+        "p50": 584.62,
+        "p75": 732.007,
+        "p90": 733.796,
+        "p95": 734.847,
+        "p99": 736.788
+      },
+      "tpot_ms": {
+        "n": 16,
+        "mean": 23.195,
+        "max": 23.213,
+        "p50": 23.2,
+        "p75": 23.2,
+        "p90": 23.2,
+        "p95": 23.203,
+        "p99": 23.211
+      },
+      "e2el_ms": {
+        "n": 16,
+        "mean": 190621.189,
+        "max": 190643.857,
+        "p50": 190616.504,
+        "p75": 190635.421,
+        "p90": 190638.643,
+        "p95": 190640.019,
+        "p99": 190643.089
+      },
+      "itl_ms": {
+        "n": 131088,
+        "mean": 23.189,
+        "max": 296.809,
+        "p50": 23.064,
+        "p75": 26.651,
+        "p90": 28.831,
+        "p95": 29.579,
+        "p99": 30.188
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          32,
+          0,
+          16,
+          37107,
+          90695,
+          3195,
+          0,
+          11,
+          32,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "1k8k_c32",
+      "gpu_profile": "mi350p",
+      "workload": "1k8k",
+      "input_len": 1024,
+      "output_len": 8192,
+      "concurrency": 32,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1k8k/1k8k_c32.json.gz",
+      "benchmark": {
+        "duration": 219.88695986999664,
+        "num_prompts": 32,
+        "successful": 32,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 32,
+        "successful": 32,
+        "failed": 0,
+        "tail_resolution_pct": 3.125,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 32,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 32,
+        "mean": 988.202,
+        "max": 1184.653,
+        "p50": 1166.624,
+        "p75": 1177.948,
+        "p90": 1181.207,
+        "p95": 1182.681,
+        "p99": 1184.053
+      },
+      "tpot_ms": {
+        "n": 32,
+        "mean": 26.72,
+        "max": 26.766,
+        "p50": 26.7,
+        "p75": 26.743,
+        "p90": 26.743,
+        "p95": 26.743,
+        "p99": 26.759
+      },
+      "e2el_ms": {
+        "n": 32,
+        "mean": 219854.093,
+        "max": 219879.704,
+        "p50": 219856.415,
+        "p75": 219870.604,
+        "p90": 219875.645,
+        "p95": 219878.157,
+        "p99": 219879.398
+      },
+      "itl_ms": {
+        "n": 262176,
+        "mean": 26.713,
+        "max": 782.044,
+        "p50": 26.306,
+        "p75": 29.963,
+        "p90": 32.17,
+        "p95": 32.893,
+        "p99": 33.599
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          15,
+          17,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          152,
+          46,
+          39,
+          15817,
+          181286,
+          64392,
+          108,
+          96,
+          176,
+          64,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c1",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 1,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c1.json.gz",
+      "benchmark": {
+        "duration": 106.09451441495912,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 233.096,
+        "max": 705.371,
+        "p50": 75.713,
+        "p75": 233.204,
+        "p90": 516.504,
+        "p95": 610.937,
+        "p99": 686.484
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 25.699,
+        "max": 26.214,
+        "p50": 25.589,
+        "p75": 25.854,
+        "p90": 26.07,
+        "p95": 26.142,
+        "p99": 26.2
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 26523.172,
+        "max": 26893.197,
+        "p50": 26546.508,
+        "p75": 26742.556,
+        "p90": 26832.941,
+        "p95": 26863.069,
+        "p99": 26887.171
+      },
+      "itl_ms": {
+        "n": 4084,
+        "mean": 25.749,
+        "max": 439.709,
+        "p50": 25.087,
+        "p75": 25.549,
+        "p90": 25.838,
+        "p95": 25.923,
+        "p99": 26.031
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          3,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          15,
+          4,
+          7,
+          2,
+          4027,
+          0,
+          20,
+          1,
+          8,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c2",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c2.json.gz",
+      "benchmark": {
+        "duration": 26.388139520015102,
+        "num_prompts": 2,
+        "successful": 2,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 2,
+        "successful": 2,
+        "failed": 0,
+        "tail_resolution_pct": 50.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 2,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 2,
+        "mean": 174.092,
+        "max": 212.711,
+        "p50": 174.092,
+        "p75": 193.401,
+        "p90": 204.987,
+        "p95": 208.849,
+        "p99": 211.939
+      },
+      "tpot_ms": {
+        "n": 2,
+        "mean": 25.611,
+        "max": 25.636,
+        "p50": 25.611,
+        "p75": 25.624,
+        "p90": 25.631,
+        "p95": 25.634,
+        "p99": 25.636
+      },
+      "e2el_ms": {
+        "n": 2,
+        "mean": 26374.251,
+        "max": 26387.398,
+        "p50": 26374.251,
+        "p75": 26380.825,
+        "p90": 26384.769,
+        "p95": 26386.084,
+        "p99": 26387.135
+      },
+      "itl_ms": {
+        "n": 2050,
+        "mean": 25.561,
+        "max": 76.284,
+        "p50": 25.602,
+        "p75": 26.031,
+        "p90": 26.306,
+        "p95": 26.395,
+        "p99": 26.471
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          4,
+          0,
+          0,
+          0,
+          2045,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c4",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c4.json.gz",
+      "benchmark": {
+        "duration": 27.51715608901577,
+        "num_prompts": 4,
+        "successful": 4,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "tail_resolution_pct": 25.0,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 4,
+        "mean": 854.805,
+        "max": 1054.522,
+        "p50": 1053.192,
+        "p75": 1053.623,
+        "p90": 1054.162,
+        "p95": 1054.342,
+        "p99": 1054.486
+      },
+      "tpot_ms": {
+        "n": 4,
+        "mean": 26.054,
+        "max": 26.619,
+        "p50": 25.866,
+        "p75": 26.055,
+        "p90": 26.393,
+        "p95": 26.506,
+        "p99": 26.596
+      },
+      "e2el_ms": {
+        "n": 4,
+        "mean": 27508.431,
+        "max": 27515.406,
+        "p50": 27514.541,
+        "p75": 27515.022,
+        "p90": 27515.253,
+        "p95": 27515.329,
+        "p99": 27515.391
+      },
+      "itl_ms": {
+        "n": 4080,
+        "mean": 26.131,
+        "max": 795.818,
+        "p50": 25.856,
+        "p75": 26.322,
+        "p90": 26.578,
+        "p95": 26.688,
+        "p99": 26.767
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          8,
+          8,
+          4,
+          4,
+          4035,
+          0,
+          20,
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c8",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c8.json.gz",
+      "benchmark": {
+        "duration": 27.776696308981627,
+        "num_prompts": 8,
+        "successful": 8,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 8,
+        "successful": 8,
+        "failed": 0,
+        "tail_resolution_pct": 12.5,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 8,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 8,
+        "mean": 602.316,
+        "max": 784.773,
+        "p50": 577.275,
+        "p75": 630.172,
+        "p90": 784.295,
+        "p95": 784.534,
+        "p99": 784.725
+      },
+      "tpot_ms": {
+        "n": 8,
+        "mean": 26.539,
+        "max": 26.743,
+        "p50": 26.56,
+        "p75": 26.56,
+        "p90": 26.615,
+        "p95": 26.679,
+        "p99": 26.73
+      },
+      "e2el_ms": {
+        "n": 8,
+        "mean": 27751.563,
+        "max": 27775.911,
+        "p50": 27748.182,
+        "p75": 27755.616,
+        "p90": 27775.243,
+        "p95": 27775.577,
+        "p99": 27775.844
+      },
+      "itl_ms": {
+        "n": 8160,
+        "mean": 26.617,
+        "max": 214.62,
+        "p50": 26.395,
+        "p75": 26.841,
+        "p90": 27.117,
+        "p95": 27.204,
+        "p99": 27.373
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          7,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          24,
+          24,
+          8,
+          0,
+          8049,
+          8,
+          40,
+          7,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c16",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c16.json.gz",
+      "benchmark": {
+        "duration": 31.45908787997905,
+        "num_prompts": 16,
+        "successful": 16,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 16,
+        "successful": 16,
+        "failed": 0,
+        "tail_resolution_pct": 6.25,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 16,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 16,
+        "mean": 942.725,
+        "max": 1316.883,
+        "p50": 929.51,
+        "p75": 1313.467,
+        "p90": 1314.631,
+        "p95": 1315.589,
+        "p99": 1316.624
+      },
+      "tpot_ms": {
+        "n": 16,
+        "mean": 29.802,
+        "max": 30.205,
+        "p50": 29.836,
+        "p75": 30.027,
+        "p90": 30.028,
+        "p95": 30.073,
+        "p99": 30.178
+      },
+      "e2el_ms": {
+        "n": 16,
+        "mean": 31430.033,
+        "max": 31456.801,
+        "p50": 31450.77,
+        "p75": 31453.426,
+        "p90": 31455.559,
+        "p95": 31456.589,
+        "p99": 31456.758
+      },
+      "itl_ms": {
+        "n": 16288,
+        "mean": 29.948,
+        "max": 383.792,
+        "p50": 29.288,
+        "p75": 29.713,
+        "p90": 29.998,
+        "p95": 30.094,
+        "p99": 55.111
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          1,
+          10,
+          5,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          57,
+          0,
+          78,
+          16,
+          14531,
+          1434,
+          136,
+          19,
+          17,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "8k1k_c32",
+      "gpu_profile": "mi350p",
+      "workload": "8k1k",
+      "input_len": 8192,
+      "output_len": 1024,
+      "concurrency": 32,
+      "repetition": 1,
+      "source_format": "streaming_client",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k1k/8k1k_c32.json.gz",
+      "benchmark": {
+        "duration": 35.44187369302381,
+        "num_prompts": 32,
+        "successful": 32,
+        "failed": 0,
+        "model": "awq"
+      },
+      "requests": {
+        "total": 32,
+        "successful": 32,
+        "failed": 0,
+        "tail_resolution_pct": 3.125,
+        "p99_sample_quality": "insufficient",
+        "ttft_at_or_below_3000_ms": 32,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 32,
+        "mean": 1493.258,
+        "max": 2123.35,
+        "p50": 1551.126,
+        "p75": 1846.9,
+        "p90": 1851.864,
+        "p95": 1967.495,
+        "p99": 2118.261
+      },
+      "tpot_ms": {
+        "n": 32,
+        "mean": 33.136,
+        "max": 33.959,
+        "p50": 33.084,
+        "p75": 33.358,
+        "p90": 33.826,
+        "p95": 33.878,
+        "p99": 33.934
+      },
+      "e2el_ms": {
+        "n": 32,
+        "mean": 35391.12,
+        "max": 35438.689,
+        "p50": 35394.835,
+        "p75": 35411.156,
+        "p90": 35416.348,
+        "p95": 35419.239,
+        "p99": 35433.548
+      },
+      "itl_ms": {
+        "n": 32800,
+        "mean": 33.07,
+        "max": 589.624,
+        "p50": 32.338,
+        "p75": 32.733,
+        "p90": 33.077,
+        "p95": 33.255,
+        "p99": 33.652
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          4,
+          26,
+          2,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          64,
+          0,
+          0,
+          0,
+          47,
+          32606,
+          0,
+          1,
+          62,
+          20,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    }
+  ],
+  "updated_utc": "2026-09-30T11:40:21.253078+00:00"
+}

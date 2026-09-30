@@ -136,7 +136,15 @@ def main() -> int:
     p.add_argument("--peak-bw-gbs", type=float, default=None, help="Device peak memory bandwidth in GB/s (default: 4096 for mi350p, 960 for r9700)")
     p.add_argument("--model-weight-gib", type=float, default=17.91, help="Model weights size in GiB for memory bandwidth estimation (default: 17.91)")
     p.add_argument("--out", required=True)
+    p.add_argument(
+        "--publish-latency",
+        action="store_true",
+        help="Publish Qwen request/token samples to docs/results and docs/profiling",
+    )
+    p.add_argument("--repetition", type=int, default=1)
     args = p.parse_args()
+    if args.publish_latency and not args.stream:
+        p.error("--publish-latency requires --stream so request-level TTFT/ITL is collected")
 
     # Setup optional power monitoring
     telemetry_json = None
@@ -201,11 +209,16 @@ def main() -> int:
     ttfts = [r["ttft_s"] for r in ok if r.get("ttft_s") is not None]
     itls = [itl for r in ok for itl in r.get("itl_s", [])]
     ttft_p50_ms = round(percentile(ttfts, 0.50) * 1000.0, 1) if ttfts else None
+    ttft_p90_ms = round(percentile(ttfts, 0.90) * 1000.0, 1) if ttfts else None
     ttft_p95_ms = round(percentile(ttfts, 0.95) * 1000.0, 1) if ttfts else None
     ttft_p99_ms = round(percentile(ttfts, 0.99) * 1000.0, 1) if ttfts else None
+    ttft_max_ms = round(max(ttfts) * 1000.0, 1) if ttfts else None
     mean_ttft_ms = round(statistics.mean(ttfts) * 1000.0, 1) if ttfts else None
     itl_p50_ms = round(percentile(itls, 0.50) * 1000.0, 2) if itls else None
+    itl_p90_ms = round(percentile(itls, 0.90) * 1000.0, 2) if itls else None
     itl_p95_ms = round(percentile(itls, 0.95) * 1000.0, 2) if itls else None
+    itl_p99_ms = round(percentile(itls, 0.99) * 1000.0, 2) if itls else None
+    itl_max_ms = round(max(itls) * 1000.0, 2) if itls else None
 
     # Memory bandwidth estimation
     prof = (args.gpu_profile or os.environ.get("GPU_PROFILE", "")).lower()
@@ -250,11 +263,16 @@ def main() -> int:
         "total_token_throughput": (gen + prompt) / wall if wall else 0.0,
         "mean_latency_s": statistics.mean(dts) if dts else None,
         "ttft_p50_ms": ttft_p50_ms,
+        "ttft_p90_ms": ttft_p90_ms,
         "ttft_p95_ms": ttft_p95_ms,
         "ttft_p99_ms": ttft_p99_ms,
+        "ttft_max_ms": ttft_max_ms,
         "mean_ttft_ms": mean_ttft_ms,
         "itl_p50_ms": itl_p50_ms,
+        "itl_p90_ms": itl_p90_ms,
         "itl_p95_ms": itl_p95_ms,
+        "itl_p99_ms": itl_p99_ms,
+        "itl_max_ms": itl_max_ms,
         "avg_power_w": avg_power_w,
         "max_power_w": max_power_w,
         "power_util_pct": power_util_pct,
@@ -267,6 +285,23 @@ def main() -> int:
     }
     with open(args.out, "w", encoding="utf-8") as fh:
         json.dump(result, fh, indent=2)
+    if args.publish_latency:
+        from pathlib import Path
+
+        from publish_latency_results import publish_latency_result
+
+        def short(value: int) -> str:
+            return f"{value // 1024}k" if value % 1024 == 0 else str(value)
+
+        raw_path, profile_path = publish_latency_result(
+            Path(args.out),
+            gpu_profile=prof or "unknown",
+            workload=f"{short(args.input_len)}{short(args.output_len)}",
+            concurrency=args.concurrency,
+            repetition=args.repetition,
+        )
+        print(f"published raw latency: {raw_path}")
+        print(f"updated latency profile: {profile_path}")
     print(json.dumps({k: result[k] for k in result if k != "rows"}, indent=2))
     return 0 if ok else 1
 

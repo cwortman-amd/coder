@@ -16,10 +16,12 @@ import subprocess
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bench_serve  # noqa: E402
 import catalog  # noqa: E402
+from publish_latency_results import MissingDetailedLatency, publish_latency_result  # noqa: E402
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "concurrency_sweep")
@@ -34,6 +36,14 @@ PROMPT_COUNTS = {
     8: 160,
     16: 320
 }
+
+
+def workload_slug(input_len, output_len):
+    def short(value):
+        return f"{value // 1024}k" if value % 1024 == 0 else str(value)
+
+    return f"{short(input_len)}{short(output_len)}"
+
 
 def _avg_optional(rows, key):
     values = [row[key] for row in rows if isinstance(row.get(key), (int, float))]
@@ -94,6 +104,11 @@ def main():
     parser.add_argument("--skip-warmup", action="store_true", help="Skip warmup")
     parser.add_argument("--input-len", type=int, default=8192, help="Input prompt length")
     parser.add_argument("--output-len", type=int, default=1024, help="Output completion length")
+    parser.add_argument(
+        "--no-publish-latency",
+        action="store_true",
+        help="Do not copy detailed latency samples to docs/results and docs/profiling",
+    )
     args = parser.parse_args()
 
     prof = args.gpu_profile.lower()
@@ -212,6 +227,25 @@ def main():
             replay = catalog.weight_replay_gbs(agg_tok_s, C, weight_gib)
             mem_bw_gb_s = round(replay, 2) if replay is not None else None
             mem_bw_util_pct = round((mem_bw_gb_s / peak_bw) * 100.0, 2) if mem_bw_gb_s is not None and peak_bw > 0 else None
+            published_latency = None
+            if success and not args.no_publish_latency:
+                try:
+                    raw_path, profile_path = publish_latency_result(
+                        Path(bench_json_host),
+                        gpu_profile=prof,
+                        workload=workload_slug(args.input_len, args.output_len),
+                        concurrency=C,
+                        repetition=rep,
+                    )
+                    published_latency = {
+                        "raw_samples": str(raw_path.relative_to(PROJECT_DIR)),
+                        "profile": str(profile_path.relative_to(PROJECT_DIR)),
+                    }
+                    print(f"Published detailed latency: {raw_path}")
+                except MissingDetailedLatency as exc:
+                    raise RuntimeError(
+                        f"{exc}. Detailed samples are required because _results is not persistent."
+                    ) from exc
 
             run_record = {
                 "concurrency": C,
@@ -235,7 +269,8 @@ def main():
                 "j_per_tok": round(j_per_tok, 3),
                 "tok_per_j": round(tok_per_j, 4),
                 "vram_peak": vram_peak,
-                "hotspot_max_c": hotspot_max
+                "hotspot_max_c": hotspot_max,
+                "published_latency": published_latency,
             }
 
             c_runs.append(run_record)
