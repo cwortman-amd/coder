@@ -466,14 +466,33 @@ The TP=2 decode gap is this per-launch stall on `0001:c7:00.0`. The other
 rank waits in the collective while that GPU is inside an otherwise
 microsecond kernel.
 
+### Per-GPU RVS GST
+
+`scripts/debug.sh` runs the same ROCm Validation Suite action on each
+card alone: `gst-8K8K16K-trig-bf16` from the MI350P-600W config, target
+694000 GFLOPS. The device id is the KFD id from `rvs -g`.
+`HIP_VISIBLE_DEVICES` is the amd-smi index. `SKIP_RVS=1` skips this part.
+
+On 30 Sep, RVS 1.5.122:
+
+| PCI BDF | KFD id | Ramp sample | Sustained GFLOPS | Target met |
+|---|---:|---:|---:|---|
+| `0000:8b:00.0` | 64724 | 737432 | 750845 | TRUE (PASS) |
+| `0001:c7:00.0` | 40125 | 349 | 640757 | FALSE (FAIL) |
+
+`0001:c7:00.0` sustained 85% of `0000:8b:00.0` on this bf16 GEMM. This is
+a long matrix product, separate from the 51 ms short-launch band, and it
+is still on the same physical card.
+
 What remains:
 
 The stall is local to `0001:c7:00.0`. Sampled clocks, temperature, AER,
 and RAS do not explain the fixed 51 ms. A one-GPU launch loop reproduces
-it, so worker NUMA placement is not required. The open question is that
-card's command processor, power firmware, or another device-side timer.
-The occasional ~50 ms post-arrival collective is the same launch-time
-penalty when both ranks are already inside the kernel.
+it, so worker NUMA placement is not required. The same card also misses
+the RVS bf16 GST target (640757 vs 750845 GFLOPS). The open question is
+that card's command processor, power firmware, or another device-side
+timer. The occasional ~50 ms post-arrival collective is the same
+launch-time penalty when both ranks are already inside the kernel.
 
 Raw benchmark JSON and transport logs are under
 `_results/tp_compare_mi350p/`. The rocprof repeat is under

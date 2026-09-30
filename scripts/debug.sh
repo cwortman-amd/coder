@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Read-only dual-GPU PCIe / RCCL triage.
+# Read-only dual-GPU PCIe / RCCL triage, plus one RVS GST run per GPU.
 # Requires Open MPI for OMPI_COMM_WORLD_LOCAL_RANK.
+# RVS needs passwordless sudo. Each card runs the same MI350P-600W bf16
+# GST action alone, so the two logs can be compared.
 #
-# bash scripts/debug_tp.sh
-# RUNS=3 bash scripts/debug_tp.sh
-# SKIP_BENCH=1 bash scripts/debug_tp.sh
+# bash scripts/debug.sh
+# RUNS=3 bash scripts/debug.sh
+# SKIP_BENCH=1 bash scripts/debug.sh
+# SKIP_RVS=1 bash scripts/debug.sh
 
 set -Eeuo pipefail
 
@@ -17,6 +20,10 @@ GPU0_BDF="${GPU0_BDF:-0000:8b:00.0}"
 GPU1_BDF="${GPU1_BDF:-0001:c7:00.0}"
 GPU0_INDEX="${GPU0_INDEX:-0}"
 GPU1_INDEX="${GPU1_INDEX:-1}"
+RVS_BIN="${RVS_BIN:-/opt/rocm/bin/rvs}"
+RVS_GST_SRC="${RVS_GST_SRC:-/opt/rocm/share/rocm-validation-suite/conf/MI350P-600W/gst_single.conf}"
+RVS_ACTION="${RVS_ACTION:-gst-8K8K16K-trig-bf16}"
+SKIP_RVS="${SKIP_RVS:-0}"
 
 mkdir -p "$OUT"
 export PATH="/opt/rocm/bin:/opt/rocm/lib/llvm/bin:${PATH:-}"
@@ -25,6 +32,8 @@ export PATH="/opt/rocm/bin:/opt/rocm/lib/llvm/bin:${PATH:-}"
     { echo "RUNS must be a positive integer" >&2; exit 2; }
 [[ "$SKIP_BENCH" == 0 || "$SKIP_BENCH" == 1 ]] ||
     { echo "SKIP_BENCH must be 0 or 1" >&2; exit 2; }
+[[ "$SKIP_RVS" == 0 || "$SKIP_RVS" == 1 ]] ||
+    { echo "SKIP_RVS must be 0 or 1" >&2; exit 2; }
 [[ "$GPU0_BDF" != "$GPU1_BDF" ]] ||
     { echo "GPU BDFs must be distinct" >&2; exit 2; }
 [[ "$GPU0_INDEX" != "$GPU1_INDEX" ]] ||
@@ -120,8 +129,10 @@ ALLREDUCE_BIN="$(discover_allreduce)"
 {
     date -Is
     uname -a
-    printf 'OUT=%s RUNS=%s SKIP_BENCH=%s\n' \
-        "$OUT" "$RUNS" "$SKIP_BENCH"
+    printf 'OUT=%s RUNS=%s SKIP_BENCH=%s SKIP_RVS=%s\n' \
+        "$OUT" "$RUNS" "$SKIP_BENCH" "$SKIP_RVS"
+    printf 'RVS=%s\n' "$RVS_BIN"
+    printf 'RVS_ACTION=%s\n' "$RVS_ACTION"
     printf 'GPU0_INDEX=%s GPU0_BDF=%s\n' "$GPU0_INDEX" "$GPU0_BDF"
     printf 'GPU1_INDEX=%s GPU1_BDF=%s\n' "$GPU1_INDEX" "$GPU1_BDF"
     printf 'RBT=%s\n' "${RBT_BIN:-<missing>}"
@@ -288,8 +299,86 @@ printf 'RBT_GPU0=%s RBT_GPU1=%s\n' \
     "${RBT_GPU0:-<missing>}" "${RBT_GPU1:-<missing>}" \
     >>"$OUT/manifest.txt"
 
+if [[ -x "$RVS_BIN" ]] && sudo -n true >/dev/null 2>&1; then
+    capture "$OUT/rvs-gpus.txt" sudo -n "$RVS_BIN" -g
+else
+    printf '%s\n' 'RVS missing or sudo -n unavailable' >"$OUT/rvs-gpus.txt"
+fi
+
 if [[ "$SKIP_BENCH" == 0 ]]; then
     export HSA_FORCE_FINE_GRAIN_PCIE="${HSA_FORCE_FINE_GRAIN_PCIE:-1}"
+
+    if [[ "$SKIP_RVS" == 0 && -x "$RVS_BIN" && -f "$RVS_GST_SRC" ]] &&
+        sudo -n true >/dev/null 2>&1; then
+        # One card at a time. device is the KFD id from rvs -g, not the amd-smi index.
+        # HIP_VISIBLE_DEVICES is the amd-smi index and selects the physical card.
+        python3 - "$OUT/rvs-gpus.txt" "$RVS_GST_SRC" "$OUT" \
+            "$GPU0_BDF" "$GPU0_INDEX" "$GPU1_BDF" "$GPU1_INDEX" "$RVS_ACTION" <<'PY'
+import sys
+from pathlib import Path
+listing, src, out, bdf0, idx0, bdf1, idx1, action = sys.argv[1:]
+text = Path(listing).read_text(errors="replace")
+found = {}
+for line in text.splitlines():
+    parts = line.split(" - GPU[", 1)
+    if len(parts) != 2:
+        continue
+    bdf = parts[0].strip().lower()
+    rest = parts[1]
+    index, kfd = rest.split("]", 1)[0].split("-")
+    found[bdf] = (index.strip(), kfd.strip())
+lines = Path(src).read_text().splitlines()
+start = next((i for i, line in enumerate(lines) if line.startswith("- name:") and action in line), None)
+if start is None:
+    raise SystemExit(f"RVS action not found: {action}")
+block = []
+for line in lines[start + 1:]:
+    if line.startswith("- name:"):
+        break
+    block.append(line)
+for bdf, hip in ((bdf0, idx0), (bdf1, idx1)):
+    key = bdf.lower()
+    dest = Path(out) / f"rvs-gst-{bdf.replace(':', '_').replace('.', '_')}.conf"
+    if key not in found:
+        dest.write_text(f"UNRESOLVED {bdf}\n")
+        continue
+    rvs_index, kfd = found[key]
+    body = ["actions:", f"- name: {action}", f"  device: {kfd}", f"  device_index: {rvs_index}", "  parallel: false"]
+    for line in block:
+        stripped = line.strip()
+        if stripped.startswith(("device:", "device_index:", "parallel:")):
+            continue
+        body.append(line)
+    dest.write_text("\n".join(body) + "\n")
+    print(f"{bdf} hip={hip} rvs_index={rvs_index} kfd={kfd}")
+PY
+        for pair in "${GPU0_BDF}|${GPU0_INDEX}" "${GPU1_BDF}|${GPU1_INDEX}"; do
+            IFS='|' read -r bdf hip <<<"$pair"
+            tag="${bdf//[:.]/_}"
+            conf="$OUT/rvs-gst-${tag}.conf"
+            if [[ ! -f "$conf" ]] || grep -q '^UNRESOLVED' "$conf"; then
+                printf 'SKIPPED: no RVS id for %s\n' "$bdf" | tee "$OUT/rvs-gst-${tag}.log"
+                ((FAILURES+=1))
+                continue
+            fi
+            run_logged "$OUT/rvs-gst-${tag}.log" \
+                sudo -n env "HIP_VISIBLE_DEVICES=${hip}" \
+                "$RVS_BIN" -c "$conf" -p false -d 1 \
+                -j "$OUT/rvs-gst-${tag}.json" \
+                -l "$OUT/rvs-gst-${tag}.debug.log"
+            # GST prints PASS/FAIL in the log and still exits 0.
+            if grep -q 'met: FALSE' "$OUT/rvs-gst-${tag}.log"; then
+                printf 'RVS GST missed target_stress on %s\n' "$bdf" \
+                    | tee -a "$OUT/rvs-gst-${tag}.log"
+                ((FAILURES+=1))
+            fi
+        done
+    elif [[ "$SKIP_RVS" == 1 ]]; then
+        printf '%s\n' 'SKIPPED: SKIP_RVS=1' >"$OUT/rvs-skipped.txt"
+    else
+        printf '%s\n' 'SKIPPED: rvs, its MI350P GST config, or sudo -n is missing' \
+            >"$OUT/rvs-skipped.txt"
+    fi
 
     # Make the timed environment explicit. Preserve the original values
     # in manifest.txt above, but do not inherit external visibility masks.
@@ -383,6 +472,7 @@ fi
     echo "RBT indices: ${RBT_GPU0:-unresolved} and ${RBT_GPU1:-unresolved}"
     echo "MPI-linked RCCL test: ${ALLREDUCE_BIN:-missing}"
     echo "Benchmarks skipped: $SKIP_BENCH"
+    echo "RVS skipped: $SKIP_RVS"
     echo "Timed-command failures: $FAILURES"
     echo
     echo "Read manifest.txt and rbt-id-map.txt before interpreting benchmarks."
@@ -394,6 +484,8 @@ fi
     echo "until transfer type, device mapping, and byte/time accounting are checked."
     echo "Compare pcie-before.txt with pcie-after.txt when benchmarks ran."
     echo "Check kernel-gpu-events.txt for reset timing on $GPU1_BDF."
+    echo "rvs-gst-*.log is the same bf16 GST action on each card alone."
+    echo "Compare those raw logs. Do not treat a missing GFLOPS line as equal performance."
     echo
     echo "Results: $OUT"
 } >"$OUT/TRIAGE.txt"
