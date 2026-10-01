@@ -17,13 +17,13 @@ echo "Compiling Presentation Slides from: $SLIDES_MD"
 echo "=========================================================="
 
 echo "[1/3] Generating standalone interactive HTML..."
-npx -y @marp-team/marp-cli --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.html"
+npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.html"
 
 echo "[2/3] Generating presentation PDF..."
-npx -y @marp-team/marp-cli --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pdf"
+npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pdf"
 
 echo "[3/3] Generating PowerPoint presentation (PPTX)..."
-npx -y @marp-team/marp-cli --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pptx"
+npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pptx"
 
 echo "=========================================================="
 echo "Successfully generated all presentation formats in $PRESENTATION_DIR:"

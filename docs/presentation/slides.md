@@ -5,53 +5,54 @@ _class: lead
 paginate: true
 backgroundColor: #0d1117
 color: #c9d1d9
+footer: "AMD Systems Engineering | Serving Agentic LLMs at the Edge"
 style: |
   section {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    padding: 35px 50px;
-    font-size: 21px;
+    padding: 32px 48px;
+    font-size: 20px;
     background-color: #0d1117;
     color: #e6edf3;
   }
   h1 {
     color: #58a6ff;
-    font-size: 38px;
-    margin-bottom: 12px;
+    font-size: 36px;
+    margin-bottom: 10px;
     font-weight: 700;
   }
   h2 {
     color: #79c0ff;
-    font-size: 28px;
+    font-size: 26px;
     margin-top: 0px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     border-bottom: 2px solid #30363d;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
   }
   h3 {
     color: #d2a8ff;
-    font-size: 22px;
-    margin-bottom: 8px;
+    font-size: 20px;
+    margin-bottom: 6px;
   }
   p, li {
-    font-size: 19px;
-    line-height: 1.45;
+    font-size: 18px;
+    line-height: 1.42;
     color: #c9d1d9;
   }
   table {
-    font-size: 15px;
+    font-size: 14px;
     width: 100%;
     border-collapse: collapse;
-    margin: 10px 0;
+    margin: 8px 0;
   }
   th {
     background-color: #161b22;
     color: #58a6ff;
-    padding: 8px 10px;
+    padding: 7px 9px;
     border: 1px solid #30363d;
     text-align: left;
   }
   td {
-    padding: 6px 10px;
+    padding: 5px 9px;
     border: 1px solid #30363d;
     background-color: #0d1117;
   }
@@ -65,45 +66,50 @@ style: |
   code {
     background-color: #161b22;
     color: #ff7b72;
-    font-size: 16px;
-    padding: 2px 6px;
+    font-size: 15px;
+    padding: 2px 5px;
     border-radius: 4px;
   }
   .highlight-box {
     background-color: #161b22;
     border-left: 4px solid #58a6ff;
-    padding: 12px 18px;
+    padding: 10px 16px;
     border-radius: 0 6px 6px 0;
-    margin: 12px 0;
+    margin: 10px 0;
   }
   .alert-box {
     background-color: #211517;
     border-left: 4px solid #f85149;
-    padding: 12px 18px;
+    padding: 10px 16px;
     border-radius: 0 6px 6px 0;
-    margin: 12px 0;
+    margin: 10px 0;
   }
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 20px;
     align-items: start;
   }
   .badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 2px 7px;
     border-radius: 12px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
   }
   .badge-pass { background-color: #238636; color: #ffffff; }
   .badge-warn { background-color: #9e6a03; color: #ffffff; }
   .badge-fail { background-color: #da3633; color: #ffffff; }
   footer {
-    font-size: 13px;
+    font-size: 12px;
     color: #8b949e;
+    left: 48px;
+    right: 48px;
+    bottom: 16px;
   }
 ---
+
+<!-- _footer: "AMD Systems Engineering & Applied Performance Group | October 2026" -->
 
 # Serving Agentic LLMs at the Edge
 ### Tail Latency, Multi-Turn Dynamics & Disaggregation on AMD Hardware
@@ -114,17 +120,26 @@ style: |
 
 * **Architecture:** Prefill/Decode Disaggregation (P/D 1P1D) vs. Data Parallel (DP=2)
 * **Workloads:** Synthetic 1k:64 / 8k:64 & Real-World Claude Code Agent Traces (`AgentX`)
-* **Hardware:** AMD Radeon™ AI PRO R9700 (32 GB GDDR6) & Instinct™ MI350P (HBM3E)
+* **Hardware:** AMD Radeon™ AI PRO R9700 (32 GB GDDR6) & Instinct™ MI350P (288 GB HBM3E)
 * **Stack:** ROCm 7.14 | vLLM 0.27.1 | Quark AWQ MXFP4 (W4A8 GEMM, FP8 KV)
 
-<footer>AMD Systems Engineering & Applied Performance Group | October 2026</footer>
+<!--
+Speaker Notes:
+Welcome everyone. Today we are presenting empirical results on serving agentic LLMs on AMD hardware.
+Rather than asking standard benchmark questions like "What is the peak theoretical tokens per second?",
+we evaluate the actual interactive experience of coding agents: what happens when cold prompts arrive during
+active generation, how prefix caching degrades under multi-turn pressure, and whether prefill/decode
+disaggregation truly delivers higher useful goodput on PCIe-connected GPUs.
+-->
 
 ---
+
+<!-- _footer: "Slide 2 | Executive Summary" -->
 
 ## 1. Executive Summary: The Token Freeze
 
 <div class="highlight-box">
-<b>The Core Problem:</b> A coding agent can deliver high aggregate tokens/second and still deliver an unacceptable user experience. The breakdown occurs <i>between</i> tokens: active streaming stalls whenever cold, long prompts arrive.
+<b>The Core Problem:</b> A coding agent can deliver high aggregate tokens/second and still feel broken. The breakdown occurs <i>between</i> tokens: active streaming stalls whenever cold, long prompts arrive.
 </div>
 
 * **The Collocated Vulnerability (DP=2):**
@@ -132,16 +147,24 @@ style: |
   * Active streams experience severe **1.1s – 1.55s inter-token latency (ITL) freezes**.
   * While median ITL remains healthy (~30 ms), the **maximum ITL breaches interactive SLOs**.
 * **The Agentic Concurrency Cliff (AgentX Multi-Turn Traces):**
-  * Healthy operation at $C \le 4$ with $>83\%$ prefix cache reuse.
+  * Healthy operation at $C \le 4$ with $>83\%$ prefix cache reuse on R9700.
   * **Knee at $C=8$:** Aggregate tok/s peaks (17.2 tok/s), but p95 TTFT explodes to **51.8s** and **363 pauses exceed 1 second**.
   * **Cliff at $C \ge 16$:** KV cache saturation triggers an eviction cascade; prefix cache hit rate collapses from 93% to **0%**, TTFT median surges to **5.5 minutes**, and output rate drops 59%.
 * **The Disaggregation Promise & Tax (P/D 1P1D):**
   * Disaggregation isolates decode from prefill interference, protecting stream cadence.
   * But it incurs substantial tax: losing a decode engine, duplicating weights, and PCIe KV transfer latency.
 
-<footer>Slide 2 | Executive Summary</footer>
+<!--
+Speaker Notes:
+Key point to emphasize here: Average tokens per second is a deceptive vanity metric.
+In a coding agent workflow, a user streaming code doesn't care if the GPU emits 30 tokens/sec on average
+if it randomly pauses for 1.5 seconds right in the middle of writing a function.
+Disaggregation is an architecture designed specifically to solve this tail latency problem.
+-->
 
 ---
+
+<!-- _footer: "Slide 3 | Testbed Specifications" -->
 
 ## 2. Hardware Testbeds & Software Baseline
 
@@ -171,6 +194,7 @@ style: |
 * **Quantization:** W4A8 FP8-WMMA GEMM, FP8 KV-Cache
   * Static footprint: ~15.7 GB VRAM
   * Leaves ~12.5 GB for dynamic KV pages on R9700
+  * Leaves ~250 GB for dynamic KV pages on MI350P
 * **Engine:** vLLM `0.27.1` (`local/vllm-mxfp4:gfx1201`)
 * **Key Flags:**
   ```bash
@@ -185,9 +209,18 @@ style: |
 </div>
 </div>
 
-<footer>Slide 3 | Testbed Specifications</footer>
+<!--
+Speaker Notes:
+Notice the two distinct hardware classes:
+The R9700 is an edge accelerator with 32 GB GDDR6 and 640 GB/s bandwidth.
+The MI350P is a datacenter accelerator with 288 GB HBM3E and over 4 TB/s bandwidth.
+Both run Qwen3.8-27B in native MXFP4 quantization with W4A8 GEMMs and FP8 KV cache.
+On R9700, weights take 15.7 GB, leaving 12.5 GB for KV cache.
+-->
 
 ---
+
+<!-- _footer: "Slide 4 | Collocated Phase Contention Mechanics" -->
 
 ## 3. Collocated Phase Contention: Why Streams Freeze
 
@@ -212,31 +245,27 @@ style: |
 </div>
 <div>
 
-### Mechanism of the Freeze
-```
-   TIME ──►
-   ┌────────────────────────────────────────────────────────┐
-   │ TOKEN DECODE STREAM:                                   │
-   │  [T1]──30ms──►[T2]──30ms──►[T3]                        │
-   │                             │                          │
-   │                             ▼                          │
-   │  COLD 8K PREFILL ARRIVES:   █ PREFILL CHUNK 1 (609ms)  │
-   │                             █ PREFILL CHUNK 2 (609ms)  │
-   │                             ▼                          │
-   │                             [T4 emitted after 1,350ms!]│
-   │                              ▲                         │
-   │                              └── SLO BREACH (>100ms)   │
-   └────────────────────────────────────────────────────────┘
-```
-* **GEMM Dominance:** Prefill GEMMs saturate all CUs, pre-empting the memory-bound decode kernel.
-* **Non-Preemptive Schedulers:** Once a 4K prefill chunk launches, decode must wait for kernel completion.
+### Measured Timeline Under Contention
+![w:460](../figures/pd/04_pdd_token_latency_timeline.png)
+
+* **Prefill GEMM Dominance:** Ingesting 4K tokens saturates all compute units for ~600 ms.
+* **Non-Preemptive Schedulers:** Once a chunk launches, active decode tokens are locked out until completion.
 
 </div>
 </div>
 
-<footer>Slide 4 | Collocated Phase Contention Mechanics</footer>
+<!--
+Speaker Notes:
+This slide contains the foundational empirical measurement of phase interference.
+Look at the second row in the table: injecting one cold 8K prefill every 5 seconds only drops
+the average token rate from 34 to 31 tokens/sec. On a standard dashboard, everything looks fine.
+Yet the worst-case token gap spikes from 32 ms to 1,354 ms!
+The right-hand plot shows the empirical timeline of these freeze events.
+-->
 
 ---
+
+<!-- _footer: "Slide 5 | Baseline Optimization (Caching & Chunking)" -->
 
 ## 4. Baseline Tuning Before Disaggregation
 
@@ -280,9 +309,18 @@ Sweeping `--max-num-batched-tokens` on R9700:
 </div>
 </div>
 
-<footer>Slide 5 | Baseline Optimization (Caching & Chunking)</footer>
+<!--
+Speaker Notes:
+Before proposing complex architectural disaggregation, we must exhaust collocated tuning.
+First: Prefix caching gives a 9x speedup on warm turns (301 ms vs 2.78 s).
+Second: Chunked prefill at 2048 tokens halves the decode pause from 1.1s to 609 ms
+while losing only 6.7% prompt throughput.
+However, over-chunking (e.g. 512 tokens) is disastrous because small GEMMs fail to saturate the CUs.
+-->
 
 ---
+
+<!-- _footer: "Slide 6 | Empirical Synthetic Latency Sweep (1k:64 vs 8k:64)" -->
 
 ## 5. Empirical Latency Distributions (Synthetic 1k & 8k)
 
@@ -305,34 +343,42 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 <b>Bimodal Distribution Proven:</b> At 8k:64, median ITL remains 33.9 ms, but p95 jumps to <b>1,183–1,267 ms</b>. Schedulers queueing past <code>--max-num-seqs 4</code> triggers massive TTFT inflation.
 </div>
 
-<footer>Slide 6 | Empirical Synthetic Latency Sweep (1k:64 vs 8k:64)</footer>
+<!--
+Speaker Notes:
+This table proves two vital statistical phenomena:
+First: Look at TTFT from C4 to C8. TTFT jumps from 1.6s to 5.2s on 1k, and 8.2s to 20.6s on 8k.
+Why? Because --max-num-seqs is set to 4. Any request past C=4 must wait in the vLLM scheduler queue.
+Second: Look at ITL at 8k:64. Median ITL is 33.9 ms, but p95 is 1,267 ms.
+This proves that decoding latency is bimodal: most tokens are fine, but periodic prefills inject huge freezes.
+-->
 
 ---
 
-## 6. Synthetic Tail Latency Visualizations
+<!-- _footer: "Slide 7 | Synthetic Latency Master Dashboard" -->
 
-<div class="grid-2">
-<div>
+## 6. Synthetic Tail Latency Master Dashboard
 
-### TTFT Log-Histograms
-![w:520](../figures/latency/01_ttft_tail_histogram.png)
-* **Left Panel (1k:64):** Transition from prompt execution ($C \le 4$) to discrete queue jumps ($C \ge 8$).
-* **Right Panel (8k:64):** At $C \ge 2$, 100% of requests breach the 3.0s interactive threshold.
-
-</div>
-<div>
-
-### ITL Tail Jitter & Freezing
-![w:520](../figures/latency/02_itl_tail_histogram.png)
-* **Panel A (Log Density):** Sharp spike at 30 ms (nominal decode) with secondary cluster at 1,180–1,550 ms.
-* **Panel B (Empirical CDF):** Tail begins bending past 50 ms at p90; p95/p99 suffer complete stalls.
-
-</div>
+<div style="text-align: center; margin-top: -6px;">
+  <img src="../figures/latency/03_tail_latency_master_dashboard.png" style="height: 320px; border-radius: 4px;" />
 </div>
 
-<footer>Slide 7 | Synthetic Latency Distribution Histograms</footer>
+<div class="grid-2" style="margin-top: 6px;">
+<div><b>Panels 1 & 2 (TTFT):</b> Sub-3s scaling at C ≤ 4; discrete queue jumps at C ≥ 8.</div>
+<div><b>Panels 3 & 4 (ITL):</b> Nominal 30ms decode vs. 1.2s–1.55s freezes at p95/p99.</div>
+</div>
+
+<!--
+Speaker Notes:
+Here is the 4-panel master dashboard summarizing the synthetic sweep.
+Panels 1 and 2 show TTFT on a log scale for 1k and 8k prompts. Notice the vertical red line at 3.0s,
+which is our interactive SLO limit.
+Panels 3 and 4 show the Inter-Token Latency density and CDF. In the CDF (Panel 4), notice how the
+curves stay flat at 30 ms until the 90th percentile, and then suddenly bend sharply toward 1,500 ms.
+-->
 
 ---
+
+<!-- _footer: "Slide 8 | Multi-Turn AgentX Trace Workload Setup" -->
 
 ## 7. Real-World Multi-Turn AgentX Workload
 
@@ -361,11 +407,22 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 </div>
 </div>
 
-<footer>Slide 8 | Multi-Turn AgentX Trace Workload Setup</footer>
+<!--
+Speaker Notes:
+Moving from synthetic tests to real agentic workloads.
+We ran the AgentX benchmark using real Claude Code traces.
+These traces feature multi-turn conversations where the context starts small and expands up to 65k tokens.
+Between turns, the agent runs shell commands, views files, and receives tool outputs.
+This workload tests prefix caching and KV memory pressure under authentic, non-uniform traffic.
+-->
 
 ---
 
+<!-- _footer: "Slide 9 | AgentX Empirical Concurrency Scorecard" -->
+
 ## 8. AgentX Empirical Concurrency Scorecard
+
+Measured order statistics on Radeon AI PRO R9700 (32 GB GDDR6) under Claude Code traces:
 
 | Concurrency | Completed Reqs | TTFT p50 | TTFT p95 | ITL p50 | ITL p95 | >1s Stalls / Intervals | Prefix Hit Rate | KV Cache Avg | Waiting Reqs | Output Tok/s | Status |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -380,9 +437,18 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 <b>The Concurrency Cliff:</b> Moving from C=8 to C=16 causes a complete system breakdown. TTFT median explodes from 1.7s to <b>125s (2+ minutes)</b>, and to <b>5.5 minutes</b> at C=32. Output throughput plummets by 59%.
 </div>
 
-<footer>Slide 9 | AgentX Empirical Concurrency Scorecard</footer>
+<!--
+Speaker Notes:
+This scorecard is one of the most critical exhibits in the presentation.
+At C=1 to C=4, the system is healthy: prefix hit rate is 83-93%, and waiting queue is zero.
+At C=8, output tok/s hits its highest value: 17.2 tok/s! But look closely:
+p95 TTFT is 51.8 seconds, p95 ITL is 390 ms, and 363 token stalls exceed 1 second!
+At C=16, the system falls off a cliff: TTFT explodes to 125 seconds median, and throughput drops to 9.4 tok/s.
+-->
 
 ---
+
+<!-- _footer: "Slide 10 | Anatomy of the Concurrency Cliff" -->
 
 ## 9. Anatomy of the AgentX Concurrency Cliff
 
@@ -420,9 +486,19 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 <b>Root Cause:</b> When working sets exceed VRAM capacity, collocated serving loses prefix caching. Forced prompt recomputations lock the GPU in continuous prefill GEMMs, starving active generation.
 </div>
 
-<footer>Slide 10 | Anatomy of the Concurrency Cliff</footer>
+<!--
+Speaker Notes:
+Why does this cliff happen?
+It is an eviction death spiral:
+When the KV cache fills up to 80%, vLLM must evict cached prefixes to make room for active decodes.
+Once prefixes are evicted, every new turn has to be recomputed from token 0.
+Recomputing 20k to 50k tokens takes tens of seconds of dense GEMM computation.
+While that GEMM runs, decode is starved. Schedulers queue up. Everything collapses.
+-->
 
 ---
+
+<!-- _footer: "Slide 11 | AgentX Concurrency & Tail Latency Visuals" -->
 
 ## 10. Visualizing AgentX Concurrency & Latency
 
@@ -430,7 +506,7 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 <div>
 
 ### TTFT Distributions & CDFs
-![w:520](../figures/agentx/01_agentx_ttft_histogram.png)
+![w:470](../figures/agentx/01_agentx_ttft_histogram.png)
 * **Panel A:** Distinct separation between sub-3s interactive zone and the 100s+ queue delay regime.
 * **Panel B:** CDF shifts completely off-screen at $C=16$ and $C=32$.
 
@@ -438,18 +514,69 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 <div>
 
 ### Master Operational Dashboard
-![w:520](../figures/agentx/02_agentx_master_dashboard.png)
+![w:470](../figures/agentx/02_agentx_master_dashboard.png)
 * **Panel A:** Exponential TTFT tail explosion at $C=8$.
 * **Panel B/C:** Direct causal link: Prefix hit rate collapse triggers throughput loss and queue blowout.
 
 </div>
 </div>
 
-<footer>Slide 11 | AgentX Concurrency & Tail Latency Visuals</footer>
+<!--
+Speaker Notes:
+Here are the empirical figures from the AgentX sweep.
+On the left, the TTFT histogram clearly illustrates the bifurcation: C=1 to C=4 cluster neatly below 3 seconds.
+At C=16 and C=32, the distribution shifts entirely to the far right, past 100 seconds.
+On the right dashboard, look at Panel C: prefix hit rate collapses from 93% to 0%, exactly mirroring
+the surge in waiting requests in Panel D.
+-->
 
 ---
 
-## 11. Prefill/Decode Disaggregation: Architecture
+<!-- _footer: "Slide 12 | Edge vs. Datacenter AgentX Scaling" -->
+
+## 11. Edge vs. Datacenter AgentX Scaling (R9700 vs. MI350P)
+
+Comparing collocated Claude Code AgentX curves across hardware tiers:
+
+| Hardware Accelerator | Memory Architecture | Measured Peak Concurrency | Peak Output Tok/s | Concurrency Cliff | Cliff TTFT p50 | Primary Limiter |
+|---|---|---:|---:|---:|---:|---|
+| **Radeon AI PRO R9700** | 32 GB GDDR6 (640 GB/s) | **C=8** | **17.2 tok/s** | **C=16** | **125.3 s** | ~12.5 GB KV Ceiling (~2.5 65k contexts) |
+| **Instinct MI350P** | 288 GB HBM3E (4,096 GB/s)| **C=32** | **46.8 tok/s** | **C=64** | **42.1 s** | ~250 GB KV Ceiling (~22.3 65k contexts) |
+
+<div class="grid-2">
+<div>
+
+### MI350P Concurrency Dynamics
+* **C=1 to C=16:** Smooth scaling; 11.6 $\to$ 33.1 tok/s; zero waiting queue; prefix hit $>92\%$.
+* **C=32 Peak:** 46.8 tok/s, but p95 TTFT slips to 14.5s; 1,279 token pauses $>1$s.
+* **C=64 Collapse:** Output plunges to **4.01 tok/s** (-91%); 949 of every 1,000 intervals exceed 1s; 0 completed sessions!
+
+</div>
+<div>
+
+### The Universal Invariant
+<div class="alert-box">
+<b>Physical Memory Roofline Law:</b>
+Both 32 GB edge cards and 288 GB datacenter GPUs hit the exact same failure mode. The cliff occurs whenever active context working set breaches total VRAM, evicting prefix cache.
+</div>
+</div>
+</div>
+
+<!--
+Speaker Notes:
+This is a brand new comparison enabled by recent runs on MI350P.
+Notice that the MI350P, with its massive 288 GB HBM3E memory, scales much further:
+Its throughput peaks at C=32 (46.8 tok/s) instead of C=8 (17.2 tok/s).
+However, at C=64, MI350P hits the EXACT same cliff: output rate collapses by 91% down to 4 tok/s!
+This proves that throwing more memory at the problem delays the cliff, but doesn't eliminate it.
+Architectural disaggregation is necessary to fundamentally solve phase contention.
+-->
+
+---
+
+<!-- _footer: "Slide 13 | Prefill/Decode Disaggregation Architecture & Taxes" -->
+
+## 12. Prefill/Decode Disaggregation: Architecture
 
 <div class="highlight-box">
 <b>Core Architectural Thesis:</b> Dedicate GPU 0 to Prefill (prompt compute & ingestion) and GPU 1 to Decode (zero-jitter token generation), communicating via PCIe Gen 5.0 KV transfer.
@@ -473,11 +600,22 @@ Comprehensive empirical sweep on single R9700 ($N=100$ requests per cell, 6,400 
 2. **Model Footprint Duplication:** Both 32 GB GPUs must store model weights (~15.7 GB each).
 3. **KV Transport Latency ($H$):** Tensors must be prepared, transmitted, and imported across PCIe.
 
-<footer>Slide 12 | Prefill/Decode Disaggregation Architecture & Taxes</footer>
+<!--
+Speaker Notes:
+Now let's examine the architectural alternative: Prefill/Decode Disaggregation, or 1P1D.
+Instead of having both GPUs do both phases, we specialize them:
+GPU 0 does only prompt prefill. GPU 1 does only token decode.
+We must be honest about the trade-offs:
+1. In DP=2, you have two GPUs generating tokens. In 1P1D, only one GPU generates tokens.
+2. Weights are duplicated on both GPUs.
+3. You introduce a new hop: transferring the KV cache over PCIe.
+-->
 
 ---
 
-## 12. Inter-GPU Transport Realities on AMD Hardware
+<!-- _footer: "Slide 14 | Inter-GPU PCIe Transport Dynamics" -->
+
+## 13. Inter-GPU Transport Realities on AMD Hardware
 
 Evaluated on dual AMD Instinct™ MI350P cards across dual-socket EPYC 9015 (PCIe Gen 5.0 x16, 3 hops, weight 72):
 
@@ -502,6 +640,7 @@ Evaluated on dual AMD Instinct™ MI350P cards across dual-socket EPYC 9015 (PCI
 * **Layer Geometry:** 16 attention regions, 272 descriptors, 884 MiB.
 * **Raw Fragmented:** 77.9 ms p50.
 * **Coalesced (16 copies):** **20.5 ms p50** (43.1 GB/s).
+* **PCIe Path Probe:** Benchmarked via [`scripts/pcie_path_bench.cu`](file:///home/amd/workspace/coder/scripts/pcie_path_bench.cu).
 
 <div class="alert-box">
 <b>Directional Asymmetry:</b> GPU 0 $\to$ GPU 1 is 5.7 ms; GPU 1 $\to$ GPU 0 is <b>12.7 ms p50</b> and 175 ms p95 across inter-socket EPYC root bridges. Topology matters!
@@ -510,11 +649,21 @@ Evaluated on dual AMD Instinct™ MI350P cards across dual-socket EPYC 9015 (PCI
 </div>
 </div>
 
-<footer>Slide 13 | Inter-GPU PCIe Transport Dynamics</footer>
+<!--
+Speaker Notes:
+Moving KV across PCIe sounds simple in theory, but hardware reality introduces nuances:
+Look at the third row in the table: If you send 256 separate memory descriptors over UCX,
+latency surges from 9.7 ms to 59.0 ms due to DMA descriptor overhead!
+Our native HIP-IPC NIXL backend solves this by coalescing contiguous pages into single DMA transfers,
+bringing it back to 5.56 ms.
+Also notice directional asymmetry: going cross-socket in one direction took 5.7 ms, but 12.7 ms in reverse.
+-->
 
 ---
 
-## 13. End-to-End P/D Milestone: Real Qwen3.8 Handoff
+<!-- _footer: "Slide 15 | Qwen3.8-27B P→D Handoff Waterfall & Open Gates" -->
+
+## 14. End-to-End P/D Milestone: Real Qwen3.8 Handoff
 
 <div class="highlight-box">
 <b>Functional Milestone:</b> A real Qwen3.8-27B P→D handoff successfully executes across PCIe on AMD hardware, transferring active prompt states without host memory staging.
@@ -551,14 +700,24 @@ Eight unique cold 8,192-token prompts; GPU 1 prefill $\to$ GPU 0 decode:
 </div>
 </div>
 
-<footer>Slide 14 | Qwen3.8-27B P→D Handoff Waterfall & Open Gates</footer>
+<!--
+Speaker Notes:
+This slide reports our end-to-end milestone.
+We successfully transferred 699 MB of KV cache for an 8K prompt in 100 ms flat.
+Client total response time was 1.19 seconds, and the decoder recorded an external cache hit rate of 99.99%.
+However, we must maintain engineering integrity and point out open gates:
+Greedy token IDs currently diverge from the single-GPU control after a few tokens.
+We must verify numerical alignment before claiming production readiness.
+-->
 
 ---
 
-## 14. Strict Service Level Objectives: Goodput vs. Throughput
+<!-- _footer: "Slide 16 | SLO Contracts & Goodput vs Raw Throughput" -->
+
+## 15. Strict Service Level Objectives: Goodput vs. Throughput
 
 <div class="highlight-box">
-<b>The 29 Sep 2026 Interactive SLO Standard:</b> TTFT p95 $\le$ 3,000 ms | TPOT $\le$ 20 ms ($\ge$ 50 tok/s) | ITL p95 $\le$ 20 ms | ITL p99 $\le$ 50 ms | Peak ITL $<$ 100 ms
+<b>The 29 Sep 2026 Interactive SLO Standard:</b> TTFT p95 ≤ 3,000 ms | TPOT ≤ 20 ms (≥ 50 tok/s) | ITL p95 ≤ 20 ms | ITL p99 ≤ 50 ms | Peak ITL < 100 ms
 </div>
 
 <div class="grid-2">
@@ -578,25 +737,76 @@ Eight unique cold 8,192-token prompts; GPU 1 prefill $\to$ GPU 0 decode:
 ### Hardware Roofline Boundaries
 * **Radeon AI PRO R9700 (640 GB/s GDDR6):**
   * Single-GPU isolated decode sustains **29.35 ms TPOT (34.1 tok/s)**.
-  * *Cannot* meet the strict $\le 20\text{ ms}$ TPOT target on a single card!
+  * *Cannot* meet the strict **TPOT ≤ 20 ms** target on a single card!
   * Requires **TP=2** (14.9–16.0 ms TPOT) or **Speculative Decoding (DFlash)**.
 * **Instinct MI350P (4,096 GB/s HBM3E):**
-  * Natively sustains $\le 20\text{ ms}$ TPOT across $C=1 \dots 16$ ($20.1\text{ ms}$ at $C=32$).
+  * Natively sustains **TPOT ≤ 20 ms** across $C = 1 \dots 16$ (20.1 ms at $C = 32$).
 
 </div>
 </div>
 
-<footer>Slide 15 | SLO Contracts & Goodput vs Raw Throughput</footer>
+<!--
+Speaker Notes:
+Let's talk about SLO contracts.
+If an application defines an interactive SLA where first token must arrive in 3s and generation must not pause
+longer than 100 ms, then under heavy prefill bursts, collocated DP=2 qualified goodput drops to zero.
+Even though DP=2 is burning power and generating tokens, those tokens fail the user SLA.
+Also note hardware rooflines: On R9700, single-GPU decode hits a physical memory bandwidth roofline at ~29 ms.
+To hit 20 ms TPOT, you must use TP=2 or Speculative Decoding.
+-->
 
 ---
 
-## 15. TCO & Presales Tokenomics
+<!-- _footer: "Slide 17 | Strategic Architectural Decision Matrix" -->
+
+## 16. Decision Framework: When Does P/D Beat DP=2?
+
+<div class="grid-2">
+<div>
+
+### Mathematical Crossover Rule
+P/D 1P1D outperforms DP=2 on completed throughput if collocated interference factor $\eta < 0.50$:
+$$D_{\text{P/D}} > \eta_{\text{collocated}} \cdot 2 \cdot D_{\text{collocated}} \implies \eta < 0.50$$
+
+![w:460](../figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)
+
+</div>
+<div>
+
+### Architectural Recommendation
+| Workload Pattern | Prefix Hit | Recommended Architecture |
+|---|:---:|:---:|
+| **AgentX Multi-Turn** | High ($>80\%$) | **Cache-Affine DP=2** |
+| **Heavy Cold Bursts** | Low ($<20\%$) | **1P1D Disaggregation** |
+| **High Concurrency** | Mixed | **Dual-GPU TP=2** |
+| **Datacenter Fleet** | Variable | **Heterogeneous P/D** |
+
+* High prefix reuse favors DP=2 (avoids KV transfer).
+* Cold burst bombardment favors 1P1D (tail protection).
+
+</div>
+</div>
+
+<!--
+Speaker Notes:
+Here is our strategic architectural decision framework.
+When does PDD beat DP=2?
+Mathematically, since DP=2 has two decode engines, 1P1D only wins on raw throughput if collocated interference
+destroys more than 50% of DP capacity (eta < 0.50).
+However, on SLO-qualified goodput, 1P1D wins much earlier whenever cold prompt bursts threaten the 3s/100ms SLO.
+-->
+
+---
+
+<!-- _footer: "Slide 18 | TCO, Capex & Energy Efficiency Breakdown" -->
+
+## 17. TCO & Presales Tokenomics
 
 <div class="grid-2">
 <div>
 
 ### Cost per Million Tokens ($/M tok)
-![w:520](../figures/tco/02_cost_per_token_8k_1k.png)
+![w:460](../figures/tco/02_cost_per_token_8k_1k.png)
 * **8× R9700S Cluster ($30k Capex):**
   * Delivers industry-leading edge $/M token economics under high-volume workloads.
   * Outperforms datacenter clusters on Capex payback when local agent concurrency is bounded ($C \le 8$).
@@ -605,7 +815,7 @@ Eight unique cold 8,192-token prompts; GPU 1 prefill $\to$ GPU 0 decode:
 <div>
 
 ### Energy Efficiency (Joules per Token)
-![w:520](../figures/tco/11_joules_per_token.png)
+![w:460](../figures/tco/11_joules_per_token.png)
 * **Socket Energy Utilization:**
   * 300W R9700 draws significantly lower idle power than 750W+ enterprise GPUs.
   * Energy per qualified token ($J/\text{tok}_{\text{qual}}$) highlights the cost of dropped or recomputed requests.
@@ -613,38 +823,30 @@ Eight unique cold 8,192-token prompts; GPU 1 prefill $\to$ GPU 0 decode:
 </div>
 </div>
 
-<footer>Slide 16 | TCO, Capex & Energy Efficiency Breakdown</footer>
+<!--
+Speaker Notes:
+Tokenomics and TCO:
+An 8-card R9700 system costs around $30,000, delivering exceptional cost per token at the edge.
+However, operators must respect the concurrency boundaries:
+Keep concurrency per GPU at C <= 4 for R9700, and C <= 16 for MI350P, to stay within the optimal
+energy efficiency envelope (2.5 to 3.0 Joules per token).
+-->
 
 ---
 
-## 16. Decision Framework: When Does P/D Beat DP=2?
+<!-- _footer: "Slide 19 | Conclusions & Engineering Roadmap" -->
 
-<div class="highlight-box">
-<b>Mathematical Crossover Rule:</b> P/D 1P1D outperforms Data Parallelism (DP=2) on completed throughput if and only if collocated interference efficiency factor $\eta < 0.50$:
-$$D_{\text{P/D}} > \eta_{\text{collocated}} \cdot 2 \cdot D_{\text{collocated}} \implies \eta < 0.50$$
-</div>
-
-### Architectural Recommendation Matrix
-
-| Workload Traffic Pattern | Reusable Prefix Rate | Dominant SLA Constraint | Recommended Architecture | Rationale |
-|---|:---:|---|:---:|---|
-| **Multi-Turn Coding Agents (AgentX)** | High ($>80\%$) | Interactive Cadence | **Cache-Affine DP=2** | Maximizes prefix hits; avoids KV transfer overhead. |
-| **Heavy Cold Burst Bombardment** | Low ($<20\%$) | Zero-Jitter Streaming | **1P1D Disaggregation** | Insulates decode streams from 1.5s cold prefill freezes. |
-| **High Concurrency ($C \ge 16$)** | Mixed | Strict 20ms TPOT | **Dual-GPU TP=2** | Doubles memory bandwidth (15ms TPOT); prevents KV thrash. |
-| **Datacenter Large-Scale Fleet** | Variable | Global Goodput | **Heterogeneous Disagg** | MI350P Prefill pool + R9700 Decode farm. |
-
-<footer>Slide 17 | Strategic Architectural Decision Matrix</footer>
-
----
-
-## 17. Engineering Road Ahead & Conclusions
+## 18. Engineering Road Ahead & Conclusions
 
 <div class="grid-2">
 <div>
 
 ### What Our Data Conclusively Proves
 1. **Collocated Serving Breaks at the Tail:** 8K cold prefills inject 1.35s–1.55s freezes, destroying interactive SLOs despite healthy average tok/s.
-2. **The AgentX Concurrency Cliff is Real:** At $C \ge 16$, KV cache exhaustion triggers an eviction cascade, collapsing prefix hit rate (93% $\to$ 0%) and blowing out TTFT to 5.5 minutes.
+2. **The AgentX Concurrency Cliff is Universal:**
+   * R9700 hits knee at C=8, collapses at C=16.
+   * MI350P hits knee at C=32, collapses at C=64.
+   * Driven by physical KV memory ceiling and prefix eviction.
 3. **PCIe Handoff is Feasible on AMD Hardware:** 699 MB KV transfer completes in 100 ms with coalesced HIP-IPC (99.99% cache hit).
 
 </div>
@@ -663,25 +865,33 @@ $$D_{\text{P/D}} > \eta_{\text{collocated}} \cdot 2 \cdot D_{\text{collocated}} 
 <b>Bottom Line:</b> Modern agent serving requires designing for tail latency, prefix retention, and memory rooflines. Disaggregation provides a powerful architectural lever—provided baseline schedulers and cache-affinity are exhausted first.
 </div>
 
-<footer>Slide 18 | Conclusions & Engineering Roadmap</footer>
+<!--
+Speaker Notes:
+To wrap up:
+We have established empirical proof of collocated token freezing, uncovered the universal AgentX concurrency cliff
+across both edge and datacenter AMD hardware, and validated end-to-end PCIe KV handoff.
+Our next immediate priorities are closing the numerical divergence gate and running side-by-side DP=2 vs 1P1D tests.
+Thank you, and I look forward to your questions.
+-->
 
 ---
+
+<!-- _footer: "Slide 20 | Appendix & Artifacts" -->
 
 ## Appendix: Published Artifacts & Reproducibility
 
 * **Documentation Hub:**
   * Master Index: [`docs/README.md`](../README.md)
-  * AgentX Multi-Turn Tail Analysis: [`docs/AGENTX-TAIL.md`](../AGENTX-TAIL.md)
+  * AgentX Multi-Turn Tail Analysis: [`docs/AGENTX-TAIL.md`](../AGENTX-TAIL.md) & [`docs/MI350P-AGENTX.md`](../MI350P-AGENTX.md)
   * The Token Freeze Whitepaper: [`docs/QWEN-TAIL-PDD.md`](../QWEN-TAIL-PDD.md)
   * Dual-Card Test Plan & Acceptance: [`docs/TESTPLAN.md`](../TESTPLAN.md)
   * Disaggregation Evaluation Framework: [`docs/PDD-FRAMEWORK.md`](../PDD-FRAMEWORK.md)
   * KV Connector Implementation: [`docs/KV_CONNECTOR.md`](../KV_CONNECTOR.md)
   * TCO & Presales Tokenomics: [`docs/TCO.md`](../TCO.md)
 * **Published Data & Figures:**
-  * Raw AgentX Pilot Traces: [`docs/results/agentx/`](../results/agentx/)
+  * Raw AgentX Traces: [`docs/results/agentx/`](../results/agentx/) & [`docs/results/mi350p/agentx_concurrency.json`](../results/mi350p/agentx_concurrency.json)
   * Raw Synthetic Latency Samples: [`docs/results/qwen3.8-27b-mxfp4/latency/r9700/`](../results/qwen3.8-27b-mxfp4/latency/r9700/)
-  * Latency Distribution Figures: [`docs/figures/latency/`](../figures/latency/)
-  * AgentX Concurrency Figures: [`docs/figures/agentx/`](../figures/agentx/)
+  * Latency & AgentX Figures: [`docs/figures/latency/`](../figures/latency/) & [`docs/figures/agentx/`](../figures/agentx/)
   * TCO & PDD Dashboards: [`docs/figures/tco/`](../figures/tco/) & [`docs/figures/pd/`](../figures/pd/)
 * **Reproduction Commands:**
   ```bash
@@ -693,4 +903,7 @@ $$D_{\text{P/D}} > \eta_{\text{collocated}} \cdot 2 \cdot D_{\text{collocated}} 
   ./scripts/build_presentation.sh
   ```
 
-<footer>Slide 19 | Appendix & Artifacts</footer>
+<!--
+Speaker Notes:
+All code, raw traces, benchmark harnesses, and figure generators are open and reproducible within this repository.
+-->
