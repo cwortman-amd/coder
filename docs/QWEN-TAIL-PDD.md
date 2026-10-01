@@ -29,6 +29,30 @@ The user-visible issue is also more specific than “throughput fell.” On the 
 
 Later chunk-size and Poisson-arrival experiments produced different tails under different settings. With a 2,048-token chunk, the recorded cold-burst stall fell from 1,108.5 ms to **609.7 ms**. With prefix caching on, the continuous-burst peak at that chunk size was **253.9 ms**. We therefore treat a token freeze as a *workload- and scheduler-dependent event*, not as a claim that every cold prompt imposes a 1.35-second stall.
 
+## Empirical tail latency distributions on Radeon AI PRO R9700
+
+To substantiate these dynamics with report-grade statistical resolution, we swept power-of-two concurrencies ($C = 1, 2, 4, 8, 16$) with 100 requests per cell ($N = 100$, 6,400 token samples per run) for Qwen3.8-27B MXFP4 on a dedicated R9700. Raw detailed traces are archived under `docs/results/qwen3.8-27b-mxfp4/latency/r9700/`, with normalized distributions and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`.
+
+| Workload | C | TTFT p50 | TTFT p90 | TTFT p95 | TTFT p99 | TPOT p50 | TPOT p95 | ITL p50 | ITL p95 | ITL p99 | Max ITL | Interactive SLO (TTFT ≤ 3s) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
+| **1k:64** | **C1** | 481 ms | 484 ms | 485 ms | 487 ms | 30.1 ms | 30.1 ms | 30.0 ms | 31.1 ms | 32.0 ms | 36.7 ms | 100% Pass (Sub-second) |
+| **1k:64** | **C2** | 864 ms | 918 ms | 919 ms | 921 ms | 31.8 ms | 32.6 ms | 31.0 ms | 32.2 ms | 35.4 ms | 124 ms | 100% Pass (Sub-second) |
+| **1k:64** | **C4** | 1,589 ms | 1,602 ms | 1,603 ms | 1,604 ms | 32.2 ms | 36.3 ms | 32.2 ms | 33.4 ms | 35.9 ms | 292 ms | 100% Pass (≤ 3.0s) |
+| **1k:64** | **C8** | 5,159 ms | 5,183 ms | 5,184 ms | 5,185 ms | 32.9 ms | 36.3 ms | 32.2 ms | 33.5 ms | 75.0 ms | 293 ms | Queue Cut-Off (5.2s TTFT) |
+| **1k:64** | **C16** | 12,383 ms | 12,432 ms | 12,440 ms | 12,449 ms | 33.0 ms | 36.4 ms | 32.2 ms | 33.6 ms | 76.7 ms | 292 ms | Queue Cut-Off (12.4s TTFT) |
+| **8k:64** | **C1** | 3,152 ms | 3,165 ms | 3,169 ms | 3,171 ms | 30.5 ms | 30.5 ms | 30.5 ms | 31.7 ms | 32.6 ms | 39.5 ms | Marginal (3.15s TTFT) |
+| **8k:64** | **C2** | 5,611 ms | 6,148 ms | 6,155 ms | 6,158 ms | 39.5 ms | 47.1 ms | 31.9 ms | 33.2 ms | 328 ms | 700 ms | Fail (5.6s TTFT, 700ms ITL) |
+| **8k:64** | **C4** | 8,173 ms | 9,696 ms | 9,715 ms | 10,501 ms | 102 ms | 146 ms | 33.9 ms | 1,183 ms | 1,501 ms | 1,550 ms | Severe Contention (1.55s stall) |
+| **8k:64** | **C8** | 20,585 ms | 21,731 ms | 21,745 ms | 24,944 ms | 122 ms | 146 ms | 33.9 ms | 1,267 ms | 1,509 ms | 1,550 ms | Severe Contention (20.6s TTFT) |
+| **8k:64** | **C16** | 49,733 ms | 50,880 ms | 50,913 ms | 54,016 ms | 122 ms | 146 ms | 33.9 ms | 1,266 ms | 1,508 ms | 1,552 ms | Severe Contention (49.7s TTFT) |
+
+Two publication-grade distribution plots visualize these empirical profiles:
+* **TTFT Distribution Histograms** (`docs/figures/latency/01_ttft_tail_histogram.png`): Demonstrates the transition from prompt execution scaling ($C \le 4$) to discrete queueing delays beyond the `--max-num-seqs 4` scheduler threshold.
+* **ITL Tail & CDF Histograms** (`docs/figures/latency/02_itl_tail_histogram.png`): Proves the bimodal distribution of decoding tokens, where 90%+ remain at the nominal 30–33 ms rate while concurrent 8k prefills inject recurring 1,180–1,552 ms freezes in the p95/p99 tail.
+* **Master Evaluation Dashboard** (`docs/figures/latency/03_tail_latency_master_dashboard.png`): 4-panel synthesis of TTFT, ITL tail distributions, and SLO compliance states.
+
+Beyond synthetic $S:O$ pairs, we evaluated real-world multi-turn Claude Code agent traces (`semianalysis_cc_traces_weka_062126`) across concurrencies $C = 1 \dots 32$ with a 65,536-token context window (detailed in [`docs/AGENTX-TAIL.md`](AGENTX-TAIL.md)). That sweep revealed an insidious **concurrency cliff**: at $C=8$, aggregate throughput reaches its nominal peak (17.2 tok/s) while p95 TTFT slips to **51.8 seconds** and 363 token pauses exceed 1.0 second. At $C \ge 16$, KV cache saturation (>80%) triggers a catastrophic eviction cascade: prefix hit rate collapses from 93% to **0%**, scheduler queues balloon to 13.7 waiting requests, TTFT p50 explodes to **5.5 minutes**, and output throughput collapses by 59%.
+
 **Suggested presentation visual:** Show a timestamped streaming-token trace, with cold-prefill arrivals marked above it. Put a raw tok/s figure beside the trace, not in place of it. The audience should be able to see why an acceptable aggregate rate can coexist with an unacceptable pause.
 
 ## First, improve the collocated baseline
