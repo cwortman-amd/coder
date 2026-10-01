@@ -82,10 +82,11 @@ def main() -> int:
         type=Path,
         default=ROOT / "_results" / "agentx_tail_sweep",
     )
+    parser.add_argument("--allow-short-duration", action="store_true", help="Allow duration < 900s for quick iteration")
     args = parser.parse_args()
 
-    if args.duration_seconds < 900:
-        parser.error("AgentX requires --duration-seconds >= 900")
+    if args.duration_seconds < 900 and not args.allow_short_duration:
+        parser.error("AgentX requires --duration-seconds >= 900 (or pass --allow-short-duration)")
     if args.campaign_seconds < args.duration_seconds:
         parser.error("campaign budget must fit at least one profiling window")
     if not args.concurrency or any(value < 1 for value in args.concurrency):

@@ -38,6 +38,8 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | [KV_CONNECTOR.md](KV_CONNECTOR.md) | MI350P 1P1D KV connector: HIP-IPC patch apply script, GPU 1→GPU 0 serving (72.49 tok/s, token-ID gate still open) |
 | [QWEN-TAIL-PDD.md](QWEN-TAIL-PDD.md) | Qwen3.8-27B MXFP4 blog: the token freeze throughput charts miss, prefix-cache and chunk baselines, and the MI350P PCIe handoff still awaiting a DP=2 comparison |
 | [AGENTX-TAIL.md](AGENTX-TAIL.md) | Multi-turn Claude Code traces sweep on R9700 (65k context): prefix cache collapse from 93% to 0%, the C=8 knee, and C=16/32 KV eviction cliff |
+| [TAIL-LATENCY-STUDY.md](TAIL-LATENCY-STUDY.md) | Empirical tail latency & agent compounding study: single-call sweeps, 10-call chained benchmarks, TTFT-vs-task inversion detection, and publication dashboard |
+| [TAIL-EVALUATION-PLAN.md](TAIL-EVALUATION-PLAN.md) | Enterprise 2-track evaluation blueprint: 7-experiment matrix, unified request schema, open-loop controls, P/D interference tests, and defensible evidence criteria |
 
 ## Published measurements
 
