@@ -7,6 +7,7 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | File | Contents |
 |---|---|
 | [MI350P.md](MI350P.md) | Quark MXFP4 vLLM results, gates, and next work |
+| [MI350P-AGENTX.md](MI350P-AGENTX.md) | Faithful AgentX concurrency curve on one MI350P. Throughput peaks at C=32 and collapses at C=64 |
 | [MI350P-TP.md](MI350P-TP.md) | Two-GPU PCIe TP. The decode gap follows a ~51 ms launch stall on `0001:c7:00.0`. The same card also misses the RVS bf16 GST target (`scripts/debug.sh`) |
 | [TCO.md](TCO.md) | 16× R9600D, 8× R9700S, 8× MI350P, 8× RTX PRO 6000 cost, tokens per dollar, and presentation plots |
 | [MI350P-BRINGUP.md](MI350P-BRINGUP.md) | 24 Sep FP8 bring-up and engine matrix |
@@ -48,6 +49,7 @@ Benches write under `_results`. That directory, plus the local NIXL checkout `_s
 | `python3 scripts/generate_pd_plots.py` | `docs/results/pd/pd_emulator_summary.json` | `docs/figures/pd/` |
 | `python3 scripts/generate_tp_compare_plots.py` | `docs/figures/tp/tp-compare.json` | `docs/figures/tp/` |
 | `python3 scripts/publish_latency_results.py --source-dir <qwen-run-dir> --gpu-profile <profile>` | `docs/results/qwen3.8-27b-mxfp4/latency/` | `docs/profiling/qwen3.8-27b-mxfp4-latency.json` |
+| `python3 scripts/run_agentx_tail_sweep.py` then `python3 scripts/analyze_agentx_tail_sweep.py` | `docs/results/mi350p/agentx_concurrency.json` | [MI350P-AGENTX.md](MI350P-AGENTX.md) |
 
 `docs/profiling/power_bandwidth.json` holds the R9700 and MI350P power and bandwidth summaries. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. Generated text is omitted. When `_results` is absent, reports use the copies already in `docs/`.
 

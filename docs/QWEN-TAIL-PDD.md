@@ -114,6 +114,14 @@ We will plot **raw throughput and qualified goodput separately**. We will also s
 
 **Suggested presentation visual:** Lead with a paired **DP=2 versus 1P1D goodput-versus-offered-load curve**. Use solid marks only for measured two-card serving results; show any current emulator projections as dashed marks. Under it, show an ITL-tail plot explaining *why* either architecture passes or fails. The visual should be allowed to show DP=2 winning where prefixes are warm or traffic is light—that makes a measured P/D win under cold bursts more credible.
 
+## Measured AgentX load on one MI350P
+
+The fixed-length interference tests above explain the mechanism. The 30 September AgentX replay measures the same collocated GPU under recorded agent dependencies. Six 15-minute cells, C=1 through C=128, all completed with zero request errors.
+
+Output throughput rises from 11.59 tok/s at C=1 to **46.80 tok/s at C=32**, then falls to **4.01 tok/s at C=64**. Gaps above one second rise from none at C=1 to 4.59 per 1,000 intervals at C=16 and 23.39 per 1,000 at C=32. At C=64, 949 of every 1,000 observed intervals exceed one second, median TTFT is 42 s, and no AgentX conversation finishes. C=128 adds queue depth—48 waiting requests on average—without restoring throughput or completing a conversation.
+
+This is the collocated baseline a later DP=2 or 1P1D comparison has to beat at the same offered conversations. It is not yet that comparison: one GPU, seven traces that fit in 65,536 tokens, and too few finished sessions for a stable task-completion tail. The table, sample limits, and reproduction commands are in [MI350P-AGENTX.md](MI350P-AGENTX.md).
+
 ## The architectural takeaway
 
 Multiple PCIe GPUs in one node give us a practical way to **test independent prefill and decode pools without requiring an external network**. Our MI350P results now show a functional HIP-IPC/NIXL handoff path and demonstrate why payload layout, cross-socket topology, and tail behavior matter as much as nominal PCIe link speed. The one-token 8K waterfall is measured: transfer p99 is 265 ms and client p99 is 1.45 s. They do **not yet show a sustained improvement in TTFT tail latency**. The four-request streaming cell still has a 4.5 s TTFT p95 and a 1.3 s token gap, completion IDs do not match the single-GPU control, and the equal-card-count DP comparison has not been run.
