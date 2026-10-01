@@ -339,7 +339,11 @@ def main() -> int:
         "schema_version": 1,
         "campaign_manifest": str(manifest_path),
         "interpretation": {
-            "kind": "one_hour_pilot",
+            "kind": "bounded_concurrency_pilot",
+            "campaign_budget_seconds": manifest.get("campaign_budget_seconds"),
+            "profiling_duration_seconds": manifest.get(
+                "profiling_duration_seconds"
+            ),
             "stable_request_p99": False,
             "session_bootstrap_allowed": False,
             "request_p99_note": (
@@ -357,11 +361,15 @@ def main() -> int:
     analysis_path.write_text(json.dumps(analysis, indent=2) + "\n")
 
     report_path = campaign_dir / "report.md"
+    budget_minutes = (manifest.get("campaign_budget_seconds") or 0) / 60
+    profiling_minutes = (manifest.get("profiling_duration_seconds") or 0) / 60
     lines = [
         "# AgentX concurrency tail pilot",
         "",
-        "This is a one-hour load-spread pilot. Request p99 values are observed "
-        "order statistics, not stable population estimates.",
+        f"This is a bounded load-spread pilot with a {budget_minutes:g}-minute "
+        f"campaign budget and {profiling_minutes:g}-minute profiling windows. "
+        "Request p99 values are observed order statistics, not stable population "
+        "estimates.",
         "",
         "| C | Requests | Sessions completed | Tail resolution | TTFT p50/p95 | "
         "E2E p50/p95 | Avg-ITL p50/p95 | >1s gaps / intervals | Prefix hit |",
