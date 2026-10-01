@@ -882,6 +882,8 @@ Thank you, and I look forward to your questions.
 
 * **Documentation Hub:**
   * Master Index: [`docs/README.md`](../README.md)
+  * Tail Latency Empirical Study: [`docs/TAIL-LATENCY-STUDY.md`](../TAIL-LATENCY-STUDY.md)
+  * Tail Latency Evaluation Plan: [`docs/TAIL-EVALUATION-PLAN.md`](../TAIL-EVALUATION-PLAN.md)
   * AgentX Multi-Turn Tail Analysis: [`docs/AGENTX-TAIL.md`](../AGENTX-TAIL.md) & [`docs/MI350P-AGENTX.md`](../MI350P-AGENTX.md)
   * The Token Freeze Whitepaper: [`docs/QWEN-TAIL-PDD.md`](../QWEN-TAIL-PDD.md)
   * Dual-Card Test Plan & Acceptance: [`docs/TESTPLAN.md`](../TESTPLAN.md)
@@ -889,12 +891,19 @@ Thank you, and I look forward to your questions.
   * KV Connector Implementation: [`docs/KV_CONNECTOR.md`](../KV_CONNECTOR.md)
   * TCO & Presales Tokenomics: [`docs/TCO.md`](../TCO.md)
 * **Published Data & Figures:**
+  * Raw Tail Study Results: [`docs/results/tail_study/`](../results/tail_study/) & [`docs/figures/tail_study_dashboard.png`](../figures/tail_study_dashboard.png)
   * Raw AgentX Traces: [`docs/results/agentx/`](../results/agentx/) & [`docs/results/mi350p/agentx_concurrency.json`](../results/mi350p/agentx_concurrency.json)
   * Raw Synthetic Latency Samples: [`docs/results/qwen3.8-27b-mxfp4/latency/r9700/`](../results/qwen3.8-27b-mxfp4/latency/r9700/)
   * Latency & AgentX Figures: [`docs/figures/latency/`](../figures/latency/) & [`docs/figures/agentx/`](../figures/agentx/)
   * TCO & PDD Dashboards: [`docs/figures/tco/`](../figures/tco/) & [`docs/figures/pd/`](../figures/pd/)
 * **Reproduction Commands:**
   ```bash
+  # Execute full automated tail latency study & agent compounding suite
+  ./scripts/run_tail_latency_study.sh
+  # Regenerate 4-panel tail study dashboard
+  /home/amd/workspace/coder/.venv/bin/python scripts/plot_tail_distributions.py \
+    --input docs/results/tail_study/agent_chain_manifest.json \
+    --out docs/figures/tail_study_dashboard.png
   # Regenerate AgentX figures
   /home/amd/workspace/coder/.venv/bin/python scripts/plot_agentx_tail_sweep.py
   # Regenerate Synthetic Latency Histograms
