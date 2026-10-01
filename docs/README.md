@@ -37,6 +37,7 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 | [PDD-EVAL.md](PDD-EVAL.md) | Comprehensive evaluation process, testbed architectures (2-card 1P1D, 8-card 1P:7D, 16-card 2P:14D), interactive SLO metrics, queue stability criteria, 6-exhibit visual suite, fleet router/simulator tooling, live connector diagnostics, and 4-track execution roadmap |
 | [KV_CONNECTOR.md](KV_CONNECTOR.md) | MI350P 1P1D KV connector: HIP-IPC patch apply script, GPU 1→GPU 0 serving (72.49 tok/s, token-ID gate still open) |
 | [QWEN-TAIL-PDD.md](QWEN-TAIL-PDD.md) | Qwen3.8-27B MXFP4 blog: the token freeze throughput charts miss, prefix-cache and chunk baselines, and the MI350P PCIe handoff still awaiting a DP=2 comparison |
+| [AGENTX-TAIL.md](AGENTX-TAIL.md) | Multi-turn Claude Code traces sweep on R9700 (65k context): prefix cache collapse from 93% to 0%, the C=8 knee, and C=16/32 KV eviction cliff |
 
 ## Published measurements
 
@@ -48,10 +49,12 @@ Benches write under `_results`. That directory, plus the local NIXL checkout `_s
 | `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` and `docs/results/r9700/concurrency.json` | `docs/figures/tco/` |
 | `python3 scripts/generate_pd_plots.py` | `docs/results/pd/pd_emulator_summary.json` | `docs/figures/pd/` |
 | `python3 scripts/generate_tp_compare_plots.py` | `docs/figures/tp/tp-compare.json` | `docs/figures/tp/` |
+| `python3 scripts/generate_latency_histogram_plots.py` | `docs/results/qwen3.8-27b-mxfp4/latency/r9700/` | `docs/figures/latency/` |
+| `python3 scripts/plot_agentx_tail_sweep.py` | `docs/results/agentx/` | `docs/figures/agentx/` |
 | `python3 scripts/publish_latency_results.py --source-dir <qwen-run-dir> --gpu-profile <profile>` | `docs/results/qwen3.8-27b-mxfp4/latency/` | `docs/profiling/qwen3.8-27b-mxfp4-latency.json` |
 | `python3 scripts/run_agentx_tail_sweep.py` then `python3 scripts/analyze_agentx_tail_sweep.py` | `docs/results/mi350p/agentx_concurrency.json` | [MI350P-AGENTX.md](MI350P-AGENTX.md) |
 
-`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P power and bandwidth summaries. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. Generated text is omitted. When `_results` is absent, reports use the copies already in `docs/`.
+`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P power and bandwidth summaries. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. AgentX multi-turn traces are archived under `docs/results/agentx/`. Generated text is omitted. When `_results` is absent, reports use the copies already in `docs/`.
 
 For a report-grade tail run (1,000 requests per cell, 0.1% empirical resolution):
 
@@ -61,6 +64,17 @@ python3 scripts/bench_qwen_tail_latency.py \
   --input-lens 1024 8192 \
   --concurrency-list 1 16 64
 ```
+
+## Presentation & Decks
+
+| File | Contents |
+|---|---|
+| [presentation/slides.md](presentation/slides.md) | 19-slide comprehensive technical deck: tail latency, AgentX multi-turn dynamics, P/D architecture, PCIe transport, and tokenomics |
+| [presentation/slides.html](presentation/slides.html) | Standalone interactive browser-based presentation (HTML) |
+| [presentation/slides.pdf](presentation/slides.pdf) | High-resolution publication presentation deck (PDF) |
+| [presentation/slides.pptx](presentation/slides.pptx) | Editable PowerPoint slide deck (PPTX) |
+
+Compile or refresh decks via `./scripts/build_presentation.sh`.
 
 ## How to run
 
