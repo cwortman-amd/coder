@@ -1,3 +1,13 @@
+---
+type: Quality Evaluation
+title: MXFP4 vs DFlash greedy quality (text-only)
+description: 'Campaign summary: docs/MI350P.md.'
+tags:
+- quality-evaluation
+- quality
+status: stable
+---
+
 # MXFP4 vs DFlash greedy quality (text-only)
 
 Campaign summary: [`docs/MI350P.md`](../../docs/MI350P.md).

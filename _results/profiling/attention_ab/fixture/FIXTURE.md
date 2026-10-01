@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: Paged-decode fixture (27 Sep 2026)
+description: One decode query, 24 query heads, 4 KV heads, head size 256, bf16 Q/K/V,
+  scale 1/sqrt(256), causal, no sliding window, no sinks. The same logical.
+tags:
+- profiling-report
+- attention-ab
+- fixture
+status: stable
+---
+
 # Paged-decode fixture (27 Sep 2026)
 
 One decode query, 24 query heads, 4 KV heads, head size 256, bf16 Q/K/V,

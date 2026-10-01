@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: MI350P GPT-OSS-120B AIM sweep
+description: 'Date: 29 September 2026 SKU: 1× AMD Instinct MI350P (gfx950, PCI 0x75a8,
+  144 GB HBM3E), GPU 0. GPU 1 stayed idle.'
+tags:
+- technical-report
+- mi350p
+- aims
+status: stable
+---
+
 # MI350P GPT-OSS-120B AIM sweep
 
 **Date:** 29 September 2026  

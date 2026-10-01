@@ -1,3 +1,16 @@
+---
+type: Profiling Report
+title: 'TRITONATTN gate 1: first-divergence logits (27 Sep 2026)'
+description: C1 chat, temperature 0, topp 1, topk -1, seed 1234, enablethinking false,
+  FULLANDPIECEWISE graphs. Same Quark MXFP4 checkpoint and vLLM image.
+tags:
+- profiling-report
+- attention-ab
+- divergence
+- gate1
+status: stable
+---
+
 # TRITON_ATTN gate 1: first-divergence logits (27 Sep 2026)
 
 C1 chat, temperature 0, top_p 1, top_k -1, seed 1234, `enable_thinking` false,

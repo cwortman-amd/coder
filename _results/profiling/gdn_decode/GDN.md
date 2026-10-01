@@ -1,3 +1,14 @@
+---
+type: Profiling Report
+title: Isolated GDN decode vs C1 (25 Sep 2026)
+description: 'Canonical: docs/MI350P.md.'
+tags:
+- profiling-report
+- gdn-decode
+- gdn
+status: stable
+---
+
 # Isolated GDN decode vs C1 (25 Sep 2026)
 
 Canonical: [`docs/MI350P.md`](../../../docs/MI350P.md).

@@ -1,3 +1,15 @@
+---
+type: Repository Guide
+title: On-Premise AI Coding Agent with AMD Radeon™ AI PRO R9700 and OpenCode
+description: An enterprise-grade, privacy-first, on-premises AI coding assistant stack
+  powered by AMD Radeon™ AI PRO R9700 GPUs, AMD ROCm, and OpenCode.
+tags:
+- repository
+- inference
+- rocm
+status: stable
+---
+
 # On-Premise AI Coding Agent with AMD Radeon™ AI PRO R9700 and OpenCode
 
 An enterprise-grade, privacy-first, on-premises AI coding assistant stack powered by **AMD Radeon™ AI PRO R9700 GPUs**, **AMD ROCm**, and **OpenCode**.
@@ -296,5 +308,13 @@ Switch inference engines at startup:
 
 ## Documentation
 
-The documentation index is [docs/README.md](docs/README.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). GPT-OSS-120B AIM sweep: [docs/MI350P-AIMS.md](docs/MI350P-AIMS.md). GPT-OSS-120B MLPerf v6.1: [docs/MI350P-MLPERF.md](docs/MI350P-MLPERF.md). R9700 concurrency sweeps: [docs/R9700-SWEEP.md](docs/R9700-SWEEP.md) (8k:1k), [docs/R9700-SWEEP-1024-1024.md](docs/R9700-SWEEP-1024-1024.md) (1k:1k), and [docs/R9700-SWEEP-1024-8192.md](docs/R9700-SWEEP-1024-8192.md) (1k:8k). Server TCO analysis and presentation figures: [docs/TCO.md](docs/TCO.md). Disaggregated serving (P/D vs. DP) evaluation: [docs/PDD-FRAMEWORK.md](docs/PDD-FRAMEWORK.md) and [docs/PDD-EVAL.md](docs/PDD-EVAL.md).
+This repository is an [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle. Start with the progressive-disclosure [bundle index](index.md) or the [documentation index](docs/index.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). GPT-OSS-120B AIM sweep: [docs/MI350P-AIMS.md](docs/MI350P-AIMS.md). GPT-OSS-120B MLPerf v6.1: [docs/MI350P-MLPERF.md](docs/MI350P-MLPERF.md). R9700 concurrency sweeps: [docs/R9700-SWEEP.md](docs/R9700-SWEEP.md) (8k:1k), [docs/R9700-SWEEP-1024-1024.md](docs/R9700-SWEEP-1024-1024.md) (1k:1k), and [docs/R9700-SWEEP-1024-8192.md](docs/R9700-SWEEP-1024-8192.md) (1k:8k). Server TCO analysis and presentation figures: [docs/TCO.md](docs/TCO.md). Disaggregated serving (P/D vs. DP) evaluation: [docs/PDD-FRAMEWORK.md](docs/PDD-FRAMEWORK.md) and [docs/PDD-EVAL.md](docs/PDD-EVAL.md).
+
+Every non-reserved Markdown concept carries OKF frontmatter. `index.md` files are reserved catalogs. Validate the graph and metadata after changing documentation:
+
+```bash
+python3 scripts/okf_docs.py validate
+```
+
+Use `python3 scripts/okf_docs.py migrate` to add missing deterministic metadata and normalize repository-local file links, then `python3 scripts/okf_docs.py index` to refresh generated catalogs.
 

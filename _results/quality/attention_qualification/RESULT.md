@@ -1,3 +1,15 @@
+---
+type: Quality Evaluation
+title: Fast-attention qualification result (27 Sep 2026)
+description: Gates were frozen in GATES.md before generating or running the 100-item
+  suite. Same Quark checkpoint, vLLM image, graph mode, prompts, chat template,.
+tags:
+- quality-evaluation
+- quality
+- attention-qualification
+status: stable
+---
+
 # Fast-attention qualification result (27 Sep 2026)
 
 Gates were frozen in `GATES.md` before generating or running the 100-item

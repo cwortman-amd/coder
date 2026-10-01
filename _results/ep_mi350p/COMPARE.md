@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Qwen3.5-35B-A3B expert parallel, same burst
+description: 'Protocol match for the NVIDIA developer forum post: Qwen/Qwen3.5-35B-A3B,
+  TP=2, --gpu-memory-utilization 0.9, --max-model-len 32768, then the same serve command
+  with --enable-expert-parallel. Client: vllm bench serve...'
+tags:
+- benchmark-report
+- ep-mi350p
+- compare
+status: stable
+---
+
 # Qwen3.5-35B-A3B expert parallel, same burst
 
 Protocol match for the [NVIDIA developer forum post](https://forums.developer.nvidia.com/t/expert-parallelism-using-6000-pro-pcie-gen5-vs-b200-nvlink/378258): `Qwen/Qwen3.5-35B-A3B`, TP=2, `--gpu-memory-utilization 0.9`, `--max-model-len 32768`, then the same serve command with `--enable-expert-parallel`. Client: `vllm bench serve --dataset-name random --random-input-len 1000 --random-output-len 1000 --request-rate 10000 --num-prompts 16 --ignore-eos`.

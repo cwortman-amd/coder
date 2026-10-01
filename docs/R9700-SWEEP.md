@@ -1,3 +1,14 @@
+---
+type: Technical Report
+title: R9700 concurrency sweep
+description: 'Narrative and earlier sweeps: R9700.md.'
+tags:
+- technical-report
+- r9700
+- sweep
+status: stable
+---
+
 # R9700 concurrency sweep
 
 Narrative and earlier sweeps: [R9700.md](R9700.md).

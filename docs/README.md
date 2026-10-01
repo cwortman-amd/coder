@@ -1,3 +1,13 @@
+---
+type: Documentation Catalog
+title: Docs
+description: Grouped by machine. The current production record is MI350P.md.
+tags:
+- documentation
+- catalog
+status: stable
+---
+
 # Docs
 
 Grouped by machine. The current production record is [MI350P.md](MI350P.md).
@@ -85,4 +95,18 @@ Compile or refresh decks via `./scripts/build_presentation.sh`.
 |---|---|
 | [OPS.md](OPS.md) | Compose files (single GPU, TP=2, DP=2, P/D, 8-card 1P:7D, DP=8, 16-card 2P:14D), fleet router, and troubleshooting (MoRIIO, KFD, OOM) |
 | [BENCH.md](BENCH.md) | SWE-bench and GPQA harness |
+
+## OKF v0.2 Knowledge Bundle
+
+Documentation is organized as an [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle. Use [index.md](index.md) for progressive disclosure. Non-reserved Markdown concepts require typed frontmatter; `index.md` files are reserved catalogs.
+
+After adding or changing documentation, run:
+
+```bash
+python3 scripts/okf_docs.py migrate
+python3 scripts/okf_docs.py index
+python3 scripts/okf_docs.py validate
+```
+
+Migration derives deterministic metadata from repository content. Do not add verification or provenance claims unless they are independently established.
 

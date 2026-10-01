@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: P1–P4 service-layer comparison (1K/1K)
+description: 'Roofline, energy, and report wording: docs/MI350P.md §5.'
+tags:
+- profiling-report
+- p1
+- p4
+- metrics
+status: stable
+---
+
 # P1–P4 service-layer comparison (1K/1K)
 
 Roofline, energy, and report wording: [`docs/MI350P.md`](../../docs/MI350P.md) §5.

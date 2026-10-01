@@ -1,3 +1,15 @@
+---
+type: Quality Evaluation
+title: Predeclared fast-attention promotion gates (27 Sep 2026)
+description: Written before generating or running the expanded paired suite.
+tags:
+- quality-evaluation
+- quality
+- attention-qualification
+- gates
+status: stable
+---
+
 # Predeclared fast-attention promotion gates (27 Sep 2026)
 
 Written before generating or running the expanded paired suite.

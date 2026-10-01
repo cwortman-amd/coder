@@ -1,3 +1,14 @@
+---
+type: Technical Report
+title: Dual Instinct MI350P PCIe — Phase Isolation and P/D Report
+description: The cards on this host are AMD Instinct MI350P PCIe.
+tags:
+- technical-report
+- mi350p
+- pd
+status: stable
+---
+
 # Dual Instinct MI350P PCIe — Phase Isolation and P/D Report
 
 The cards on this host are **AMD Instinct MI350P PCIe**.

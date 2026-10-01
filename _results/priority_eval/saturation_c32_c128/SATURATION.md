@@ -1,3 +1,17 @@
+---
+type: Benchmark Report
+title: Instrumented C32–C128 (HF MXFP4 control)
+description: 'Harness: scripts/benchsaturationinstrumented.sh Date: 2026-09-25 Server:
+  frozen HF control on 127.0.0.1:8000, VLLMROCMUSEAITER unset, stock MLEQ8, graphs
+  O2.'
+tags:
+- benchmark-report
+- priority-eval
+- saturation-c32-c128
+- saturation
+status: stable
+---
+
 # Instrumented C32–C128 (HF MXFP4 control)
 
 Harness: `scripts/bench_saturation_instrumented.sh`  

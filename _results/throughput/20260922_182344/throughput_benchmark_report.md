@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Throughput Benchmark Performance Report
+description: 'Model Evaluated: Qwen/Qwen3.8-27B-FP8 Target Hardware: AMD Radeon™ AI
+  PRO R9700 (gfx1201, 32 GB GDDR6 VRAM).'
+tags:
+- benchmark-report
+- throughput
+- 20260922-182344
+- benchmark
+status: stable
+---
+
 # Throughput Benchmark Performance Report
 
 - **Model Evaluated**: `Qwen/Qwen3.8-27B-FP8`

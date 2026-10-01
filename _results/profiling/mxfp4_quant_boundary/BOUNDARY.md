@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: MXFP4 quantization-boundary check (27 Sep 2026)
+description: Elementwise/norm is 12.15% of traced GPU dispatch duration and dynamic
+  MXFP4 quantization is 8.38%. Together they are 20.53%. The installed fusion passes.
+tags:
+- profiling-report
+- mxfp4-quant-boundary
+- boundary
+status: stable
+---
+
 # MXFP4 quantization-boundary check (27 Sep 2026)
 
 Elementwise/norm is 12.15% of traced GPU dispatch duration and dynamic MXFP4

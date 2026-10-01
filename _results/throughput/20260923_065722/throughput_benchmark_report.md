@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Multi-Engine Throughput Benchmark Performance Report
+description: 'Target Hardware: AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6 VRAM)
+  Engines Tested: llama.cpp Benchmark Suite: vLLM Throughput Matrix (vllm bench serve).'
+tags:
+- benchmark-report
+- throughput
+- 20260923-065722
+- benchmark
+status: stable
+---
+
 # Multi-Engine Throughput Benchmark Performance Report
 
 - **Target Hardware**: AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6 VRAM)

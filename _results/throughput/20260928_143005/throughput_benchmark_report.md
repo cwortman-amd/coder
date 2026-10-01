@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Multi-Engine Throughput Benchmark Performance Report
+description: 'Target Hardware: AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6) GPU
+  Profile: r9700 ROCm ISA: gfx1201.'
+tags:
+- benchmark-report
+- throughput
+- 20260928-143005
+- benchmark
+status: stable
+---
+
 # Multi-Engine Throughput Benchmark Performance Report
 
 - **Target Hardware**: AMD Radeon™ AI PRO R9700 (gfx1201, 32 GB GDDR6)

@@ -1,3 +1,16 @@
+---
+type: Technical Report
+title: GPT-OSS-20B native MXFP4
+description: openai/gpt-oss-20b ships native MXFP4 and fits one 32 GB card. That is
+  the Radeon AI PRO R9700S (and the R9700, the same 64 CU / 32 GB / 300 W GPU). openai/gpt-oss-120b
+  does not fit that card. The 120B AIM sweep on...
+tags:
+- technical-report
+- gpt
+- oss
+status: stable
+---
+
 # GPT-OSS-20B native MXFP4
 
 `openai/gpt-oss-20b` ships native MXFP4 and fits one 32 GB card. That is the Radeon AI PRO R9700S (and the R9700, the same 64 CU / 32 GB / 300 W GPU). `openai/gpt-oss-120b` does not fit that card. The 120B AIM sweep on one MI350P is [MI350P-AIMS.md](MI350P-AIMS.md).

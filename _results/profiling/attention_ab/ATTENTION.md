@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: MI350P attention-backend A/B (27 Sep 2026)
+description: The 14.9× decode-kernel ratio is TRITONATTN versus stock ROCMATTN (kernelpagedattention2d
+  173.45 µs p50 versus kernelunifiedattention.
+tags:
+- profiling-report
+- attention-ab
+- attention
+status: stable
+---
+
 # MI350P attention-backend A/B (27 Sep 2026)
 
 The 14.9× decode-kernel ratio is `TRITON_ATTN` versus stock `ROCM_ATTN`

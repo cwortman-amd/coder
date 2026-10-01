@@ -1,3 +1,16 @@
+---
+type: Evaluation Plan
+title: Comprehensive Dual-Card Radeon™ AI PRO R9700 Performance & Disaggregation Test
+  Plan
+description: 'Document ID: TESTPLAN-R9700-PD-2026.1 Target Hardware: Dual AMD Radeon™
+  AI PRO R9700 (32 GB GDDR6, 256-bit, PCIe Gen 5.0 x16, gfx1201).'
+tags:
+- evaluation
+- pdd
+- inference
+status: stable
+---
+
 # Comprehensive Dual-Card Radeon™ AI PRO R9700 Performance & Disaggregation Test Plan
 
 **Document ID:** `TESTPLAN-R9700-PD-2026.1`  
@@ -5,7 +18,7 @@
 **Host Architecture:** AMD Ryzen™ 9 7900X (or EPYC™ workstation), PCIe 5.0 root complex, bifurcation/switch support  
 **Software Baseline:** ROCm 7.14, PyTorch 2.11.0+rocm7.14, vLLM `0.27.1` (`local/vllm-mxfp4:gfx1201`)  
 **Served Model:** Qwen3.8-27B-Quark-AWQ-MXFP4 (W4A8 FP8-WMMA GEMM, FP8 KV-Cache)  
-**Execution Companion Tools:** [`benchmark/bench_phases.py`](file:///home/amd/workspace/coder/benchmark/bench_phases.py), [`benchmark/pd_capacity_emulator.py`](file:///home/amd/workspace/coder/benchmark/pd_capacity_emulator.py), [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_router.py)
+**Execution Companion Tools:** [`benchmark/bench_phases.py`](/benchmark/bench_phases.py), [`benchmark/pd_capacity_emulator.py`](/benchmark/pd_capacity_emulator.py), [`benchmark/pd_router.py`](/benchmark/pd_router.py)
 
 ---
 
@@ -101,8 +114,8 @@ Evaluating SLO conformance and hardware efficiency requires synchronizing applic
 
 3. **Integrated Telemetry Harness**:
    - To close this gap across both R9700 and MI350P, our test harness couples vLLM benchmark runs with external hardware telemetry:
-     - **Power Telemetry**: [`scripts/collect_amd_power.py`](file:///home/amd/workspace/coder/scripts/collect_amd_power.py) samples device power via `amd-smi` / sysfs at 100 ms intervals during active batch processing, computing average power, peak power, energy in Joules, and `power_util_pct` (% of device TDP).
-     - **Memory Bandwidth Modeling**: [`scripts/bench_openai_chat.py`](file:///home/amd/workspace/coder/scripts/bench_openai_chat.py) and [`scripts/run_concurrency_sweep.py`](file:///home/amd/workspace/coder/scripts/run_concurrency_sweep.py) calculate active decode memory bandwidth ($\text{GB/s}$) from parameter byte transfers per step and active KV cache reads, reporting `mem_bw_util_pct` against peak device limits (4,096 GB/s on MI350P, 960 GB/s on R9700).
+     - **Power Telemetry**: [`scripts/collect_amd_power.py`](/scripts/collect_amd_power.py) samples device power via `amd-smi` / sysfs at 100 ms intervals during active batch processing, computing average power, peak power, energy in Joules, and `power_util_pct` (% of device TDP).
+     - **Memory Bandwidth Modeling**: [`scripts/bench_openai_chat.py`](/scripts/bench_openai_chat.py) and [`scripts/run_concurrency_sweep.py`](/scripts/run_concurrency_sweep.py) calculate active decode memory bandwidth ($\text{GB/s}$) from parameter byte transfers per step and active KV cache reads, reporting `mem_bw_util_pct` against peak device limits (4,096 GB/s on MI350P, 960 GB/s on R9700).
      - **Client-Observed Streaming TTFT**: Client-side SSE chunk interval parsing measures true end-to-end user-perceived TTFT and ITL percentiles ($p_{50}, p_{95}, p_{99}$).
 
 ---
@@ -401,7 +414,7 @@ When deploying Prefill/Decode Disaggregation, the physical KV transport mechanis
 
 ### 8.3 Production Router & Load Balancing Architecture
 
-Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_router.py) and [`benchmark/dp_router.py`](file:///home/amd/workspace/coder/benchmark/dp_router.py) have been hardened for production stability:
+Both [`benchmark/pd_router.py`](/benchmark/pd_router.py) and [`benchmark/dp_router.py`](/benchmark/dp_router.py) have been hardened for production stability:
 
 1. **Persistent Connection Pool Management:**
    * Downstream vLLM engines are accessed via a persistent `httpx.AsyncClient` managed in the FastAPI application `lifespan`.
@@ -455,7 +468,7 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
 
 ### Phase 0: Model Precision & Task Fidelity Calibration (FP8 vs. MxFP4 vs. Q4_K_M)
 * **Objective**: Certify that the selected quantized model format preserves reasoning and software engineering task fidelity before allocating multi-GPU DP=2 or P/D resources.
-* **Empirical Execution**: Run [`./accuracy.sh -d -n 5`](file:///home/amd/workspace/coder/accuracy.sh) across candidate weights:
+* **Empirical Execution**: Run [`./accuracy.sh -d -n 5`](/accuracy.sh) across candidate weights:
   1. Dense FP8 baseline (`Qwen/Qwen3.8-27B-FP8`, vLLM ROCm standard)
   2. Quark AWQ MXFP4 (`Qwen3.8-27B-Quark-AWQ-MXFP4`, vLLM Radiance W4A8)
   3. Q4_K_M GGUF (`Qwen3.8-27B-Q4_K_M.gguf`, llama.cpp ROCm HIP)
@@ -466,14 +479,14 @@ Both [`benchmark/pd_router.py`](file:///home/amd/workspace/coder/benchmark/pd_ro
 * **Certification Gate**: `Qwen3.8-27B-Quark-AWQ-MXFP4` is officially certified as the primary served model representation for all subsequent single-card and dual-card stages. See full analysis in [R9700.md](R9700.md).
 
 ### Phase 1: Freeze Baseline Calibration
-* Run [`benchmark/bench_phases.py`](file:///home/amd/workspace/coder/benchmark/bench_phases.py) with `--mode isolated-prefill`, `--mode isolated-decode`, and `--mode contention-jitter`.
+* Run [`benchmark/bench_phases.py`](/benchmark/bench_phases.py) with `--mode isolated-prefill`, `--mode isolated-decode`, and `--mode contention-jitter`.
 * Confirm single-card figures: Cold 8K prefill ~2.78s, Decode TPOT ~29.35ms (34.07 tok/s), J3 retention factor $\eta = 0.335$.
 
 ### Phase 2: Deterministic Trace Generation
 * Generate standardized `.jsonl` traces in `_results/traces/` representing the five workload families (Decode-Dominant, Balanced, Cold Long-Context, Warm Coding, and Ingest-Heavy RAG).
 
 ### Phase 3: Single-Card Counterfactual Emulation
-* Execute [`benchmark/pd_capacity_emulator.py`](file:///home/amd/workspace/coder/benchmark/pd_capacity_emulator.py) across all five workload traces.
+* Execute [`benchmark/pd_capacity_emulator.py`](/benchmark/pd_capacity_emulator.py) across all five workload traces.
 * Map the exact arrival rate $\lambda^*$ where $\eta_{\text{collocated}} < 0.5$, identifying the theoretical crossover threshold where P/D exceeds DP=2 raw capacity.
 
 ### Phase 4: Container Update & Hardware Check

@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: EngineCore kernel trace (27 Sep 2026)
+description: Kernel-level tracing now works. The API parent is not profiled. Only
+  the Python --multiprocessing-fork child that becomes VLLM::EngineCore is.
+tags:
+- profiling-report
+- enginecore-exec
+- trace
+status: stable
+---
+
 # EngineCore kernel trace (27 Sep 2026)
 
 ## Result

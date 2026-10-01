@@ -1,3 +1,16 @@
+---
+type: Technical Report
+title: KV connector — MI350P 1P1D
+description: This host has 2 × AMD Instinct MI350P PCIe (0x75a8, gfx950). GPU 0 is
+  0000:8b:00.0. GPU 1 is 0001:c7:00.0. rocm-smi reports the link as PCIE, 3 hops,
+  weight 72. The two cards are on different PCI domains.
+tags:
+- technical-report
+- kv
+- connector
+status: stable
+---
+
 # KV connector — MI350P 1P1D
 
 This host has **2 × AMD Instinct MI350P PCIe** (`0x75a8`, `gfx950`). GPU 0 is `0000:8b:00.0`. GPU 1 is `0001:c7:00.0`. `rocm-smi` reports the link as **PCIE**, **3 hops**, weight **72**. The two cards are on different PCI domains.

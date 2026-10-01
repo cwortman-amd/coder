@@ -1,3 +1,16 @@
+---
+type: Profiling Report
+title: AITER unified attention kernel trace (27 Sep 2026)
+description: Attribution only. Profiled one-request 1K/1K throughput was 62.03 tok/s.
+  The unprofiled repeats are 99.58 ± 0.05 C1 and 653.96 ± 0.44 C8.
+tags:
+- profiling-report
+- enginecore-exec
+- 20260927t163138z-aiter-unified
+- profile
+status: stable
+---
+
 # AITER unified attention kernel trace (27 Sep 2026)
 
 Attribution only. Profiled one-request 1K/1K throughput was **62.03 tok/s**.

@@ -1,3 +1,17 @@
+---
+type: Benchmark Report
+title: DFlash depth 1–5 (matched protocol, 25 Sep 2026)
+description: 'Harness: scripts/dflashdepthsweep.sh. Control rows are the prior crossover
+  process (crossover/baselinematchedc.json, 78.80 / 318.04 / 426.95 / 557.14). DFLASH-7
+  rows are the prior crossover, not re-run in this process.'
+tags:
+- benchmark-report
+- priority-eval
+- dflash-depth
+- depth
+status: stable
+---
+
 # DFlash depth 1–5 (matched protocol, 25 Sep 2026)
 
 Harness: `scripts/dflash_depth_sweep.sh`. Control rows are the prior crossover process (`crossover/baseline_matched_c*.json`, **78.80 / 318.04 / 426.95 / 557.14**). DFLASH-7 rows are the prior crossover, not re-run in this process.

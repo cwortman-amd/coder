@@ -1,3 +1,14 @@
+---
+type: Profiling Report
+title: EngineCore attach experiment (25 Sep 2026)
+description: 'Goal: GPU-owner kernel timeline without wrapping vllm serve.'
+tags:
+- profiling-report
+- enginecore-attach
+- attach
+status: stable
+---
+
 # EngineCore attach experiment (25 Sep 2026)
 
 Goal: GPU-owner kernel timeline **without** wrapping `vllm serve`.

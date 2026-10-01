@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: MI350P bring-up
+description: Earlier single-GPU notes from 24 Sep. The current Quark MXFP4 serving
+  record is MI350P.md. Dual-GPU prefill/decode is MI350P-PD.md.
+tags:
+- technical-report
+- mi350p
+- bringup
+status: stable
+---
+
 # MI350P bring-up
 
 Earlier single-GPU notes from 24 Sep. The current Quark MXFP4 serving record is [MI350P.md](MI350P.md). Dual-GPU prefill/decode is [MI350P-PD.md](MI350P-PD.md).

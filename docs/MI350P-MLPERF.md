@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: MI350P GPT-OSS-120B MLPerf Inference v6.1
+description: 'Date: 29 September 2026 SKU: 1× AMD Instinct MI350P (gfx950, 128 CUs),
+  GPU 0, TP=1 Image: rocm/amd-mlperf:mi355xgptoss120binference6.1 (sha256:4f17b38a81f735274caa8792c57ed884c7164fd79c41238e02f249f005d881ae).'
+tags:
+- technical-report
+- mi350p
+- mlperf
+status: stable
+---
+
 # MI350P GPT-OSS-120B MLPerf Inference v6.1
 
 **Date:** 29 September 2026  

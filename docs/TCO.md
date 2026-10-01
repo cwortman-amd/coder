@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: 'TCO: 16× R9600D, 8× R9700S, 8× MI350P, 8× RTX PRO 6000'
+description: 'Planning comparison where host DRAM capacity matches total GPU VRAM
+  capacity for each server fill: R9700S (256 GB host DRAM at $37,000), R9600D (512
+  GB host DRAM at $49,000), RTX PRO 6000 (768 GB at $62,000), and...'
+tags:
+- technical-report
+- tco
+status: stable
+---
+
 # TCO: 16× R9600D, 8× R9700S, 8× MI350P, 8× RTX PRO 6000
 
 Planning comparison where host DRAM capacity matches total GPU VRAM capacity for each server fill: R9700S (256 GB host DRAM at $37,000), R9600D (512 GB host DRAM at $49,000), RTX PRO 6000 (768 GB at $62,000), and MI350P (1,536 GB at $89,000). Dual-slot cards fill **eight** slots. The R9600D is single-slot, so the same chassis holds **sixteen**. Card prices and server figures are the estimates supplied for this note. They are not street quotes, and they are not a measured serving result.

@@ -1,3 +1,17 @@
+---
+type: Profiling Report
+title: 'Real-tensor attention isolation: reasoning00 (27 Sep 2026)'
+description: Prompt length 44. Stock emits token 20 (5). Triton and AITER unified
+  emit token 9764 (Let).
+tags:
+- profiling-report
+- attention-ab
+- real-capture
+- reasoning
+- '00'
+status: stable
+---
+
 # Real-tensor attention isolation: `reasoning_00` (27 Sep 2026)
 
 Prompt length 44. Stock emits token 20 (`5`). Triton and AITER unified emit

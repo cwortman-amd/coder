@@ -1,3 +1,15 @@
+---
+type: Issue Catalog
+title: Upstream issues to file (measured on vLLM 0.30 ROCm + MI350P)
+description: These are lab-ready reports. File against the listed projects; do not
+  treat this folder as a substitute for the tracker.
+tags:
+- issue-catalog
+- upstream
+- issues
+status: stable
+---
+
 # Upstream issues to file (measured on vLLM 0.30 ROCm + MI350P)
 
 These are lab-ready reports. File against the listed projects; do not treat this folder as a substitute for the tracker.

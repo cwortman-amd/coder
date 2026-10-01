@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: Three-way attention isolation (27 Sep 2026)
+description: Same Quark MXFP4 checkpoint, same vLLM image, VLLMROCMUSEAITER unset,
+  FULLANDPIECEWISE graphs, C1/C8 harness, temperature 0. Only.
+tags:
+- profiling-report
+- attention-ab
+- abc
+status: stable
+---
+
 # Three-way attention isolation (27 Sep 2026)
 
 Same Quark MXFP4 checkpoint, same vLLM image, `VLLM_ROCM_USE_AITER` unset,

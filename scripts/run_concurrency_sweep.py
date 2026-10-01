@@ -21,6 +21,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bench_serve  # noqa: E402
 import catalog  # noqa: E402
+from okf_docs import ensure_frontmatter  # noqa: E402
 from publish_latency_results import MissingDetailedLatency, publish_latency_result  # noqa: E402
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -360,7 +361,20 @@ def main():
     report_file = os.path.join(DOCS_DIR, report_filename)
     hw_label = f"AMD Instinct™ MI350P (`gfx950`, 144 GB HBM3E, {device_tdp:.0f}W TDP, {peak_bw:.0f} GB/s Peak)" if "mi350" in prof else f"AMD Radeon™ AI PRO R9700 (`gfx1201`, 32 GB GDDR6, {device_tdp:.0f}W TDP, {peak_bw:.0f} GB/s Peak)"
     with open(report_file, "w", encoding="utf-8") as rf:
-        rf.write(f"# {report_prefix.replace('-', ' ')} ({args.input_len}:{args.output_len})\n\n")
+        report_title = f"{report_prefix.replace('-', ' ')} ({args.input_len}:{args.output_len})"
+        rf.write(
+            ensure_frontmatter(
+                "",
+                doc_type="Benchmark Report",
+                title=report_title,
+                description=(
+                    f"Concurrency, latency, power, and bandwidth sweep for "
+                    f"{args.input_len:,} input and {args.output_len:,} output tokens."
+                ),
+                tags=["concurrency", "latency", prof],
+            )
+        )
+        rf.write(f"# {report_title}\n\n")
         rf.write(f"**Target Hardware**: {hw_label}\n")
         rf.write(f"**Model**: `{args.model}`\n")
         rf.write(f"**Workload**: {args.input_len:,} Input Tokens / {args.output_len:,} Output Tokens\n")

@@ -1,3 +1,15 @@
+---
+type: Evaluation Plan
+title: Enterprise LLM Tail Latency & Agent Serving Evaluation Plan
+description: 'Document ID: EVAL-TAIL-AGENT-2026.1 Target Hardware: Single & Dual AMD
+  Radeon™ AI PRO R9700 (32 GB GDDR6) / AMD Instinct™ MI350P (288 GB HBM3e).'
+tags:
+- evaluation
+- tail-latency
+- agentx
+status: stable
+---
+
 # Enterprise LLM Tail Latency & Agent Serving Evaluation Plan
 
 **Document ID:** `EVAL-TAIL-AGENT-2026.1`  
@@ -5,13 +17,13 @@
 **Software Baseline:** ROCm 7.14, vLLM `0.27.1` (`local/vllm-mxfp4:gfx1201`), Inference Perf / aiperf  
 **Served Model:** `Qwen3.8-27B-Quark-AWQ-MXFP4` (W4A8 FP8-WMMA, FP8 KV Cache)  
 **Execution Companion Tools:**  
-* [`scripts/request_event_schema.py`](file:///home/amd/workspace/coder/scripts/request_event_schema.py)  
-* [`scripts/bench_agent_chain.py`](file:///home/amd/workspace/coder/scripts/bench_agent_chain.py)  
-* [`scripts/bench_prefill_decode_interference.py`](file:///home/amd/workspace/coder/scripts/bench_prefill_decode_interference.py)  
-* [`scripts/bench_open_loop_sweep.py`](file:///home/amd/workspace/coder/scripts/bench_open_loop_sweep.py)  
-* [`scripts/bench_cold_start_probe.py`](file:///home/amd/workspace/coder/scripts/bench_cold_start_probe.py)  
-* [`scripts/analyze_tail_metrics.py`](file:///home/amd/workspace/coder/scripts/analyze_tail_metrics.py)  
-* [`scripts/plot_tail_distributions.py`](file:///home/amd/workspace/coder/scripts/plot_tail_distributions.py)  
+* [`scripts/request_event_schema.py`](/scripts/request_event_schema.py)
+* [`scripts/bench_agent_chain.py`](/scripts/bench_agent_chain.py)
+* [`scripts/bench_prefill_decode_interference.py`](/scripts/bench_prefill_decode_interference.py)
+* [`scripts/bench_open_loop_sweep.py`](/scripts/bench_open_loop_sweep.py)
+* [`scripts/bench_cold_start_probe.py`](/scripts/bench_cold_start_probe.py)
+* [`scripts/analyze_tail_metrics.py`](/scripts/analyze_tail_metrics.py)
+* [`scripts/plot_tail_distributions.py`](/scripts/plot_tail_distributions.py)
 
 ---
 
@@ -44,7 +56,7 @@ A rigorous enterprise evaluation cannot rely on either synthetic compute benchma
 
 ## 2. The Unified Request & Event Telemetry Schema
 
-To eliminate measurement ambiguity across all experiments, every test client and trace recorder adheres to [`scripts/request_event_schema.py`](file:///home/amd/workspace/coder/scripts/request_event_schema.py).
+To eliminate measurement ambiguity across all experiments, every test client and trace recorder adheres to [`scripts/request_event_schema.py`](/scripts/request_event_schema.py).
 
 ### 2.1 Distinct Measurement Boundaries
 
@@ -102,13 +114,13 @@ We strictly isolate three measurement boundaries and **never pool them into the 
 
 | # | Experiment Name & Objective | Workload & Methodological Controls | Decisive Datapoints & Figures | Companion Tool |
 |---|---|---|---|---|
-| **1** | **Concurrency and Queueing**<br>*Determine how p50, p95, and p99 TTFT and completion latency change as offered work approaches and exceeds sustainable capacity.* | • Closed-loop sweep: Concurrency $C=1, 5, 20$, and levels around the observed throughput knee.<br>• Open-loop sweep: Scheduled Poisson/paced arrivals from low load to overload.<br>• Replication: Hundreds of completed requests for exploratory p95; several thousand across repeated runs before quantitative p99 claims. | **Plot:** Load-vs-latency percentile curves; TTFT and completion CDFs; achieved throughput and deadline-qualified Goodput vs. offered load.<br>**Decisive Finding:** Identify the saturation knee where p50 stays flat (<150ms) while p99 blows out by 5x+ or deadline-miss rate surges. | [`bench_open_loop_sweep.py`](file:///home/amd/workspace/coder/scripts/bench_open_loop_sweep.py) |
-| **2** | **TTFT vs. Generation Latency**<br>*Isolate engine prefill launch time from ongoing autoregressive decode speed, and quantify the crossover.* | • Fixed input $\times$ output grid (e.g. 100/1000 prompt tokens $\times$ 32/256 decode tokens) at matched load.<br>• Request waterfall showing client dispatch, TTFT, each ITL gap, and stream finish.<br>• Correct crossover math ($M \approx 21$ tokens). | **Plot:** TTFT vs. input tokens; TPOT and worst ITL vs. active decodes; Request waterfalls; Latency trade-off curves across generation length $M$.<br>**Decisive Finding:** Separates a slow engine launch from a frozen or slow token stream, establishing empirical crossover points. | [`bench_agent_chain.py`](file:///home/amd/workspace/coder/scripts/bench_agent_chain.py) |
-| **3** | **Cold Starts and Idle Intervals**<br>*Quantify post-idle TTFT penalties and evaluate bimodal latency distributions.* | • Cool-down probe with varied idle intervals (e.g. 0s, 30s, 60s, 120s, 300s).<br>• Measure client TTFT, TCP connect time, TLS handshake time, and first byte delivery.<br>• Label findings descriptively ("bimodal TTFT", "post-idle TTFT penalty") rather than diagnostic leaps unless confirmed by server/container logs. | **Plot:** TTFT vs. idle duration; distribution histograms testing for multimodality; network connection vs engine prefill breakdown.<br>**Decisive Finding:** Quantifies the latency penalty of scale-from-zero or idle serverless workers without speculative diagnoses. | [`bench_cold_start_probe.py`](file:///home/amd/workspace/coder/scripts/bench_cold_start_probe.py) |
-| **4** | **Provider Consistency & Multi-Tenancy**<br>*Measure latency stability and jitter across endpoints under identical workloads.* | • Send identical, interleaved requests from the same client VM to local AMD GPU endpoint vs. hosted APIs over multi-hour windows.<br>• Compute coefficient of variation (CV = $\sigma / \mu$), interquartile range (IQR), and p99:p50 ratio.<br>• Explicitly distinguish customer-experienced endpoint performance from bare-silicon roofline. | **Plot:** Time-series latency traces; per-provider CDFs; CV and p99:p50 dispersion plots.<br>**Decisive Finding:** Quantifies multi-tenant jitter and tail variance under matched prompt/output conditions. | [`analyze_tail_metrics.py`](file:///home/amd/workspace/coder/scripts/analyze_tail_metrics.py) |
-| **5** | **Agent-Chain Compounding & Task Durations**<br>*Determine how single-call tail latency propagates through sequential and parallel multi-turn workflows.* | • Replay real Claude Code multi-turn agent traces (`semianalysis_cc_traces`) and synthetic DAGs ($N=10\dots 30$).<br>• Sequential model calls add: $T = \sum T_{\text{LLM}} + \sum T_{\text{tool}} + T_{\text{orchestration}}$.<br>• Evaluate dual resampling baselines: independent i.i.d. draws vs. block/time-correlated resampling. | **Plot:** Complete task p50/p95/p99 duration; task deadline-miss rate; empirical vs. theoretical risk ($1 - (1-p)^n$); single-call vs. whole-task spread.<br>**Decisive Finding:** Demonstrates that sequential chains add with correlated queueing, and parallel fan-out is bound by $\max(t_i)$. | [`bench_agent_chain.py`](file:///home/amd/workspace/coder/scripts/bench_agent_chain.py) / [`run_agentx_tail_sweep.py`](file:///home/amd/workspace/coder/scripts/run_agentx_tail_sweep.py) |
-| **6** | **Prefill/Decode Interference**<br>*Test the hypothesis that incoming prefill bursts degrade active decode streams, and evaluate disaggregation.* | • Steady decoders (e.g. 4 active streams $\times$ 128 tokens).<br>• Timed long-prompt injections (1K, 4K, 8K tokens).<br>• Compare collocated chunked prefill (default vs tuned chunk sizes) vs. P/D 1P1D disaggregation at equal accelerator budget. | **Plot:** Aligned timeline of injected prefill vs. active decode ITL intervals; peak per-request ITL stall; goodput retention under burst load.<br>**Decisive Finding:** Proves whether isolating prefill eliminates decode freezes without sacrificing overall throughput. | [`bench_prefill_decode_interference.py`](file:///home/amd/workspace/coder/scripts/bench_prefill_decode_interference.py) |
-| **7** | **SLOs vs. Raw Tokens/s**<br>*Evaluate cluster capacity using deadline-qualified Goodput rather than raw peak throughput.* | • Sweep offered load across candidate configurations.<br>• Apply pre-registered interactive SLOs: TTFT $\le 1.0\text{s}$, worst ITL $\le 100\text{ms}$, task duration $\le 30\text{s}$.<br>• Goodput counts tokens only from requests that met all defined SLO thresholds. | **Plot:** Achieved raw tokens/s vs. SLO-qualified Goodput tokens/s on the same offered load axis.<br>**Decisive Finding:** Yields an actionable capacity knee based on user-acceptable latency rather than saturated engine throughput. | [`bench_open_loop_sweep.py`](file:///home/amd/workspace/coder/scripts/bench_open_loop_sweep.py) |
+| **1** | **Concurrency and Queueing**<br>*Determine how p50, p95, and p99 TTFT and completion latency change as offered work approaches and exceeds sustainable capacity.* | • Closed-loop sweep: Concurrency $C=1, 5, 20$, and levels around the observed throughput knee.<br>• Open-loop sweep: Scheduled Poisson/paced arrivals from low load to overload.<br>• Replication: Hundreds of completed requests for exploratory p95; several thousand across repeated runs before quantitative p99 claims. | **Plot:** Load-vs-latency percentile curves; TTFT and completion CDFs; achieved throughput and deadline-qualified Goodput vs. offered load.<br>**Decisive Finding:** Identify the saturation knee where p50 stays flat (<150ms) while p99 blows out by 5x+ or deadline-miss rate surges. | [`bench_open_loop_sweep.py`](/scripts/bench_open_loop_sweep.py) |
+| **2** | **TTFT vs. Generation Latency**<br>*Isolate engine prefill launch time from ongoing autoregressive decode speed, and quantify the crossover.* | • Fixed input $\times$ output grid (e.g. 100/1000 prompt tokens $\times$ 32/256 decode tokens) at matched load.<br>• Request waterfall showing client dispatch, TTFT, each ITL gap, and stream finish.<br>• Correct crossover math ($M \approx 21$ tokens). | **Plot:** TTFT vs. input tokens; TPOT and worst ITL vs. active decodes; Request waterfalls; Latency trade-off curves across generation length $M$.<br>**Decisive Finding:** Separates a slow engine launch from a frozen or slow token stream, establishing empirical crossover points. | [`bench_agent_chain.py`](/scripts/bench_agent_chain.py) |
+| **3** | **Cold Starts and Idle Intervals**<br>*Quantify post-idle TTFT penalties and evaluate bimodal latency distributions.* | • Cool-down probe with varied idle intervals (e.g. 0s, 30s, 60s, 120s, 300s).<br>• Measure client TTFT, TCP connect time, TLS handshake time, and first byte delivery.<br>• Label findings descriptively ("bimodal TTFT", "post-idle TTFT penalty") rather than diagnostic leaps unless confirmed by server/container logs. | **Plot:** TTFT vs. idle duration; distribution histograms testing for multimodality; network connection vs engine prefill breakdown.<br>**Decisive Finding:** Quantifies the latency penalty of scale-from-zero or idle serverless workers without speculative diagnoses. | [`bench_cold_start_probe.py`](/scripts/bench_cold_start_probe.py) |
+| **4** | **Provider Consistency & Multi-Tenancy**<br>*Measure latency stability and jitter across endpoints under identical workloads.* | • Send identical, interleaved requests from the same client VM to local AMD GPU endpoint vs. hosted APIs over multi-hour windows.<br>• Compute coefficient of variation (CV = $\sigma / \mu$), interquartile range (IQR), and p99:p50 ratio.<br>• Explicitly distinguish customer-experienced endpoint performance from bare-silicon roofline. | **Plot:** Time-series latency traces; per-provider CDFs; CV and p99:p50 dispersion plots.<br>**Decisive Finding:** Quantifies multi-tenant jitter and tail variance under matched prompt/output conditions. | [`analyze_tail_metrics.py`](/scripts/analyze_tail_metrics.py) |
+| **5** | **Agent-Chain Compounding & Task Durations**<br>*Determine how single-call tail latency propagates through sequential and parallel multi-turn workflows.* | • Replay real Claude Code multi-turn agent traces (`semianalysis_cc_traces`) and synthetic DAGs ($N=10\dots 30$).<br>• Sequential model calls add: $T = \sum T_{\text{LLM}} + \sum T_{\text{tool}} + T_{\text{orchestration}}$.<br>• Evaluate dual resampling baselines: independent i.i.d. draws vs. block/time-correlated resampling. | **Plot:** Complete task p50/p95/p99 duration; task deadline-miss rate; empirical vs. theoretical risk ($1 - (1-p)^n$); single-call vs. whole-task spread.<br>**Decisive Finding:** Demonstrates that sequential chains add with correlated queueing, and parallel fan-out is bound by $\max(t_i)$. | [`bench_agent_chain.py`](/scripts/bench_agent_chain.py) / [`run_agentx_tail_sweep.py`](/scripts/run_agentx_tail_sweep.py) |
+| **6** | **Prefill/Decode Interference**<br>*Test the hypothesis that incoming prefill bursts degrade active decode streams, and evaluate disaggregation.* | • Steady decoders (e.g. 4 active streams $\times$ 128 tokens).<br>• Timed long-prompt injections (1K, 4K, 8K tokens).<br>• Compare collocated chunked prefill (default vs tuned chunk sizes) vs. P/D 1P1D disaggregation at equal accelerator budget. | **Plot:** Aligned timeline of injected prefill vs. active decode ITL intervals; peak per-request ITL stall; goodput retention under burst load.<br>**Decisive Finding:** Proves whether isolating prefill eliminates decode freezes without sacrificing overall throughput. | [`bench_prefill_decode_interference.py`](/scripts/bench_prefill_decode_interference.py) |
+| **7** | **SLOs vs. Raw Tokens/s**<br>*Evaluate cluster capacity using deadline-qualified Goodput rather than raw peak throughput.* | • Sweep offered load across candidate configurations.<br>• Apply pre-registered interactive SLOs: TTFT $\le 1.0\text{s}$, worst ITL $\le 100\text{ms}$, task duration $\le 30\text{s}$.<br>• Goodput counts tokens only from requests that met all defined SLO thresholds. | **Plot:** Achieved raw tokens/s vs. SLO-qualified Goodput tokens/s on the same offered load axis.<br>**Decisive Finding:** Yields an actionable capacity knee based on user-acceptable latency rather than saturated engine throughput. | [`bench_open_loop_sweep.py`](/scripts/bench_open_loop_sweep.py) |
 
 ---
 
@@ -148,7 +160,7 @@ $$(M - 1) \cdot 0.04 = 0.8 \implies M - 1 = 20 \implies M = 21\text{ tokens}$$
 
 ### 4.3 Two Statistical Resampling Baselines for Agent Tasks
 
-To rigorously evaluate how tail latency affects complete multi-turn agent tasks without making invalid independence assumptions, [`scripts/bench_agent_chain.py`](file:///home/amd/workspace/coder/scripts/bench_agent_chain.py) computes **two distinct resampling baselines**:
+To rigorously evaluate how tail latency affects complete multi-turn agent tasks without making invalid independence assumptions, [`scripts/bench_agent_chain.py`](/scripts/bench_agent_chain.py) computes **two distinct resampling baselines**:
 
 1. **Resampling Baseline 1: Independent i.i.d. Draws:**
    * Randomly samples $N$ call durations from the single-call baseline distribution with replacement ($B = 5,000$ iterations).

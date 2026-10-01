@@ -1,4 +1,14 @@
 ---
+type: Presentation
+title: Serving Agentic LLMs at the Edge
+description: Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700
+  & Instinct™ MI350P.
+tags:
+- presentation
+- agentx
+- tail-latency
+- pdd
+status: stable
 marp: true
 theme: gaia
 _class: lead
@@ -640,7 +650,7 @@ Evaluated on dual AMD Instinct™ MI350P cards across dual-socket EPYC 9015 (PCI
 * **Layer Geometry:** 16 attention regions, 272 descriptors, 884 MiB.
 * **Raw Fragmented:** 77.9 ms p50.
 * **Coalesced (16 copies):** **20.5 ms p50** (43.1 GB/s).
-* **PCIe Path Probe:** Benchmarked via [`scripts/pcie_path_bench.cu`](file:///home/amd/workspace/coder/scripts/pcie_path_bench.cu).
+* **PCIe Path Probe:** Benchmarked via [`scripts/pcie_path_bench.cu`](/scripts/pcie_path_bench.cu).
 
 <div class="alert-box">
 <b>Directional Asymmetry:</b> GPU 0 $\to$ GPU 1 is 5.7 ms; GPU 1 $\to$ GPU 0 is <b>12.7 ms p50</b> and 175 ms p95 across inter-socket EPYC root bridges. Topology matters!

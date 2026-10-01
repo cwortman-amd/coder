@@ -1,3 +1,16 @@
+---
+type: Profiling Report
+title: 'Best-C1 kernel and memory profile: Triton attention'
+description: 'Configuration: one MI350P, Qwen3.8-27B Quark AWQ MXFP4, stock MXFP4
+  dispatch, VLLMROCMUSEAITER unset, O2 FULLANDPIECEWISE graphs, and.'
+tags:
+- profiling-report
+- enginecore-exec
+- 20260927t151210z-triton-attn
+- profile
+status: stable
+---
+
 # Best-C1 kernel and memory profile: Triton attention
 
 Configuration: one MI350P, Qwen3.8-27B Quark AWQ MXFP4, stock MXFP4

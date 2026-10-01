@@ -1,3 +1,18 @@
+---
+type: Quality Evaluation
+title: Frozen latency gates copied before the 1K/1K campaign
+description: 'Source: results/quality/attentionqualification/GATES.md, written before
+  the paired quality suite. These limits are not being revised for this run.'
+tags:
+- quality-evaluation
+- quality
+- attention-qualification
+- latency-campaign
+- gates
+- snapshot
+status: stable
+---
+
 # Frozen latency gates copied before the 1K/1K campaign
 
 Source: `_results/quality/attention_qualification/GATES.md`, written before

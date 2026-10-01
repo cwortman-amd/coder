@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: C1 control vs RVS BABEL HBM roof (25 Sep 2026)
+description: 'Canonical report: docs/MI350P.md.'
+tags:
+- profiling-report
+- c1
+- babel
+- roofline
+status: stable
+---
+
 # C1 control vs RVS BABEL HBM roof (25 Sep 2026)
 
 Canonical report: [`docs/MI350P.md`](../../docs/MI350P.md).

@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: Tensor parallelism over PCIe on two MI350P cards
+description: Measured 30 September 2026 on the dual-socket MI350P PCIe host. This
+  is a functional TP=2 result, but it is not a performance-qualified deployment.
+tags:
+- technical-report
+- mi350p
+- tp
+status: stable
+---
+
 # Tensor parallelism over PCIe on two MI350P cards
 
 Measured 30 September 2026 on the dual-socket MI350P PCIe host. This is a

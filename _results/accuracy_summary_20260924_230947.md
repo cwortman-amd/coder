@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Accuracy Benchmark Summary
+description: 'Device: AMD Instinct™ MI350P (gfx950, 144 GB HBM3E) GPU profile: mi350p
+  ROCm ISA: gfx950 Engine: vllm.'
+tags:
+- benchmark-report
+- accuracy
+- '20260924'
+- '230947'
+status: stable
+---
+
 # Accuracy Benchmark Summary
 
 - **Device:** AMD Instinct™ MI350P (gfx950, 144 GB HBM3E)

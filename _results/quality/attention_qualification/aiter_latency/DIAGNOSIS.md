@@ -1,3 +1,17 @@
+---
+type: Quality Evaluation
+title: AITER unified latency diagnosis (27 Sep 2026)
+description: Stock ROCMATTN is the running service again. VLLMROCMUSEAITER was not
+  set. No scheduler or chunk-size change was applied. The 8192-token.
+tags:
+- quality-evaluation
+- quality
+- attention-qualification
+- aiter-latency
+- diagnosis
+status: stable
+---
+
 # AITER unified latency diagnosis (27 Sep 2026)
 
 Stock `ROCM_ATTN` is the running service again. `VLLM_ROCM_USE_AITER` was

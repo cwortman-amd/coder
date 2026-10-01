@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: Multi-Turn Agentic Serving Dynamics on AMD Radeon™ AI PRO R9700
+description: 'Hardware Under Test: Single AMD Radeon™ AI PRO R9700 (32 GB GDDR6, 256-bit,
+  PCIe Gen 5.0 x16, gfx1201).'
+tags:
+- technical-report
+- agentx
+- tail
+status: stable
+---
+
 # Multi-Turn Agentic Serving Dynamics on AMD Radeon™ AI PRO R9700
 
 ### Empirical Tail Latency, Prefix Eviction, and Concurrency Collapse Under Real-World Claude Code Traces
@@ -7,8 +19,8 @@
 **Model:** `Qwen3.8-27B-Quark-AWQ-MXFP4` (W4A8 FP8-WMMA GEMM, FP8 KV-Cache)  
 **Engine Settings:** `--max-model-len 65536 --max-num-seqs 4 --max-num-batched-tokens 4096 --gpu-memory-utilization 0.88 --attention-backend ROCM_AITER_UNIFIED_ATTN`  
 **Workload Dataset:** `semianalysis_cc_traces_weka_062126` (real-world multi-turn Claude Code agent traces)  
-**Execution Harness:** [`scripts/run_agentx_tail_sweep.py`](file:///home/amd/workspace/coder/scripts/run_agentx_tail_sweep.py), [`scripts/analyze_agentx_tail_sweep.py`](file:///home/amd/workspace/coder/scripts/analyze_agentx_tail_sweep.py), [`scripts/plot_agentx_tail_sweep.py`](file:///home/amd/workspace/coder/scripts/plot_agentx_tail_sweep.py)  
-**Published Raw Data:** [`docs/results/agentx/`](file:///home/amd/workspace/coder/docs/results/agentx/) (`analysis.json`, `request_samples.csv`, `manifest.json`, `report.md`)
+**Execution Harness:** [`scripts/run_agentx_tail_sweep.py`](/scripts/run_agentx_tail_sweep.py), [`scripts/analyze_agentx_tail_sweep.py`](/scripts/analyze_agentx_tail_sweep.py), [`scripts/plot_agentx_tail_sweep.py`](/scripts/plot_agentx_tail_sweep.py)
+**Published Raw Data:** [`docs/results/agentx/`](/docs/results/agentx/) (`analysis.json`, `request_samples.csv`, `manifest.json`, `report.md`)
 
 ---
 

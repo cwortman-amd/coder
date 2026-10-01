@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: Exact-shape MXFP4 dispatch (27 Sep 2026)
+description: Two candidates. Each one replaced only MLEQ8 for one (N, K) via AITER’s
+  GEMM-AFP4WFP4-N=…-K=….json lookup. DEFAULT.json stayed stock.
+tags:
+- profiling-report
+- mxfp4-gateup
+- serving
+status: stable
+---
+
 # Exact-shape MXFP4 dispatch (27 Sep 2026)
 
 Two candidates. Each one replaced only `M_LEQ_8` for one `(N, K)` via AITER’s

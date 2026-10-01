@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: Qwen3.8-Flash-Next on two MI350P GPUs
+description: Separate from the frozen dense-27B MXFP4 control (MI350P.md). The published
+  AMD recipe is 4× MI355X, TP=4. Nothing below is a validated.
+tags:
+- technical-report
+- flash
+- next
+status: stable
+---
+
 # Qwen3.8-Flash-Next on two MI350P GPUs
 
 Separate from the frozen dense-27B MXFP4 control (`MI350P.md`).

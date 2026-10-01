@@ -1,3 +1,17 @@
+---
+type: Technical Report
+title: The Token Freeze That Throughput Charts Miss
+description: 'A coding agent can deliver an impressive number of tokens per second
+  and still feel broken. The failure often happens between tokens: a response is streaming
+  smoothly, a new long prompt arrives, and the existing...'
+tags:
+- technical-report
+- qwen
+- tail
+- pdd
+status: stable
+---
+
 # The Token Freeze That Throughput Charts Miss
 
 ### What Qwen3.8-27B MXFP4 on AMD GPUs taught us about prefill/decode disaggregation

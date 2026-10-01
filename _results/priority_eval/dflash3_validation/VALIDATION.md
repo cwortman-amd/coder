@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: DFLASH-3 promotion-gate validation (2026-09-25)
+description: DFLASH-3 is not promoted as the default interactive profile. It is the
+  preferred optional DFlash setting only for low-concurrency, long-output.
+tags:
+- benchmark-report
+- priority-eval
+- dflash3-validation
+- validation
+status: stable
+---
+
 # DFLASH-3 promotion-gate validation (2026-09-25)
 
 ## Decision

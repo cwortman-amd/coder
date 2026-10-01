@@ -1,3 +1,14 @@
+---
+type: Profiling Report
+title: vLLM captured mini-decode
+description: 'UTC: 2026-09-25T17:18:27Z Status: completed Live :8000 detected: False
+  GPU free/total GiB: 143.67 / 143.98.'
+tags:
+- profiling-report
+- vllm-captured
+status: stable
+---
+
 # vLLM captured mini-decode
 
 - UTC: `2026-09-25T17:18:27Z`

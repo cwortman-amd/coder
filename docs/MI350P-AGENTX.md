@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: MI350P AgentX concurrency tail
+description: 'Date: 30 September 2026 Hardware: 1× AMD Instinct MI350P PCIe, GPU 0
+  (rocm-inference-server) Model: Qwen3.8-27B-Quark-AWQ-MXFP4, context cap 65,536.'
+tags:
+- technical-report
+- mi350p
+- agentx
+status: stable
+---
+
 # MI350P AgentX concurrency tail
 
 **Date:** 30 September 2026  

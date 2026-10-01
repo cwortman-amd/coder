@@ -1,3 +1,15 @@
+---
+type: Benchmark Report
+title: MI350P MXFP4 control + graph/batch ablations (2026-09-25)
+description: 'Canonical write-up for reports: docs/MI350P.md. This file is the lab
+  ledger (JSON paths, per-run notes).'
+tags:
+- benchmark-report
+- priority-eval
+- eval
+status: stable
+---
+
 # MI350P MXFP4 control + graph/batch ablations (2026-09-25)
 
 Canonical write-up for reports: [`docs/MI350P.md`](../../docs/MI350P.md). This file is the lab ledger (JSON paths, per-run notes).

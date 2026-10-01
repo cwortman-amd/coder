@@ -1,3 +1,17 @@
+---
+type: Quality Evaluation
+title: MXFP4 vs FP8/BF16 production-sampling comparison
+description: Blocked until an exclusive-GPU window. The frozen MXFP4 control is live
+  on 127.0.0.1:8000 and was not restarted or displaced for this work. Running a.
+tags:
+- quality-evaluation
+- quality
+- mxfp4
+- vs
+- fp8
+status: stable
+---
+
 # MXFP4 vs FP8/BF16 production-sampling comparison
 
 ## Status

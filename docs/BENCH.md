@@ -1,3 +1,15 @@
+---
+type: Operations Guide
+title: SWE-bench & GPQA Benchmarking Harness Guide
+description: This document describes the automated evaluation framework for testing
+  model coding capability (SWE-bench), scientific reasoning (GPQA), and live serving
+  throughput on AMD Radeon™ AI PRO R9700 and Instinct GPUs.
+tags:
+- operations-guide
+- bench
+status: stable
+---
+
 # SWE-bench & GPQA Benchmarking Harness Guide
 
 This document describes the automated evaluation framework for testing model coding capability (SWE-bench), scientific reasoning (GPQA), and live serving throughput on AMD Radeon™ AI PRO R9700 and Instinct GPUs.

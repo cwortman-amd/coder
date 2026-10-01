@@ -1,3 +1,15 @@
+---
+type: Technical Report
+title: Expert parallelism on two MI350P cards
+description: Same burst as the NVIDIA forum comparison of 2× RTX PRO 6000 Blackwell
+  on PCIe against 2× B200 on NVLink, run here on 2× Instinct MI350P.
+tags:
+- technical-report
+- mi350p
+- ep
+status: stable
+---
+
 # Expert parallelism on two MI350P cards
 
 Same burst as the NVIDIA forum comparison of 2× RTX PRO 6000 Blackwell on PCIe against 2× B200 on NVLink, run here on 2× Instinct MI350P.

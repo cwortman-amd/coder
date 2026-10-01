@@ -1,3 +1,13 @@
+---
+type: Operations Guide
+title: Operations
+description: Container layout and fixes for this repo. Benchmark commands are in BENCH.md.
+tags:
+- operations-guide
+- ops
+status: stable
+---
+
 # Operations
 
 Container layout and fixes for this repo. Benchmark commands are in [BENCH.md](BENCH.md).
@@ -291,25 +301,25 @@ Separates GPU 0 (Prefill engine, port 8001) and GPU 1 (Decode engine, port 8002)
 docker compose -f docker/docker-compose.pd.yml up -d
 ```
 
-#### 8-Card Server Disaggregated Cluster (1P:7D) ([`docker/docker-compose.pd.8card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.8card.yml))
+#### 8-Card Server Disaggregated Cluster (1P:7D) ([`docker/docker-compose.pd.8card.yml`](/docker/docker-compose.pd.8card.yml))
 Orchestrates an 8-GPU R9700 server with 1 dedicated prefill engine on GPU 0 (port 8001) and 7 dedicated decoders on GPUs 1–7 (ports 8002–8008) communicating via host-staged `/dev/shm` IPC:
 ```bash
 docker compose -f docker/docker-compose.pd.8card.yml up -d
 ```
 
-#### 8-Card Data Parallel Baseline (DP=8) ([`docker/docker-compose.dp8.yml`](file:///home/amd/workspace/coder/docker/docker-compose.dp8.yml))
+#### 8-Card Data Parallel Baseline (DP=8) ([`docker/docker-compose.dp8.yml`](/docker/docker-compose.dp8.yml))
 Deploys 8 independent collocated prefill+decode replicas across GPUs 0–7 (ports 8001–8008) for multi-replica goodput and interference benchmarking:
 ```bash
 docker compose -f docker/docker-compose.dp8.yml up -d
 ```
 
-#### 16-Card Dual-Node Cluster (2P:14D) ([`docker/docker-compose.pd.16card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.16card.yml))
+#### 16-Card Dual-Node Cluster (2P:14D) ([`docker/docker-compose.pd.16card.yml`](/docker/docker-compose.pd.16card.yml))
 Orchestrates a dual-chassis rack architecture pooling 512 GB VRAM across 16 GPUs (2 prefill engines on GPU 0 of each node, 14 distributed decoders) interconnected with RDMA networking:
 ```bash
 docker compose -f docker/docker-compose.pd.16card.yml up -d
 ```
 
-#### Asynchronous Fleet Router ([`scripts/pd_fleet_router.py`](file:///home/amd/workspace/coder/scripts/pd_fleet_router.py))
+#### Asynchronous Fleet Router ([`scripts/pd_fleet_router.py`](/scripts/pd_fleet_router.py))
 An enterprise-grade FastAPI reverse proxy providing unified OpenAI-compatible routing (`/v1/chat/completions`):
 ```bash
 # Launch in Disaggregated P/D Mode
@@ -319,7 +329,7 @@ python3 scripts/pd_fleet_router.py --mode pd --prefill-urls http://localhost:800
 python3 scripts/pd_fleet_router.py --mode dp --dp-urls http://localhost:8001 http://localhost:8002 http://localhost:8003 http://localhost:8004 http://localhost:8005 http://localhost:8006 http://localhost:8007 http://localhost:8008 --port 8000
 ```
 
-#### Inter-GPU Topology & Connector Diagnostics ([`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py))
+#### Inter-GPU Topology & Connector Diagnostics ([`scripts/inspect_dual_gpu.py`](/scripts/inspect_dual_gpu.py))
 Inspects ROCm KFD agent topology, validates homogeneous ISA matching, and diagnoses in-container vLLM KV transfer connector readiness:
 ```bash
 python3 scripts/inspect_dual_gpu.py
@@ -476,7 +486,7 @@ This document provides resolutions for common issues, error messages, device nod
      ```bash
      docker exec -it <container_name> pip install msgpack
      ```
-  2. **Zero-Dependency Fallback Runtime**: Use [`SimpleCPUOffloadConnector`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) or host-staged shared memory (`/dev/shm`). `SimpleCPUOffloadConnector` and `ExampleConnector` are verified **`[RUNTIME_READY]`** with zero external C++ dependencies, delivering fast inter-process transfer ($8\text{--}18\text{ ms}$) across host PCIe.
-  3. **Verification**: Run [`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) to confirm connector lifecycle readiness across all 16 registered factory connectors.
+  2. **Zero-Dependency Fallback Runtime**: Use [`SimpleCPUOffloadConnector`](/scripts/inspect_dual_gpu.py) or host-staged shared memory (`/dev/shm`). `SimpleCPUOffloadConnector` and `ExampleConnector` are verified **`[RUNTIME_READY]`** with zero external C++ dependencies, delivering fast inter-process transfer ($8\text{--}18\text{ ms}$) across host PCIe.
+  3. **Verification**: Run [`scripts/inspect_dual_gpu.py`](/scripts/inspect_dual_gpu.py) to confirm connector lifecycle readiness across all 16 registered factory connectors.
 
 

@@ -1,3 +1,14 @@
+---
+type: Benchmark Report
+title: AgentX concurrency tail pilot
+description: This is a one-hour load-spread pilot. Request p99 values are observed
+  order statistics, not stable population estimates.
+tags:
+- benchmark-report
+- agentx
+status: stable
+---
+
 # AgentX concurrency tail pilot
 
 This is a one-hour load-spread pilot. Request p99 values are observed order statistics, not stable population estimates.

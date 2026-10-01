@@ -1,3 +1,19 @@
+---
+type: Simulation Report
+title: 'Counterfactual Capacity & Interference Report: 1P1D vs. DP=2 on Radeon™ AI
+  PRO R9700'
+description: 'Evaluation Date: September 23, 2026 Hardware Platform: AMD Radeon™ AI
+  PRO R9700 (gfx1201, 64 CUs, 32 GB GDDR6).'
+tags:
+- simulation-report
+- pd-emulator
+- pd
+- emulator
+- '20260923'
+- '202929'
+status: stable
+---
+
 # Counterfactual Capacity & Interference Report: 1P1D vs. DP=2 on Radeon™ AI PRO R9700
 ## Two-Card Architectural Modeling Derived from Empirical Single-Card Primitives
 

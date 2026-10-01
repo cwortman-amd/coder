@@ -1,3 +1,16 @@
+---
+type: Benchmark Report
+title: Complete-Task Agent Latency & Compounding Report
+description: 'Model: Qwen3.8-27B-Quark-AWQ-MXFP4 Target URL: http://127.0.0.1:8000/v1
+  Workload Mode: closedloopconcurrency.'
+tags:
+- benchmark-report
+- tail-study
+- agent
+- chain
+status: stable
+---
+
 # Complete-Task Agent Latency & Compounding Report
 
 **Model:** `Qwen3.8-27B-Quark-AWQ-MXFP4`  

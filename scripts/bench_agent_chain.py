@@ -40,6 +40,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from okf_docs import ensure_frontmatter
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -665,7 +667,18 @@ $$P(\\text{{at least one call exceeds threshold }} T) = 1 - (1 - q)^N$$
 *Important distinction:* This predicts the probability of encountering an outlier call; it is **not** the workflow's p95 or p99 completion time. Sequential call durations add ($T_{{\\text{{task}}}} = \\sum T_i$), and shared queue congestion correlates outliers, causing the empirical task tail to diverge from independent convolutions.
 """)
 
-    report_path.write_text("\n".join(md) + "\n")
+    report_path.write_text(
+        ensure_frontmatter(
+            "\n".join(md) + "\n",
+            doc_type="Benchmark Report",
+            title="Complete-Task Agent Latency & Compounding Report",
+            description=(
+                "Measured single-call and complete-task latency distributions "
+                "for sequential agent chains."
+            ),
+            tags=["agent-chain", "tail-latency", "benchmark"],
+        )
+    )
 
 
 def main() -> int:

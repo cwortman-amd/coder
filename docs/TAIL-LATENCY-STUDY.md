@@ -1,3 +1,17 @@
+---
+type: Technical Report
+title: LLM Inference Tail Latency & Agent Compounding Framework
+description: This framework reproduces and expands upon the empirical findings from
+  the DigitalOcean tail latency study, grounded in the systems principles of Jeffrey
+  Dean and Luiz André Barroso's foundational work The Tail at...
+tags:
+- technical-report
+- tail
+- latency
+- study
+status: stable
+---
+
 # LLM Inference Tail Latency & Agent Compounding Framework
 
 ### Empirical Methodology, Systems Compounding Math, and Automated Inversion Auditing
@@ -50,7 +64,7 @@ $$(M - 1) \cdot 0.04 = 0.8 \implies M - 1 = 20 \implies M = 21\text{ tokens}$$
 Informal claims citing $M \approx 15$ tokens typically stem from omitting the $-1$ token fencepost ($M$ vs $M-1$) or dividing by an incorrect rate delta. In production workloads, decode rates and ITL variance shift this crossover, requiring empirical measurement across the $(N, M)$ grid.
 
 ### Refinement 4: Two Statistical Resampling Baselines for Agent Tasks
-To evaluate agent tasks without invalid independence assumptions, [`scripts/bench_agent_chain.py`](file:///home/amd/workspace/coder/scripts/bench_agent_chain.py) evaluates two distinct resampling baselines against empirical traces:
+To evaluate agent tasks without invalid independence assumptions, [`scripts/bench_agent_chain.py`](/scripts/bench_agent_chain.py) evaluates two distinct resampling baselines against empirical traces:
 1. **Resampling Baseline 1 (Independent i.i.d. Draws):** Draws $N$ call durations randomly with replacement ($B=5,000$ iterations) from the single-call baseline distribution, modeling an idealized uncorrelated system.
 2. **Resampling Baseline 2 (Block / Time-Preserving Resampling):** Resamples contiguous temporal blocks or preserves session turn order, capturing empirical queueing correlation, KV pressure, and context accumulation.
 Comparing empirical task completion times against Baseline 1 and Baseline 2 quantifies the real cost of correlated congestion.

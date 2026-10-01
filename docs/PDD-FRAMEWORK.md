@@ -1,3 +1,17 @@
+---
+type: Technical Report
+title: 'Prefill/Decode Disaggregation (P/D) vs. Data Parallelism (DP=2): Presales
+  & Engineering Evaluation Framework'
+description: 'Target Model: Qwen3.8-27B MXFP4 (local/vllm-mxfp4:gfx1201) Hardware
+  Baseline: Dual AMD Radeon™ AI PRO R9700 (64 CUs, 32 GB GDDR6, PCIe Gen 5.0 x16,
+  $300\text{W}$ TDP).'
+tags:
+- technical-report
+- pdd
+- framework
+status: stable
+---
+
 # Prefill/Decode Disaggregation (P/D) vs. Data Parallelism (DP=2): Presales & Engineering Evaluation Framework
 ## AMD Radeon™ AI PRO R9700 Dual-Card Comparative Serving Analysis
 
@@ -168,12 +182,12 @@ $$N_{\text{cards}} = \frac{D_{\text{annual}}}{T_{\text{available}} \times u_{\te
 The complete presales package is organized into an **Executive Briefing** backed by an **Engineering Audit Appendix**:
 
 ### 8.1 Executive Suite (Six Core Exhibits)
-1. **Exhibit 1: The Master 4-Panel Dashboard** ([`01_pdd_benefits_master_dashboard.png`](file:///home/amd/workspace/coder/docs/figures/pd/01_pdd_benefits_master_dashboard.png)) — Stalls, goodput, crossover break-even, and handoff delay tolerance.
-2. **Exhibit 2: Sustainable Capacity & Queue Stability Boundary** ([`02_pdd_sustainable_capacity_sweep.png`](file:///home/amd/workspace/coder/docs/figures/pd/02_pdd_sustainable_capacity_sweep.png)) — Completed vs. qualified req/s and queue growth onset ($\lambda > 0.72\text{ req/s}$).
-3. **Exhibit 3: Decode Retention Crossover ($\eta < 0.50$)** ([`03_pdd_decode_retention_crossover.png`](file:///home/amd/workspace/coder/docs/figures/pd/03_pdd_decode_retention_crossover.png)) — Empirical condition where 1 dedicated decoder beats 2 collocated cards in raw output.
-4. **Exhibit 4: Real-Time Inter-Token Latency Timeline** ([`04_pdd_token_latency_timeline.png`](file:///home/amd/workspace/coder/docs/figures/pd/04_pdd_token_latency_timeline.png)) — Waterfall trace of $613.3\text{ ms}$ stall during prompt chunking vs. uninterrupted 48.2 ms cadence.
-5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](file:///home/amd/workspace/coder/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)) — Cost per 1,000 qualified requests ($0.49 vs. $3.98) and fleet sizing curves.
-6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](file:///home/amd/workspace/coder/docs/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)) — 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
+1. **Exhibit 1: The Master 4-Panel Dashboard** ([`01_pdd_benefits_master_dashboard.png`](/docs/figures/pd/01_pdd_benefits_master_dashboard.png)) — Stalls, goodput, crossover break-even, and handoff delay tolerance.
+2. **Exhibit 2: Sustainable Capacity & Queue Stability Boundary** ([`02_pdd_sustainable_capacity_sweep.png`](/docs/figures/pd/02_pdd_sustainable_capacity_sweep.png)) — Completed vs. qualified req/s and queue growth onset ($\lambda > 0.72\text{ req/s}$).
+3. **Exhibit 3: Decode Retention Crossover ($\eta < 0.50$)** ([`03_pdd_decode_retention_crossover.png`](/docs/figures/pd/03_pdd_decode_retention_crossover.png)) — Empirical condition where 1 dedicated decoder beats 2 collocated cards in raw output.
+4. **Exhibit 4: Real-Time Inter-Token Latency Timeline** ([`04_pdd_token_latency_timeline.png`](/docs/figures/pd/04_pdd_token_latency_timeline.png)) — Waterfall trace of $613.3\text{ ms}$ stall during prompt chunking vs. uninterrupted 48.2 ms cadence.
+5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)) — Cost per 1,000 qualified requests ($0.49 vs. $3.98) and fleet sizing curves.
+6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](/docs/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)) — 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
 
 
 ### 8.2 Engineering Audit Appendix
@@ -223,10 +237,10 @@ The complete presales package is organized into an **Executive Briefing** backed
 ## 10. Operationalization & Execution Cross-References
 
 For concrete implementation manifests, benchmark commands, and verification scripts, see:
-- **Fleet Topologies & Sizing**: [`docker/docker-compose.pd.8card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.8card.yml) (1P:7D), [`docker/docker-compose.dp8.yml`](file:///home/amd/workspace/coder/docker/docker-compose.dp8.yml) (DP=8), and [`docker/docker-compose.pd.16card.yml`](file:///home/amd/workspace/coder/docker/docker-compose.pd.16card.yml) (2P:14D dual-node).
-- **Cluster Router & Simulator**: [`scripts/pd_fleet_router.py`](file:///home/amd/workspace/coder/scripts/pd_fleet_router.py) (FastAPI router) and [`scripts/simulate_fleet_cluster.py`](file:///home/amd/workspace/coder/scripts/simulate_fleet_cluster.py) (queue stability simulator).
-- **Diagnostics & In-Container Connectors**: [`scripts/inspect_dual_gpu.py`](file:///home/amd/workspace/coder/scripts/inspect_dual_gpu.py) (homogeneous ISA validation & 16-connector lifecycle probe).
-- **Master Evaluation Standard & 4-Track Roadmap**: [`docs/PDD-EVAL.md`](file:///home/amd/workspace/coder/docs/PDD-EVAL.md) Sections 12–14.
-- **Operations & Troubleshooting**: [`docs/OPS.md`](file:///home/amd/workspace/coder/docs/OPS.md) Sections 8 & 11.
+- **Fleet Topologies & Sizing**: [`docker/docker-compose.pd.8card.yml`](/docker/docker-compose.pd.8card.yml) (1P:7D), [`docker/docker-compose.dp8.yml`](/docker/docker-compose.dp8.yml) (DP=8), and [`docker/docker-compose.pd.16card.yml`](/docker/docker-compose.pd.16card.yml) (2P:14D dual-node).
+- **Cluster Router & Simulator**: [`scripts/pd_fleet_router.py`](/scripts/pd_fleet_router.py) (FastAPI router) and [`scripts/simulate_fleet_cluster.py`](/scripts/simulate_fleet_cluster.py) (queue stability simulator).
+- **Diagnostics & In-Container Connectors**: [`scripts/inspect_dual_gpu.py`](/scripts/inspect_dual_gpu.py) (homogeneous ISA validation & 16-connector lifecycle probe).
+- **Master Evaluation Standard & 4-Track Roadmap**: [`docs/PDD-EVAL.md`](/docs/PDD-EVAL.md) Sections 12–14.
+- **Operations & Troubleshooting**: [`docs/OPS.md`](/docs/OPS.md) Sections 8 & 11.
 
 

@@ -1,3 +1,13 @@
+---
+type: Profiling Report
+title: Profiling Qwen3.8-27B MXFP4 on MI350P
+description: 'Campaign summary: docs/MI350P.md.'
+tags:
+- profiling-report
+- profile
+status: stable
+---
+
 # Profiling Qwen3.8-27B MXFP4 on MI350P
 
 Campaign summary: [`docs/MI350P.md`](../../docs/MI350P.md).

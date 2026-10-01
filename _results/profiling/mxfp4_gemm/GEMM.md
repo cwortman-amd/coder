@@ -1,3 +1,14 @@
+---
+type: Profiling Report
+title: Isolated AITER MXFP4 GEMM vs Babel Read (25 Sep 2026)
+description: 'Canonical: docs/MI350P.md. Babel roof: C1BABELROOFLINE.md.'
+tags:
+- profiling-report
+- mxfp4-gemm
+- gemm
+status: stable
+---
+
 # Isolated AITER MXFP4 GEMM vs Babel Read (25 Sep 2026)
 
 Canonical: [`docs/MI350P.md`](../../../docs/MI350P.md). Babel roof: [`C1_BABEL_ROOFLINE.md`](../C1_BABEL_ROOFLINE.md).

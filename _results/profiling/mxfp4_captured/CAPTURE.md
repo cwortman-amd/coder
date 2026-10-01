@@ -1,3 +1,15 @@
+---
+type: Profiling Report
+title: Captured MXFP4 mini-decode attempt (25 Sep 2026)
+description: 'Goal: graph-replay real Qwen3.8-27B MXFP4 shapes under stock Triton
+  and shape-local split-K variants, as an intermediate screen before serving.'
+tags:
+- profiling-report
+- mxfp4-captured
+- capture
+status: stable
+---
+
 # Captured MXFP4 mini-decode attempt (25 Sep 2026)
 
 Goal: graph-replay real Qwen3.8-27B MXFP4 shapes under stock Triton and
