@@ -45,10 +45,18 @@ both directions used `P2P/IPC` between `0000:8b:00.0` and `0001:c7:00.0`;
 there was no SHM payload fallback. RCCL selected RING/LL for a 4-byte
 all-reduce and RING/SIMPLE with all 16 channels for large all-reduces.
 
-The launch now sets `HSA_FORCE_FINE_GRAIN_PCIE=1`,
-`HSA_NO_SCRATCH_RECLAIM=1`, `NCCL_P2P_DISABLE=0`, and
-`NCCL_IB_DISABLE=1`. It sets only `HIP_VISIBLE_DEVICES`, leaving
-`ROCR_VISIBLE_DEVICES` and `HSA_OVERRIDE_GFX_VERSION` unset.
+The launch and [`docker/docker-compose.tp2.yml`](../docker/docker-compose.tp2.yml)
+set `HSA_FORCE_FINE_GRAIN_PCIE=1`, `HSA_NO_SCRATCH_RECLAIM=1`,
+`NCCL_P2P_DISABLE=0`, and `NCCL_IB_DISABLE=1`. Both set only
+`HIP_VISIBLE_DEVICES`. `ROCR_VISIBLE_DEVICES` and `HSA_OVERRIDE_GFX_VERSION`
+stay unset so an empty GFX override cannot hide the devices and a second
+visibility filter cannot drop GPU 1. The compose file also sets `GPU_ARCHS`
+from `GPU_ISA` and turns on `NCCL_DEBUG_SUBSYS=INIT,P2P,COLL,GRAPH,TUNING`.
+It does not pin `NCCL_PROTO`. The MXFP4 image and
+[`docker/docker-compose.mxfp4.yml`](../docker/docker-compose.mxfp4.yml) no
+longer force `NCCL_PROTO=Simple` either, so RCCL keeps its own small-message
+LL and large-message SIMPLE choice. Unsetting that variable is not a measured
+throughput change.
 
 ## Link type
 
@@ -57,6 +65,23 @@ weight **72**. GPU 0 is NUMA node 0 and GPU 1 is NUMA node 1. There is no
 XGMI link between the pair. RCCL `P2P/IPC` is the collective transport
 selected on that PCIe link. The transport record and the link type still
 leave the 10–13× throughput gap unallocated.
+
+`scripts/pcie_path_bench.cu` is the HIP-level probe for that link. It times
+peer copies, peer loads, peer stores, a one-word flag round trip, and a
+handshake-free peer load of a bf16-sized buffer. One-way times use events on
+the device that does the work. The flag time is a round trip on that device’s
+`clock64`, scaled by the HIP-event wall time of the same loop. Build and run
+it on the host with both GPUs visible:
+
+```bash
+hipcc -O3 -std=c++17 scripts/pcie_path_bench.cu -o /tmp/pcie_path_bench
+HSA_FORCE_FINE_GRAIN_PCIE=1 /tmp/pcie_path_bench idle
+```
+
+The first argument is a condition label in the CSV (`idle` when omitted).
+Columns are `op,actor,peer,actor_bdf,peer_bdf,bytes,condition,p50_us,p95_us,p99_us,max_us,p50_GBps,correct`.
+A row from this probe does not explain the serving gap. The acceptance test
+remains the unprofiled TP=1 versus TP=2 workload above.
 
 ## Where the time went in the unprofiled runs
 

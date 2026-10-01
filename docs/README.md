@@ -8,7 +8,7 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 |---|---|
 | [MI350P.md](MI350P.md) | Quark MXFP4 vLLM results, gates, and next work |
 | [MI350P-AGENTX.md](MI350P-AGENTX.md) | Faithful AgentX concurrency curve on one MI350P. Throughput peaks at C=32 and collapses at C=64 |
-| [MI350P-TP.md](MI350P-TP.md) | Two-GPU PCIe TP. The decode gap follows a ~51 ms launch stall on `0001:c7:00.0`. The same card also misses the RVS bf16 GST target (`scripts/debug.sh`) |
+| [MI350P-TP.md](MI350P-TP.md) | Two-GPU PCIe TP. The decode gap follows a ~51 ms launch stall on `0001:c7:00.0`. The same card also misses the RVS bf16 GST target (`scripts/debug.sh`). `scripts/pcie_path_bench.cu` times the HIP peer path |
 | [TCO.md](TCO.md) | 16× R9600D, 8× R9700S, 8× MI350P, 8× RTX PRO 6000 cost, tokens per dollar, and presentation plots |
 | [MI350P-BRINGUP.md](MI350P-BRINGUP.md) | 24 Sep FP8 bring-up and engine matrix |
 | [MI350P-PD.md](MI350P-PD.md) | Two-GPU prefill/decode on this host |

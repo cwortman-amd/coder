@@ -273,10 +273,11 @@ Key features:
 ### 8. Multi-GPU Orchestration (`tp2`, `dp2`, `pd`, `pd.8card`, `dp8`, `pd.16card`)
 
 #### Dual-GPU Tensor Parallelism (`docker/docker-compose.tp2.yml`)
-Pools 2x R9700 cards into a single 64 GB logical VRAM pool. Splits layers across GPUs:
+Pools two matching cards into one tensor-parallel server. The default image tag is `gfx1201`; set `GPU_PROFILE=mi350p`, `PYTORCH_ROCM_ARCH=gfx950`, and `GPU_ISA=gfx950` for the MI350P pair.
 ```bash
 docker compose -f docker/docker-compose.tp2.yml up -d
 ```
+The compose file sets `HIP_VISIBLE_DEVICES` only, plus `HSA_FORCE_FINE_GRAIN_PCIE=1` and `HSA_NO_SCRATCH_RECLAIM=1`. It leaves `ROCR_VISIBLE_DEVICES`, `HSA_OVERRIDE_GFX_VERSION`, and `NCCL_PROTO` unset. `NCCL_DEBUG_SUBSYS` covers `INIT,P2P,COLL,GRAPH,TUNING`. The MXFP4 image and `docker-compose.mxfp4.yml` also no longer force `NCCL_PROTO=Simple`. The measured two-MI350P result and the HIP path probe are in [MI350P-TP.md](MI350P-TP.md).
 
 #### Dual-GPU Data Parallelism (`docker/docker-compose.dp2.yml`)
 Spins up 2 independent 32 GB serving replicas with a round-robin proxy router on port 8000. Doubles prompt concurrency:
