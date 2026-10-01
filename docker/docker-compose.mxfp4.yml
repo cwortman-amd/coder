@@ -85,7 +85,7 @@ services:
       --attention-backend ROCM_AITER_UNIFIED_ATTN
       --mamba-cache-dtype bfloat16
       --mamba-ssm-cache-dtype float16
-      --max-model-len ${MAX_MODEL_LEN:-12288}
+      --max-model-len ${MAX_MODEL_LEN:-65536}
       --max-num-seqs ${MAX_NUM_SEQS:-4}
       --max-num-batched-tokens ${MAX_NUM_BATCHED_TOKENS:-4096}
       --gpu-memory-utilization ${GPU_MEM_UTIL:-0.88}

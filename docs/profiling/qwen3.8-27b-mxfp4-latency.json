@@ -2567,7 +2567,1397 @@
         },
         "passes": false
       }
+    },
+    {
+      "run_id": "qwen_isl1024_osl64_c1_n100_20260930_135857",
+      "gpu_profile": "r9700",
+      "workload": "1k64",
+      "input_len": 1078,
+      "output_len": 64,
+      "concurrency": 1,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c1_n100_20260930_135857.json.gz",
+      "benchmark": {
+        "date": "20260930-140312",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 236.2471084019926,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 100,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 467.115,
+        "max": 487.139,
+        "p50": 481.204,
+        "p75": 482.593,
+        "p90": 483.933,
+        "p95": 484.881,
+        "p99": 487.081
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 30.08,
+        "max": 30.149,
+        "p50": 30.093,
+        "p75": 30.103,
+        "p90": 30.112,
+        "p95": 30.117,
+        "p99": 30.132
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 2362.168,
+        "max": 2383.346,
+        "p50": 2377.079,
+        "p75": 2378.816,
+        "p90": 2380.491,
+        "p95": 2381.2,
+        "p99": 2382.358
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 29.61,
+        "max": 36.713,
+        "p50": 30.015,
+        "p75": 30.467,
+        "p90": 30.911,
+        "p95": 31.143,
+        "p99": 32.01
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          4,
+          96,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          3028,
+          3272,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl1024_osl64_c2_n100_20260930_140325",
+      "gpu_profile": "r9700",
+      "workload": "1k64",
+      "input_len": 1078,
+      "output_len": 64,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c2_n100_20260930_140325.json.gz",
+      "benchmark": {
+        "date": "20260930-140608",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 143.65536966800573,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 100,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 867.612,
+        "max": 952.376,
+        "p50": 864.428,
+        "p75": 915.562,
+        "p90": 918.419,
+        "p95": 919.055,
+        "p99": 920.672
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 31.825,
+        "max": 32.623,
+        "p50": 31.791,
+        "p75": 32.569,
+        "p90": 32.59,
+        "p95": 32.595,
+        "p99": 32.606
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 2872.584,
+        "max": 2905.254,
+        "p50": 2875.265,
+        "p75": 2877.372,
+        "p90": 2879.416,
+        "p95": 2880.577,
+        "p99": 2883.068
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 31.328,
+        "max": 123.769,
+        "p50": 31.045,
+        "p75": 31.55,
+        "p90": 32.02,
+        "p95": 32.237,
+        "p99": 35.391
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          218,
+          6032,
+          0,
+          50,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl1024_osl64_c4_n100_20260930_140609",
+      "gpu_profile": "r9700",
+      "workload": "1k64",
+      "input_len": 1078,
+      "output_len": 64,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c4_n100_20260930_140609.json.gz",
+      "benchmark": {
+        "date": "20260930-140759",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 90.52419184500468,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 100,
+        "ttft_slo_rate_pct": 100.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 1526.093,
+        "max": 1604.788,
+        "p50": 1588.579,
+        "p75": 1598.166,
+        "p90": 1601.763,
+        "p95": 1603.03,
+        "p99": 1604.463
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 33.243,
+        "max": 36.4,
+        "p50": 32.249,
+        "p75": 33.253,
+        "p90": 36.336,
+        "p95": 36.348,
+        "p99": 36.374
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 3620.403,
+        "max": 3637.071,
+        "p50": 3626.919,
+        "p75": 3631.247,
+        "p90": 3634.489,
+        "p95": 3635.883,
+        "p99": 3636.008
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 32.724,
+        "max": 291.962,
+        "p50": 32.162,
+        "p75": 32.685,
+        "p90": 33.178,
+        "p95": 33.407,
+        "p99": 35.86
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          109,
+          6166,
+          0,
+          0,
+          25,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl1024_osl64_c8_n100_20260930_140759",
+      "gpu_profile": "r9700",
+      "workload": "1k64",
+      "input_len": 1078,
+      "output_len": 64,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c8_n100_20260930_140759.json.gz",
+      "benchmark": {
+        "date": "20260930-140950",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 90.43340821098536,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 4.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 4963.197,
+        "max": 5185.221,
+        "p50": 5159.211,
+        "p75": 5176.685,
+        "p90": 5182.893,
+        "p95": 5183.494,
+        "p99": 5184.941
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 33.758,
+        "max": 36.37,
+        "p50": 32.94,
+        "p75": 33.857,
+        "p90": 36.336,
+        "p95": 36.342,
+        "p99": 36.365
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 7089.948,
+        "max": 7263.203,
+        "p50": 7244.36,
+        "p75": 7255.177,
+        "p90": 7258.902,
+        "p95": 7259.315,
+        "p99": 7261.919
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 33.231,
+        "max": 293.318,
+        "p50": 32.201,
+        "p75": 32.746,
+        "p90": 33.237,
+        "p95": 33.473,
+        "p99": 74.969
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          24,
+          72,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          88,
+          6115,
+          72,
+          0,
+          25,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl1024_osl64_c16_n100_20260930_140950",
+      "gpu_profile": "r9700",
+      "workload": "1k64",
+      "input_len": 1078,
+      "output_len": 64,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c16_n100_20260930_140950.json.gz",
+      "benchmark": {
+        "date": "20260930-141140",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 90.45166768800118,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 4,
+        "ttft_slo_rate_pct": 4.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 11476.424,
+        "max": 12449.156,
+        "p50": 12382.69,
+        "p75": 12425.687,
+        "p90": 12431.692,
+        "p95": 12439.684,
+        "p99": 12448.882
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 33.763,
+        "max": 36.386,
+        "p50": 32.969,
+        "p75": 33.87,
+        "p90": 36.336,
+        "p95": 36.35,
+        "p99": 36.363
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 13603.506,
+        "max": 14526.516,
+        "p50": 14474.986,
+        "p75": 14505.873,
+        "p90": 14512.853,
+        "p95": 14516.368,
+        "p99": 14526.514
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 33.236,
+        "max": 291.917,
+        "p50": 32.19,
+        "p75": 32.75,
+        "p90": 33.285,
+        "p95": 33.568,
+        "p99": 76.68
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          4,
+          0,
+          1,
+          7,
+          88,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          109,
+          6094,
+          72,
+          0,
+          25,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c1_n100_20260930_141153",
+      "gpu_profile": "r9700",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 1,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c1_n100_20260930_141153.json.gz",
+      "benchmark": {
+        "date": "20260930-142045",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 506.85829830999137,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 0,
+        "ttft_slo_rate_pct": 0.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 3149.292,
+        "max": 3171.762,
+        "p50": 3151.667,
+        "p75": 3159.775,
+        "p90": 3164.812,
+        "p95": 3168.86,
+        "p99": 3170.606
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 30.46,
+        "max": 30.521,
+        "p50": 30.461,
+        "p75": 30.481,
+        "p90": 30.5,
+        "p95": 30.512,
+        "p99": 30.52
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 5068.286,
+        "max": 5091.54,
+        "p50": 5069.678,
+        "p75": 5078.661,
+        "p90": 5084.172,
+        "p95": 5087.773,
+        "p99": 5091.526
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 29.984,
+        "max": 39.534,
+        "p50": 30.48,
+        "p75": 30.951,
+        "p90": 31.413,
+        "p95": 31.666,
+        "p99": 32.649
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          2,
+          1168,
+          5130,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c2_n100_20260930_142045",
+      "gpu_profile": "r9700",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c2_n100_20260930_142045.json.gz",
+      "benchmark": {
+        "date": "20260930-142756",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 406.83995672600577,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 0,
+        "ttft_slo_rate_pct": 0.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 5649.254,
+        "max": 6162.326,
+        "p50": 5610.591,
+        "p75": 6133.47,
+        "p90": 6147.92,
+        "p95": 6154.593,
+        "p99": 6158.201
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 39.471,
+        "max": 47.178,
+        "p50": 39.548,
+        "p75": 47.039,
+        "p90": 47.103,
+        "p95": 47.143,
+        "p99": 47.158
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 8135.927,
+        "max": 8202.938,
+        "p50": 8143.301,
+        "p75": 8154.834,
+        "p90": 8163.231,
+        "p95": 8170.835,
+        "p99": 8195.437
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 38.854,
+        "max": 700.229,
+        "p50": 31.901,
+        "p75": 32.434,
+        "p90": 32.92,
+        "p95": 33.229,
+        "p99": 327.656
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          100,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          192,
+          6002,
+          6,
+          0,
+          50,
+          50,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c4_n100_20260930_142757",
+      "gpu_profile": "r9700",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c4_n100_20260930_142757.json.gz",
+      "benchmark": {
+        "date": "20260930-143426",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 364.65331081399927,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 0,
+        "ttft_slo_rate_pct": 0.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 7873.574,
+        "max": 12103.022,
+        "p50": 8173.371,
+        "p75": 8795.857,
+        "p90": 9695.826,
+        "p95": 9714.676,
+        "p99": 10501.427
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 106.484,
+        "max": 146.148,
+        "p50": 102.25,
+        "p75": 123.381,
+        "p90": 145.709,
+        "p95": 145.892,
+        "p99": 145.969
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 14582.056,
+        "max": 17861.608,
+        "p50": 14604.537,
+        "p75": 14635.493,
+        "p90": 15823.213,
+        "p95": 16052.898,
+        "p99": 16170.591
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 104.82,
+        "max": 1549.853,
+        "p50": 33.895,
+        "p75": 34.502,
+        "p90": 35.294,
+        "p95": 1183.451,
+        "p99": 1501.312
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          98,
+          2,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          137,
+          5701,
+          54,
+          0,
+          75,
+          0,
+          333
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c8_n100_20260930_143426",
+      "gpu_profile": "r9700",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c8_n100_20260930_143426.json.gz",
+      "benchmark": {
+        "date": "20260930-144055",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 363.790968641988,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 0,
+        "ttft_slo_rate_pct": 0.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 20534.0,
+        "max": 26565.212,
+        "p50": 20585.058,
+        "p75": 21573.931,
+        "p90": 21731.161,
+        "p95": 21745.268,
+        "p99": 24943.704
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 128.456,
+        "max": 146.067,
+        "p50": 121.813,
+        "p75": 138.52,
+        "p90": 145.768,
+        "p95": 145.969,
+        "p99": 146.057
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 28626.755,
+        "max": 35106.756,
+        "p50": 29145.845,
+        "p75": 29156.275,
+        "p90": 29166.02,
+        "p95": 29172.013,
+        "p99": 32330.924
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 126.449,
+        "max": 1550.373,
+        "p50": 33.92,
+        "p75": 34.582,
+        "p90": 36.298,
+        "p95": 1266.963,
+        "p99": 1508.649
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          98,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          109,
+          5603,
+          69,
+          3,
+          75,
+          0,
+          441
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c16_n100_20260930_144055",
+      "gpu_profile": "r9700",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c16_n100_20260930_144055.json.gz",
+      "benchmark": {
+        "date": "20260930-144724",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 363.89625778701156,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 0,
+        "ttft_slo_rate_pct": 0.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 46955.656,
+        "max": 55656.052,
+        "p50": 49733.142,
+        "p75": 50680.774,
+        "p90": 50879.836,
+        "p95": 50912.763,
+        "p99": 54015.701
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 128.482,
+        "max": 146.158,
+        "p50": 121.79,
+        "p75": 138.455,
+        "p90": 145.823,
+        "p95": 145.956,
+        "p99": 146.116
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 55050.025,
+        "max": 64227.353,
+        "p50": 58299.952,
+        "p75": 58315.991,
+        "p90": 58336.009,
+        "p95": 58349.258,
+        "p99": 61444.322
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 126.475,
+        "max": 1552.08,
+        "p50": 33.882,
+        "p75": 34.559,
+        "p90": 35.838,
+        "p95": 1266.442,
+        "p99": 1508.091
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          6,
+          92
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          108,
+          5604,
+          72,
+          0,
+          75,
+          0,
+          441
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
     }
   ],
-  "updated_utc": "2026-09-30T11:40:21.253078+00:00"
+  "updated_utc": "2026-09-30T14:47:24.899748+00:00"
 }

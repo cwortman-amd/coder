@@ -132,20 +132,28 @@ def _from_vllm_detailed(document: dict[str, Any]) -> list[dict[str, Any]]:
     for index in range(request_count):
         error = at("error", index)
         raw_itl = at("itl", index) or []
+        itl_ms = [
+            converted
+            for value in raw_itl
+            if (converted := _milliseconds(value)) is not None
+        ]
+        ttft_ms = _milliseconds(at("ttft", index))
+        tpot_ms = _milliseconds(at("tpot", index))
+        if tpot_ms is None and len(itl_ms) > 1:
+            tpot_ms = round(sum(itl_ms[1:]) / (len(itl_ms) - 1), 6)
+        e2el_ms = _milliseconds(at("e2el", index))
+        if e2el_ms is None and ttft_ms is not None:
+            e2el_ms = round(ttft_ms + (sum(itl_ms[1:]) if len(itl_ms) > 1 else sum(itl_ms)), 6)
         requests.append(
             {
                 "request_index": index,
                 "ok": not bool(error),
                 "input_len": at("input_len", index),
                 "output_len": at("output_len", index),
-                "ttft_ms": _milliseconds(at("ttft", index)),
-                "tpot_ms": _milliseconds(at("tpot", index)),
-                "e2el_ms": _milliseconds(at("e2el", index)),
-                "itl_ms": [
-                    converted
-                    for value in raw_itl
-                    if (converted := _milliseconds(value)) is not None
-                ],
+                "ttft_ms": ttft_ms,
+                "tpot_ms": tpot_ms,
+                "e2el_ms": e2el_ms,
+                "itl_ms": itl_ms,
                 "error": error or None,
             }
         )
