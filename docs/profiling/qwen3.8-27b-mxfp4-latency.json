@@ -5766,6 +5766,145 @@
       }
     },
     {
+      "run_id": "qwen_isl8192_osl64_c2_n100_20261002_083123",
+      "gpu_profile": "mi350p",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 2,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k64/qwen_isl8192_osl64_c2_n100_20261002_083123.json.gz",
+      "benchmark": {
+        "date": "20261002-083642",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 306.75463585800026,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen/Qwen3.8-27B-FP8",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 99,
+        "ttft_slo_rate_pct": 99.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 2333.577,
+        "max": 3419.537,
+        "p50": 2317.262,
+        "p75": 2552.842,
+        "p90": 2555.745,
+        "p95": 2557.21,
+        "p99": 2567.283
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 60.314,
+        "max": 65.073,
+        "p50": 60.368,
+        "p75": 64.008,
+        "p90": 64.063,
+        "p95": 64.082,
+        "p99": 64.149
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 6132.709,
+        "max": 6991.661,
+        "p50": 6138.923,
+        "p75": 6141.91,
+        "p90": 6145.004,
+        "p95": 6146.569,
+        "p99": 6157.051
+      },
+      "itl_ms": {
+        "n": 6399,
+        "mean": 59.371,
+        "max": 359.336,
+        "p50": 43.804,
+        "p75": 43.888,
+        "p90": 44.107,
+        "p95": 291.267,
+        "p99": 346.462
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          98,
+          1,
+          0,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          5852,
+          50,
+          50,
+          347,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
       "run_id": "qwen_isl8192_osl64_c4_n100_20261001_210827",
       "gpu_profile": "mi350p",
       "workload": "8k64",
@@ -5889,6 +6028,145 @@
           13,
           66,
           0,
+          0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c4_n100_20261002_083642",
+      "gpu_profile": "mi350p",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 4,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k64/qwen_isl8192_osl64_c4_n100_20261002_083642.json.gz",
+      "benchmark": {
+        "date": "20261002-084059",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 244.9898594749975,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen/Qwen3.8-27B-FP8",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 49,
+        "ttft_slo_rate_pct": 49.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 2866.507,
+        "max": 7140.317,
+        "p50": 3011.187,
+        "p75": 3041.025,
+        "p90": 3043.361,
+        "p95": 3044.467,
+        "p99": 5510.261
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 109.854,
+        "max": 119.571,
+        "p50": 108.3,
+        "p75": 112.072,
+        "p90": 119.449,
+        "p95": 119.498,
+        "p99": 119.551
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 9786.244,
+        "max": 14060.773,
+        "p50": 9803.742,
+        "p75": 9810.549,
+        "p90": 9814.523,
+        "p95": 9816.474,
+        "p99": 12225.552
+      },
+      "itl_ms": {
+        "n": 6399,
+        "mean": 108.138,
+        "max": 498.32,
+        "p50": 44.181,
+        "p75": 44.379,
+        "p90": 340.988,
+        "p95": 367.729,
+        "p99": 496.11
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          48,
+          49,
+          2,
+          0,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          4900,
+          73,
+          75,
+          1251,
           0,
           0
         ]
@@ -6044,6 +6322,145 @@
       }
     },
     {
+      "run_id": "qwen_isl8192_osl64_c8_n100_20261002_084059",
+      "gpu_profile": "mi350p",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 8,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k64/qwen_isl8192_osl64_c8_n100_20261002_084059.json.gz",
+      "benchmark": {
+        "date": "20261002-084459",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 227.49861864899867,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen/Qwen3.8-27B-FP8",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 14,
+        "ttft_slo_rate_pct": 14.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 3641.696,
+        "max": 14848.411,
+        "p50": 3366.492,
+        "p75": 3370.182,
+        "p90": 3372.526,
+        "p95": 5601.818,
+        "p99": 12905.91
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 229.12,
+        "max": 249.687,
+        "p50": 235.771,
+        "p75": 235.944,
+        "p90": 248.642,
+        "p95": 249.438,
+        "p99": 249.675
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 18076.235,
+        "max": 29749.217,
+        "p50": 18218.309,
+        "p75": 18229.674,
+        "p90": 18234.624,
+        "p95": 19498.533,
+        "p99": 27696.666
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 225.54,
+        "max": 618.179,
+        "p50": 134.475,
+        "p75": 369.523,
+        "p90": 466.588,
+        "p95": 614.572,
+        "p99": 616.755
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          13,
+          80,
+          3,
+          3,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          3015,
+          84,
+          90,
+          2541,
+          570,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
       "run_id": "qwen_isl8192_osl64_c16_n100_20261001_211007",
       "gpu_profile": "mi350p",
       "workload": "8k64",
@@ -6168,6 +6585,145 @@
           39,
           108,
           0,
+          0
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c16_n100_20261002_084500",
+      "gpu_profile": "mi350p",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 16,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k64/qwen_isl8192_osl64_c16_n100_20261002_084500.json.gz",
+      "benchmark": {
+        "date": "20261002-084818",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 186.41701571700105,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen/Qwen3.8-27B-FP8",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 1,
+        "ttft_slo_rate_pct": 1.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 7822.11,
+        "max": 29639.678,
+        "p50": 6316.174,
+        "p75": 6333.487,
+        "p90": 11166.529,
+        "p95": 20549.644,
+        "p99": 27839.265
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 344.001,
+        "max": 370.414,
+        "p50": 365.877,
+        "p75": 367.194,
+        "p90": 367.884,
+        "p95": 368.827,
+        "p99": 370.353
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 29494.186,
+        "max": 52546.307,
+        "p50": 29387.795,
+        "p75": 29465.9,
+        "p90": 34489.075,
+        "p95": 43518.64,
+        "p99": 50739.548
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 338.626,
+        "max": 612.957,
+        "p50": 345.871,
+        "p75": 362.374,
+        "p90": 455.796,
+        "p95": 458.428,
+        "p99": 463.555
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          87,
+          11,
+          0
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          429,
+          0,
+          12,
+          5836,
+          23,
           0
         ]
       },
@@ -6308,6 +6864,145 @@
           86,
           27,
           14
+        ]
+      },
+      "streaming_slo": {
+        "limits_ms": {
+          "ttft": 3000,
+          "tpot": 20,
+          "itl_p95": 20,
+          "itl_p99": 50,
+          "itl_max": 100
+        },
+        "passes": false
+      }
+    },
+    {
+      "run_id": "qwen_isl8192_osl64_c32_n100_20261002_084818",
+      "gpu_profile": "mi350p",
+      "workload": "8k64",
+      "input_len": 8246,
+      "output_len": 64,
+      "concurrency": 32,
+      "repetition": 1,
+      "source_format": "vllm_save_detailed",
+      "raw_samples": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/8k64/qwen_isl8192_osl64_c32_n100_20261002_084818.json.gz",
+      "benchmark": {
+        "date": "20261002-085137",
+        "backend": "openai-chat",
+        "request_rate": "inf",
+        "duration": 186.85517834300117,
+        "num_prompts": 100,
+        "completed": 100,
+        "failed": 0,
+        "model_id": "Qwen/Qwen3.8-27B-FP8",
+        "tokenizer_id": "Qwen/Qwen3.8-27B-FP8"
+      },
+      "requests": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "tail_resolution_pct": 1.0,
+        "p99_sample_quality": "minimum",
+        "ttft_at_or_below_3000_ms": 1,
+        "ttft_slo_rate_pct": 1.0
+      },
+      "ttft_ms": {
+        "n": 100,
+        "mean": 34105.89,
+        "max": 59103.301,
+        "p50": 35747.481,
+        "p75": 35818.889,
+        "p90": 40968.572,
+        "p95": 50024.977,
+        "p99": 57282.877
+      },
+      "tpot_ms": {
+        "n": 100,
+        "mean": 344.698,
+        "max": 372.228,
+        "p50": 366.607,
+        "p75": 367.452,
+        "p90": 367.91,
+        "p95": 370.707,
+        "p99": 372.001
+      },
+      "e2el_ms": {
+        "n": 100,
+        "mean": 55821.894,
+        "max": 82164.169,
+        "p50": 58816.13,
+        "p75": 58950.8,
+        "p90": 63999.707,
+        "p95": 73087.211,
+        "p99": 80350.677
+      },
+      "itl_ms": {
+        "n": 6400,
+        "mean": 339.313,
+        "max": 616.152,
+        "p50": 346.402,
+        "p75": 362.783,
+        "p90": 456.816,
+        "p95": 459.562,
+        "p99": 464.467
+      },
+      "ttft_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          "1000-2000",
+          "2000-3000",
+          "3000-5000",
+          "5000-10000",
+          "10000-30000",
+          ">=30000"
+        ],
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          3,
+          11,
+          84
+        ]
+      },
+      "itl_histogram": {
+        "unit": "ms",
+        "bins": [
+          "0-5",
+          "5-10",
+          "10-15",
+          "15-20",
+          "20-30",
+          "30-50",
+          "50-100",
+          "100-250",
+          "250-500",
+          "500-1000",
+          ">=1000"
+        ],
+        "counts": [
+          100,
+          0,
+          0,
+          0,
+          0,
+          429,
+          0,
+          12,
+          5836,
+          23,
+          0
         ]
       },
       "streaming_slo": {
@@ -7712,5 +8407,5 @@
       }
     }
   ],
-  "updated_utc": "2026-10-02T08:31:23.191078+00:00"
+  "updated_utc": "2026-10-02T08:51:38.174854+00:00"
 }

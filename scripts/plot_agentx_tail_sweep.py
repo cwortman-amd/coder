@@ -22,16 +22,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from plot_style import BLUE, GREEN, ORANGE, PURPLE, RED, TEAL  # noqa: E402
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-RESULTS_DIR = PROJECT_DIR / "docs" / "results" / "agentx"
-if not (RESULTS_DIR / "analysis.json").is_file():
-    RESULTS_DIR = PROJECT_DIR / "_results" / "agentx_tail_sweep" / "20260930_230406"
-OUTPUT_DIR = PROJECT_DIR / "docs" / "figures" / "agentx"
+DEFAULT_RESULTS_DIR = PROJECT_DIR / "docs" / "results" / "agentx"
+DEFAULT_OUTPUT_DIR = PROJECT_DIR / "docs" / "figures" / "agentx"
+RESULTS_DIR = DEFAULT_RESULTS_DIR
+OUTPUT_DIR = DEFAULT_OUTPUT_DIR
+USE_R9700_CAPTIONS = True
+CAMPAIGN_TITLE = (
+    "AMD Radeon AI PRO R9700 (32 GB) — Qwen3.8-27B MXFP4 (max_model_len=65,536)"
+)
+DASHBOARD_TITLE = (
+    "AMD Radeon AI PRO R9700 (32 GB GDDR6) — Qwen3.8-27B-Quark-AWQ-MXFP4"
+)
 ARTIFACT_DIR_ENV = os.environ.get("ARTIFACT_DIR")
 ARTIFACT_DIR = Path(ARTIFACT_DIR_ENV) if ARTIFACT_DIR_ENV else None
-
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-if ARTIFACT_DIR:
-    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Styling palette
 COLORS = {
@@ -45,10 +48,17 @@ COLORS = {
 
 
 def load_data() -> tuple[dict, list[dict]]:
-    with (RESULTS_DIR / "analysis.json").open() as f:
+    analysis_path = RESULTS_DIR / "analysis.json"
+    samples_path = RESULTS_DIR / "request_samples.csv"
+    if not analysis_path.is_file() or not samples_path.is_file():
+        raise SystemExit(
+            f"AgentX figures need {analysis_path} and {samples_path}. "
+            "Publish the campaign under docs/results/agentx and run analyze.sh."
+        )
+    with analysis_path.open() as f:
         analysis = json.load(f)
     samples = []
-    with (RESULTS_DIR / "request_samples.csv").open() as f:
+    with samples_path.open() as f:
         reader = csv.DictReader(f)
         for r in reader:
             samples.append(r)
@@ -114,7 +124,7 @@ def plot_ttft_histogram(samples: list[dict]) -> str:
 
     fig.suptitle(
         "AgentX Multi-Turn Tail Latency (semianalysis_cc_traces_weka_062126)\n"
-        "AMD Radeon AI PRO R9700 (32 GB) — Qwen3.8-27B MXFP4 (max_model_len=65,536)",
+        + CAMPAIGN_TITLE,
         fontsize=13,
         fontweight="bold",
         y=0.98,
@@ -131,22 +141,23 @@ def plot_ttft_histogram(samples: list[dict]) -> str:
 def plot_master_dashboard(analysis: dict, samples: list[dict]) -> str:
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12), dpi=300)
 
-    concurrencies = [r["concurrency"] for r in analysis["runs"]]
-    ttft_p50 = [r["ttft_ms"]["p50"] / 1000 for r in analysis["runs"]]
-    ttft_p95 = [r["ttft_ms"]["p95"] / 1000 for r in analysis["runs"]]
-    ttft_p99 = [r["ttft_ms"]["p99"] / 1000 for r in analysis["runs"]]
+    measured = [r for r in analysis["runs"] if r.get("ttft_ms")]
+    concurrencies = [r["concurrency"] for r in measured]
+    ttft_p50 = [r["ttft_ms"]["p50"] / 1000 for r in measured]
+    ttft_p95 = [r["ttft_ms"]["p95"] / 1000 for r in measured]
+    ttft_p99 = [r["ttft_ms"]["p99"] / 1000 for r in measured]
 
-    itl_p50 = [r["request_avg_itl_ms"]["p50"] for r in analysis["runs"]]
-    itl_p95 = [r["request_avg_itl_ms"]["p95"] for r in analysis["runs"]]
+    itl_p50 = [r["request_avg_itl_ms"]["p50"] for r in measured]
+    itl_p95 = [r["request_avg_itl_ms"]["p95"] for r in measured]
 
-    out_tps = [r["output_token_throughput_per_second"] for r in analysis["runs"]]
+    out_tps = [r["output_token_throughput_per_second"] for r in measured]
 
-    prefix_hit = [r["prefix_cache"]["hit_rate_percent"] for r in analysis["runs"]]
-    kv_usage_avg = [r["server_load"]["kv_cache_usage_fraction"]["avg"] * 100 for r in analysis["runs"]]
-    kv_usage_max = [r["server_load"]["kv_cache_usage_fraction"]["max"] * 100 for r in analysis["runs"]]
+    prefix_hit = [r["prefix_cache"]["hit_rate_percent"] for r in measured]
+    kv_usage_avg = [r["server_load"]["kv_cache_usage_fraction"]["avg"] * 100 for r in measured]
+    kv_usage_max = [r["server_load"]["kv_cache_usage_fraction"]["max"] * 100 for r in measured]
 
-    running_reqs = [r["server_load"]["running_requests"]["avg"] for r in analysis["runs"]]
-    waiting_reqs = [r["server_load"]["waiting_requests"]["avg"] for r in analysis["runs"]]
+    running_reqs = [r["server_load"]["running_requests"]["avg"] for r in measured]
+    waiting_reqs = [r["server_load"]["waiting_requests"]["avg"] for r in measured]
 
     x_labels = [str(c) for c in concurrencies]
     x = np.arange(len(concurrencies))
@@ -165,16 +176,16 @@ def plot_master_dashboard(analysis: dict, samples: list[dict]) -> str:
     ax1.grid(True, which="both", linestyle="--", alpha=0.5)
     ax1.legend(loc="upper left", fontsize=8.5)
 
-    # Annotate knee
-    ax1.annotate(
-        "Knee Point (C=8)\np50=1.7s, p95=51.8s",
-        xy=(3, ttft_p95[3]),
-        xytext=(2.2, 100),
-        arrowprops=dict(facecolor="#D32F2F", shrink=0.08, width=1.5, headwidth=6),
-        fontsize=9,
-        fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.3", fc="#FFF3E0", ec="#FB8C00", lw=1.5),
-    )
+    if USE_R9700_CAPTIONS and len(ttft_p95) > 3:
+        ax1.annotate(
+            "Knee Point (C=8)\np50=1.7s, p95=51.8s",
+            xy=(3, ttft_p95[3]),
+            xytext=(2.2, 100),
+            arrowprops=dict(facecolor="#D32F2F", shrink=0.08, width=1.5, headwidth=6),
+            fontsize=9,
+            fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", fc="#FFF3E0", ec="#FB8C00", lw=1.5),
+        )
 
     # Panel 2: Output Throughput & ITL
     color_tps = "#2E7D32"
@@ -211,15 +222,16 @@ def plot_master_dashboard(analysis: dict, samples: list[dict]) -> str:
     ax3.set_title("C. Prefix Caching Efficiency vs KV Memory Pressure", fontsize=11, fontweight="bold")
     ax3.legend(loc="lower left", fontsize=8.5)
 
-    ax3.annotate(
-        "KV Thrashing & Eviction\nHit Rate collapses 65% -> 9% -> 0%",
-        xy=(4, prefix_hit[4]),
-        xytext=(3.2, 35),
-        arrowprops=dict(facecolor="#D32F2F", shrink=0.08, width=1.5, headwidth=6),
-        fontsize=8.5,
-        fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.3", fc="#FFEBEE", ec="#D32F2F", lw=1.5),
-    )
+    if USE_R9700_CAPTIONS and len(prefix_hit) > 4:
+        ax3.annotate(
+            "KV Thrashing & Eviction\nHit Rate collapses 65% -> 9% -> 0%",
+            xy=(4, prefix_hit[4]),
+            xytext=(3.2, 35),
+            arrowprops=dict(facecolor="#D32F2F", shrink=0.08, width=1.5, headwidth=6),
+            fontsize=8.5,
+            fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", fc="#FFEBEE", ec="#D32F2F", lw=1.5),
+        )
 
     # Panel 4: Running vs Waiting Requests (Queue Dynamics)
     width = 0.38
@@ -243,7 +255,7 @@ def plot_master_dashboard(analysis: dict, samples: list[dict]) -> str:
 
     fig.suptitle(
         "AgentX Multi-Turn Concurrency & Tail Latency Master Dashboard\n"
-        "AMD Radeon AI PRO R9700 (32 GB GDDR6) — Qwen3.8-27B-Quark-AWQ-MXFP4",
+        + DASHBOARD_TITLE,
         fontsize=14,
         fontweight="bold",
         y=0.98,
@@ -258,6 +270,26 @@ def plot_master_dashboard(analysis: dict, samples: list[dict]) -> str:
 
 
 def main() -> int:
+    import argparse
+
+    global RESULTS_DIR, OUTPUT_DIR, USE_R9700_CAPTIONS, CAMPAIGN_TITLE, DASHBOARD_TITLE
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    args = parser.parse_args()
+    RESULTS_DIR = args.results_dir
+    OUTPUT_DIR = args.output_dir
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    USE_R9700_CAPTIONS = RESULTS_DIR.resolve() == DEFAULT_RESULTS_DIR.resolve()
+    if not USE_R9700_CAPTIONS:
+        manifest_path = RESULTS_DIR / "manifest.json"
+        model = "AgentX"
+        if manifest_path.is_file():
+            model = json.loads(manifest_path.read_text()).get("model") or model
+        CAMPAIGN_TITLE = f"{model} — {RESULTS_DIR.name}"
+        DASHBOARD_TITLE = CAMPAIGN_TITLE
+    if ARTIFACT_DIR:
+        ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     analysis, samples = load_data()
     f1 = plot_ttft_histogram(samples)
     print(f"Generated: {f1}")

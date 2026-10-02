@@ -355,6 +355,10 @@ def publish_power_bandwidth() -> Path:
 
 
 def publish_and_summarize() -> dict:
+    """Copy the older KV, P/D, and power records, then reduce the KV summary.
+
+    Plot scripts do not call this. They read the copies already in docs/.
+    """
     publish_measurements()
     publish_r9700_profiling()
     publish_power_bandwidth()

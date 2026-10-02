@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-10-02T08:15:38.685107+00:00",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "base_url": "http://127.0.0.1:8000/v1",
+  "num_decode_streams": 4,
+  "decode_tokens": 128,
+  "prefill_prompt_tokens": 4096,
+  "prefill_burst_size": 2,
+  "burst_injected_at_ns": 1790928934912381223,
+  "experiment_duration_s": 4.78,
+  "decode_metrics": {
+    "streams_completed": 4,
+    "nominal_median_tpot_ms": 29.42,
+    "p95_token_itl_ms": 36.9,
+    "max_observed_stall_ms": 290.4,
+    "worst_itl_multiplier": 9.87,
+    "total_token_intervals": 508,
+    "stalls_over_50ms": 16,
+    "stalls_over_100ms": 12,
+    "stalls_over_500ms": 0,
+    "stream_stalls": [
+      290.402487,
+      290.401977,
+      290.402857,
+      290.387797
+    ]
+  },
+  "prefill_burst_metrics": {
+    "burst_requests_completed": 2,
+    "prefill_ttft_p50_ms": 837.8568725,
+    "prefill_ttft_max_ms": 838.086552
+  }
+}

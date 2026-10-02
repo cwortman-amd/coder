@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "campaign_manifest": "/home/amd/workspace/coder/_results/agentx_tail_sweep/20261001_234642/manifest.json",
+  "campaign_manifest": "/home/amd/workspace/coder/docs/results/tail_study/mi350p_20261001/agentx_c2_c4/manifest.json",
   "interpretation": {
     "kind": "bounded_concurrency_pilot",
     "campaign_budget_seconds": 2400,

@@ -42,7 +42,7 @@ campaigns:
     agentx:
       concurrency: [1, 2, 4, 8, 16, 32]
       duration_seconds: 900
-      campaign_seconds: 5700
+      campaign_seconds: 7200
       allow_short_duration: false
 
   tail-quick:

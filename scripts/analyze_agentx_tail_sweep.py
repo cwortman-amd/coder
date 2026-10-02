@@ -168,6 +168,17 @@ def metric_summary(requests: list[dict[str, Any]], key: str) -> dict[str, Any] |
     )
 
 
+def resolve_run_dir(campaign_dir: Path, concurrency: int, recorded: str) -> Path:
+    """Prefer the exports copied beside the manifest over the scratch path."""
+    local = campaign_dir / f"c{concurrency}"
+    if (local / "profile_export.jsonl").is_file():
+        return local
+    path = Path(recorded)
+    if not path.is_absolute():
+        path = ROOT / path
+    return path
+
+
 def newest_campaign(root: Path) -> Path:
     manifests = sorted(
         root.glob("*/manifest.json"),
@@ -204,7 +215,7 @@ def main() -> int:
             )
             continue
         concurrency = int(run["concurrency"])
-        run_dir = Path(run["artifact_dir"])
+        run_dir = resolve_run_dir(campaign_dir, concurrency, str(run.get("artifact_dir") or ""))
         request_path = run_dir / "profile_export.jsonl"
         aggregate_path = run_dir / "profile_export_aiperf.json"
         server_path = run_dir / "server_metrics_export.json"

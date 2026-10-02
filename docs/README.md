@@ -53,21 +53,23 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 
 ## Published measurements
 
-Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. The plot scripts copy the records they need into `docs/` and then plot those copies.
+Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. `./test.sh` copies the results from that run into `docs/results` when it finishes. Plot scripts only read `docs/`.
 
 | Command | Published input | Figure |
 |---|---|---|
+| `./analyze.sh` | `docs/results/` and `docs/profiling/` | Every report and figure below |
 | `python3 scripts/generate_kv_plots.py` | `docs/results/` | `docs/figures/kv/` |
+| `python3 scripts/plot_gpu_utilization.py` | `docs/profiling/gpu_metrics.json` | `docs/figures/utilization/` |
 | `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` and `docs/results/r9700/concurrency.json` | `docs/figures/tco/` |
 | `python3 scripts/generate_pd_plots.py` | `docs/results/pd/pd_emulator_summary.json` | `docs/figures/pd/` |
-| `python3 scripts/generate_tp_compare_plots.py` | `docs/figures/tp/tp-compare.json` | `docs/figures/tp/` |
+| `python3 scripts/generate_tp_compare_plots.py` | `docs/results/tp_compare/mi350p/` | `docs/figures/tp/` |
 | `python3 scripts/generate_latency_histogram_plots.py` | `docs/results/qwen3.8-27b-mxfp4/latency/r9700/` | `docs/figures/latency/` |
 | `python3 scripts/plot_agentx_tail_sweep.py` | `docs/results/agentx/` | `docs/figures/agentx/` |
 | `.venv/bin/python3 scripts/plot_tail_distributions.py --input docs/results/tail_study/agent_chain_manifest.json --out docs/figures/tail_study_dashboard.png` | `docs/results/tail_study/` | `docs/figures/tail_study_dashboard.png` |
 | `python3 scripts/publish_latency_results.py --source-dir <qwen-run-dir> --gpu-profile <profile>` | `docs/results/qwen3.8-27b-mxfp4/latency/` | `docs/profiling/qwen3.8-27b-mxfp4-latency.json` |
 | `python3 scripts/run_agentx_tail_sweep.py` then `python3 scripts/analyze_agentx_tail_sweep.py` | `docs/results/mi350p/agentx_concurrency.json` | [MI350P-AGENTX.md](MI350P-AGENTX.md) |
 
-`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P power and bandwidth summaries. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. AgentX multi-turn traces are archived under `docs/results/agentx/`, and empirical complete-task agent chain & open-loop sweep results are archived under `docs/results/tail_study/`. Generated text is omitted. When `_results` is absent, reports use the copies already in `docs/`.
+`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P concurrency-sweep power and bandwidth series used by the TCO figures. `docs/profiling/gpu_metrics.json` holds the suite throughput profile: socket power, the UMC memory-bandwidth estimate, and amd-smi PCIe traffic. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. AgentX multi-turn traces are archived under `docs/results/agentx/`, and empirical complete-task agent chain and open-loop sweep results are archived under `docs/results/tail_study/`. A `./test.sh` run also publishes its accuracy report, throughput directory, and experiment tree under `docs/results/`. Generated text is omitted.
 
 For a report-grade tail run (1,000 requests per cell, 0.1% empirical resolution):
 

@@ -13,11 +13,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plot_data import capex, electricity_usd_per_kwh, r9700_gpu_usd  # noqa: E402
-from publish_results import (
-    R9700_RESULTS_JSON,
-    publish_and_summarize,
-    publish_power_bandwidth,
-)
+from publish_results import POWER_BANDWIDTH_JSON, R9700_RESULTS_JSON
 
 _POWER_BANDWIDTH = None
 _R9700_RESULTS = None
@@ -27,7 +23,7 @@ def power_bandwidth():
     """Published R9700 and MI350P profiling summary."""
     global _POWER_BANDWIDTH
     if _POWER_BANDWIDTH is None:
-        _POWER_BANDWIDTH = json.loads(publish_power_bandwidth().read_text())
+        _POWER_BANDWIDTH = json.loads(POWER_BANDWIDTH_JSON.read_text())
     return _POWER_BANDWIDTH
 
 
@@ -69,7 +65,6 @@ def r9700_series(workload, field, max_concurrency=None):
 def r9700_result_series(workload, field, max_concurrency=None):
     global _R9700_RESULTS
     if _R9700_RESULTS is None:
-        publish_power_bandwidth()
         _R9700_RESULTS = json.loads(R9700_RESULTS_JSON.read_text())
     rows = [
         row for row in _R9700_RESULTS["runs"] if row["workload"] == workload
@@ -1021,7 +1016,6 @@ def plot_joules_per_token():
     return output_path
 
 if __name__ == "__main__":
-    publish_and_summarize()
     p1  = plot_capex_and_tco()
     p2  = plot_cost_8k_1k()
     p3  = plot_cost_1k_1k()

@@ -48,6 +48,9 @@ Experiments covered by --experiments:
 The disaggregated P/D arm of experiment 6 needs a second server and is not
 started by this dispatcher.
 
+When the suites finish, results written during this run are copied to docs/results.
+Plot scripts read that tree.
+
 Shared options:
   -g, --gpu-profile <p>  auto | r9700 | mi350p (default: auto)
   -e, --engine <engine>  vllm | mxfp4 | llama.cpp | sglang
@@ -206,6 +209,16 @@ if [ "$gpt_oss_only" -eq 1 ] && [ "$QUICK" = false ] && [ "$has_prompts" -eq 0 ]
 fi
 
 FAILED=0
+SUITE_STARTED="$(date +%s)"
+
+publish_suite_results() {
+    echo "------------------------------------------------------------------------"
+    echo "Publishing this run to docs/results"
+    echo "------------------------------------------------------------------------"
+    python3 "${SCRIPT_DIR}/scripts/publish_suite_results.py" --since "$SUITE_STARTED" \
+        || echo "Publishing the suite results failed." >&2
+}
+trap publish_suite_results EXIT
 
 inference_container() {
     local name

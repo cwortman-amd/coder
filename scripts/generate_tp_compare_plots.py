@@ -68,17 +68,21 @@ def draw_metric(ax, data, key: str, ylabel: str, title: str) -> None:
     ax.legend(frameon=False)
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results-dir",
         type=Path,
-        default=Path("_results/tp_compare_mi350p"),
+        default=ROOT / "docs" / "results" / "tp_compare" / "mi350p",
+        help="Published TP=1 and TP=2 series under docs/results",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("docs/figures/tp"),
+        default=ROOT / "docs" / "figures" / "tp",
     )
     args = parser.parse_args()
 

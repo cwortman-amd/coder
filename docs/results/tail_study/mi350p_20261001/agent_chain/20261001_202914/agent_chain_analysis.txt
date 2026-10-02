@@ -1,0 +1,27 @@
+------------------------------------------------------------------------
++ /home/amd/workspace/coder/.venv/bin/python /home/amd/workspace/coder/scripts/analyze_tail_metrics.py --input /home/amd/workspace/coder/docs/results/tail_study/mi350p_20261001/agent_chain/20261001_202914/agent_chain_manifest.json
+
+==============================================================================
+  BENCHMARK DIAGNOSTIC REPORT: Qwen3.8-27B-Quark-AWQ-MXFP4
+==============================================================================
+
+--- Concurrency Sweep Metrics ---
+| C | TTFT p50 | TTFT p95 | TTFAT p50 | p99:p50 | Total p50 | Total p99 | Miss (%) | CV (%) |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| C=1 | 34 ms | 36 ms | 34 ms | 1.20x | 684 ms | 767 ms | 0.0% | 3.1% |
+| C=2 | 78 ms | 80 ms | 78 ms | 1.10x | 769 ms | 842 ms | 0.0% | 2.3% |
+| C=4 | 73 ms | 83 ms | 73 ms | 1.18x | 798 ms | 811 ms | 0.0% | 0.4% |
+| C=8 | 86 ms | 89 ms | 86 ms | 1.09x | 846 ms | 855 ms | 0.0% | 0.4% |
+| C=16 | 155 ms | 164 ms | 155 ms | 1.07x | 1073 ms | 1084 ms | 0.0% | 4.3% |
+| C=32 | 284 ms | 296 ms | 284 ms | 1.05x | 1405 ms | 1424 ms | 0.0% | 8.0% |
+
+--- Complete-Task Agent Trajectory Duration ---
+  • Chains Measured: 30 chains of 10 sequential calls
+  • Empirical Duration: p50=7.15s, p95=7.82s, p99=7.83s (Max: 7.84s)
+  • Resampling Baseline 1 (Independent): p50=6.82s
+  • Resampling Baseline 2 (Block-Correlated): p50=6.87s
+  • Tasks Encountering a Slow Call: 100.0%
+  • Spread Ratio (p99:p50): 1.1x
+
+==============================================================================
+

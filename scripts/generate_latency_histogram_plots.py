@@ -357,7 +357,18 @@ def plot_master_tail_dashboard(data_1k: dict[str, Any], data_8k: dict[str, Any])
 
 
 def main() -> int:
-    print("Loading empirical raw latency samples...")
+    import argparse
+
+    global RESULTS_ROOT, OUTPUT_DIR
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results-root", type=Path, default=RESULTS_ROOT)
+    parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
+    args = parser.parse_args()
+    RESULTS_ROOT = args.results_root
+    OUTPUT_DIR = args.output_dir
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print(f"Loading empirical raw latency samples from {RESULTS_ROOT}...")
     data_1k = load_raw_samples("1k64")
     data_8k = load_raw_samples("8k64")
 

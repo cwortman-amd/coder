@@ -27,7 +27,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plot_data import illustrative_itl, published_pd_slo  # noqa: E402
-from publish_results import PUBLISHED_ROOT, publish_and_summarize
+from publish_results import PUBLISHED_ROOT
 
 OUTPUT_DIR = "/home/amd/workspace/coder/docs/figures/pd"
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
@@ -663,7 +663,6 @@ def generate_tradeoff_pareto():
 
 
 if __name__ == "__main__":
-    publish_and_summarize()
     generate_master_dashboard()
     generate_sustainable_capacity_sweep()
     generate_decode_retention_crossover()

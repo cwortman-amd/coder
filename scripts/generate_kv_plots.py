@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish KV measurements to docs/results, then plot that copy."""
+"""Plot the KV handoff from the measurements already in docs/results."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from publish_results import PUBLISHED_ROOT, publish_and_summarize
+from publish_results import PUBLISHED_ROOT, build_kv_summary
 
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "figures", "kv")
 
@@ -62,9 +62,9 @@ def plot_kv_handoff(summary: dict) -> str:
 
 
 def main() -> None:
-    summary = publish_and_summarize()
+    summary = build_kv_summary()
     output = plot_kv_handoff(summary)
-    print(f"Published measurements in {PUBLISHED_ROOT}")
+    print(f"Read measurements from {PUBLISHED_ROOT}")
     print(f"Generated: {output}")
 
 

@@ -10,7 +10,7 @@ Creates a 4-panel master dashboard:
 
 Requires: matplotlib, numpy
 Usage:
-  .venv/bin/python3 scripts/plot_tail_distributions.py --input _results/agent_chain_bench/<stamp>/agent_chain_manifest.json --out docs/figures/tail_benchmark.png
+  .venv/bin/python3 scripts/plot_tail_distributions.py --input docs/results/tail_study/agent_chain_manifest.json --out docs/figures/tail_study_dashboard.png
 """
 
 from __future__ import annotations
