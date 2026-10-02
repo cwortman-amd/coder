@@ -17,10 +17,10 @@ from pathlib import Path
 import torch
 from aiter.ops.triton.gemm.basic.gemm_afp4wfp4 import gemm_afp4wfp4
 from aiter.ops.triton.quant import dynamic_mxfp4_quant
-from safetensors import safe_open
+
+from mxfp4_eager import load_tensors, time_ms
 
 BABEL_READ_GBS = 3793.4139104873675
-SHARD = "model-00007-of-00039.safetensors"
 
 LAYERS = {
     "mlp.gate_proj": (
@@ -60,8 +60,7 @@ BASE_CONFIG = {
 
 
 def load_pair(model_dir: Path, keys: tuple[str, str]) -> tuple[torch.Tensor, torch.Tensor]:
-    with safe_open(str(model_dir / SHARD), framework="pt", device="cpu") as handle:
-        return handle.get_tensor(keys[0]), handle.get_tensor(keys[1])
+    return load_tensors(model_dir, keys[0], keys[1])
 
 
 def variants() -> list[tuple[str, dict | None]]:
@@ -81,17 +80,7 @@ def variants() -> list[tuple[str, dict | None]]:
 
 
 def replay_ms(graph: torch.cuda.CUDAGraph, warmup: int, iters: int) -> float:
-    for _ in range(warmup):
-        graph.replay()
-    torch.cuda.synchronize()
-    begin = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-    begin.record()
-    for _ in range(iters):
-        graph.replay()
-    end.record()
-    torch.cuda.synchronize()
-    return begin.elapsed_time(end) / iters
+    return time_ms(graph.replay, warmup, iters)
 
 
 def main() -> int:

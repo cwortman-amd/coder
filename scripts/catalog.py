@@ -12,66 +12,29 @@ import argparse
 import grp
 import json
 import sys
+from pathlib import Path
 from typing import Any, Optional
 
-# Peak GB/s values are the denominators the serving reports already use.
-GPUS: dict[str, dict[str, Any]] = {
-    "r9700": {
-        "tdp_w": 300.0,
-        "peak_bw_gbs": 960.0,
-        "vram_gb": 32,
-        "video_gid_fallback": 44,
-        "render_gid_fallback": 109,
-    },
-    "mi350p": {
-        "tdp_w": 600.0,
-        "peak_bw_gbs": 4096.0,
-        "vram_gb": 144,
-        "video_gid_fallback": 44,
-        "render_gid_fallback": 109,
-    },
-    "r9600": {
-        "tdp_w": 150.0,
-        "peak_bw_gbs": 640.0,
-        "vram_gb": 32,
-        "video_gid_fallback": 44,
-        "render_gid_fallback": 109,
-    },
-}
+import yaml
 
-GPU_ALIASES = {
-    "gfx1201": "r9700",
-    "radeon": "r9700",
-    "r9700s": "r9700",
-    "gfx950": "mi350p",
-    "mi350": "mi350p",
-    "instinct": "mi350p",
-    "r9600d": "r9600",
-}
+ROOT = Path(__file__).resolve().parents[1]
+CATALOG_PATH = ROOT / "config" / "catalog.yaml"
 
-# weight_gib is the streaming-footprint figure the token replay estimate uses.
-# It is the Qwen MXFP4 serving footprint, not a vendor spec.
-MODELS: dict[str, dict[str, Any]] = {
-    "qwen3.8": {
-        "model_id": "Qwen/Qwen3.8-27B-FP8",
-        "mxfp4_id": "Qwen3.8-27B-Quark-AWQ-MXFP4",
-        "weight_gib": 17.91,
-    },
-    "gpt-oss-20b": {
-        "model_id": "openai/gpt-oss-20b",
-        "weight_gib": None,
-    },
-    "gpt-oss-120b": {
-        "model_id": "openai/gpt-oss-120b",
-        "weight_gib": None,
-    },
-}
 
-MODEL_ALIASES = {
-    "qwen": "qwen3.8",
-    "qwen3.8-27b": "qwen3.8",
-    "gpt-oss": "gpt-oss-20b",
-}
+def _load() -> dict[str, Any]:
+    with CATALOG_PATH.open() as handle:
+        loaded = yaml.safe_load(handle)
+    if not isinstance(loaded, dict):
+        raise SystemExit(f"{CATALOG_PATH} did not contain a mapping")
+    return loaded
+
+
+_DATA = _load()
+GPUS: dict[str, dict[str, Any]] = _DATA["gpus"]
+GPU_ALIASES: dict[str, str] = _DATA["gpu_aliases"]
+MODELS: dict[str, dict[str, Any]] = _DATA["models"]
+MODEL_ALIASES: dict[str, str] = _DATA["model_aliases"]
+CONTAINERS: dict[str, dict[str, Any]] = _DATA["containers"]
 
 GIB_TO_GB = (1024 ** 3) / (1000 ** 3)
 
@@ -152,6 +115,16 @@ def _exports_gpu(name: str) -> str:
     return "\n".join(lines)
 
 
+def container(name: str) -> dict[str, Any]:
+    key = (name or "").strip().lower()
+    spec = CONTAINERS.get(key)
+    if spec is None:
+        raise KeyError(key)
+    row = dict(spec)
+    row["key"] = key
+    return row
+
+
 def _exports_model(name: str) -> str:
     spec = model(name)
     lines = []
@@ -159,6 +132,22 @@ def _exports_model(name: str) -> str:
         lines.append(f"MODEL_WEIGHT_GIB={spec['weight_gib']}")
     if spec.get("model_id"):
         lines.append(f"MODEL_CATALOG_ID={spec['model_id']}")
+    if spec.get("mxfp4_id"):
+        lines.append(f"MODEL_MXFP4_ID={spec['mxfp4_id']}")
+    if spec.get("container"):
+        lines.append(f"MODEL_CONTAINER={spec['container']}")
+    if spec.get("mxfp4_container"):
+        lines.append(f"MODEL_MXFP4_CONTAINER={spec['mxfp4_container']}")
+    return "\n".join(lines)
+
+
+def _exports_container(name: str) -> str:
+    spec = container(name)
+    lines = [f"CONTAINER_NAME={spec['name']}"]
+    if spec.get("port") is not None:
+        lines.append(f"CONTAINER_PORT={int(spec['port'])}")
+    if spec.get("gpu") is not None:
+        lines.append(f"CONTAINER_GPU={int(spec['gpu'])}")
     return "\n".join(lines)
 
 
@@ -187,6 +176,12 @@ def main() -> int:
     field.add_argument("profile")
     field.add_argument("field")
 
+    box = sub.add_parser("exports-container")
+    box.add_argument("name")
+
+    names = sub.add_parser("container-names")
+    names.add_argument("keys", nargs="+")
+
     args = parser.parse_args()
     if args.cmd == "exports-gpu":
         print(_exports_gpu(args.profile))
@@ -205,6 +200,11 @@ def main() -> int:
         if args.field not in spec:
             return 1
         print(spec[args.field])
+    elif args.cmd == "exports-container":
+        print(_exports_container(args.name))
+    elif args.cmd == "container-names":
+        for key in args.keys:
+            print(container(key)["name"])
     elif args.cmd == "replay-gbs":
         weight = args.weight_gib
         if weight is None:

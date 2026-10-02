@@ -1,0 +1,105 @@
+# Named benchmark campaigns. test.sh --experiments selects tail-matrix or tail-quick.
+# SLO gates live here so the client scripts do not each invent a deadline.
+
+slo:
+  tail:
+    ttft_ms: 1000
+    worst_itl_ms: 100
+    task_s: 30
+    e2e_ms: 10000
+  agentx:
+    ttft_ms: 3000
+    tpot_ms: 20
+    itl_p50_ms: 20
+    itl_p95_ms: 50
+    itl_p99_ms: 100
+
+campaigns:
+  tail-matrix:
+    steps: [closed_loop, open_loop, cold_start, interference, ttft_grid, agentx]
+    closed_loop:
+      concurrency: [1, 2, 4, 8, 16, 32]
+      requests_per_cell: 75
+      num_chains: 30
+      chain_length: 10
+      tokens_per_call: 64
+    open_loop:
+      qps: [1.0, 3.0, 6.0]
+      duration_s: 10
+      tokens: 32
+    cold_start:
+      idle_intervals: [0, 30, 60, 120, 300]
+    interference:
+      decode_streams: 4
+      decode_tokens: 128
+      prefill_tokens: 4096
+      burst_size: 2
+    ttft_grid:
+      input_lens: [1024, 8192]
+      output_len: 64
+      concurrency: [1, 2, 4, 8, 16, 32]
+      num_prompts: 100
+    agentx:
+      concurrency: [1, 2, 4, 8, 16, 32]
+      duration_seconds: 900
+      campaign_seconds: 5700
+      allow_short_duration: false
+
+  tail-quick:
+    steps: [closed_loop, open_loop, cold_start, interference, ttft_grid, agentx]
+    closed_loop:
+      concurrency: [1, 2, 4, 8, 16, 32]
+      requests_per_cell: 4
+      num_chains: 2
+      chain_length: 3
+      tokens_per_call: 32
+    open_loop:
+      qps: [1.0]
+      duration_s: 4
+      tokens: 32
+    cold_start:
+      idle_intervals: [0, 5]
+      warm_reps: 1
+    interference:
+      decode_streams: 2
+      decode_tokens: 32
+      prefill_tokens: 512
+      burst_size: 1
+    ttft_grid:
+      input_lens: [1024]
+      output_len: 32
+      concurrency: [1, 2, 4]
+      num_prompts: 100
+    agentx:
+      concurrency: [1, 2]
+      duration_seconds: 30
+      campaign_seconds: 120
+      allow_short_duration: true
+
+  agentx:
+    steps: [agentx]
+    agentx:
+      concurrency: [1, 8, 16]
+      duration_seconds: 900
+      campaign_seconds: 3600
+      allow_short_duration: false
+
+  ttft-grid:
+    steps: [ttft_grid]
+    ttft_grid:
+      input_lens: [1024, 8192]
+      output_len: 64
+      concurrency: [1, 16, 64]
+      num_prompts: 1000
+
+  power-sweep:
+    steps: [power_sweep]
+    power_sweep:
+      concurrency: [1, 2, 4, 8, 16]
+      prompt_counts:
+        1: 50
+        2: 50
+        4: 80
+        8: 160
+        16: 320
+      prompt_fallback_per_concurrency: 20

@@ -111,6 +111,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+BENCH_PYTHON="python3"
+if [ -x "${SCRIPT_DIR}/.venv/bin/python" ]; then
+    BENCH_PYTHON="${SCRIPT_DIR}/.venv/bin/python"
+fi
+
 ENGINE="${ENGINE,,}"
 case "$ENGINE" in
     vllm|mxfp4|sglang) ;;
@@ -160,7 +165,7 @@ if [ "$RUN_SWE" = true ]; then
         SWE_STATUS="PASSED"
     else
         echo -e "${YELLOW}Container run failed; trying the host Python environment.${NC}"
-        if python3 "${SCRIPT_DIR}/benchmark/run_benchmark.py" "${SWE_ARGS[@]:1}"; then
+        if "$BENCH_PYTHON" "${SCRIPT_DIR}/benchmark/run_benchmark.py" "${SWE_ARGS[@]:1}"; then
             SWE_STATUS="PASSED"
         else
             SWE_STATUS="FAILED"
@@ -177,7 +182,7 @@ if [ "$RUN_GPQA" = true ]; then
     [ -n "$REQUESTED_MODEL" ] && GPQA_ARGS+=("--model" "$REQUESTED_MODEL")
 
     echo -e "\n${BOLD}Running GPQA...${NC}"
-    if python3 "${SCRIPT_DIR}/benchmark/run_gpqa.py" "${GPQA_ARGS[@]}"; then
+    if "$BENCH_PYTHON" "${SCRIPT_DIR}/benchmark/run_gpqa.py" "${GPQA_ARGS[@]}"; then
         GPQA_STATUS="PASSED"
     else
         GPQA_STATUS="FAILED"

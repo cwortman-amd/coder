@@ -5,6 +5,16 @@
 # 32 GB R9700S. It does not receive the Qwen architecture override.
 # Source after lib/gpu_profile.sh so GPU_PROFILE is already set.
 
+_load_model_catalog() {
+    local profile="$1"
+    local _catalog_py
+    _catalog_py="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/catalog.py"
+    if [ -f "${_catalog_py}" ]; then
+        # shellcheck disable=SC2046
+        eval "$(python3 "${_catalog_py}" exports-model "${profile}")"
+    fi
+}
+
 apply_model_profile() {
     local raw="${1:-}"
     local engine="${2:-${INFERENCE_ENGINE:-vllm}}"
@@ -39,7 +49,7 @@ apply_model_profile() {
     export VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION=0
     export HSA_NO_SCRATCH_RECLAIM=""
     export AMDGCN_USE_BUFFER_OPS=""
-    export VLLM_ROCM_QUICK_REDUCE_QUANTIZATION=""
+    export VLLM_ROCM_QUICK_REDUCE_QUANTIZATION="NONE"
     export VLLM_REASONING_PARSER=""
     export VLLM_HF_OVERRIDES=""
     export VLLM_SKIP_HF_OVERRIDES=0
@@ -48,9 +58,10 @@ apply_model_profile() {
 
     case "$family" in
         qwen3.8)
+            _load_model_catalog qwen3.8
             export MODEL_PROFILE="qwen3.8"
             export TOOL_PARSER="hermes"
-            export TOKENIZER_NAME="Qwen/Qwen3.8-27B-FP8"
+            export TOKENIZER_NAME="${MODEL_CATALOG_ID}"
             export VLLM_HF_OVERRIDES='{"architectures": ["Qwen3_5ForCausalLM"]}'
             export VLLM_SKIP_HF_OVERRIDES=0
             export SGLANG_TOOL_PARSER="${SGLANG_TOOL_PARSER:-qwen3_coder}"
@@ -68,13 +79,14 @@ apply_model_profile() {
                         export SERVED_MODEL_NAME="Qwen3.8-27B"
                         ;;
                     mxfp4)
-                        export MODEL_PATH="${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}"
-                        export MXFP4_MODEL_NAME="${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}"
+                        export MODEL_PATH="${MODEL_PATH:-/models/${MODEL_MXFP4_ID}}"
+                        export MXFP4_MODEL_NAME="${MXFP4_MODEL_NAME:-${MODEL_MXFP4_ID}}"
                         export MODEL_NAME="$MXFP4_MODEL_NAME"
                         export SERVED_MODEL_NAME="$MXFP4_MODEL_NAME"
+                        export MODEL_CONTAINER="${MODEL_MXFP4_CONTAINER}"
                         ;;
                     *)
-                        export MODEL_NAME="Qwen/Qwen3.8-27B-FP8"
+                        export MODEL_NAME="${MODEL_CATALOG_ID}"
                         export SERVED_MODEL_NAME="$MODEL_NAME"
                         ;;
                 esac
@@ -99,15 +111,16 @@ apply_model_profile() {
                 engine="vllm"
                 export MODEL_PROFILE_ENGINE="vllm"
             fi
+            _load_model_catalog "$family"
             if [ "$family" = "gpt-oss-120b" ]; then
                 export MODEL_PROFILE="gpt-oss-120b"
-                export MODEL_NAME="openai/gpt-oss-120b"
+                export MODEL_NAME="${MODEL_CATALOG_ID}"
                 if [ "${GPU_PROFILE:-r9700}" = "r9700" ]; then
                     echo "gpt-oss-120b does not fit a 32 GB R9700 or R9700S. Use gpt-oss-20b on that card, or run 120b on MI350P." >&2
                 fi
             else
                 export MODEL_PROFILE="gpt-oss-20b"
-                export MODEL_NAME="openai/gpt-oss-20b"
+                export MODEL_NAME="${MODEL_CATALOG_ID}"
             fi
             if [ "$alias" -eq 0 ]; then
                 export MODEL_NAME="$raw"
@@ -150,11 +163,6 @@ apply_model_profile() {
     esac
 
     export INFERENCE_ENGINE="$engine"
-    _catalog_py="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/catalog.py"
-    if [ -f "${_catalog_py}" ]; then
-        # shellcheck disable=SC2046
-        eval "$(python3 "${_catalog_py}" exports-model "${MODEL_PROFILE}")"
-    fi
 }
 
 # Kernel variants are served on their own GPU. rocm_attn is the stock
@@ -190,8 +198,11 @@ apply_kernel_variant() {
             fi
             export KERNEL_VARIANT="mxfp4"
             export ATTENTION_BACKEND=""
-            export MODEL_PATH="${MODEL_PATH:-/models/Qwen3.8-27B-Quark-AWQ-MXFP4}"
-            export MXFP4_MODEL_NAME="${MXFP4_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}"
+            if [ -z "${MODEL_MXFP4_ID:-}" ]; then
+                _load_model_catalog qwen3.8
+            fi
+            export MODEL_PATH="${MODEL_PATH:-/models/${MODEL_MXFP4_ID}}"
+            export MXFP4_MODEL_NAME="${MXFP4_MODEL_NAME:-${MODEL_MXFP4_ID}}"
             export MODEL_NAME="$MXFP4_MODEL_NAME"
             export SERVED_MODEL_NAME="$MXFP4_MODEL_NAME"
             export MODEL_PROFILE_ENGINE="mxfp4"

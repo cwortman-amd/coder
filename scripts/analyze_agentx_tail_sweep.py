@@ -8,9 +8,12 @@ import csv
 import json
 import math
 import re
-import statistics
+import sys
 from pathlib import Path
 from typing import Any, Iterable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from distribution_stats import percentile_summary  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,28 +32,11 @@ SENDING_RE = re.compile(
 )
 
 
-def percentile(samples: list[float], percent: float) -> float:
-    ordered = sorted(samples)
-    position = (len(ordered) - 1) * percent / 100
-    lower = int(position)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = position - lower
-    return ordered[lower] * (1 - weight) + ordered[upper] * weight
-
-
 def summarize(samples: Iterable[float]) -> dict[str, float | int] | None:
     values = [float(value) for value in samples if math.isfinite(float(value))]
-    if not values:
-        return None
-    result: dict[str, float | int] = {
-        "n": len(values),
-        "mean": round(statistics.mean(values), 3),
-        "min": round(min(values), 3),
-        "max": round(max(values), 3),
-    }
-    for percent in PERCENTILES:
-        result[f"p{percent}"] = round(percentile(values, percent), 3)
-    return result
+    return percentile_summary(
+        values, PERCENTILES, with_mean=True, with_min=True, with_max=True
+    )
 
 
 def metric_value(metrics: dict[str, Any], name: str) -> float | None:

@@ -10,52 +10,11 @@ import json
 import subprocess
 import sys
 import threading
-import time
-import urllib.request
 from pathlib import Path
 
-
-def percentile(values: list[float], q: float) -> float | None:
-    if not values:
-        return None
-    ordered = sorted(values)
-    index = (len(ordered) - 1) * q
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = index - lower
-    return ordered[lower] * (1 - weight) + ordered[upper] * weight
-
-
-def gauges(base: str) -> dict[str, float]:
-    url = base.rstrip("/")
-    if url.endswith("/v1"):
-        url = url[:-3]
-    wanted = {
-        "vllm:num_requests_running": "running",
-        "vllm:num_requests_waiting": "waiting",
-        "vllm:kv_cache_usage_perc": "kv_perc",
-    }
-    found: dict[str, float] = {}
-    with urllib.request.urlopen(f"{url}/metrics", timeout=2) as resp:
-        for raw in resp:
-            line = raw.decode().strip()
-            if not line or line.startswith("#"):
-                continue
-            name = line.split("{", 1)[0].split(" ", 1)[0]
-            if name in wanted:
-                found[wanted[name]] = float(line.rsplit(" ", 1)[-1])
-    return found
-
-
-def sample_loop(base: str, stop: threading.Event, sink: list[dict]) -> None:
-    while not stop.is_set():
-        try:
-            row = gauges(base)
-            row["t"] = time.time()
-            sink.append(row)
-        except Exception as exc:  # noqa: BLE001
-            sink.append({"t": time.time(), "error": str(exc)})
-        stop.wait(0.25)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from request_event_schema import percentile  # noqa: E402
+from vllm_gauges import sample_loop  # noqa: E402
 
 
 def run_bench(root: Path, base: str, concurrency: int, output_len: int, dest: Path) -> dict:
@@ -104,9 +63,9 @@ def position_p95(intervals_ms: list[float]) -> dict[str, float | None]:
     mid = n // 2
     middle = intervals_ms[max(0, mid - 16) : mid + 16]
     return {
-        "first32": percentile(intervals_ms[:32], 0.95),
-        "middle": percentile(middle, 0.95),
-        "last32": percentile(intervals_ms[-32:], 0.95),
+        "first32": percentile(intervals_ms[:32], 95),
+        "middle": percentile(middle, 95),
+        "last32": percentile(intervals_ms[-32:], 95),
     }
 
 
@@ -132,9 +91,9 @@ def summarize(payload: dict) -> dict:
                 "completion_tokens": tokens,
                 "ttft_ms": None if row.get("ttft_s") is None else row["ttft_s"] * 1000,
                 "tpot_ms": tpot,
-                "itl_p50_ms": percentile(gaps, 0.50),
-                "itl_p95_ms": percentile(gaps, 0.95),
-                "itl_p99_ms": percentile(gaps, 0.99),
+                "itl_p50_ms": percentile(gaps, 50),
+                "itl_p95_ms": percentile(gaps, 95),
+                "itl_p99_ms": percentile(gaps, 99),
                 "itl_max_ms": max(gaps) if gaps else None,
                 **{f"itl_{key}_p95_ms": value for key, value in position_p95(gaps).items()},
             }
@@ -148,15 +107,15 @@ def summarize(payload: dict) -> dict:
         "prompt_tokens": ok[0].get("prompt_tokens") if ok else None,
         "completion_tokens": ok[0].get("completion_tokens") if ok else None,
         "output_tok_s": payload["output_throughput"],
-        "ttft_p50_ms": percentile(ttfts, 0.50),
-        "ttft_p95_ms": percentile(ttfts, 0.95),
-        "ttft_p99_ms": percentile(ttfts, 0.99),
-        "itl_p50_ms": percentile(itls, 0.50),
-        "itl_p95_ms": percentile(itls, 0.95),
-        "itl_p99_ms": percentile(itls, 0.99),
+        "ttft_p50_ms": percentile(ttfts, 50),
+        "ttft_p95_ms": percentile(ttfts, 95),
+        "ttft_p99_ms": percentile(ttfts, 99),
+        "itl_p50_ms": percentile(itls, 50),
+        "itl_p95_ms": percentile(itls, 95),
+        "itl_p99_ms": percentile(itls, 99),
         "itl_max_ms": max(itls) if itls else None,
-        "tpot_p50_ms": percentile(tpots, 0.50),
-        "tpot_p95_ms": percentile(tpots, 0.95),
+        "tpot_p50_ms": percentile(tpots, 50),
+        "tpot_p95_ms": percentile(tpots, 95),
         "position_p95_ms": position_p95(itls),
         "per_request": per_request,
         "server_running_max": max(running) if running else None,

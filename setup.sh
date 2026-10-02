@@ -136,6 +136,23 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# npx ships with the npm package (used by scripts/build_presentation.sh).
+if ! command -v npx >/dev/null 2>&1; then
+    echo -e "${YELLOW}npx not found. Installing Node.js npm, which provides npx...${NC}"
+    if ! command -v apt-get >/dev/null 2>&1; then
+        echo -e "${RED}Cannot install npx: apt-get is not available.${NC}" >&2
+        (return 0 2>/dev/null) && return 1 || exit 1
+    fi
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y npm
+    hash -r
+    if ! command -v npx >/dev/null 2>&1; then
+        echo -e "${RED}npx is still not on PATH after installing npm.${NC}" >&2
+        (return 0 2>/dev/null) && return 1 || exit 1
+    fi
+    echo -e "${GREEN}npx installed: $(command -v npx)${NC}"
+fi
+
 if [ -n "$KERNEL_VARIANT" ]; then
     if [ -n "$PARALLEL_SPECS" ]; then
         echo "Use --parallel specs or --kernel-variant, not both." >&2
@@ -372,8 +389,25 @@ fi
 # Ensure persistent results and logs directory exists
 mkdir -p "${SCRIPT_DIR}/_results"
 
-# Launch docker compose services
-docker compose -f "$COMPOSE_FILE" up -d
+# Launch docker compose services. Host networking means this port is shared
+# with every other container; a foreign listener makes /health look ready.
+# The inference container compose is about to replace may already hold the port.
+if ss -ltn "sport = :${INFERENCE_PORT}" | grep -q LISTEN; then
+    listener_pid="$(ss -ltnp "sport = :${INFERENCE_PORT}" 2>/dev/null | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -n 1)"
+    listener_cgroup=""
+    if [ -n "$listener_pid" ] && [ -r "/proc/${listener_pid}/cgroup" ]; then
+        listener_cgroup="$(cat "/proc/${listener_pid}/cgroup")"
+    fi
+    if [[ "$listener_cgroup" != *rocm-inference-server* ]]; then
+        echo -e "${RED}Port ${INFERENCE_PORT} is already in use by another process. Stop it before starting this stack.${NC}" >&2
+        docker ps --format '  {{.Names}}\t{{.Status}}' >&2 || true
+        (return 0 2>/dev/null) && return 1 || exit 1
+    fi
+fi
+if ! docker compose -f "$COMPOSE_FILE" up -d; then
+    echo -e "${RED}docker compose failed. The inference container did not become ready.${NC}" >&2
+    (return 0 2>/dev/null) && return 1 || exit 1
+fi
 
 echo ""
 echo -e "${GREEN}${BOLD}✓ Containers started in detached mode!${NC}"

@@ -32,13 +32,13 @@ import os
 import statistics
 import sys
 import time
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from request_event_schema import RequestEvent, linear_percentile
+from streaming_client import EventMode, stream_chat
 
 
 def generate_prompt_by_tokens(target_tokens: int) -> str:
@@ -58,81 +58,19 @@ def execute_streaming_request(
     request_type: str, # "steady_decode" or "injected_prefill"
     timeout: float = 120.0,
 ) -> RequestEvent:
-    event = RequestEvent(
-        request_id=request_id,
+    result = stream_chat(
+        base_url=base_url,
         model=model,
-        prompt_length_bucket=request_type,
-        output_length_bucket=f"max_{max_tokens}",
+        messages=messages,
+        mode=EventMode.CONTENT,
+        max_tokens=max_tokens,
+        api_key=api_key,
+        timeout=timeout,
+        request_id=request_id,
         scheduled_send_ns=time.time_ns(),
-        actual_send_ns=time.time_ns(),
+        prompt_length_bucket=request_type,
     )
-
-    payload = {
-        "model": model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": 0.0,
-        "stream": True,
-        "stream_options": {"include_usage": True},
-    }
-    headers = {"Content-Type": "application/json", "Accept": "text/event-stream"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    req = urllib.request.Request(
-        f"{base_url.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers=headers,
-        method="POST",
-    )
-
-    token_timestamps: List[int] = []
-    chunks = 0
-    t_first = None
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            for raw_line in resp:
-                line = raw_line.decode("utf-8", errors="ignore").strip()
-                if not line or not line.startswith("data:"):
-                    continue
-                body = line[5:].strip()
-                if body == "[DONE]":
-                    break
-                try:
-                    chunk = json.loads(body)
-                except json.JSONDecodeError:
-                    continue
-
-                choices = chunk.get("choices", [])
-                if choices:
-                    delta = choices[0].get("delta", {})
-                    content = delta.get("content", "")
-                    now_ns = time.time_ns()
-                    if content:
-                        token_timestamps.append(now_ns)
-                        if t_first is None:
-                            t_first = now_ns
-                        chunks += 1
-                    elif choices[0].get("finish_reason") and t_first is None:
-                        t_first = now_ns
-
-    except Exception as exc:
-        event.status = "error"
-        event.error_message = str(exc)
-        event.stream_end_ns = time.time_ns()
-        event.completion_or_timeout_ns = event.stream_end_ns
-        return event
-
-    event.status = "completed"
-    event.first_streamed_output_ns = t_first
-    event.first_output_token_ns = t_first
-    event.token_timestamps_ns = token_timestamps
-    event.completion_tokens = chunks
-    event.actual_output_tokens = chunks
-    event.stream_end_ns = time.time_ns()
-    event.completion_or_timeout_ns = event.stream_end_ns
-    return event
+    return result.event
 
 
 def run_interference_experiment(

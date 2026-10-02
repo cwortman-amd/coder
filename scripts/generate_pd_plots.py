@@ -19,17 +19,23 @@ Methodology & Audit Compliance:
 import os
 import shutil
 import sys
+from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from plot_data import illustrative_itl, published_pd_slo  # noqa: E402
 from publish_results import PUBLISHED_ROOT, publish_and_summarize
 
 OUTPUT_DIR = "/home/amd/workspace/coder/docs/figures/pd"
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
 SUMMARY_JSON = os.path.join(str(PUBLISHED_ROOT), "pd", "pd_emulator_summary.json")
+PD_SLO = published_pd_slo(Path(SUMMARY_JSON))
+ITL_SLO_MS = float(PD_SLO["max_p95_itl_ms"])
+PEAK_ITL_MS = float(PD_SLO["max_peak_itl_ms"])
+TTFT_SLO_MS = float(PD_SLO["max_ttft_ms"])
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
@@ -358,32 +364,30 @@ def generate_decode_retention_crossover():
 
 
 def generate_token_latency_timeline():
-    """Exhibit 4: Real-Time Inter-Token Latency Timeline (Waterfall Trace)"""
+    """Exhibit 4: illustrative ITL waterfall. The published summary has no per-token trace."""
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14.0, 7.5), dpi=300)
     plt.subplots_adjust(top=0.88, bottom=0.14, left=0.08, right=0.94, hspace=0.38)
-    
-    fig.suptitle("Real-Time Streaming Inter-Token Latency (ITL) Trace: Collocated vs. Disaggregated\n"
-                 "Simulating 200 Output Tokens During a Cold 8,192-Token Prompt Arrival at t = 3.2s",
+
+    trace = illustrative_itl()
+    n_tokens = int(trace["tokens"])
+    fig.suptitle("Illustrative Streaming ITL Trace: Collocated vs. Disaggregated\n"
+                 "Seeded draw, not a measured token timeline. Cold 8,192-token prompt arrival at t = 3.2s",
                  fontsize=13.0, fontweight='bold', y=0.96)
-    
-    # 200 tokens
-    tokens = np.arange(1, 201)
-    
-    # Collocated DP=2: normal decode ~29ms, but at token 110 (t=3.2s), an 8K chunk prefill arrives causing a 613.3ms stall!
-    np.random.seed(42)
-    dp_itl = np.random.normal(29.35, 1.2, 200)
-    dp_itl[109] = 613.31 # Freeze!
-    dp_itl[110] = 52.0   # Recovery jitter
-    
-    # Disaggregated P/D 1P1D: GPU 0 absorbs prefill; GPU 1 stays steady at ~48.16ms (batch C=2)
-    pd_itl = np.random.normal(48.16, 1.0, 200)
+
+    tokens = np.arange(1, n_tokens + 1)
+    np.random.seed(int(trace["seed"]))
+    dp_itl = np.random.normal(trace["collocated_mean_ms"], trace["collocated_std_ms"], n_tokens)
+    dp_itl[int(trace["stall_index"])] = trace["stall_ms"]
+    dp_itl[int(trace["recovery_index"])] = trace["recovery_ms"]
+    pd_itl = np.random.normal(trace["disaggregated_mean_ms"], trace["disaggregated_std_ms"], n_tokens)
     
     # Panel 1: Collocated DP=2
-    ax1.plot(tokens, dp_itl, color=AMD_RED, linewidth=1.5, label="Collocated DP=2 ITL (Measured Single-Card Pattern)")
-    ax1.scatter([110], [613.31], color="#B71C1C", s=60, zorder=5)
-    ax1.axhspan(20, 720, color="#FFCDD2", alpha=0.18, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
-    ax1.axhline(20, color="#D84315", linestyle="--", linewidth=1.2, label="Interactive SLO (p95 ITL ≤ 20 ms)")
-    ax1.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.2, label="Peak stall ceiling (100 ms)")
+    stall_token = int(trace["stall_index"]) + 1
+    ax1.plot(tokens, dp_itl, color=AMD_RED, linewidth=1.5, label="Collocated DP=2 ITL (illustrative)")
+    ax1.scatter([stall_token], [trace["stall_ms"]], color="#B71C1C", s=60, zorder=5)
+    ax1.axhspan(ITL_SLO_MS, 720, color="#FFCDD2", alpha=0.18, label=f"SLO Cut-Off Region (p95 ITL > {ITL_SLO_MS:.0f} ms)")
+    ax1.axhline(ITL_SLO_MS, color="#D84315", linestyle="--", linewidth=1.2, label=f"Interactive SLO (p95 ITL ≤ {ITL_SLO_MS:.0f} ms)")
+    ax1.axhline(PEAK_ITL_MS, color="#B71C1C", linestyle=":", linewidth=1.2, label=f"Peak stall ceiling ({PEAK_ITL_MS:.0f} ms)")
     
     ax1.set_title("A. Collocated DP=2: Decode Engine Preempted by Incoming Prompt Chunk", fontsize=11, fontweight='bold')
     ax1.set_ylabel("Inter-Token Latency (ms)", fontsize=10, fontweight='bold')
@@ -400,9 +404,9 @@ def generate_token_latency_timeline():
     
     # Panel 2: Disaggregated P/D 1P1D
     ax2.plot(tokens, pd_itl, color=EMU_BLUE, linestyle="--", linewidth=1.5, label="Disaggregated 1P1D Decoder ITL (Emulated Pipeline)")
-    ax2.axhspan(20, 720, color="#FFCDD2", alpha=0.12, label="SLO Cut-Off Region (p95 ITL > 20 ms)")
-    ax2.axhline(20, color="#D84315", linestyle="--", linewidth=1.2, label="Interactive SLO (p95 ITL ≤ 20 ms)")
-    ax2.axhline(100, color="#B71C1C", linestyle=":", linewidth=1.2, label="Peak stall ceiling (100 ms)")
+    ax2.axhspan(ITL_SLO_MS, 720, color="#FFCDD2", alpha=0.12, label=f"SLO Cut-Off Region (p95 ITL > {ITL_SLO_MS:.0f} ms)")
+    ax2.axhline(ITL_SLO_MS, color="#D84315", linestyle="--", linewidth=1.2, label=f"Interactive SLO (p95 ITL ≤ {ITL_SLO_MS:.0f} ms)")
+    ax2.axhline(PEAK_ITL_MS, color="#B71C1C", linestyle=":", linewidth=1.2, label=f"Peak stall ceiling ({PEAK_ITL_MS:.0f} ms)")
     
     ax2.set_title("B. Disaggregated P/D 1P1D: Phase Isolation Preserves Clockwork Streaming Cadence", fontsize=11, fontweight='bold')
     ax2.set_xlabel("Generated Token Index (Streaming Sequence)", fontsize=10, fontweight='bold')

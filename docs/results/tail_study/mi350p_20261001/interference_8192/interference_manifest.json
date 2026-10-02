@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-10-01T20:58:47.715312+00:00",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "base_url": "http://127.0.0.1:8000/v1",
+  "num_decode_streams": 4,
+  "decode_tokens": 128,
+  "prefill_prompt_tokens": 8192,
+  "prefill_burst_size": 2,
+  "burst_injected_at_ns": 1790888326509784736,
+  "experiment_duration_s": 2.21,
+  "decode_metrics": {
+    "streams_completed": 4,
+    "nominal_median_tpot_ms": 10.94,
+    "p95_token_itl_ms": 23.72,
+    "max_observed_stall_ms": 340.63,
+    "worst_itl_multiplier": 31.14,
+    "total_token_intervals": 508,
+    "stalls_over_50ms": 12,
+    "stalls_over_100ms": 4,
+    "stalls_over_500ms": 0,
+    "stream_stalls": [
+      340.629639,
+      340.57898,
+      340.602713,
+      340.568466
+    ]
+  },
+  "prefill_burst_metrics": {
+    "burst_requests_completed": 2,
+    "prefill_ttft_p50_ms": 502.114378,
+    "prefill_ttft_max_ms": 502.222591
+  }
+}

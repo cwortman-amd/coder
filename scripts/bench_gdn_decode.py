@@ -14,6 +14,7 @@ from pathlib import Path
 
 import torch
 
+from mxfp4_eager import time_ms
 from vllm.model_executor.layers.mamba.ops.causal_conv1d import causal_conv1d_update
 from vllm.third_party.flash_linear_attention.ops.fused_recurrent import (
     fused_recurrent_gated_delta_rule_packed_decode,
@@ -27,20 +28,6 @@ D_V = 128
 CONV_W = 4
 QKV = H_K * D_K * 2 + H_V * D_V  # 10240
 N_GDN_LAYERS = 48  # 64 layers, full_attention every 4th
-
-
-def time_ms(fn, warmup: int, iters: int) -> float:
-    for _ in range(warmup):
-        fn()
-    torch.cuda.synchronize()
-    a = torch.cuda.Event(True)
-    b = torch.cuda.Event(True)
-    a.record()
-    for _ in range(iters):
-        fn()
-    b.record()
-    torch.cuda.synchronize()
-    return a.elapsed_time(b) / iters
 
 
 def main() -> int:

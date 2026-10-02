@@ -75,7 +75,7 @@ Comparing empirical task completion times against Baseline 1 and Baseline 2 quan
 
 When benchmarking dedicated local hardware (such as AMD Radeon™ AI PRO R9700 or Instinct™ MI350P) against hosted/serverless inference endpoints, maintain strict experimental controls:
 
-1. **Explicit Matched Bucketing:** Group and compare requests within matched **prompt-length buckets** (e.g., short 100-tok vs long 8k-tok), **output-length buckets** (e.g., 64-tok vs 512-tok), and **offered-load levels** ($C=1, 5, 20$).
+1. **Explicit Matched Bucketing:** Group and compare requests within matched **prompt-length buckets** (e.g., short 100-tok vs long 8k-tok), **output-length buckets** (e.g., 64-tok vs 512-tok), and **offered-load levels** ($C=1, 2, 4, 8, 16, 32$).
 2. **Customer-Experienced Performance vs. Hardware Roofline:** Following Artificial Analysis's positioning, API measurements reflect real end-user experienced performance (including provider queueing, proxy routing, and multi-tenant noise), not the theoretical compute ceiling of the bare silicon.
 3. **Deadline-Miss Rate (SLO Violation %):** Report the exact percentage of requests and agent trajectories that miss predefined interactive thresholds (e.g., TTFT $\le 1.0\text{s}$, task $\le 30\text{s}$).
 4. **Cache & Arrival Accounting:** Explicitly document arrival patterns (closed-loop concurrency vs paced Poisson), prefix cache hit state (cold vs warm), and token accounting (prompt vs reasoning vs answer tokens).
@@ -90,7 +90,7 @@ When benchmarking dedicated local hardware (such as AMD Radeon™ AI PRO R9700 o
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ 1. bench_agent_chain.py       │ ThreadPool client (no asyncio queueing bias)│
 │                               │ Disaggregates TTFT, TTFAT, ITL, E2E, & SLOs │
-│                               │ Sweeps C=1, 5, 20 & runs M=30 N-call chains │
+│                               │ Closed loop C=1,2,4,8,16,32; M=30 chains    │
 │                               │ Computes dual resampling baselines (1 & 2)  │
 ├───────────────────────────────┼─────────────────────────────────────────────┤
 │ 2. bench_open_loop_sweep.py   │ Open-loop Poisson & paced load generator    │
@@ -143,7 +143,7 @@ Under independent assumptions ($P = 1 - (1 - p)^n$):
 python3 scripts/bench_agent_chain.py \
   --url http://127.0.0.1:8000/v1 \
   --model Qwen3.8-27B-Quark-AWQ-MXFP4 \
-  --concurrency-list 1 5 20 \
+  --concurrency-list 1 2 4 8 16 32 \
   --requests-per-cell 75 \
   --num-chains 30 \
   --chain-length 10 \

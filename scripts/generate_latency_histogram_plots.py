@@ -16,6 +16,16 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from plot_data import latency_dashboard_rows, slo  # noqa: E402
+from plot_style import BLUE, GREEN, ORANGE, RED, TEAL  # noqa: E402
+
+SLO = slo()
+TTFT_SLO_MS = SLO["ttft_ms"]
+ITL_SLO_MS = SLO["itl_p95_ms"]
+
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 RESULTS_ROOT = PROJECT_DIR / "docs" / "results" / "qwen3.8-27b-mxfp4" / "latency" / "r9700"
 PROFILING_JSON = PROJECT_DIR / "docs" / "profiling" / "qwen3.8-27b-mxfp4-latency.json"
@@ -29,11 +39,11 @@ if ARTIFACT_DIR:
 
 # Styling palette
 COLORS = {
-    "C1": "#1E88E5",    # Blue
-    "C2": "#00897B",    # Teal
-    "C4": "#43A047",    # Green
-    "C8": "#FB8C00",    # Orange
-    "C16": "#E53935",   # Red
+    "C1": BLUE,
+    "C2": TEAL,
+    "C4": GREEN,
+    "C8": ORANGE,
+    "C16": RED,
 }
 
 
@@ -86,8 +96,8 @@ def plot_ttft_histogram(data_1k: dict[str, Any], data_8k: dict[str, Any]) -> str
             color=COLORS.get(c_label, "#555555"),
         )
     ax1.set_xscale("log")
-    ax1.axvline(3000, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Limit")
-    ax1.axvspan(100, 3000, color="#E8F5E9", alpha=0.3, label="SLO Compliant Zone (≤ 3.0s)")
+    ax1.axvline(TTFT_SLO_MS, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Limit")
+    ax1.axvspan(100, TTFT_SLO_MS, color="#E8F5E9", alpha=0.3, label="SLO Compliant Zone (≤ 3.0s)")
     ax1.axvspan(3000, 30000, color="#FFEBEE", alpha=0.3, label="Cut-Off Zone (> 3.0s)")
     ax1.set_title("A. 1,024 Input Prompt TTFT Distribution (1k:64)", fontsize=13, fontweight="bold")
     ax1.set_xlabel("Time-to-First-Token (TTFT, ms) [Log Scale]", fontsize=11, fontweight="bold")
@@ -110,8 +120,8 @@ def plot_ttft_histogram(data_1k: dict[str, Any], data_8k: dict[str, Any]) -> str
             color=COLORS.get(c_label, "#555555"),
         )
     ax2.set_xscale("log")
-    ax2.axvline(3000, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Limit")
-    ax2.axvspan(1000, 3000, color="#E8F5E9", alpha=0.3, label="SLO Compliant Zone (≤ 3.0s)")
+    ax2.axvline(TTFT_SLO_MS, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Limit")
+    ax2.axvspan(1000, TTFT_SLO_MS, color="#E8F5E9", alpha=0.3, label="SLO Compliant Zone (≤ 3.0s)")
     ax2.axvspan(3000, 80000, color="#FFEBEE", alpha=0.3, label="Cut-Off Zone (> 3.0s)")
     ax2.set_title("B. 8,192 Input Prompt TTFT Distribution (8k:64)", fontsize=13, fontweight="bold")
     ax2.set_xlabel("Time-to-First-Token (TTFT, ms) [Log Scale]", fontsize=11, fontweight="bold")
@@ -156,7 +166,7 @@ def plot_itl_histogram(data_8k: dict[str, Any]) -> str:
         )
 
     ax1.set_yscale("log")
-    ax1.axvline(20, color="#388E3C", linestyle=":", linewidth=1.8, label="20 ms Streaming SLO Target")
+    ax1.axvline(ITL_SLO_MS, color="#388E3C", linestyle=":", linewidth=1.8, label="20 ms Streaming SLO Target")
     ax1.axvline(50, color="#FFA000", linestyle=":", linewidth=1.8, label="50 ms Warning Threshold")
     ax1.axvline(100, color="#D32F2F", linestyle="--", linewidth=2.0, label="100 ms Severe Stall Ceiling")
 
@@ -203,7 +213,7 @@ def plot_itl_histogram(data_8k: dict[str, Any]) -> str:
         )
 
     ax2.set_xscale("log")
-    ax2.axvline(20, color="#388E3C", linestyle=":", linewidth=1.8, label="20 ms Streaming SLO")
+    ax2.axvline(ITL_SLO_MS, color="#388E3C", linestyle=":", linewidth=1.8, label="20 ms Streaming SLO")
     ax2.axvline(50, color="#FFA000", linestyle=":", linewidth=1.8, label="50 ms Streaming Limit")
     ax2.axvline(100, color="#D32F2F", linestyle="--", linewidth=2.0, label="100 ms Ceiling")
     ax2.axhline(95, color="#757575", linestyle="--", alpha=0.7)
@@ -249,7 +259,7 @@ def plot_master_tail_dashboard(data_1k: dict[str, Any], data_8k: dict[str, Any])
                 color=COLORS.get(c_label, "#555"),
             )
     ax1.set_xscale("log")
-    ax1.axvline(3000, color="#D32F2F", linestyle="--", linewidth=1.8, label="3.0s Interactive SLO")
+    ax1.axvline(TTFT_SLO_MS, color="#D32F2F", linestyle="--", linewidth=1.8, label="3.0s Interactive SLO")
     ax1.set_title("1. TTFT Distribution: 1,024 Input Prompt (1k:64)", fontsize=11.5, fontweight="bold")
     ax1.set_xlabel("TTFT (ms) [Log Scale]", fontsize=10, fontweight="bold")
     ax1.set_ylabel("Requests (N=100)", fontsize=10, fontweight="bold")
@@ -269,7 +279,7 @@ def plot_master_tail_dashboard(data_1k: dict[str, Any], data_8k: dict[str, Any])
                 color=COLORS.get(c_label, "#555"),
             )
     ax2.set_xscale("log")
-    ax2.axvline(3000, color="#D32F2F", linestyle="--", linewidth=1.8, label="3.0s Interactive SLO")
+    ax2.axvline(TTFT_SLO_MS, color="#D32F2F", linestyle="--", linewidth=1.8, label="3.0s Interactive SLO")
     ax2.set_title("2. TTFT Distribution: 8,192 Input Prompt (8k:64)", fontsize=11.5, fontweight="bold")
     ax2.set_xlabel("TTFT (ms) [Log Scale]", fontsize=10, fontweight="bold")
     ax2.set_ylabel("Requests (N=100)", fontsize=10, fontweight="bold")
@@ -291,7 +301,7 @@ def plot_master_tail_dashboard(data_1k: dict[str, Any], data_8k: dict[str, Any])
                 density=True,
             )
     ax3.set_yscale("log")
-    ax3.axvline(20, color="#388E3C", linestyle=":", linewidth=1.5, label="20 ms SLO")
+    ax3.axvline(ITL_SLO_MS, color="#388E3C", linestyle=":", linewidth=1.5, label="20 ms SLO")
     ax3.axvline(100, color="#D32F2F", linestyle="--", linewidth=1.5, label="100 ms Ceiling")
     ax3.set_title("3. ITL Tail Freezes under 8k Bursts", fontsize=11.5, fontweight="bold")
     ax3.set_xlabel("Inter-Token Latency (ms)", fontsize=10, fontweight="bold")
@@ -301,19 +311,7 @@ def plot_master_tail_dashboard(data_1k: dict[str, Any], data_8k: dict[str, Any])
 
     # 4. Tail Metrics Summary Table
     ax4.axis("off")
-    table_data = [
-        ["Workload", "C", "TTFT p50", "TTFT p95", "TTFT p99", "ITL p50", "ITL p95", "ITL p99", "SLO ≤ 3s"],
-        ["1k:64", "C1", "481 ms", "485 ms", "487 ms", "30.0 ms", "31.1 ms", "32.0 ms", "100% Pass"],
-        ["1k:64", "C2", "864 ms", "919 ms", "921 ms", "31.0 ms", "32.2 ms", "35.4 ms", "100% Pass"],
-        ["1k:64", "C4", "1,589 ms", "1,603 ms", "1,604 ms", "32.2 ms", "33.4 ms", "35.9 ms", "100% Pass"],
-        ["1k:64", "C8", "5,159 ms", "5,183 ms", "5,185 ms", "32.2 ms", "33.5 ms", "75.0 ms", "Queue Fail"],
-        ["1k:64", "C16", "12,383 ms", "12,440 ms", "12,449 ms", "32.2 ms", "33.6 ms", "76.7 ms", "Queue Fail"],
-        ["8k:64", "C1", "3,152 ms", "3,169 ms", "3,171 ms", "30.5 ms", "31.7 ms", "32.6 ms", "Marginal"],
-        ["8k:64", "C2", "5,611 ms", "6,155 ms", "6,158 ms", "31.9 ms", "33.2 ms", "328 ms", "Fail"],
-        ["8k:64", "C4", "8,173 ms", "9,715 ms", "10,501 ms", "33.9 ms", "1,183 ms", "1,501 ms", "Contention"],
-        ["8k:64", "C8", "20,585 ms", "21,745 ms", "24,944 ms", "33.9 ms", "1,267 ms", "1,509 ms", "Queue Fail"],
-        ["8k:64", "C16", "49,733 ms", "50,913 ms", "54,016 ms", "33.9 ms", "1,266 ms", "1,508 ms", "Queue Fail"],
-    ]
+    table_data = latency_dashboard_rows()
     t = ax4.table(cellText=table_data, loc="center", cellLoc="center")
     t.auto_set_font_size(False)
     t.set_fontsize(8.5)

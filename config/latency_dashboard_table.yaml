@@ -1,0 +1,14 @@
+# Static summary printed on the latency dashboard. These cells are published
+# figures, not a live reduction of the histogram samples.
+rows:
+  - ["Workload", "C", "TTFT p50", "TTFT p95", "TTFT p99", "ITL p50", "ITL p95", "ITL p99", "SLO ≤ 3s"]
+  - ["1k:64", "C1", "481 ms", "485 ms", "487 ms", "30.0 ms", "31.1 ms", "32.0 ms", "100% Pass"]
+  - ["1k:64", "C2", "864 ms", "919 ms", "921 ms", "31.0 ms", "32.2 ms", "35.4 ms", "100% Pass"]
+  - ["1k:64", "C4", "1,589 ms", "1,603 ms", "1,604 ms", "32.2 ms", "33.4 ms", "35.9 ms", "100% Pass"]
+  - ["1k:64", "C8", "5,159 ms", "5,183 ms", "5,185 ms", "32.2 ms", "33.5 ms", "75.0 ms", "Queue Fail"]
+  - ["1k:64", "C16", "12,383 ms", "12,440 ms", "12,449 ms", "32.2 ms", "33.6 ms", "76.7 ms", "Queue Fail"]
+  - ["8k:64", "C1", "3,152 ms", "3,169 ms", "3,171 ms", "30.5 ms", "31.7 ms", "32.6 ms", "Marginal"]
+  - ["8k:64", "C2", "5,611 ms", "6,155 ms", "6,158 ms", "31.9 ms", "33.2 ms", "328 ms", "Fail"]
+  - ["8k:64", "C4", "8,173 ms", "9,715 ms", "10,501 ms", "33.9 ms", "1,183 ms", "1,501 ms", "Contention"]
+  - ["8k:64", "C8", "20,585 ms", "21,745 ms", "24,944 ms", "33.9 ms", "1,267 ms", "1,509 ms", "Queue Fail"]
+  - ["8k:64", "C16", "49,733 ms", "50,913 ms", "54,016 ms", "33.9 ms", "1,266 ms", "1,508 ms", "Queue Fail"]

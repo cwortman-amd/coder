@@ -22,44 +22,29 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
-import statistics
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-
-def percentile(values: List[float], pct: float) -> Optional[float]:
-    if not values:
-        return None
-    sorted_vals = sorted(values)
-    k = (len(sorted_vals) - 1) * (pct / 100.0)
-    f = math.floor(k)
-    c = math.ceil(k)
-    if f == c:
-        return sorted_vals[int(k)]
-    return sorted_vals[int(f)] * (c - k) + sorted_vals[int(c)] * (k - f)
+from distribution_stats import distribution_core
+from request_event_schema import percentile
 
 
 def compute_distribution(samples: List[float]) -> Dict[str, Any]:
-    clean = [float(v) for v in samples if v is not None and math.isfinite(float(v))]
-    if not clean:
-        return {"n": 0}
-
-    n = len(clean)
-    mean_v = statistics.mean(clean)
-    std_v = statistics.stdev(clean) if n > 1 else 0.0
-    stderr = std_v / math.sqrt(n) if n > 1 else 0.0
-    p50 = percentile(clean, 50.0) or 0.0
-    p90 = percentile(clean, 90.0) or 0.0
-    p95 = percentile(clean, 95.0) or 0.0
-    p99 = percentile(clean, 99.0) or 0.0
-    max_v = max(clean)
-    min_v = min(clean)
-
-    cv = (std_v / mean_v * 100.0) if mean_v > 0 else 0.0
-    p99_to_p50 = (p99 / p50) if p50 > 0 else 1.0
-    p95_to_p50 = (p95 / p50) if p50 > 0 else 1.0
+    core = distribution_core(samples)
+    clean = core.pop("clean", [])
+    p50 = core.pop("_p50", 0.0)
+    p99_to_p50 = core.pop("_p99_to_p50", None)
+    p95_to_p50 = core.pop("_p95_to_p50", None)
+    if core["n"] == 0:
+        return core
+    n = core["n"]
+    if p99_to_p50 is None:
+        p99_to_p50 = 1.0
+    if p95_to_p50 is None:
+        p95_to_p50 = 1.0
+    core["p99_to_p50_ratio"] = round(p99_to_p50, 2)
+    core["p95_to_p50_ratio"] = round(p95_to_p50, 2)
 
     # Observe shape without asserting server-side cause
     is_multimodal = False
@@ -78,20 +63,21 @@ def compute_distribution(samples: List[float]) -> Dict[str, Any]:
     else:
         shape_descriptor = "moderate_spread"
 
+    core["shape_descriptor"] = shape_descriptor
     return {
-        "n": n,
-        "mean": round(mean_v, 2),
-        "std": round(std_v, 2),
-        "stderr": round(stderr, 2),
-        "min": round(min_v, 2),
-        "p50": round(p50, 2),
-        "p90": round(p90, 2),
-        "p95": round(p95, 2),
-        "p99": round(p99, 2),
-        "max": round(max_v, 2),
-        "cv_pct": round(cv, 1),
-        "p99_to_p50_ratio": round(p99_to_p50, 2),
-        "p95_to_p50_ratio": round(p95_to_p50, 2),
+        "n": core["n"],
+        "mean": core["mean"],
+        "std": core["std"],
+        "stderr": core["stderr"],
+        "min": core["min"],
+        "p50": core["p50"],
+        "p90": core["p90"],
+        "p95": core["p95"],
+        "p99": core["p99"],
+        "max": core["max"],
+        "cv_pct": core["cv_pct"],
+        "p99_to_p50_ratio": core["p99_to_p50_ratio"],
+        "p95_to_p50_ratio": core["p95_to_p50_ratio"],
         "shape_descriptor": shape_descriptor,
     }
 

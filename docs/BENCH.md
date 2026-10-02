@@ -116,7 +116,9 @@ To switch models, run `./setup.sh` with flags or edit `.env`:
 
 ## 4. Unified Test Runner (`test.sh`) & Accuracy Suite (`accuracy.sh`)
 
-Use `accuracy.sh` for SWE-bench and GPQA. The unified `test.sh` runs both accuracy and throughput by default. GPU selection defaults to `auto`.
+Use `accuracy.sh` for SWE-bench and GPQA. With no suite selected, `test.sh` runs accuracy, throughput, and the local tail-latency experiment matrix. `--both` is accuracy then throughput only. GPU selection defaults to `auto`. `-q` shortens every selected suite; the experiment arm then uses the `tail-quick` campaign instead of `tail-matrix`.
+
+`./test.sh --experiments` runs the matrix in `config/campaigns.yaml`: closed-loop concurrency at C=1, 2, 4, 8, 16, 32, synthetic agent chains, open-loop offered load, the input-length TTFT grid, cold-start idle intervals, AgentX trace replay when AIPerf and the tokenizer are present, and a collocated prefill burst against active decode streams. Provider comparison runs only when `TAIL_COMPARE_MANIFEST` names a second run. The disaggregated prefill/decode arm is not started.
 
 ```bash
 # Default: Offline smoke test (3 SWE-bench problems + 3 GPQA questions)
@@ -138,8 +140,21 @@ Use `accuracy.sh` for SWE-bench and GPQA. The unified `test.sh` runs both accura
 ./accuracy.sh -e vllm
 ./accuracy.sh -e llama.cpp
 
-# Run both suites using automatic GPU detection
+# Accuracy, throughput, and the tail-matrix experiments
+./test.sh
+
+# Short sample of every suite, including tail-quick
 ./test.sh -q
+
+# Tail-latency experiment matrix only
+./test.sh --experiments
+
+# Accuracy sanity sample, throughput, and experiments
+./test.sh -a
+./test.sh --all
+
+# Accuracy on the full dataset, throughput, and experiments
+./test.sh --full
 
 # Run only one suite through the dispatcher
 ./test.sh --accuracy -d --accuracy-limit 5

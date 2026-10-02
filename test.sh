@@ -1,11 +1,14 @@
 #!/bin/bash
-# Unified benchmark dispatcher for accuracy.sh and throughput.sh.
+# Unified benchmark dispatcher for accuracy, throughput, and the tail-latency experiments.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-RUN_ACCURACY=true
-RUN_THROUGHPUT=true
+# Suite flags start unset. With no suite selected, every suite runs.
+SUITE_SELECTED=false
+RUN_ACCURACY=false
+RUN_THROUGHPUT=false
+RUN_EXPERIMENTS=false
 GPU_PROFILE="auto"
 ENGINE=""
 QUICK=false
@@ -16,26 +19,47 @@ usage() {
     cat <<EOF
 Usage: $(basename "$0") [SUITES] [SHARED OPTIONS] [SUITE OPTIONS]
 
-Run both accuracy and throughput benchmarks by default.
+With no suite selected, run accuracy, throughput, and the local experiment matrix.
+Select one or more suites to run only those.
 
 Suites:
-  --both                 Run accuracy then throughput (default)
-  --accuracy             Run only accuracy.sh
-  --throughput           Run only throughput.sh
+  --both                 Accuracy then throughput
+  --accuracy             accuracy.sh only
+  --throughput           throughput.sh only
+  --experiments          Tail-latency experiment matrix
+  -a, --all              Accuracy (sanity), throughput, and experiments
+  --full                 Accuracy (full dataset), throughput, and experiments
+
+Experiments covered by --experiments:
+  1, 5   Closed-loop C=1,2,4,8,16,32 and synthetic agent chains
+         scripts/run_tail_latency_study.sh
+  1, 7   Open-loop offered load and SLO-qualified goodput
+         scripts/bench_open_loop_sweep.py
+  2      Input-length TTFT grid inside the running inference container
+         scripts/bench_qwen_tail_latency.py
+  3      Cold-start idle intervals from config/campaigns.yaml
+         scripts/bench_cold_start_probe.py
+  5      AgentX trace replay when AIPerf and the tokenizer are present
+         scripts/run_agentx_tail_sweep.py
+  6      Collocated prefill burst against active decode streams
+         scripts/bench_prefill_decode_interference.py
+  4      Provider comparison only when TAIL_COMPARE_MANIFEST names a second run
+
+The disaggregated P/D arm of experiment 6 needs a second server and is not
+started by this dispatcher.
 
 Shared options:
   -g, --gpu-profile <p>  auto | r9700 | mi350p (default: auto)
   -e, --engine <engine>  vllm | mxfp4 | llama.cpp | sglang
   --models <list>        Compare profiles, one GPU each when the host has enough cards
   --kernel-variant <k>   Stock rocm_attn plus aiter or mxfp4 on the next GPU
-  -q, --quick            Small accuracy sample and 128:64 throughput smoke test
+  -q, --quick            Short sample of every selected suite
   -h, --help             Show this help
 
 Accuracy options (forwarded to accuracy.sh):
   -s, --sample
   -d, --diamond, -l, --lite
   -m, --main
-  -a, --all
   --accuracy-limit <N>
   --swe-only | --gpqa-only
   --eval
@@ -50,6 +74,10 @@ Throughput options (forwarded to throughput.sh):
 
 Examples:
   ./test.sh -q
+  ./test.sh --experiments
+  ./test.sh -a
+  ./test.sh --all
+  ./test.sh --full
   ./test.sh --accuracy -d --accuracy-limit 5
   ./test.sh --throughput -e vllm -c 8 --test-cases 8192:1024
   ./test.sh --both -g auto -e mxfp4 -d --accuracy-limit 5 -c 8
@@ -66,11 +94,27 @@ KERNEL_VARIANT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --both)
-            RUN_ACCURACY=true; RUN_THROUGHPUT=true; shift ;;
+            RUN_ACCURACY=true; RUN_THROUGHPUT=true; SUITE_SELECTED=true; shift ;;
         --accuracy|--accuracy-only)
-            RUN_ACCURACY=true; RUN_THROUGHPUT=false; shift ;;
+            RUN_ACCURACY=true; SUITE_SELECTED=true; shift ;;
         --throughput|--throughput-only)
-            RUN_ACCURACY=false; RUN_THROUGHPUT=true; shift ;;
+            RUN_THROUGHPUT=true; SUITE_SELECTED=true; shift ;;
+        --experiments|--tail)
+            RUN_EXPERIMENTS=true; SUITE_SELECTED=true; shift ;;
+        -a|--all)
+            RUN_ACCURACY=true
+            RUN_THROUGHPUT=true
+            RUN_EXPERIMENTS=true
+            SUITE_SELECTED=true
+            ACCURACY_ARGS+=("-s")
+            shift ;;
+        --full)
+            RUN_ACCURACY=true
+            RUN_THROUGHPUT=true
+            RUN_EXPERIMENTS=true
+            SUITE_SELECTED=true
+            ACCURACY_ARGS+=("-a")
+            shift ;;
         -g|--gpu-profile)
             [ -n "${2:-}" ] || { echo "Error: $1 requires a profile." >&2; exit 1; }
             GPU_PROFILE="$2"; shift 2 ;;
@@ -90,7 +134,7 @@ while [[ $# -gt 0 ]]; do
             [ -n "${2:-}" ] || { echo "Error: --kernel-variant requires rocm_attn, aiter, or mxfp4." >&2; exit 1; }
             KERNEL_VARIANT="$2"; shift 2 ;;
 
-        -s|--sample|-d|--diamond|-l|--lite|-m|--main|-a|--all|--swe-only|--gpqa-only|--eval|--run-eval|--run-evaluation)
+        -s|--sample|-d|--diamond|-l|--lite|-m|--main|--swe-only|--gpqa-only|--eval|--run-eval|--run-evaluation)
             ACCURACY_ARGS+=("$1"); shift ;;
         --accuracy-limit)
             [[ "${2:-}" =~ ^[0-9]+$ ]] || { echo "Error: --accuracy-limit requires an integer." >&2; exit 1; }
@@ -110,6 +154,12 @@ while [[ $# -gt 0 ]]; do
             exit 1 ;;
     esac
 done
+
+if [ "$SUITE_SELECTED" = false ]; then
+    RUN_ACCURACY=true
+    RUN_THROUGHPUT=true
+    RUN_EXPERIMENTS=true
+fi
 
 case "${GPU_PROFILE,,}" in
     auto|r9700|gfx1201|radeon|mi350p|mi350|gfx950|instinct) ;;
@@ -157,6 +207,77 @@ fi
 
 FAILED=0
 
+inference_container() {
+    local name
+    while IFS= read -r name; do
+        if docker ps --format '{{.Names}}' | grep -qx "$name"; then
+            echo "$name"
+            return 0
+        fi
+    done < <(python3 "${SCRIPT_DIR}/scripts/catalog.py" container-names inference mxfp4)
+    return 1
+}
+
+experiment_gpu_profile() {
+    case "${GPU_PROFILE,,}" in
+        mi350p|mi350|gfx950|instinct) echo mi350p ;;
+        r9700|gfx1201|radeon) echo r9700 ;;
+        *)
+            # shellcheck disable=SC1091
+            source "${SCRIPT_DIR}/lib/gpu_profile.sh"
+            _gpu_profile_detect
+            ;;
+    esac
+}
+
+run_experiments() {
+    local url="$1"
+    local model="$2"
+    local tag="$3"
+    local api="${url%/}/v1"
+    local stamp out model_name profile container campaign
+    stamp="$(date -u +%Y%m%d_%H%M%S)"
+    out="${SCRIPT_DIR}/_results/experiments/${tag}_${stamp}"
+    mkdir -p "$out"
+    if [ -z "$model" ]; then
+        model="$(curl -sf -m 5 "${url}/v1/models" | python3 -c 'import json,sys; data=json.load(sys.stdin).get("data") or []; print(data[0]["id"] if data else "")' 2>/dev/null || true)"
+    fi
+    model_name="${model:-${SERVED_MODEL_NAME:-Qwen3.8-27B-Quark-AWQ-MXFP4}}"
+    profile="$(experiment_gpu_profile)"
+    container="$(inference_container || true)"
+    if [ "$QUICK" = true ]; then
+        campaign="tail-quick"
+    else
+        campaign="tail-matrix"
+    fi
+
+    python3 "${SCRIPT_DIR}/scripts/run_campaign.py" \
+        --campaign "$campaign" \
+        --url "$url" \
+        --api "$api" \
+        --model "$model_name" \
+        --out "$out" \
+        --gpu-profile "$profile" \
+        --container "$container" \
+        --aiperf "${SCRIPT_DIR}/../.venv-aiperf/bin/aiperf" \
+        --tokenizer "${SCRIPT_DIR}/models/Qwen3.8-27B-Quark-AWQ-MXFP4" \
+        || return $?
+
+    if [ -n "${TAIL_COMPARE_MANIFEST:-}" ]; then
+        echo "------------------------------------------------------------------------"
+        echo "Provider comparison"
+        echo "------------------------------------------------------------------------"
+        local local_manifest
+        local_manifest="$(find "$out/tail" -name agent_chain_manifest.json | sort | tail -n 1)"
+        [ -n "$local_manifest" ] || { echo "Local tail manifest was not written." >&2; return 1; }
+        python3 "${SCRIPT_DIR}/scripts/analyze_tail_metrics.py" \
+            --compare "$local_manifest" "$TAIL_COMPARE_MANIFEST"
+    else
+        echo "Provider comparison was not run. Set TAIL_COMPARE_MANIFEST to a second endpoint manifest."
+    fi
+    echo "Disaggregated prefill/decode was not run. Experiment 6 above is the collocated arm."
+}
+
 run_suites() {
     local failed=0
     local port="$1"
@@ -184,6 +305,15 @@ run_suites() {
             RESULTS_TAG="$tag" \
             "${SCRIPT_DIR}/throughput.sh" "${THROUGHPUT_ARGS[@]}" --server-url "$url"; then
             echo "Throughput benchmarks failed for ${tag}." >&2
+            failed=1
+        fi
+    fi
+    if [ "$RUN_EXPERIMENTS" = true ]; then
+        echo "========================================================================"
+        echo "Experiments  ${tag}  ${url}"
+        echo "========================================================================"
+        if ! run_experiments "$url" "$served" "$tag"; then
+            echo "Experiment matrix failed for ${tag}." >&2
             failed=1
         fi
     fi

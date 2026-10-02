@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-10-01T21:39:37.927243+00:00",
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "base_url": "http://127.0.0.1:8000/v1",
+  "qps_list": [
+    64.0
+  ],
+  "duration_per_cell_s": 60.0,
+  "ttft_slo_ms": 1000.0,
+  "worst_itl_slo_ms": 100.0,
+  "cells": {
+    "qps_64.0": {
+      "total_requests": 3840,
+      "completed_requests": 3840,
+      "timeout_requests": 0,
+      "error_requests": 0,
+      "cancelled_requests": 0,
+      "benchmark_duration_s": 62.21,
+      "send_to_ttft_p50_ms": 434.1994085,
+      "send_to_ttft_p95_ms": 584.7453155999999,
+      "send_to_ttft_p99_ms": 655.5876361300002,
+      "sched_to_ttft_p50_ms": 434.380393,
+      "sched_to_ttft_p95_ms": 584.944706,
+      "sched_to_ttft_p99_ms": 655.6883284700001,
+      "ttfat_p50_ms": 434.1994085,
+      "ttfat_p95_ms": 584.7453155999999,
+      "ttfat_p99_ms": 655.5876361300002,
+      "e2e_p50_ms": 5639.183439,
+      "e2e_p95_ms": 6534.9973915,
+      "e2e_p99_ms": 6763.13112211,
+      "decode_tps_p50": 5.981308402055172,
+      "decode_tps_p95": 14.593405476733382,
+      "token_itl_p50_ms": 160.52995800000002,
+      "token_itl_p95_ms": 213.74985615,
+      "token_itl_p99_ms": 256.17125619,
+      "total_token_intervals": 119040,
+      "gaps_gt_50ms": 115927,
+      "gaps_gt_100ms": 101789,
+      "gaps_gt_1000ms": 0,
+      "offered_requests_per_s": 61.73,
+      "completed_requests_per_s": 61.73,
+      "completed_tokens_per_s": 1975.38,
+      "slo_passed_requests": 147,
+      "slo_qualified_goodput_tokens_per_s": 75.62,
+      "generator_send_delay_p95_ms": 0.5837438999999949,
+      "ttft_p50_ms": 434.1994085,
+      "ttft_p95_ms": 584.7453155999999,
+      "ttft_p99_ms": 655.5876361300002,
+      "client_send_lag_p95_ms": 0.5837438999999949
+    }
+  }
+}

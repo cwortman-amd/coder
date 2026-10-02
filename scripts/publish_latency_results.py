@@ -14,10 +14,14 @@ import argparse
 import gzip
 import json
 import math
-import statistics
 from datetime import datetime, timezone
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from distribution_stats import percentile_summary  # noqa: E402
+from request_event_schema import percentile  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_ROOT = ROOT / "docs" / "results" / "qwen3.8-27b-mxfp4" / "latency"
@@ -32,26 +36,8 @@ class MissingDetailedLatency(ValueError):
     """Raised when a benchmark result contains summaries but no raw samples."""
 
 
-def percentile(samples: list[float], pct: float) -> float:
-    ordered = sorted(samples)
-    rank = (len(ordered) - 1) * pct / 100
-    low = int(rank)
-    high = min(low + 1, len(ordered) - 1)
-    weight = rank - low
-    return ordered[low] * (1 - weight) + ordered[high] * weight
-
-
 def summary(samples: list[float]) -> dict[str, float | int] | None:
-    if not samples:
-        return None
-    result: dict[str, float | int] = {
-        "n": len(samples),
-        "mean": round(statistics.mean(samples), 3),
-        "max": round(max(samples), 3),
-    }
-    for pct in PERCENTILES:
-        result[f"p{pct}"] = round(percentile(samples, pct), 3)
-    return result
+    return percentile_summary(samples, PERCENTILES, with_mean=True, with_max=True)
 
 
 def histogram(samples: list[float], edges: tuple[int, ...]) -> dict[str, Any]:

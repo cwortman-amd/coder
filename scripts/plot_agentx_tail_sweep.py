@@ -13,8 +13,13 @@ import os
 import shutil
 from pathlib import Path
 
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from plot_style import BLUE, GREEN, ORANGE, PURPLE, RED, TEAL  # noqa: E402
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 RESULTS_DIR = PROJECT_DIR / "docs" / "results" / "agentx"
@@ -30,12 +35,12 @@ if ARTIFACT_DIR:
 
 # Styling palette
 COLORS = {
-    1: "#1E88E5",   # Blue
-    2: "#00897B",   # Teal
-    4: "#43A047",   # Green
-    8: "#FB8C00",   # Orange
-    16: "#8E24AA",  # Purple
-    32: "#E53935",  # Red
+    1: BLUE,
+    2: TEAL,
+    4: GREEN,
+    8: ORANGE,
+    16: PURPLE,
+    32: RED,
 }
 
 

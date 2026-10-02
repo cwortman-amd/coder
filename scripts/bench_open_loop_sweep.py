@@ -26,13 +26,13 @@ import os
 import random
 import sys
 import time
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from request_event_schema import BenchmarkCorpusSummary, RequestEvent, linear_percentile, summarize_events
+from request_event_schema import BenchmarkCorpusSummary, RequestEvent, summarize_events
+from streaming_client import EventMode, stream_chat
 
 
 def execute_single_request(
@@ -50,82 +50,19 @@ def execute_single_request(
     if scheduled_send_ns > now_ns:
         time.sleep((scheduled_send_ns - now_ns) / 1e9)
 
-    actual_send_ns = time.time_ns()
-    event = RequestEvent(
-        request_id=request_id,
+    result = stream_chat(
+        base_url=base_url,
         model=model,
-        prompt_length_bucket="medium_mix",
-        output_length_bucket=f"max_{max_tokens}",
+        messages=[{"role": "user", "content": prompt}],
+        mode=EventMode.CONTENT,
+        max_tokens=max_tokens,
+        api_key=api_key,
+        timeout=timeout,
+        request_id=request_id,
         scheduled_send_ns=scheduled_send_ns,
-        actual_send_ns=actual_send_ns,
+        prompt_length_bucket="medium_mix",
     )
-
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-        "temperature": 0.0,
-        "stream": True,
-        "stream_options": {"include_usage": True},
-    }
-    headers = {"Content-Type": "application/json", "Accept": "text/event-stream"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    req = urllib.request.Request(
-        f"{base_url.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers=headers,
-        method="POST",
-    )
-
-    token_timestamps: List[int] = []
-    chunks = 0
-    t_first = None
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            for raw_line in resp:
-                line = raw_line.decode("utf-8", errors="ignore").strip()
-                if not line or not line.startswith("data:"):
-                    continue
-                body = line[5:].strip()
-                if body == "[DONE]":
-                    break
-                try:
-                    chunk = json.loads(body)
-                except json.JSONDecodeError:
-                    continue
-
-                choices = chunk.get("choices", [])
-                if choices:
-                    delta = choices[0].get("delta", {})
-                    content = delta.get("content", "")
-                    curr_ns = time.time_ns()
-                    if content:
-                        token_timestamps.append(curr_ns)
-                        if t_first is None:
-                            t_first = curr_ns
-                        chunks += 1
-                    elif choices[0].get("finish_reason") and t_first is None:
-                        t_first = curr_ns
-
-    except Exception as exc:
-        event.status = "error"
-        event.error_message = str(exc)
-        event.stream_end_ns = time.time_ns()
-        event.completion_or_timeout_ns = event.stream_end_ns
-        return event
-
-    event.status = "completed"
-    event.first_streamed_output_ns = t_first
-    event.first_output_token_ns = t_first
-    event.token_timestamps_ns = token_timestamps
-    event.completion_tokens = chunks
-    event.actual_output_tokens = chunks
-    event.stream_end_ns = time.time_ns()
-    event.completion_or_timeout_ns = event.stream_end_ns
-    return event
+    return result.event
 
 
 def run_open_loop_cell(
@@ -202,6 +139,7 @@ def run_open_loop_sweep(
     ttft_slo_ms: float = 1000.0,
     worst_itl_slo_ms: float = 100.0,
     output_dir: Path = Path("_results/open_loop_sweep"),
+    max_in_flight: int = 64,
 ) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = output_dir / "open_loop_manifest.json"
@@ -229,6 +167,7 @@ def run_open_loop_sweep(
             poisson=poisson,
             ttft_slo_ms=ttft_slo_ms,
             worst_itl_slo_ms=worst_itl_slo_ms,
+            max_concurrency=max_in_flight,
         )
         cell_summaries[f"qps_{qps}"] = summary.to_dict()
         all_events_by_qps[f"qps_{qps}"] = [e.request_id for e in events]
@@ -286,6 +225,7 @@ def main() -> int:
     parser.add_argument("--ttft-slo-ms", type=float, default=1000.0, help="TTFT SLO gate in ms")
     parser.add_argument("--worst-itl-slo-ms", type=float, default=100.0, help="Worst ITL SLO gate in ms")
     parser.add_argument("--out-dir", type=Path, default=Path("_results/open_loop_sweep"))
+    parser.add_argument("--max-in-flight", type=int, default=64, help="Client worker cap")
     args = parser.parse_args()
 
     run_open_loop_sweep(
@@ -299,6 +239,7 @@ def main() -> int:
         ttft_slo_ms=args.ttft_slo_ms,
         worst_itl_slo_ms=args.worst_itl_slo_ms,
         output_dir=args.out_dir,
+        max_in_flight=args.max_in_flight,
     )
     return 0
 

@@ -11,7 +11,11 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from distribution_stats import percentile_summary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = ROOT / "_results"
@@ -84,26 +88,10 @@ def publish_r9700_profiling() -> list[Path]:
     return copied
 
 
-def _percentile(samples: list[float], pct: float) -> float:
-    if not samples:
-        raise ValueError("empty sample")
-    ordered = sorted(samples)
-    if len(ordered) == 1:
-        return ordered[0]
-    rank = (len(ordered) - 1) * pct / 100
-    low = int(rank)
-    high = min(low + 1, len(ordered) - 1)
-    weight = rank - low
-    return ordered[low] * (1 - weight) + ordered[high] * weight
-
-
 def _summary_stats(samples: list[float]) -> dict[str, float | int]:
-    return {
-        "n": len(samples),
-        "p50": round(_percentile(samples, 50), 3),
-        "p95": round(_percentile(samples, 95), 3),
-        "p99": round(_percentile(samples, 99), 3),
-    }
+    result = percentile_summary(samples, (50, 95, 99), on_empty="raise")
+    assert result is not None
+    return result
 
 
 def _load(published_rel: str):

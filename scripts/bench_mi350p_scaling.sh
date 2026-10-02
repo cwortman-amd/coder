@@ -287,26 +287,26 @@ bench_model() {
         return 1
       fi
       echo "===== ${tag} prompts=${n} ====="
+      mapfile -t BENCH_ARGS < <(python3 "${ROOT}/scripts/bench_serve.py" \
+        --model "${id}" \
+        --tokenizer "/models/$(basename "${dir}")" \
+        --input-len "${isl}" \
+        --output-len "${osl}" \
+        --num-prompts "${n}" \
+        --max-concurrency "${conc}" \
+        --backend openai \
+        --endpoint /v1/completions \
+        --port "${PORT}" \
+        --request-rate 10000 \
+        --percentile-metrics ttft,tpot,itl,e2el \
+        --no-metric-percentiles \
+        --ignore-eos \
+        --temperature 0 \
+        --no-save-detailed \
+        --result-dir /results/scaling_mi350p \
+        --result-filename "${tag}.json")
       docker exec -w /results/scaling_mi350p "${NAME}" \
-        vllm bench serve \
-          --backend openai \
-          --host 127.0.0.1 \
-          --port "${PORT}" \
-          --endpoint /v1/completions \
-          --model "${id}" \
-          --tokenizer "/models/$(basename "${dir}")" \
-          --dataset-name random \
-          --random-input-len "${isl}" \
-          --random-output-len "${osl}" \
-          --num-prompts "${n}" \
-          --max-concurrency "${conc}" \
-          --request-rate 10000 \
-          --ignore-eos \
-          --temperature 0 \
-          --percentile-metrics ttft,tpot,itl,e2el \
-          --save-result \
-          --result-dir /results/scaling_mi350p \
-          --result-filename "${tag}.json" \
+        vllm "${BENCH_ARGS[@]}" \
         | tee "${RESULTS}/${tag}.bench.txt"
     done
   done

@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from plot_data import capex, electricity_usd_per_kwh, r9700_gpu_usd  # noqa: E402
 from publish_results import (
     R9700_RESULTS_JSON,
     publish_and_summarize,
@@ -107,18 +108,14 @@ COLOR_RTX6000     = "#455A64"    # Slate Gray
 def plot_capex_and_tco():
     fig, ax = plt.subplots(figsize=(11, 7.0), dpi=300)
     
-    systems = [
-        "8× R9700S\n(256GB DRAM)",
-        "16× R9600D\n(512GB DRAM)",
-        "8× RTX PRO 6000\n(768GB DRAM)",
-        "8× MI350P\n(1,536GB DRAM)"
-    ]
-    
-    chassis_capex = np.array([37000, 49000, 62000, 89000])
-    gpu_capex     = np.array([12000, 24000, 128000, 120000])
-    power_3yr     = np.array([3787,  3787,  7574,   7574])
-    total_tco     = chassis_capex + gpu_capex + power_3yr
-    gpu_year_cost = [2199, 1600, 8232, 9024]
+    spec = capex()
+    systems = spec["systems_full"]
+    chassis_capex = np.array(spec["chassis_usd"], dtype=float)
+    gpu_capex = np.array(spec["gpu_usd"], dtype=float)
+    power_3yr = np.array(spec["power_3yr_usd"], dtype=float)
+    total_tco = chassis_capex + gpu_capex + power_3yr
+    gpu_year_cost = spec["gpu_year_usd"]
+    kwh = electricity_usd_per_kwh()
     
     x = np.arange(len(systems))
     bar_width = 0.52
@@ -126,7 +123,7 @@ def plot_capex_and_tco():
     # Stacked bars
     p1 = ax.bar(x, chassis_capex / 1000, bar_width, label="Server Chassis (Matched DRAM)", color="#546E7A", edgecolor="white", alpha=0.9)
     p2 = ax.bar(x, gpu_capex / 1000, bar_width, bottom=chassis_capex / 1000, label="GPU Capex", color="#E53935", edgecolor="white", alpha=0.9)
-    p3 = ax.bar(x, power_3yr / 1000, bar_width, bottom=(chassis_capex + gpu_capex) / 1000, label="3-Yr GPU Power (50% TDP, $0.12/kWh)", color="#FFB300", edgecolor="white", alpha=0.9)
+    p3 = ax.bar(x, power_3yr / 1000, bar_width, bottom=(chassis_capex + gpu_capex) / 1000, label=f"3-Yr GPU Power (50% TDP, ${kwh:.2f}/kWh)", color="#FFB300", edgecolor="white", alpha=0.9)
     
     # Values inside / on top of bars
     for i in range(len(systems)):
@@ -151,8 +148,9 @@ def plot_capex_and_tco():
     ax.legend(loc='upper left', frameon=True, framealpha=0.95, facecolor='white', fontsize=10)
     
     # Callout banner placed cleanly in the open space above R9700S and R9600D
+    gpu_price = f"{int(r9700_gpu_usd()):,}"
     ax.text(0.03, 0.48, r"Key Takeaways:" "\n"
-            r"• R9700S @ \$1,500/GPU delivers complete 8-GPU server for \$49,000 capex" "\n"
+            rf"• R9700S @ \${gpu_price}/GPU delivers complete 8-GPU server for \$49,000 capex" "\n"
             r"• 75% lower 3-year TCO (\$52.8k vs \$216.6k) compared to 8× MI350P" "\n"
             r"• Annual GPU cost: \$2,199/GPU-yr (vs \$9,024 on MI350P)", 
             transform=ax.transAxes, ha='left', va='center',
@@ -459,10 +457,11 @@ def plot_executive_dashboard():
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 11), dpi=300)
     
     # 1. Capex & TCO Bar Chart
-    systems = ["8× R9700S", "16× R9600D", "8× RTX 6000", "8× MI350P"]
-    chassis_capex = np.array([37, 49, 62, 89])
-    gpu_capex     = np.array([12, 24, 128, 120])
-    power_3yr     = np.array([3.8, 3.8, 7.6, 7.6])
+    spec = capex()
+    systems = spec["systems_short"]
+    chassis_capex = np.array(spec["chassis_usd"], dtype=float) / 1000.0
+    gpu_capex = np.array(spec["gpu_usd"], dtype=float) / 1000.0
+    power_3yr = np.array(spec["power_3yr_usd"], dtype=float) / 1000.0
     total_tco     = chassis_capex + gpu_capex + power_3yr
     x = np.arange(len(systems))
     w = 0.50

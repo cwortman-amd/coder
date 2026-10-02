@@ -19,11 +19,15 @@ import json
 import math
 import os
 import statistics
+import os
+import sys
 import time
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from streaming_client import EventMode, stream_chat  # noqa: E402
 
 
 def probe_single_request(
@@ -34,48 +38,30 @@ def probe_single_request(
     max_tokens: int = 16,
     timeout: float = 180.0,
 ) -> Dict[str, Any]:
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-        "temperature": 0.0,
-        "stream": True,
-        "stream_options": {"include_usage": True},
-    }
-    req = urllib.request.Request(
-        f"{base_url.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {api_key}"} if api_key else {})},
-        method="POST",
+    """ANY_SSE: the first data line is TTFT, whether or not it parses as JSON."""
+    result = stream_chat(
+        base_url=base_url,
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        mode=EventMode.ANY_SSE,
+        max_tokens=max_tokens,
+        api_key=api_key,
+        timeout=timeout,
     )
-
-    t_start = time.perf_counter()
-    t_first = None
-    chunks = 0
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            for raw in resp:
-                line = raw.decode("utf-8", errors="ignore").strip()
-                if line.startswith("data: ") and line != "data: [DONE]":
-                    now = time.perf_counter()
-                    if t_first is None:
-                        t_first = now
-                    chunks += 1
-    except Exception as exc:
-        t_end = time.perf_counter()
+    event = result.event
+    if event.status != "completed":
         return {
             "success": False,
-            "error": str(exc),
+            "error": event.error_message or "error",
             "ttft_ms": None,
-            "total_ms": (t_end - t_start) * 1000.0,
+            "total_ms": event.e2e_latency_ms,
         }
-
-    t_end = time.perf_counter()
+    ttft = event.ttft_ms if event.ttft_ms is not None else event.e2e_latency_ms
     return {
         "success": True,
-        "ttft_ms": round(((t_first - t_start) if t_first else (t_end - t_start)) * 1000.0, 2),
-        "total_ms": round((t_end - t_start) * 1000.0, 2),
-        "chunks": chunks,
+        "ttft_ms": round(ttft, 2),
+        "total_ms": round(event.e2e_latency_ms, 2),
+        "chunks": len(event.token_timestamps_ns),
     }
 
 

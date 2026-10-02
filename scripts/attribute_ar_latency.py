@@ -15,51 +15,22 @@ import csv
 import gzip
 import json
 import statistics
+import sys
 from pathlib import Path
 
-
-def percentile(values: list[float], pct: float) -> float:
-    if not values:
-        return 0.0
-    ordered = sorted(values)
-    position = (len(ordered) - 1) * pct
-    low = int(position)
-    high = min(low + 1, len(ordered) - 1)
-    weight = position - low
-    return ordered[low] * (1 - weight) + ordered[high] * weight
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from request_event_schema import percentile  # noqa: E402
+from rocprof_trace import short_name  # noqa: E402
 
 
 def summary(values: list[float]) -> dict[str, float]:
     return {
         "n": len(values),
-        "p50_ms": round(percentile(values, 0.50), 4),
-        "p95_ms": round(percentile(values, 0.95), 4),
+        "p50_ms": round(percentile(values, 50) or 0.0, 4),
+        "p95_ms": round(percentile(values, 95) or 0.0, 4),
         "max_ms": round(max(values), 4) if values else 0.0,
         "sum_ms": round(sum(values), 3),
     }
-
-
-def short_name(name: str) -> str:
-    lowered = name.lower()
-    if "cross_device_reduce" in lowered:
-        return "custom_allreduce"
-    if "gemm_afp4" in lowered or "dynamic_mxfp4" in lowered:
-        return "mxfp4"
-    if "nccldevkernel" in lowered or "nccl" in lowered or "rccl" in lowered:
-        return "rccl"
-    if "triton" in lowered:
-        return "triton"
-    if any(
-        token in lowered
-        for token in (
-            "paged_attention",
-            "reshape_and_cache",
-            "gated_delta",
-            "causal_conv",
-        )
-    ):
-        return "attention"
-    return name.split("(")[0][-80:]
 
 
 def pair_launches(
@@ -289,7 +260,7 @@ def torch_report(trace_dir: Path) -> dict:
         "time_base": {
             "baseTimeNanoseconds": [rank0["base"], rank1["base"]],
             "bases_match": bases_match,
-            "annotation_start_gap_p50_ms": round(percentile(gaps, 0.50), 4),
+            "annotation_start_gap_p50_ms": round(percentile(gaps, 50) or 0.0, 4),
             "annotation_start_gap_max_ms": round(max(gaps), 4) if gaps else None,
         },
         "decode_steps": len(steps),

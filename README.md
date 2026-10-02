@@ -226,12 +226,14 @@ The root directory contains 6 primary automation and benchmarking scripts. Below
   ./test.sh -q                       # Run quick smoke test (3 accuracy samples + 128:64 throughput test)
   ./test.sh --accuracy -d --accuracy-limit 5  # Run accuracy suite on Diamond split (limit 5 samples)
   ./test.sh --throughput -e vllm -c 8 --test-cases 8192:1024 # Run 8192:1024 throughput at C=8
-  ./test.sh --both -g auto -e mxfp4 -d -c 8   # Full accuracy + throughput evaluation
+  ./test.sh --all                    # Accuracy (sanity), throughput, and experiments
+  ./test.sh --full                   # Accuracy (full dataset), throughput, and experiments
+  ./test.sh --both -g auto -e mxfp4 -d -c 8   # Accuracy then throughput
   ```
 - **Key Options & Flags**:
-  - **Suites**: `--both` (Default, runs accuracy then throughput), `--accuracy` (Run accuracy only), `--throughput` (Run throughput only).
+  - **Suites**: no flag runs accuracy, throughput, and experiments. `-a, --all` runs those three with the accuracy sanity sample. `--full` runs those three with the full accuracy dataset. `--both` is accuracy then throughput. `--accuracy`, `--throughput`, and `--experiments` each run one suite.
   - **Shared Options**: `-g, --gpu-profile <auto|r9700|mi350p>`, `-e, --engine <vllm|mxfp4|llama.cpp|sglang>`, `-q, --quick`.
-  - **Accuracy Flags**: `-s` (Sample), `-d` (Diamond/Lite), `-m` (Main/Verified), `-a` (All), `--accuracy-limit <N>`, `--swe-only`, `--gpqa-only`, `--eval`.
+  - **Accuracy Flags**: `-s` (Sample), `-d` (Diamond/Lite), `-m` (Main/Verified), `--accuracy-limit <N>`, `--swe-only`, `--gpqa-only`, `--eval`.
   - **Throughput Flags**: `-c, --concurrency <N>`, `--num-prompts <N>`, `--test-cases <I:O,...>`, `--compare-engines`.
 - **Expected Results & Outputs**:
   - Aggregated performance summary output to terminal covering task accuracy, generation throughput, and TTFT latency.

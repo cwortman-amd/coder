@@ -64,11 +64,18 @@ def main() -> int:
                 f"qwen_isl{input_len}_osl{args.output_len}_"
                 f"c{concurrency}_n{args.num_prompts}_{stamp}.json"
             )
+            vllm_bin = "/usr/local/bin/vllm"
+            probe = subprocess.run(
+                ["docker", "exec", args.container, "test", "-x", "/opt/vllm/bin/vllm"],
+                check=False,
+            )
+            if probe.returncode == 0:
+                vllm_bin = "/opt/vllm/bin/vllm"
             cmd = [
                 "docker",
                 "exec",
                 args.container,
-                "/opt/vllm/bin/vllm",
+                vllm_bin,
                 *bench_serve.bench_serve_args(
                     model=args.model,
                     tokenizer=args.tokenizer,

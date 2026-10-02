@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import time
+import sys
 from pathlib import Path
-from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from eval_http import post_chat  # noqa: E402
 
 
 def complete(base: str, model: str, prompt: str, max_tokens: int, timeout: int, seed: int) -> dict:
@@ -24,16 +26,7 @@ def complete(base: str, model: str, prompt: str, max_tokens: int, timeout: int, 
         "return_token_ids": True,
         "chat_template_kwargs": {"enable_thinking": False},
     }
-    req = Request(
-        f"{base.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    started = time.perf_counter()
-    with urlopen(req, timeout=timeout) as resp:
-        body = json.loads(resp.read().decode())
-    elapsed = time.perf_counter() - started
+    body, elapsed = post_chat(base, payload, timeout)
     choice = (body.get("choices") or [{}])[0]
     message = choice.get("message") or {}
     usage = body.get("usage") or {}

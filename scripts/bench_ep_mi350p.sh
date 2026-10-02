@@ -375,23 +375,25 @@ _bench_arm_exec() {
   local arm="$1"
   local tag
   tag="$(result_tag "${arm}")"
+  mapfile -t BENCH_ARGS < <(python3 "${ROOT}/scripts/bench_serve.py" \
+    --model "${MODEL_ID}" \
+    --tokenizer "/models/$(basename "${HOST_MODEL}")" \
+    --input-len 1000 \
+    --output-len 1000 \
+    --num-prompts 16 \
+    --no-max-concurrency \
+    --backend openai \
+    --endpoint /v1/completions \
+    --port "${PORT}" \
+    --request-rate 10000 \
+    --no-percentile-metrics \
+    --no-metric-percentiles \
+    --ignore-eos \
+    --no-save-detailed \
+    --result-dir /results/ep_mi350p \
+    --result-filename "${tag}.json")
   docker exec -w /results/ep_mi350p "${NAME}" \
-    vllm bench serve \
-      --backend openai \
-      --host 127.0.0.1 \
-      --port "${PORT}" \
-      --endpoint /v1/completions \
-      --model "${MODEL_ID}" \
-      --tokenizer "/models/$(basename "${HOST_MODEL}")" \
-      --dataset-name random \
-      --random-input-len 1000 \
-      --random-output-len 1000 \
-      --request-rate 10000 \
-      --num-prompts 16 \
-      --ignore-eos \
-      --save-result \
-      --result-dir /results/ep_mi350p \
-      --result-filename "${tag}.json" \
+    vllm "${BENCH_ARGS[@]}" \
       | tee "${RESULTS}/${tag}.bench.txt"
 }
 

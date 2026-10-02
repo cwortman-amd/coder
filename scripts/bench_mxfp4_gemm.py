@@ -12,8 +12,9 @@ import time
 from pathlib import Path
 
 import torch
-from safetensors import safe_open
 from torch import nn
+
+from mxfp4_eager import load_tensors, time_ms
 
 from vllm.model_executor.kernels.linear.mxfp4.aiter import AiterMxfp4LinearKernel
 from vllm.model_executor.kernels.linear.mxfp4.base import MxFp4LinearLayerConfig
@@ -59,25 +60,7 @@ class PackedLinear(nn.Module):
 
 
 def load_pair(model_dir: Path, spec: dict[str, str]) -> tuple[torch.Tensor, torch.Tensor]:
-    path = model_dir / spec["shard"]
-    with safe_open(str(path), framework="pt", device="cpu") as handle:
-        weight = handle.get_tensor(spec["weight"])
-        scale = handle.get_tensor(spec["scale"])
-    return weight, scale
-
-
-def time_op(fn, warmup: int, iters: int) -> float:
-    for _ in range(warmup):
-        fn()
-    torch.cuda.synchronize()
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-    start.record()
-    for _ in range(iters):
-        fn()
-    end.record()
-    torch.cuda.synchronize()
-    return start.elapsed_time(end) / iters  # milliseconds
+    return load_tensors(model_dir, spec["weight"], spec["scale"], spec["shard"])
 
 
 def main() -> int:
@@ -147,7 +130,7 @@ def main() -> int:
             # one correctness-ish launch
             y = kernel.apply_weights(layer, x)
             assert y.shape == (m, n), (y.shape, m, n)
-            ms_iter = time_op(run, args.warmup if m <= 8 else max(20, args.warmup // 2), args.iters)
+            ms_iter = time_ms(run, args.warmup if m <= 8 else max(20, args.warmup // 2), args.iters)
             s_iter = ms_iter / 1e3
             weight_gbs = (w_bytes + s_bytes) / s_iter / 1e9
             traffic_gbs = (w_bytes + s_bytes + x_bytes + y_bytes) / s_iter / 1e9

@@ -30,13 +30,22 @@ TELEMETRY_DIR = os.path.join(PROJECT_DIR, "_results", "telemetry")
 DOCS_DIR = os.path.join(PROJECT_DIR, "docs")
 DOCKER_RESULTS_DIR = "/results/concurrency_sweep"
 
-PROMPT_COUNTS = {
-    1: 50,
-    2: 50,
-    4: 80,
-    8: 160,
-    16: 320
-}
+def _power_sweep_defaults() -> tuple[list[int], dict[int, int], int]:
+    """Concurrency and prompt counts live in config/campaigns.yaml."""
+    import yaml
+
+    path = Path(PROJECT_DIR) / "config" / "campaigns.yaml"
+    loaded = yaml.safe_load(path.read_text())
+    row = loaded["campaigns"]["power-sweep"]["power_sweep"]
+    counts = {int(key): int(value) for key, value in row["prompt_counts"].items()}
+    return (
+        [int(value) for value in row["concurrency"]],
+        counts,
+        int(row["prompt_fallback_per_concurrency"]),
+    )
+
+
+POWER_CONCURRENCY, PROMPT_COUNTS, PROMPT_FALLBACK = _power_sweep_defaults()
 
 
 def workload_slug(input_len, output_len):
@@ -98,7 +107,7 @@ def main():
     parser.add_argument("--device-tdp", type=float, default=None, help="Device TDP in Watts (default: 600W for mi350p, 300W for r9700)")
     parser.add_argument("--peak-bw-gbs", type=float, default=None, help="Device peak memory bandwidth in GB/s (default: 4096 for mi350p, 960 for r9700)")
     parser.add_argument("--model-weight-gib", type=float, default=17.91, help="Model weights size in GiB for memory bandwidth estimation (default: 17.91)")
-    parser.add_argument("--concurrency-list", nargs="+", type=int, default=[1, 2, 4, 8, 16], help="Concurrency list")
+    parser.add_argument("--concurrency-list", nargs="+", type=int, default=POWER_CONCURRENCY, help="Concurrency list")
     parser.add_argument("--max-concurrency", type=int, default=None, help="Maximum concurrency ceiling")
     parser.add_argument("--repetitions", type=int, default=1, help="Repetitions per point")
     parser.add_argument("--prompt-scale", type=float, default=None, help="Scale factor for prompt counts")
@@ -140,7 +149,7 @@ def main():
         if args.output_len >= 4096:
             base_prompts = C
         else:
-            base_prompts = PROMPT_COUNTS.get(C, C * 20)
+            base_prompts = PROMPT_COUNTS.get(C, C * PROMPT_FALLBACK)
         prompts = max(1, max(C if C > 1 else 1, int(base_prompts * args.prompt_scale)))
 
         print(f"\n" + "=" * 80)

@@ -59,20 +59,22 @@ if ! docker ps --format '{{.Names}}' | grep -qx "${NAME}"; then
 fi
 
 echo "bench ${MODEL} 1024/1024 concurrency 1, 10 prompts"
-docker exec "${NAME}" vllm bench serve \
+mapfile -t BENCH_ARGS < <(python3 "${ROOT}/scripts/bench_serve.py" \
   --model "${MODEL}" \
-  --percentile-metrics tpot,ttft,itl,e2el \
-  --dataset-name random \
+  --input-len 1024 \
+  --output-len 1024 \
+  --num-prompts 10 \
+  --max-concurrency 1 \
+  --port "${PORT}" \
+  --no-backend \
+  --no-endpoint \
+  --no-request-rate \
+  --no-metric-percentiles \
   --ignore-eos \
   --temperature 0 \
-  --max-concurrency 1 \
-  --num-prompts 10 \
-  --random-input-len 1024 \
-  --random-output-len 1024 \
-  --host 127.0.0.1 \
-  --port "${PORT}" \
-  --save-result \
+  --no-save-detailed \
   --result-dir /results/gpt_oss_20b \
-  --result-filename "${RESULT}" | tee "${OUT_DIR}/bench_${STAMP}.log"
+  --result-filename "${RESULT}")
+docker exec "${NAME}" vllm "${BENCH_ARGS[@]}" | tee "${OUT_DIR}/bench_${STAMP}.log"
 
 echo "result ${OUT_DIR}/${RESULT}"

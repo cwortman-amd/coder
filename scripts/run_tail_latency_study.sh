@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BASE_URL="${BASE_URL:-http://127.0.0.1:8000/v1}"
 MODEL="${MODEL:-Qwen3.8-27B-Quark-AWQ-MXFP4}"
-CONCURRENCY="${CONCURRENCY:-1 5 20}"
+CONCURRENCY="${CONCURRENCY:-1 2 4 8 16 32}"
 REQUESTS_PER_CELL="${REQUESTS_PER_CELL:-75}"
 NUM_CHAINS="${NUM_CHAINS:-30}"
 CHAIN_LENGTH="${CHAIN_LENGTH:-10}"
@@ -51,6 +51,8 @@ python3 "${ROOT}/scripts/bench_agent_chain.py" \
   --num-chains "${NUM_CHAINS}" \
   --chain-length "${CHAIN_LENGTH}" \
   --tokens-per-call "${TOKENS_PER_CALL}" \
+  --ttft-deadline-ms "${TTFT_DEADLINE_MS:-1000}" \
+  --task-deadline-s "${TASK_DEADLINE_S:-30}" \
   --output-dir "${OUTPUT_ROOT}"
 
 # Find the newly created manifest

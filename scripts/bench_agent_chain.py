@@ -34,32 +34,18 @@ import random
 import statistics
 import sys
 import time
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from okf_docs import ensure_frontmatter
+from distribution_stats import distribution_core
+from request_event_schema import percentile
+from streaming_client import EventMode, stream_chat
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def percentile(values: List[float], pct: float) -> Optional[float]:
-    """Linear-interpolation percentile matching numpy/scipy standard."""
-    if not values:
-        return None
-    sorted_vals = sorted(values)
-    k = (len(sorted_vals) - 1) * (pct / 100.0)
-    f = math.floor(k)
-    c = math.ceil(k)
-    if f == c:
-        return sorted_vals[int(k)]
-    d0 = sorted_vals[int(f)] * (c - k)
-    d1 = sorted_vals[int(c)] * (k - f)
-    return d0 + d1
 
 
 def calculate_distribution_stats(
@@ -67,53 +53,26 @@ def calculate_distribution_stats(
     deadline_threshold: Optional[float] = None,
 ) -> Dict[str, Any]:
     """Compute distribution statistics and deadline miss rate without assigning speculative causes."""
-    clean = [v for v in samples if v is not None and math.isfinite(v)]
-    if not clean:
-        return {"n": 0}
-    
-    n = len(clean)
-    mean_val = statistics.mean(clean)
-    std_val = statistics.stdev(clean) if n > 1 else 0.0
-    stderr = std_val / math.sqrt(n) if n > 1 else 0.0
-    p50 = percentile(clean, 50.0) or 0.0
-    p90 = percentile(clean, 90.0) or 0.0
-    p95 = percentile(clean, 95.0) or 0.0
-    p99 = percentile(clean, 99.0) or 0.0
-    
-    cv = (std_val / mean_val * 100.0) if mean_val > 0 else 0.0
-    p99_to_p50 = (p99 / p50) if p50 > 0 else None
-    p95_to_p50 = (p95 / p50) if p50 > 0 else None
-
-    # Deadline miss rate (% exceeding SLO)
+    core = distribution_core(samples)
+    clean = core.pop("clean", [])
+    core.pop("_p50", None)
+    core.pop("_p99_to_p50", None)
+    core.pop("_p95_to_p50", None)
+    if core["n"] == 0:
+        return core
+    n = core["n"]
     deadline_miss_pct = None
     if deadline_threshold is not None and clean:
-        misses = sum(1 for v in clean if v > deadline_threshold)
+        misses = sum(1 for value in clean if value > deadline_threshold)
         deadline_miss_pct = round(misses / n * 100.0, 2)
-
-    uncertainty_note = (
+    core["deadline_threshold"] = deadline_threshold
+    core["deadline_miss_pct"] = deadline_miss_pct
+    core["sample_size_note"] = (
         f"N={n} is insufficient for asymptotic p99 estimation (observed order statistic only)."
         if n < 100 else
         f"N={n} provides empirical tail resolution (>= 1.0%)."
     )
-
-    return {
-        "n": n,
-        "min": round(min(clean), 2),
-        "mean": round(mean_val, 2),
-        "std": round(std_val, 2),
-        "stderr": round(stderr, 2),
-        "cv_pct": round(cv, 1),
-        "p50": round(p50, 2),
-        "p90": round(p90, 2),
-        "p95": round(p95, 2),
-        "p99": round(p99, 2),
-        "max": round(max(clean), 2),
-        "p99_to_p50_ratio": round(p99_to_p50, 2) if p99_to_p50 is not None else None,
-        "p95_to_p50_ratio": round(p95_to_p50, 2) if p95_to_p50 is not None else None,
-        "deadline_threshold": deadline_threshold,
-        "deadline_miss_pct": deadline_miss_pct,
-        "sample_size_note": uncertainty_note,
-    }
+    return core
 
 
 def streamed_chat_request(
@@ -136,149 +95,50 @@ def streamed_chat_request(
       - Inter-token intervals: uncompressed token-event timeline
       - End-to-End latency: wall-clock duration to stream completion
     """
-    actual_send_ns = time.time_ns()
-    t_start = time.perf_counter()
-
-    payload = {
-        "model": model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "stream": True,
-        "stream_options": {"include_usage": True},
-    }
-    
-    url = f"{base_url.rstrip('/')}/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "text/event-stream",
-    }
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers=headers,
-        method="POST",
+    result = stream_chat(
+        base_url=base_url,
+        model=model,
+        messages=messages,
+        mode=EventMode.REASONING_AND_ANSWER,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        api_key=api_key,
+        timeout=timeout,
+        scheduled_send_ns=scheduled_arrival_ns,
     )
-
-    t_first_token: Optional[float] = None
-    t_first_answer_token: Optional[float] = None
-    in_think_block = False
-    token_timestamps: List[float] = []
-    generated_text = []
-    reasoning_text = []
-    usage: Dict[str, Any] = {}
-    finish_reason = "unknown"
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            for raw_line in resp:
-                line = raw_line.decode("utf-8", errors="ignore").strip()
-                if not line or not line.startswith("data:"):
-                    continue
-                body = line[5:].strip()
-                if body == "[DONE]":
-                    break
-                try:
-                    chunk = json.loads(body)
-                except json.JSONDecodeError:
-                    continue
-
-                if chunk.get("usage"):
-                    usage = chunk["usage"]
-
-                choices = chunk.get("choices", [])
-                if choices:
-                    delta = choices[0].get("delta", {})
-                    reasoning_content = delta.get("reasoning_content", "")
-                    content = delta.get("content", "")
-                    now = time.perf_counter()
-
-                    if choices[0].get("finish_reason"):
-                        finish_reason = choices[0]["finish_reason"]
-
-                    # Handle native reasoning_content (DeepSeek-R1 / vLLM / OpenAI o-series)
-                    if reasoning_content:
-                        if t_first_token is None:
-                            t_first_token = now
-                        reasoning_text.append(reasoning_content)
-
-                    # Handle standard content & <think> blocks
-                    if content:
-                        if t_first_token is None:
-                            t_first_token = now
-
-                        if "<think>" in content:
-                            in_think_block = True
-                        if "</think>" in content:
-                            in_think_block = False
-                            if t_first_answer_token is None:
-                                t_first_answer_token = now
-
-                        if not in_think_block and t_first_answer_token is None and content.strip() and not content.startswith("<think>"):
-                            t_first_answer_token = now
-
-                        if in_think_block:
-                            reasoning_text.append(content)
-                        else:
-                            generated_text.append(content)
-                            token_timestamps.append(now)
-
-                    elif choices[0].get("finish_reason") and t_first_token is None:
-                        t_first_token = now
-
-    except Exception as exc:
-        t_end = time.perf_counter()
-        gen_lag_ms = (actual_send_ns - scheduled_arrival_ns) / 1e6 if scheduled_arrival_ns > 0 else 0.0
+    event = result.event
+    itls_ms = event.itl_intervals_ms
+    ttft_ms = event.ttft_ms if event.ttft_ms is not None else event.e2e_latency_ms
+    ttfat_ms = event.ttfat_ms if event.ttfat_ms is not None else ttft_ms
+    if event.status != "completed":
         return {
             "success": False,
-            "error": str(exc),
+            "error": event.error_message or "error",
             "finish_reason": "error",
-            "generator_lag_ms": round(gen_lag_ms, 2),
-            "ttft_ms": (t_first_token - t_start) * 1000.0 if t_first_token else None,
-            "ttfat_ms": (t_first_answer_token - t_start) * 1000.0 if t_first_answer_token else None,
-            "total_time_ms": (t_end - t_start) * 1000.0,
-            "completion_tokens": usage.get("completion_tokens", len(token_timestamps)),
-            "prompt_tokens": usage.get("prompt_tokens", 0),
+            "generator_lag_ms": round(event.generator_delay_ms, 2),
+            "ttft_ms": round(event.ttft_ms, 2) if event.ttft_ms is not None else None,
+            "ttfat_ms": round(event.ttfat_ms, 2) if event.ttfat_ms is not None else None,
+            "total_time_ms": round(event.e2e_latency_ms, 2),
+            "completion_tokens": event.completion_tokens,
+            "prompt_tokens": result.prompt_tokens,
             "decode_tps": None,
-            "generated_text": "".join(generated_text),
+            "generated_text": result.generated_text,
         }
-
-    t_end = time.perf_counter()
-    total_time_ms = (t_end - t_start) * 1000.0
-    ttft_ms = ((t_first_token - t_start) * 1000.0) if t_first_token else total_time_ms
-    ttfat_ms = ((t_first_answer_token - t_start) * 1000.0) if t_first_answer_token else ttft_ms
-
-    m_tokens = len(token_timestamps)
-    # Output generation rate evaluated strictly when M > 1 using token timestamps
-    if m_tokens > 1 and token_timestamps[-1] > token_timestamps[0]:
-        decode_tps = (m_tokens - 1) / (token_timestamps[-1] - token_timestamps[0])
-    else:
-        decode_tps = None
-
-    itls_ms = [
-        (t2 - t1) * 1000.0
-        for t1, t2 in zip(token_timestamps[:-1], token_timestamps[1:])
-    ]
-    gen_lag_ms = (actual_send_ns - scheduled_arrival_ns) / 1e6 if scheduled_arrival_ns > 0 else 0.0
-
     return {
         "success": True,
-        "finish_reason": finish_reason,
-        "generator_lag_ms": round(gen_lag_ms, 2),
+        "finish_reason": event.finish_reason,
+        "generator_lag_ms": round(event.generator_delay_ms, 2),
         "ttft_ms": round(ttft_ms, 2),
         "ttfat_ms": round(ttfat_ms, 2),
-        "total_time_ms": round(total_time_ms, 2),
-        "decode_tps": round(decode_tps, 2) if decode_tps is not None else None,
-        "completion_tokens": usage.get("completion_tokens", m_tokens),
-        "prompt_tokens": usage.get("prompt_tokens", 0),
+        "total_time_ms": round(event.e2e_latency_ms, 2),
+        "decode_tps": round(event.decode_tokens_per_second, 2) if event.decode_tokens_per_second is not None else None,
+        "completion_tokens": event.completion_tokens,
+        "prompt_tokens": result.prompt_tokens,
         "mean_itl_ms": round(statistics.mean(itls_ms), 2) if itls_ms else None,
         "p95_itl_ms": round(percentile(itls_ms, 95.0), 2) if itls_ms else None,
-        "worst_itl_ms": round(max(itls_ms), 2) if itls_ms else None,
+        "worst_itl_ms": round(event.worst_itl_ms, 2) if event.worst_itl_ms is not None else None,
         "stalls_over_1s": sum(1 for itl in itls_ms if itl > 1000.0),
-        "generated_text": "".join(generated_text),
+        "generated_text": result.generated_text,
     }
 
 
@@ -363,7 +223,7 @@ def execute_agent_chain(
         "orchestration_duration_ms": round(orchestration_ms, 2),
         "contains_slow_call": contains_slow_call,
         "worst_call_ms": round(max(llm_times), 2) if llm_times else None,
-        "worst_ttft_ms": round(max([s["ttft_ms"] for s in step_results if s.get("ttft_ms")]), 2) if step_results else None,
+        "worst_ttft_ms": round(max(ttfts), 2) if (ttfts := [s["ttft_ms"] for s in step_results if s.get("ttft_ms") is not None]) else None,
         "steps": step_results,
     }
 
@@ -491,6 +351,10 @@ def run_benchmark(
         tps_stats = calculate_distribution_stats(dec_tps)
 
         print(f"    -> C={c} in {elapsed:.1f}s | Success: {len(successful)}/{requests_per_cell}")
+        if not successful and not benchmark_data["concurrency_sweep"]:
+            err = next((r.get("error") for r in results if r.get("error")), "request failed")
+            print(f"       Error: {err}", flush=True)
+            raise SystemExit(f"Every request failed at C={c}: {err}")
         print(f"       TTFT: p50={ttft_stats.get('p50')}ms, p95={ttft_stats.get('p95')}ms, p99={ttft_stats.get('p99')}ms (p99:p50={ttft_stats.get('p99_to_p50_ratio')}x | Miss: {ttft_stats.get('deadline_miss_pct')}%)")
         print(f"       TTFAT (1st Answer): p50={ttfat_stats.get('p50')}ms, p95={ttfat_stats.get('p95')}ms")
         print(f"       Decode Rate (M>1): p50={tps_stats.get('p50')} tok/s")
@@ -686,7 +550,7 @@ def main() -> int:
     parser.add_argument("--url", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", os.environ.get("DO_MODEL_ACCESS_KEY")))
     parser.add_argument("--model", default="Qwen3.8-27B-Quark-AWQ-MXFP4")
-    parser.add_argument("--concurrency-list", nargs="+", type=int, default=[1, 5, 20])
+    parser.add_argument("--concurrency-list", nargs="+", type=int, default=[1, 2, 4, 8, 16, 32])
     parser.add_argument("--requests-per-cell", type=int, default=75)
     parser.add_argument("--num-chains", type=int, default=30)
     parser.add_argument("--chain-length", type=int, default=10)

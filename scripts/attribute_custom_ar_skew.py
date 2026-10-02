@@ -16,31 +16,11 @@ import bisect
 import csv
 import json
 import statistics
+import sys
 from pathlib import Path
 
-
-def short_name(name: str) -> str:
-    lowered = name.lower()
-    if "cross_device_reduce" in lowered:
-        return "custom_allreduce"
-    if "gemm_afp4" in lowered or "dynamic_mxfp4" in lowered:
-        return "mxfp4"
-    if "nccldevkernel" in lowered or "nccl" in lowered or "rccl" in lowered:
-        return "rccl"
-    if "triton" in lowered:
-        return "triton"
-    if any(
-        token in lowered
-        for token in (
-            "paged_attention",
-            "reshape_and_cache",
-            "gated_delta",
-            "causal_conv",
-        )
-    ):
-        return "attention"
-    head = name.split("(")[0]
-    return head[-80:]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from rocprof_trace import short_name  # noqa: E402
 
 
 def load(path: Path) -> list[dict]:

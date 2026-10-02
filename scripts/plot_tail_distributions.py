@@ -18,21 +18,24 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from plot_style import BLUE, GREEN, GRAY, ORANGE, PURPLE, RED, TEAL  # noqa: E402
 
-# Professional color palette
+
 PALETTE = {
-    "c1": "#1E88E5",    # Vivid Blue
-    "c5": "#00897B",    # Teal
-    "c20": "#E53935",   # Crimson Red
-    "chain": "#8E24AA", # Purple
-    "boot": "#FB8C00",  # Amber/Orange
-    "accent": "#43A047",# Green
+    "c1": BLUE,
+    "c5": TEAL,
+    "c20": RED,
+    "chain": PURPLE,
+    "boot": ORANGE,
+    "accent": GREEN,
     "grid": "#E0E0E0",
 }
 
@@ -48,7 +51,7 @@ def plot_dashboard(data: Dict[str, Any], output_path: Path) -> None:
     model_name = meta.get("model", "Model")
     c_sweep = data.get("concurrency_sweep", {})
     ch_bench = data.get("chained_benchmark", {})
-    risks = data.get("compound_risk_analysis", {})
+    risks = data.get("compound_risk_reference") or data.get("compound_risk_analysis") or {}
 
     fig, axes = plt.subplots(2, 2, figsize=(15, 11), dpi=300)
     fig.suptitle(
@@ -80,8 +83,8 @@ def plot_dashboard(data: Dict[str, Any], output_path: Path) -> None:
 
     if has_ttft:
         ax_a.set_xscale("log")
-        ax_a.axvline(1000, color="#757575", linestyle="--", linewidth=1.2, label="1.0s Interactive Threshold")
-        ax_a.axhline(99, color="#E53935", linestyle=":", linewidth=1.2, label="p99 Percentile Target")
+        ax_a.axvline(1000, color=GRAY, linestyle="--", linewidth=1.2, label="1.0s Interactive Threshold")
+        ax_a.axhline(99, color=RED, linestyle=":", linewidth=1.2, label="p99 Percentile Target")
         ax_a.set_title("A. TTFT Cumulative Distribution (CDF)", fontsize=11, fontweight="bold")
         ax_a.set_xlabel("Time-to-First-Token (TTFT, ms) [Log Scale]", fontsize=10)
         ax_a.set_ylabel("Percentage of Requests (%)", fontsize=10)
@@ -117,7 +120,7 @@ def plot_dashboard(data: Dict[str, Any], output_path: Path) -> None:
         # Plot Resampling Baseline 2 (Block Correlated)
         if base2_stats and base2_stats.get("p95"):
             b2_p95 = base2_stats.get("p95", 0) / 1000.0
-            ax_b.axvline(b2_p95, color="#8E24AA", linestyle="-.", linewidth=1.8, label=f"Baseline 2 (Block) p95 ({b2_p95:.2f}s)")
+            ax_b.axvline(b2_p95, color=PURPLE, linestyle="-.", linewidth=1.8, label=f"Baseline 2 (Block) p95 ({b2_p95:.2f}s)")
 
         ax_b.set_title(f"B. {chain_len}-Call Chained Task Completion Time", fontsize=11, fontweight="bold")
         ax_b.set_xlabel("Total Task Duration (seconds)", fontsize=10)
@@ -131,16 +134,23 @@ def plot_dashboard(data: Dict[str, Any], output_path: Path) -> None:
     # Panel C: Compounding Tail Risk as Function of Chain Length
     # ----------------------------------------------------
     ax_c = axes[1, 0]
-    lengths = [1, 2, 3, 5, 8, 10, 12, 15, 20, 25]
-    risk_p99 = [(1.0 - math.pow(0.99, n)) * 100.0 for n in lengths]
-    risk_p95 = [(1.0 - math.pow(0.95, n)) * 100.0 for n in lengths]
+    p95_ref = risks.get("p95_reference_exceedance_pct") or {}
+    p99_ref = risks.get("p99_reference_exceedance_pct") or {}
+    if p95_ref and p99_ref:
+        lengths = sorted(int(n) for n in p95_ref)
+        risk_p95 = [float(p95_ref[str(n)] if str(n) in p95_ref else p95_ref[n]) for n in lengths]
+        risk_p99 = [float(p99_ref[str(n)] if str(n) in p99_ref else p99_ref[n]) for n in lengths]
+    else:
+        lengths = [1, 2, 3, 5, 8, 10, 12, 15, 20, 25]
+        risk_p99 = [(1.0 - math.pow(0.99, n)) * 100.0 for n in lengths]
+        risk_p95 = [(1.0 - math.pow(0.95, n)) * 100.0 for n in lengths]
 
-    ax_c.plot(lengths, risk_p95, marker="o", color="#E53935", linewidth=2.2, label="Single-Call p95 Tail (q=5%)")
-    ax_c.plot(lengths, risk_p99, marker="s", color="#1E88E5", linewidth=2.2, label="Single-Call p99 Tail (q=1%)")
-    ax_c.axhline(50, color="#757575", linestyle="--", linewidth=1.2, label="50% Coin-Flip Threshold")
-    ax_c.axvline(10, color="#8E24AA", linestyle=":", linewidth=1.5, label="N=10 Typical Agent Chain")
+    ax_c.plot(lengths, risk_p95, marker="o", color=RED, linewidth=2.2, label="Single-Call p95 Tail (q=5%)")
+    ax_c.plot(lengths, risk_p99, marker="s", color=BLUE, linewidth=2.2, label="Single-Call p99 Tail (q=1%)")
+    ax_c.axhline(50, color=GRAY, linestyle="--", linewidth=1.2, label="50% Coin-Flip Threshold")
+    ax_c.axvline(10, color=PURPLE, linestyle=":", linewidth=1.5, label="N=10 Typical Agent Chain")
 
-    ax_c.set_title(r"C. Mathematical Tail Compounding: $P(\geq 1 \text{ Tail}) = 1 - (1-q)^N$", fontsize=11, fontweight="bold")
+    ax_c.set_title(r"C. Mathematical Tail Compounding: $P(\geq 1\ \mathrm{tail}) = 1-(1-q)^N$", fontsize=11, fontweight="bold")
     ax_c.set_xlabel("Sequential Chain Length (Model Calls per Task)", fontsize=10)
     ax_c.set_ylabel("Probability of Hitting At Least 1 Tail Event (%)", fontsize=10)
     ax_c.set_ylim(0, 100)

@@ -10,8 +10,12 @@ import statistics
 import time
 import unicodedata
 from collections import defaultdict
+import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from eval_http import strip_think  # noqa: E402
 
 
 MATH_TASKS = [
@@ -69,7 +73,7 @@ def normalize(text: str) -> str:
 
 
 def clean_output(text: str) -> str:
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = strip_think(text)
     match = re.fullmatch(r"\s*```(?:python|json)?\s*(.*?)\s*```\s*", text, flags=re.DOTALL | re.IGNORECASE)
     return (match.group(1) if match else text).strip()
 

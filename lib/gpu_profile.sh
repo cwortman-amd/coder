@@ -56,7 +56,12 @@ apply_gpu_profile() {
             export VLLM_ROCM_FP8_PADDING=""
             export VLLM_COMPILATION_CONFIG="{\"cudagraph_mode\": \"PIECEWISE\"}"
             export KV_CACHE_MEMORY_BYTES="${KV_CACHE_MEMORY_BYTES:-34359738368}"
-            export MAX_MODEL_LEN="${MAX_MODEL_LEN:-32768}"
+            # .env ships the 32 GB R9700 window. AgentX traces on this card need 65536.
+            if [ "${MAX_MODEL_LEN:-9600}" = "9600" ]; then
+                export MAX_MODEL_LEN=65536
+            else
+                export MAX_MODEL_LEN="${MAX_MODEL_LEN:-32768}"
+            fi
             export GPU_MEM_UTIL="${GPU_MEM_UTIL:-0.90}"
             export RADIANCE_USE_R4D="0"
             export RADIANCE_R4D_ATTN_FP8="0"
@@ -153,7 +158,7 @@ upsert_env_var() {
     local val="$2"
     local file="${3:-${SCRIPT_DIR}/.env}"
     python3 - "$key" "$val" "$file" <<'PY'
-import os, re, sys
+import os, re, shlex, sys
 key, val, path = sys.argv[1], sys.argv[2], sys.argv[3]
 lines = []
 if os.path.exists(path):
@@ -163,14 +168,14 @@ pat = re.compile(r"^\s*" + re.escape(key) + r"\s*=")
 out, found = [], False
 for line in lines:
     if pat.match(line) and not found:
-        out.append(f"{key}={val}")
+        out.append(f"{key}={shlex.quote(val)}")
         found = True
     else:
         out.append(line)
 if not found:
     if out and out[-1] != "":
         out.append("")
-    out.append(f"{key}={val}")
+    out.append(f"{key}={shlex.quote(val)}")
 os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
 with open(path, "w", encoding="utf-8") as fh:
     fh.write("\n".join(out) + "\n")

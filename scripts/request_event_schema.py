@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def linear_percentile(sorted_values: List[float], pct: float) -> Optional[float]:
-    """Standard linear-interpolation percentile."""
+    """Standard linear-interpolation percentile. `pct` is on a 0–100 scale."""
     if not sorted_values:
         return None
     k = (len(sorted_values) - 1) * (pct / 100.0)
@@ -34,6 +34,13 @@ def linear_percentile(sorted_values: List[float], pct: float) -> Optional[float]
     if f == c:
         return sorted_values[int(k)]
     return sorted_values[int(f)] * (c - k) + sorted_values[int(c)] * (k - f)
+
+
+def percentile(values: List[float], pct: float) -> Optional[float]:
+    """Linear percentile of an unsorted sample. `pct` is on a 0–100 scale."""
+    if not values:
+        return None
+    return linear_percentile(sorted(values), pct)
 
 
 @dataclass

@@ -18,23 +18,26 @@ run_one() {
     return 2
   fi
   echo "START $(date -Is) isl=$isl osl=$osl c=$c" | tee -a "$LOG"
-  timeout 10800 docker exec aim-gptoss vllm bench serve \
+  mapfile -t BENCH_ARGS < <(python3 "$(dirname "${BASH_SOURCE[0]}")/bench_serve.py" \
     --model "$MODEL" \
     --served-model-name "$MODEL" \
-    --port 8000 \
-    --dataset-name random \
-    --random-input-len "$isl" \
-    --random-output-len "$osl" \
-    --max-concurrency "$c" \
+    --input-len "$isl" \
+    --output-len "$osl" \
     --num-prompts $((10 * c)) \
-    --ignore-eos \
+    --max-concurrency "$c" \
+    --port 8000 \
+    --no-host \
+    --no-backend \
+    --no-endpoint \
+    --no-request-rate \
     --percentile-metrics ttft,tpot,itl,e2el \
     --metric-percentiles 75,90,99 \
     --trust-remote-code \
     --num-warmups $((2 * c)) \
-    --save-result \
+    --no-save-detailed \
     --result-dir /results \
-    --result-filename "$fn" \
+    --result-filename "$fn")
+  timeout 10800 docker exec aim-gptoss vllm "${BENCH_ARGS[@]}" \
     > "/home/amd/workspace/coder/_results/aim_logs/${fn%.json}.log" 2>&1
   local rc=$?
   if [[ -f "$HOST_OUT/$fn" ]]; then

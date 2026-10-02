@@ -36,7 +36,7 @@ services:
       - VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION=${VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION:-0}
       - HSA_NO_SCRATCH_RECLAIM=${HSA_NO_SCRATCH_RECLAIM:-}
       - AMDGCN_USE_BUFFER_OPS=${AMDGCN_USE_BUFFER_OPS:-}
-      - VLLM_ROCM_QUICK_REDUCE_QUANTIZATION=${VLLM_ROCM_QUICK_REDUCE_QUANTIZATION:-}
+      - VLLM_ROCM_QUICK_REDUCE_QUANTIZATION=${VLLM_ROCM_QUICK_REDUCE_QUANTIZATION:-NONE}
       - MODEL_NAME=${MODEL_NAME:-Qwen/Qwen3.8-27B-FP8}
       - TOOL_PARSER=${TOOL_PARSER:-hermes}
       - VLLM_HF_OVERRIDES=${VLLM_HF_OVERRIDES:-}
@@ -113,7 +113,7 @@ services:
         printf '\n'
         exec "$${args[@]}"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:${INFERENCE_PORT:-8000}/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:$${INFERENCE_PORT:-8000}/v1/models | grep -F \"$${MODEL_NAME}\""]
       interval: 15s
       timeout: 10s
       retries: 20

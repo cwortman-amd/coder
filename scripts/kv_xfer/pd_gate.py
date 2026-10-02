@@ -9,10 +9,14 @@ which advance once per successful transfer when requests are serial.
 import argparse
 import json
 import statistics
+import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from request_event_schema import percentile  # noqa: E402
 
 PROMPT = (
     "Reply with exactly these words and no preamble: alpha bravo charlie "
@@ -55,19 +59,6 @@ def metric_values(port):
             continue
         values[key] = float(rest.rsplit(" ", 1)[-1])
     return values
-
-
-def percentile(samples, pct):
-    if not samples:
-        return None
-    ordered = sorted(samples)
-    if len(ordered) == 1:
-        return ordered[0]
-    rank = (len(ordered) - 1) * pct / 100
-    low = int(rank)
-    fraction = rank - low
-    high = min(low + 1, len(ordered) - 1)
-    return ordered[low] * (1 - fraction) + ordered[high] * fraction
 
 
 def summarize(samples):

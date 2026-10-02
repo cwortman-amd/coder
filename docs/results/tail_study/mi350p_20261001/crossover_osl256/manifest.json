@@ -1,0 +1,52 @@
+{
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "tokenizer": "/models/Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "gpu_profile": "mi350p",
+  "input_lens": [
+    100,
+    1000
+  ],
+  "output_len": 256,
+  "concurrency_list": [
+    1,
+    8
+  ],
+  "num_prompts": 100,
+  "request_rate": "inf",
+  "started_utc": "2026-10-01T21:13:08.650923+00:00",
+  "runs": [
+    {
+      "input_len": 100,
+      "output_len": 256,
+      "concurrency": 1,
+      "scratch": "_results/experiments/mi350p_gaps_20261001_202914/crossover_osl256/qwen_isl100_osl256_c1_n100_20261001_211308.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/100256/qwen_isl100_osl256_c1_n100_20261001_211308.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 100,
+      "output_len": 256,
+      "concurrency": 8,
+      "scratch": "_results/experiments/mi350p_gaps_20261001_202914/crossover_osl256/qwen_isl100_osl256_c8_n100_20261001_211755.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/100256/qwen_isl100_osl256_c8_n100_20261001_211755.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1000,
+      "output_len": 256,
+      "concurrency": 1,
+      "scratch": "_results/experiments/mi350p_gaps_20261001_202914/crossover_osl256/qwen_isl1000_osl256_c1_n100_20261001_211846.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1000256/qwen_isl1000_osl256_c1_n100_20261001_211846.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1000,
+      "output_len": 256,
+      "concurrency": 8,
+      "scratch": "_results/experiments/mi350p_gaps_20261001_202914/crossover_osl256/qwen_isl1000_osl256_c8_n100_20261001_212401.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/mi350p/1000256/qwen_isl1000_osl256_c8_n100_20261001_212401.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    }
+  ],
+  "completed_utc": "2026-10-01T21:24:57.436138+00:00"
+}

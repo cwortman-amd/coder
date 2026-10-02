@@ -67,22 +67,25 @@ fi
 bench() {
   local prompts="$1"
   local filename="$2"
-  docker exec "${NAME}" vllm bench serve \
-    --backend openai \
-    --endpoint /v1/completions \
+  mapfile -t BENCH_ARGS < <(python3 "${ROOT}/scripts/bench_serve.py" \
     --model awq \
     --tokenizer /models/Qwen3.8-27B-Quark-AWQ-MXFP4-sharded \
-    --dataset-name random \
-    --random-input-len 1024 \
-    --random-output-len 128 \
+    --input-len 1024 \
+    --output-len 128 \
     --num-prompts "${prompts}" \
     --max-concurrency 1 \
+    --backend openai \
+    --endpoint /v1/completions \
+    --no-host \
+    --no-port \
     --request-rate inf \
-    --ignore-eos \
     --percentile-metrics ttft,tpot,itl,e2el \
-    --save-result \
+    --no-metric-percentiles \
+    --ignore-eos \
+    --no-save-detailed \
     --result-dir "${OUT_CONT}" \
-    --result-filename "${filename}"
+    --result-filename "${filename}")
+  docker exec "${NAME}" vllm "${BENCH_ARGS[@]}"
 }
 
 save_server_log() {

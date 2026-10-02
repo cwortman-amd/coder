@@ -14,26 +14,18 @@ import subprocess
 import sys
 import threading
 import time
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from request_event_schema import percentile  # noqa: E402
+from streaming_client import EventMode, stream_chat as shared_stream_chat  # noqa: E402
+from vllm_gauges import sample_loop  # noqa: E402
 FILL_BETWEEN = {(16, 32): 24, (32, 64): 48, (64, 128): 96}
 FROZEN_C1 = 79.35
 FROZEN_C8 = 553.58
-
-
-def percentile(values: list[float], q: float) -> float | None:
-    if not values:
-        return None
-    ordered = sorted(values)
-    index = (len(ordered) - 1) * q
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = index - lower
-    return ordered[lower] * (1 - weight) + ordered[upper] * weight
 
 
 def mean(values: list[float]) -> float | None:
@@ -46,38 +38,6 @@ def pstdev(values: list[float]) -> float | None:
 
 def prompt_text(n_in: int) -> str:
     return "Say the word ping. " + ("alpha " * max(n_in - 8, 1))
-
-
-def gauges(base: str) -> dict[str, float]:
-    url = base.rstrip("/")
-    if url.endswith("/v1"):
-        url = url[:-3]
-    wanted = {
-        "vllm:num_requests_running": "running",
-        "vllm:num_requests_waiting": "waiting",
-        "vllm:kv_cache_usage_perc": "kv_perc",
-    }
-    found: dict[str, float] = {}
-    with urllib.request.urlopen(f"{url}/metrics", timeout=2) as resp:
-        for raw in resp:
-            line = raw.decode().strip()
-            if not line or line.startswith("#"):
-                continue
-            name = line.split("{", 1)[0].split(" ", 1)[0]
-            if name in wanted:
-                found[wanted[name]] = float(line.rsplit(" ", 1)[-1])
-    return found
-
-
-def sample_loop(base: str, stop: threading.Event, sink: list[dict]) -> None:
-    while not stop.is_set():
-        try:
-            row = gauges(base)
-            row["t"] = time.time()
-            sink.append(row)
-        except Exception as exc:  # noqa: BLE001
-            sink.append({"t": time.time(), "error": str(exc)})
-        stop.wait(0.25)
 
 
 def start_power(out: Path, gpu: int) -> Path:
@@ -153,13 +113,13 @@ def summarize_stream(payload: dict, samples: list[dict]) -> dict:
         "completion_tokens": ok[0].get("completion_tokens") if ok else None,
         "output_tok_s": payload.get("output_throughput") if payload.get("output_throughput") is not None else (generated / wall if wall else 0),
         "requests_per_s": (len(ok) / wall) if wall else 0,
-        "ttft_p50_ms": percentile(ttfts, 0.50),
-        "ttft_p95_ms": percentile(ttfts, 0.95),
-        "ttft_p99_ms": percentile(ttfts, 0.99),
+        "ttft_p50_ms": percentile(ttfts, 50),
+        "ttft_p95_ms": percentile(ttfts, 95),
+        "ttft_p99_ms": percentile(ttfts, 99),
         "ttft_origin": "http_send",
-        "itl_p50_ms": percentile(itls, 0.50),
-        "itl_p95_ms": percentile(itls, 0.95),
-        "itl_p99_ms": percentile(itls, 0.99),
+        "itl_p50_ms": percentile(itls, 50),
+        "itl_p95_ms": percentile(itls, 95),
+        "itl_p99_ms": percentile(itls, 99),
         "tpot_mean_ms": mean(tpots),
         "server_running_mean": mean(running),
         "server_running_max": max(running) if running else None,
@@ -170,52 +130,39 @@ def summarize_stream(payload: dict, samples: list[dict]) -> dict:
 
 
 def stream_chat(base: str, model: str, n_in: int, n_out: int, timeout: int) -> dict:
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt_text(n_in)}],
-        "max_tokens": n_out,
-        "temperature": 0,
-        "stream": True,
-        "stream_options": {"include_usage": True},
-        "stream_interval": 1,
-        "return_token_ids": True,
-        "ignore_eos": True,
-        "skip_special_tokens": True,
-        "chat_template_kwargs": {"enable_thinking": False},
-    }
-    req = urllib.request.Request(
-        f"{base.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
+    """Token-id stream. TTFT and ITL use the shared client clock."""
     http_send = time.perf_counter()
-    token_times: list[float] = []
-    usage: dict = {}
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        for raw_line in resp:
-            line = raw_line.decode().strip()
-            if not line.startswith("data: ") or line == "data: [DONE]":
-                continue
-            body = json.loads(line[6:])
-            if body.get("usage"):
-                usage = body["usage"]
-            choices = body.get("choices") or []
-            token_ids = choices[0].get("token_ids") if choices else None
-            if token_ids:
-                received = time.perf_counter()
-                token_times.extend([received] * len(token_ids))
+    result = shared_stream_chat(
+        base_url=base,
+        model=model,
+        messages=[{"role": "user", "content": prompt_text(n_in)}],
+        mode=EventMode.TOKEN_IDS,
+        max_tokens=n_out,
+        timeout=timeout,
+        extra_payload={
+            "stream_options": {"include_usage": True},
+            "stream_interval": 1,
+            "return_token_ids": True,
+            "ignore_eos": True,
+            "skip_special_tokens": True,
+            "chat_template_kwargs": {"enable_thinking": False},
+        },
+    )
     ended = time.perf_counter()
-    intervals = [b - a for a, b in zip(token_times, token_times[1:])]
+    event = result.event
+    if event.status != "completed":
+        raise RuntimeError(event.error_message or "stream failed")
+    tokens = event.token_timestamps_ns
+    send = event.actual_send_ns
     return {
         "ok": True,
         "http_send": http_send,
-        "latency_s": ended - http_send,
-        "ttft_s": token_times[0] - http_send if token_times else None,
-        "itl_s": intervals,
+        "latency_s": event.e2e_latency_ms / 1000.0,
+        "ttft_s": (tokens[0] - send) / 1e9 if tokens else None,
+        "itl_s": [(b - a) / 1e9 for a, b in zip(tokens, tokens[1:])],
         "ended": ended,
-        "prompt_tokens": usage.get("prompt_tokens", 0),
-        "completion_tokens": usage.get("completion_tokens", 0),
+        "prompt_tokens": result.prompt_tokens,
+        "completion_tokens": event.completion_tokens,
     }
 
 
@@ -527,15 +474,15 @@ def paced_once(args, concurrency: int, rate: float, num_prompts: int) -> dict:
         "duration_s": wall,
         "output_tok_s": generated / wall if wall else 0,
         "requests_per_s": len(ok) / wall if wall else 0,
-        "ttft_p50_ms": percentile(http_ttft, 0.50),
-        "ttft_p95_ms": percentile(http_ttft, 0.95),
-        "ttft_p99_ms": percentile(http_ttft, 0.99),
+        "ttft_p50_ms": percentile(http_ttft, 50),
+        "ttft_p95_ms": percentile(http_ttft, 95),
+        "ttft_p99_ms": percentile(http_ttft, 99),
         "ttft_origin": "http_send",
-        "ttft_scheduled_p95_ms": percentile(sched_ttft, 0.95),
-        "client_queue_p95_ms": percentile(queues, 0.95),
-        "itl_p50_ms": percentile(itls, 0.50),
-        "itl_p95_ms": percentile(itls, 0.95),
-        "itl_p99_ms": percentile(itls, 0.99),
+        "ttft_scheduled_p95_ms": percentile(sched_ttft, 95),
+        "client_queue_p95_ms": percentile(queues, 95),
+        "itl_p50_ms": percentile(itls, 50),
+        "itl_p95_ms": percentile(itls, 95),
+        "itl_p99_ms": percentile(itls, 99),
         "server_running_mean": mean(running),
         "server_running_max": max(running) if running else None,
         "server_waiting_max": max(waiting) if waiting else None,

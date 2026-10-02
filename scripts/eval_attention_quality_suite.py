@@ -7,16 +7,18 @@ import ast
 import json
 import re
 import subprocess
+import sys
 import tempfile
-import time
 import unicodedata
 from collections import defaultdict
 from pathlib import Path
-from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from eval_http import post_chat, strip_think  # noqa: E402
 
 
 def clean(text: str) -> str:
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = strip_think(text)
     match = re.fullmatch(
         r"\s*```(?:python|json|regex)?\s*(.*?)\s*```\s*",
         text,
@@ -43,15 +45,7 @@ def complete(base: str, model: str, task: dict, args) -> dict:
         "return_token_ids": True,
         "chat_template_kwargs": {"enable_thinking": False},
     }
-    request = Request(
-        f"{base.rstrip('/')}/chat/completions",
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
-    )
-    started = time.perf_counter()
-    with urlopen(request, timeout=args.timeout) as response:
-        body = json.loads(response.read().decode())
-    elapsed = time.perf_counter() - started
+    body, elapsed = post_chat(base, payload, args.timeout)
     choice = body["choices"][0]
     usage = body.get("usage") or {}
     return {

@@ -1,0 +1,43 @@
+# Prices, power rate, and SLO lines shared by the TCO, latency, and P/D figures.
+# Chart series that are not a price or an SLO stay next to the plot that uses them.
+
+prices:
+  r9700_gpu_usd: 1500
+  electricity_usd_per_kwh: 0.12
+
+slo:
+  ttft_ms: 3000
+  tpot_ms: 20
+  itl_p95_ms: 20
+  peak_itl_ms: 100
+
+# Dollars. The executive dashboard draws the same stacks in thousands.
+capex:
+  systems_full:
+    - "8× R9700S\n(256GB DRAM)"
+    - "16× R9600D\n(512GB DRAM)"
+    - "8× RTX PRO 6000\n(768GB DRAM)"
+    - "8× MI350P\n(1,536GB DRAM)"
+  systems_short:
+    - "8× R9700S"
+    - "16× R9600D"
+    - "8× RTX 6000"
+    - "8× MI350P"
+  chassis_usd: [37000, 49000, 62000, 89000]
+  gpu_usd: [12000, 24000, 128000, 120000]
+  power_3yr_usd: [3787, 3787, 7574, 7574]
+  gpu_year_usd: [2199, 1600, 8232, 9024]
+
+# Seeded normal draw used only for the illustrative ITL waterfall.
+# The published P/D summary has no per-token timeline.
+illustrative_itl:
+  tokens: 200
+  collocated_mean_ms: 29.35
+  collocated_std_ms: 1.2
+  stall_index: 109
+  stall_ms: 613.31
+  recovery_index: 110
+  recovery_ms: 52.0
+  disaggregated_mean_ms: 48.16
+  disaggregated_std_ms: 1.0
+  seed: 42

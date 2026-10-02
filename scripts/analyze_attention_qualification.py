@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import json
 import random
+import sys
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from request_event_schema import percentile  # noqa: E402
 
 
 ROOT = Path("_results/quality/attention_qualification")
@@ -19,15 +23,6 @@ THROUGHPUT = {
     "aiter": {"c1": 99.58, "c8": 653.96},
     "triton": {"c1": 100.36, "c8": 660.53},
 }
-
-
-def percentile(values: list[float], q: float) -> float:
-    values = sorted(values)
-    position = (len(values) - 1) * q
-    lower = int(position)
-    upper = min(lower + 1, len(values) - 1)
-    fraction = position - lower
-    return values[lower] * (1 - fraction) + values[upper] * fraction
 
 
 def paired(stock: list[dict], candidate: list[dict], seed: int = 7) -> dict:
@@ -57,7 +52,7 @@ def paired(stock: list[dict], candidate: list[dict], seed: int = 7) -> dict:
         "wins": wins,
         "losses": losses,
         "ties": len(pairs) - wins - losses,
-        "bootstrap_95_ci": [percentile(boot, 0.025), percentile(boot, 0.975)],
+        "bootstrap_95_ci": [percentile(boot, 2.5), percentile(boot, 97.5)],
     }
 
 
