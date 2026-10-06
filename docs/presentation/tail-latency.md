@@ -10,128 +10,200 @@ tags:
 - pdd
 status: stable
 marp: true
-theme: gaia
+theme: default
+size: 16:9
 _class: lead
 paginate: true
-backgroundColor: #0d1117
-color: #c9d1d9
+backgroundColor: "#000000"
+color: "#ffffff"
 footer: "AMD Systems Engineering | Serving Agentic LLMs at the Edge"
-style: |
-  section {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    padding: 32px 48px;
-    font-size: 20px;
-    background-color: #0d1117;
-    color: #e6edf3;
+---
+
+<style>
+section {
+    font-family: Arial, 'Nimbus Sans', 'Helvetica Neue', sans-serif;
+    padding: 42px 54px 52px;
+    font-size: 19px;
+    background-color: #000000;
+    background-image:
+      url('./amd-logo-white.png'),
+      linear-gradient(90deg, rgba(0,194,222,.13), rgba(0,194,222,0) 22%),
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 28%);
+    background-repeat: no-repeat;
+    background-position: calc(100% - 34px) calc(100% - 18px), 0 0, 0 0;
+    background-size: 112px auto, 100% 100%, 100% 100%;
+    color: #ffffff;
+    letter-spacing: .01em;
+  }
+  section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 7px;
+    background: linear-gradient(90deg, #00c2de 0 62%, #f26522 62% 82%, #ed1c24 82%);
+  }
+  section.lead {
+    justify-content: flex-end;
+    align-items: flex-start;
+    text-align: left;
+    padding: 0 46% 88px 58px;
+    background-color: #000000;
+    background-image:
+      url('./amd-logo-white.png'),
+      linear-gradient(90deg, rgba(0,0,0,.94) 0 34%, rgba(0,0,0,.55) 52%, rgba(0,0,0,.18) 100%),
+      url('./title-background.jpg');
+    background-repeat: no-repeat;
+    background-position: calc(100% - 34px) calc(100% - 18px), center, center;
+    background-size: 112px auto, cover, cover;
+  }
+  section.lead::before {
+    display: none;
+  }
+  section.lead h1 {
+    color: #00c2de;
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.05;
+    margin: 0 0 22px;
+    letter-spacing: 0;
+  }
+  section.lead h3,
+  section.lead p,
+  section.lead strong {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.25;
+    margin: 0;
   }
   h1 {
-    color: #58a6ff;
-    font-size: 36px;
-    margin-bottom: 10px;
+    color: #ffffff;
+    font-size: 46px;
+    line-height: 1.02;
+    margin: 0 0 14px;
     font-weight: 700;
+    letter-spacing: -.025em;
   }
   h2 {
-    color: #79c0ff;
-    font-size: 26px;
-    margin-top: 0px;
-    margin-bottom: 14px;
-    border-bottom: 2px solid #30363d;
-    padding-bottom: 6px;
+    color: #ffffff;
+    font-size: 29px;
+    line-height: 1.08;
+    margin: 0 0 17px;
+    padding: 0 0 9px;
+    border-bottom: 2px solid #00c2de;
+    font-weight: 700;
+    letter-spacing: -.015em;
   }
   h3 {
-    color: #d2a8ff;
+    color: #00c2de;
     font-size: 20px;
-    margin-bottom: 6px;
+    margin: 0 0 7px;
+    font-weight: 700;
+    letter-spacing: .015em;
   }
   p, li {
-    font-size: 18px;
-    line-height: 1.42;
-    color: #c9d1d9;
+    font-size: 17px;
+    line-height: 1.35;
+    color: #ffffff;
+  }
+  ul, ol {
+    margin-top: 6px;
+  }
+  li::marker {
+    color: #00c2de;
   }
   table {
-    font-size: 14px;
+    font-size: 13px;
     width: 100%;
     border-collapse: collapse;
-    margin: 8px 0;
+    margin: 10px 0;
+    border-top: 2px solid #00c2de;
   }
-  th {
-    background-color: #161b22;
-    color: #58a6ff;
-    padding: 7px 9px;
-    border: 1px solid #30363d;
+  section table th {
+    background-color: #262626 !important;
+    color: #ffffff;
+    padding: 7px 10px;
+    border: 1px solid #5e5e5e;
     text-align: left;
+    font-weight: 700;
   }
-  td {
-    padding: 5px 9px;
-    border: 1px solid #30363d;
-    background-color: #0d1117;
+  section table td,
+  section table tbody tr:nth-child(odd) td,
+  section table tbody tr:nth-child(even) td {
+    padding: 5px 10px;
+    border: 1px solid #454545;
+    background-color: #101010 !important;
+    color: #ffffff !important;
   }
   strong {
-    color: #f0883e;
+    color: #00c2de;
   }
   em {
-    color: #7ee787;
+    color: #ffffff;
     font-style: normal;
+    font-weight: 700;
   }
   code {
-    background-color: #161b22;
-    color: #ff7b72;
-    font-size: 15px;
+    background-color: #262626;
+    color: #00c2de;
+    font-size: 14px;
     padding: 2px 5px;
-    border-radius: 4px;
   }
   .highlight-box {
-    background-color: #161b22;
-    border-left: 4px solid #58a6ff;
-    padding: 10px 16px;
-    border-radius: 0 6px 6px 0;
-    margin: 10px 0;
+    background: linear-gradient(90deg, rgba(0,194,222,.18), rgba(0,194,222,.035));
+    border-left: 5px solid #00c2de;
+    padding: 11px 16px;
+    margin: 11px 0;
   }
   .alert-box {
-    background-color: #211517;
-    border-left: 4px solid #f85149;
-    padding: 10px 16px;
-    border-radius: 0 6px 6px 0;
-    margin: 10px 0;
+    background: linear-gradient(90deg, rgba(237,28,36,.22), rgba(237,28,36,.04));
+    border-left: 5px solid #ed1c24;
+    padding: 11px 16px;
+    margin: 11px 0;
   }
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 24px;
     align-items: start;
   }
   .badge {
     display: inline-block;
-    padding: 2px 7px;
-    border-radius: 12px;
+    padding: 3px 8px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
   }
-  .badge-pass { background-color: #238636; color: #ffffff; }
-  .badge-warn { background-color: #9e6a03; color: #ffffff; }
-  .badge-fail { background-color: #da3633; color: #ffffff; }
+  .badge-pass { background-color: #00c2de; color: #000000; }
+  .badge-warn { background-color: #f26522; color: #ffffff; }
+  .badge-fail { background-color: #ed1c24; color: #ffffff; }
   footer {
-    font-size: 12px;
-    color: #8b949e;
-    left: 48px;
-    right: 48px;
-    bottom: 16px;
+    font-size: 9px;
+    color: #9d9fa2;
+    left: 54px;
+    right: 170px;
+    bottom: 18px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
   }
----
+  section::after {
+    color: #ffffff;
+    font-size: 9px;
+    left: 18px;
+    right: auto;
+    bottom: 18px;
+    width: 24px;
+    text-align: right;
+}
+</style>
 
-<!-- _footer: "AMD Systems Engineering & Applied Performance Group | October 2026" -->
+<!-- _class: lead -->
+<!-- _footer: "AMD Systems Engineering | October 2026" -->
 
-# Serving Agentic LLMs at the Edge
-### Tail Latency, Multi-Turn Dynamics & Disaggregation on AMD Hardware
+# Serving Agentic LLMs<br>at the Edge
 
-**Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700 & Instinct™ MI350P**
-
-<br>
-
-* **Architecture:** Prefill/Decode Disaggregation (P/D 1P1D) vs. Data Parallel (DP=2)
-* **Workloads:** Synthetic 1k:64 / 8k:64 & Real-World Claude Code Agent Traces (`AgentX`)
-* **Hardware:** AMD Radeon™ AI PRO R9700 (32 GB GDDR6) & Instinct™ MI350P (288 GB HBM3E)
-* **Stack:** ROCm 7.14 | vLLM 0.27.1 | Quark AWQ MXFP4 (W4A8 GEMM, FP8 KV)
+Tail latency, multi-turn dynamics, and disaggregation<br>on AMD Radeon™ AI PRO R9700 and Instinct™ MI350P
 
 <!--
 Speaker Notes:

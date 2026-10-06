@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<defs>
+<marker id="arrT" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#00c2de"/></marker>
+<marker id="arrG" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#C1A968"/></marker>
+<marker id="arrO" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#F26522"/></marker>
+<marker id="arrR" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#ed1c24"/></marker>
+</defs>
+<rect width="1280" height="720" fill="#000000"/>
+<line x1="0" y1="0" x2="0" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="40" y1="0" x2="40" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="80" y1="0" x2="80" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="120" y1="0" x2="120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="160" y1="0" x2="160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="200" y1="0" x2="200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="240" y1="0" x2="240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="280" y1="0" x2="280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="320" y1="0" x2="320" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="360" y1="0" x2="360" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="400" y1="0" x2="400" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="440" y1="0" x2="440" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="480" y1="0" x2="480" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="520" y1="0" x2="520" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="560" y1="0" x2="560" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="600" y1="0" x2="600" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="640" y1="0" x2="640" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="680" y1="0" x2="680" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="720" y1="0" x2="720" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="760" y1="0" x2="760" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="800" y1="0" x2="800" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="840" y1="0" x2="840" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="880" y1="0" x2="880" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="920" y1="0" x2="920" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="960" y1="0" x2="960" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1000" y1="0" x2="1000" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1040" y1="0" x2="1040" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1080" y1="0" x2="1080" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1120" y1="0" x2="1120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1160" y1="0" x2="1160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1200" y1="0" x2="1200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1240" y1="0" x2="1240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1280" y1="0" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="0" x2="1280" y2="0" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="40" x2="1280" y2="40" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="80" x2="1280" y2="80" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="120" x2="1280" y2="120" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="160" x2="1280" y2="160" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="200" x2="1280" y2="200" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="240" x2="1280" y2="240" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="280" x2="1280" y2="280" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="320" x2="1280" y2="320" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="360" x2="1280" y2="360" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="400" x2="1280" y2="400" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="440" x2="1280" y2="440" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="480" x2="1280" y2="480" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="520" x2="1280" y2="520" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="560" x2="1280" y2="560" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="600" x2="1280" y2="600" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="640" x2="1280" y2="640" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="680" x2="1280" y2="680" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="720" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<path d="M40 18 H18 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 18 H1262 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M40 702 H18 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 702 H1262 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<text x="40.0" y="48.0" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#ffffff" text-anchor="start">ROUTE TO THE RIGHT MODEL.</text>
+<text x="40.0" y="90.0" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#F26522" text-anchor="start">NOT THE BIGGEST.</text>
+<text x="40.0" y="140.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#9aa3ad" text-anchor="start" letter-spacing="1.2">INCOMING REQUESTS</text>
+<text x="388.0" y="140.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#9aa3ad" text-anchor="start" letter-spacing="1.2">ROUTE TO BEST FIT</text>
+<rect x="40.0" y="156.0" width="300.0" height="67.0" rx="10" fill="#00181c" stroke="#00c2de" stroke-width="1.8"/>
+<text x="56.0" y="186.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Explain this function</text>
+<text x="56.0" y="209.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Low complexity</text>
+<rect x="388.0" y="156.0" width="250.0" height="67.0" rx="10" fill="#14110C" stroke="#C1A968" stroke-width="1.8"/>
+<text x="404.0" y="186.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Small model</text>
+<text x="404.0" y="209.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Fast, if quality holds</text>
+<path d="M344 190 H384" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<rect x="40.0" y="251.0" width="300.0" height="67.0" rx="10" fill="#14110C" stroke="#C1A968" stroke-width="1.8"/>
+<text x="56.0" y="281.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Fix a type error</text>
+<text x="56.0" y="304.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Standard coding task</text>
+<rect x="388.0" y="251.0" width="250.0" height="67.0" rx="10" fill="#1F0D05" stroke="#F26522" stroke-width="1.8"/>
+<text x="404.0" y="281.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Mid model</text>
+<text x="404.0" y="304.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Local 27B, most code</text>
+<path d="M344 284 H384" stroke="#C1A968" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrG)"/>
+<rect x="40.0" y="346.0" width="300.0" height="67.0" rx="10" fill="#1A080A" stroke="#ed1c24" stroke-width="1.8"/>
+<text x="56.0" y="376.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Private data</text>
+<text x="56.0" y="399.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Hard policy: stay local</text>
+<rect x="388.0" y="346.0" width="250.0" height="67.0" rx="10" fill="#1A080A" stroke="#ed1c24" stroke-width="1.8"/>
+<text x="404.0" y="376.0" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="start">Local only</text>
+<text x="404.0" y="399.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa3ad" text-anchor="start">Policy blocks the frontier</text>
+<path d="M344 380 H384" stroke="#ed1c24" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrR)"/>
+<rect x="678.0" y="156.0" width="236.0" height="340.0" rx="14" fill="#07070b" stroke="#3a3a44" stroke-width="1.6"/>
+<text x="796.0" y="188.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="1.2">THE PAYOFF</text>
+<text x="796.0" y="248.0" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#C1A968" text-anchor="middle">38&#215;</text>
+<text x="796.0" y="278.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#ffffff" text-anchor="middle">lower $ / million</text>
+<text x="796.0" y="300.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="middle">vs Sonnet 5 at C4</text>
+<text x="796.0" y="356.0" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#00c2de" text-anchor="middle">11%</text>
+<text x="796.0" y="386.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#ffffff" text-anchor="middle">of a C4 workday</text>
+<text x="796.0" y="408.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="middle">covers the GPU share</text>
+<text x="796.0" y="456.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#ed1c24" text-anchor="middle">Quality floor</text>
+<text x="796.0" y="478.0" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#ffffff" text-anchor="middle">before the cheap route</text>
+</svg>

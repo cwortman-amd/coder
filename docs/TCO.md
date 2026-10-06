@@ -361,3 +361,7 @@ At low concurrency ($C = 1$), static baseline system power dominates (184–226 
 - **8× RTX PRO 6000** is with 768 GB host DRAM ($62,000 server) at 4.8 kW, with 768 GB GDDR7 and 14.3 TB/s, 3-year TCO $197,574 ($8,232/GPU-yr). It has no priced cell in these three tables.
 
 Each table stays inside one shape. A blank cell means that concurrency was not measured there.
+
+## Deck
+
+The subscription comparison that uses these prices is [presentation/coder-tco.md](presentation/coder-tco.md). Its routing diagrams are in [assets/](assets/). Rebuild with `./scripts/build_presentation.sh coder-tco`.

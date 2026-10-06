@@ -5,10 +5,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 PRESENTATION_DIR="$ROOT_DIR/docs/presentation"
-SLIDES_MD="$PRESENTATION_DIR/slides.md"
 
-if [[ ! -f "$SLIDES_MD" ]]; then
-  echo "Error: Slides source file not found at $SLIDES_MD" >&2
+# Usage: ./scripts/build_presentation.sh [deck ...]
+# With no arguments, every docs/presentation/*.md deck is built.
+if [[ $# -gt 0 ]]; then
+  DECKS=("$@")
+else
+  DECKS=()
+  for deck_md in "$PRESENTATION_DIR"/*.md; do
+    DECKS+=("$(basename "$deck_md" .md)")
+  done
+fi
+if [[ ${#DECKS[@]} -eq 0 ]]; then
+  echo "Error: no presentation markdown found in $PRESENTATION_DIR" >&2
   exit 1
 fi
 
@@ -62,20 +71,26 @@ fi
 export CHROME_NO_SANDBOX=1
 echo "Marp browser: ${CHROME_PATH}"
 
-echo "=========================================================="
-echo "Compiling Presentation Slides from: $SLIDES_MD"
-echo "=========================================================="
+for deck in "${DECKS[@]}"; do
+  SLIDES_MD="$PRESENTATION_DIR/${deck}.md"
+  if [[ ! -f "$SLIDES_MD" ]]; then
+    echo "Error: Slides source file not found at $SLIDES_MD" >&2
+    exit 1
+  fi
+  echo "=========================================================="
+  echo "Compiling Presentation Slides from: $SLIDES_MD"
+  echo "=========================================================="
 
-echo "[1/3] Generating standalone interactive HTML..."
-npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.html"
+  echo "[1/3] Generating standalone interactive HTML..."
+  npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/${deck}.html"
 
-echo "[2/3] Generating presentation PDF..."
-npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pdf"
+  echo "[2/3] Generating presentation PDF..."
+  npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/${deck}.pdf"
 
-echo "[3/3] Generating PowerPoint presentation (PPTX)..."
-npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/slides.pptx"
+  echo "[3/3] Generating PowerPoint presentation (PPTX)..."
+  npx -y @marp-team/marp-cli --html --allow-local-files "$SLIDES_MD" -o "$PRESENTATION_DIR/${deck}.pptx"
 
-echo "=========================================================="
-echo "Successfully generated all presentation formats in $PRESENTATION_DIR:"
-ls -lh "$PRESENTATION_DIR"/slides.*
-echo "=========================================================="
+  echo "=========================================================="
+  ls -lh "$PRESENTATION_DIR/${deck}".*
+  echo "=========================================================="
+done

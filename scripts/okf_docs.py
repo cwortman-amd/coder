@@ -37,7 +37,11 @@ DOC_OVERRIDES: dict[str, dict[str, Any]] = {
         "type": "Documentation Catalog",
         "tags": ["documentation", "catalog"],
     },
-    "docs/presentation/slides.md": {
+    "docs/presentation/coder-tco.md": {
+        "type": "Presentation",
+        "tags": ["presentation", "tco", "coder", "on-premises"],
+    },
+    "docs/presentation/tail-latency.md": {
         "type": "Presentation",
         "tags": ["presentation", "agentx", "tail-latency", "pdd"],
     },
@@ -341,7 +345,10 @@ def generate_indexes() -> None:
         [
             ("Guides and Technical Reports", docs_top),
             ("Published Results", [Path("docs/results/index.md")]),
-            ("Presentation", [Path("docs/presentation/slides.md")]),
+            ("Presentation", [
+                Path("docs/presentation/coder-tco.md"),
+                Path("docs/presentation/tail-latency.md"),
+            ]),
         ],
     )
     write_index(

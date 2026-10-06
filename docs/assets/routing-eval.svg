@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<defs>
+<marker id="arrT" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#00c2de"/></marker>
+<marker id="arrG" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#C1A968"/></marker>
+<marker id="arrO" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#F26522"/></marker>
+<marker id="arrR" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#ed1c24"/></marker>
+</defs>
+<rect width="1280" height="720" fill="#000000"/>
+<line x1="0" y1="0" x2="0" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="40" y1="0" x2="40" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="80" y1="0" x2="80" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="120" y1="0" x2="120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="160" y1="0" x2="160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="200" y1="0" x2="200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="240" y1="0" x2="240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="280" y1="0" x2="280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="320" y1="0" x2="320" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="360" y1="0" x2="360" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="400" y1="0" x2="400" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="440" y1="0" x2="440" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="480" y1="0" x2="480" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="520" y1="0" x2="520" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="560" y1="0" x2="560" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="600" y1="0" x2="600" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="640" y1="0" x2="640" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="680" y1="0" x2="680" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="720" y1="0" x2="720" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="760" y1="0" x2="760" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="800" y1="0" x2="800" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="840" y1="0" x2="840" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="880" y1="0" x2="880" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="920" y1="0" x2="920" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="960" y1="0" x2="960" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1000" y1="0" x2="1000" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1040" y1="0" x2="1040" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1080" y1="0" x2="1080" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1120" y1="0" x2="1120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1160" y1="0" x2="1160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1200" y1="0" x2="1200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1240" y1="0" x2="1240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1280" y1="0" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="0" x2="1280" y2="0" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="40" x2="1280" y2="40" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="80" x2="1280" y2="80" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="120" x2="1280" y2="120" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="160" x2="1280" y2="160" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="200" x2="1280" y2="200" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="240" x2="1280" y2="240" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="280" x2="1280" y2="280" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="320" x2="1280" y2="320" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="360" x2="1280" y2="360" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="400" x2="1280" y2="400" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="440" x2="1280" y2="440" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="480" x2="1280" y2="480" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="520" x2="1280" y2="520" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="560" x2="1280" y2="560" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="600" x2="1280" y2="600" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="640" x2="1280" y2="640" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="680" x2="1280" y2="680" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="720" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<path d="M40 18 H18 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 18 H1262 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M40 702 H18 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 702 H1262 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<text x="48.0" y="42.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#00c2de" text-anchor="start" letter-spacing="2.2">LLM ROUTING</text>
+<text x="48.0" y="140.0" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#ffffff" text-anchor="start">Evaluation</text>
+<text x="48.0" y="186.0" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#ffffff" text-anchor="start">loop</text>
+<text x="48.0" y="228.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" fill="#C1A968" text-anchor="start">Measure quality, cost, latency,</text>
+<text x="48.0" y="250.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" fill="#C1A968" text-anchor="start">then update the policy.</text>
+<text x="48.0" y="430.0" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#9aa3ad" text-anchor="start">Evaluate routing on</text>
+<text x="48.0" y="450.0" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#9aa3ad" text-anchor="start">representative traffic, then</text>
+<text x="48.0" y="470.0" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#9aa3ad" text-anchor="start">update the router from</text>
+<text x="48.0" y="490.0" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#9aa3ad" text-anchor="start">real outcomes.</text>
+<rect x="684.0" y="264.0" width="354.0" height="228.0" rx="12" fill="#05080c" stroke="#00c2de" stroke-width="1.7"/>
+<text x="861.0" y="286.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">5  Evaluation metrics</text>
+<rect x="700.0" y="300.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#C1A968" stroke-width="1.2"/>
+<path d="M717.0 318.0 L718.7 322.6 L723.7 322.8 L719.8 325.9 L721.1 330.7 L717.0 327.9 L712.9 330.7 L714.2 325.9 L710.3 322.8 L715.3 322.6 Z" fill="#C1A968" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="732.0" y="322.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Quality</text>
+<text x="732.0" y="338.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">Correct and useful</text>
+<rect x="866.0" y="300.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#F26522" stroke-width="1.2"/>
+<path d="M884.44 318 L879 325.36 h5.76 L880.84 332 L888 324.28 h-5.76 Z" fill="#F26522" stroke="#F26522" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="898.0" y="322.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Escalation</text>
+<text x="898.0" y="338.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">Upgrade needed</text>
+<rect x="700.0" y="362.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#C1A968" stroke-width="1.2"/>
+<ellipse cx="717.0" cy="385" rx="5.8" ry="3" fill="none" stroke="#C1A968" stroke-width="1.45"/>
+<path d="M711.2 385 v6 c0 3 11.5 3 11.5 0 v-6" fill="none" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="732.0" y="384.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Cost</text>
+<text x="732.0" y="400.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">Cost of the request</text>
+<rect x="866.0" y="362.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#00c2de" stroke-width="1.2"/>
+<path d="M878 384 c0-3 10 -3 10 0 v6 c0 3-10 3-10 0 z" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M878 384 c0 3 10 3 10 0" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="898.0" y="384.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Fallback</text>
+<text x="898.0" y="400.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">Did a backup run?</text>
+<rect x="700.0" y="424.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#00c2de" stroke-width="1.2"/>
+<circle cx="717.0" cy="449.0" r="6.5" fill="none" stroke="#00c2de" stroke-width="1.45"/>
+<path d="M717.0 449.0 v-3.6 M717.0 449.0 h2.9" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="732.0" y="446.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Latency</text>
+<text x="732.0" y="462.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">First and last token</text>
+<rect x="866.0" y="424.0" width="156.0" height="52.0" rx="8" fill="#0b1016" stroke="#ed1c24" stroke-width="1.2"/>
+<path d="M883.0 443 L888 447 v5.8 c0 5.0-4.0 7.6-7.0 9.0 C880 453.3 878 450.8 878 447 Z" fill="none" stroke="#ed1c24" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="898.0" y="446.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Policy</text>
+<text x="898.0" y="462.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="start">Hard rules held</text>
+<rect x="729.0" y="52.0" width="264.0" height="51.0" rx="10" fill="#00181c" stroke="#00c2de" stroke-width="1.6"/>
+<text x="741.0" y="73.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">1  Representative traffic</text>
+<text x="741.0" y="93.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Realistic prompts and tasks</text>
+<rect x="1066.0" y="132.0" width="199.0" height="51.0" rx="10" fill="#00181c" stroke="#00c2de" stroke-width="1.6"/>
+<text x="1078.0" y="153.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">2  Router decision</text>
+<text x="1078.0" y="173.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Policy, then quality</text>
+<rect x="1066.0" y="348.0" width="190.0" height="51.0" rx="10" fill="#14110C" stroke="#C1A968" stroke-width="1.6"/>
+<text x="1078.0" y="369.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">3  Selected model</text>
+<text x="1078.0" y="389.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Fast, strong, or backup</text>
+<rect x="787.0" y="516.0" width="148.0" height="51.0" rx="10" fill="#1F0D05" stroke="#F26522" stroke-width="1.6"/>
+<text x="799.0" y="537.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">4  Output</text>
+<text x="799.0" y="557.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">The model response</text>
+<rect x="400.0" y="256.0" width="218.0" height="51.0" rx="10" fill="#14110C" stroke="#C1A968" stroke-width="1.6"/>
+<text x="412.0" y="277.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">6  Update the policy</text>
+<text x="412.0" y="297.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Rules, thresholds, order</text>
+<path d="M1000.9 59.0 C 985.8 25.2, 1073.6 70.0, 1129.0 123.9" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<path d="M1194.3 188.9 C 1200.8 231.7, 1220.8 291.8, 1181.5 337.6" stroke="#C1A968" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrG)"/>
+<path d="M1127.5 404.4 C 1088.4 519.3, 1005.7 603.3, 946.4 512.3" stroke="#F26522" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrO)"/>
+<path d="M861 512 V496" stroke="#F26522" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrO)"/>
+<path d="M684 282 C 648 282, 658 282, 630 282" stroke="#C1A968" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrG)"/>
+<path d="M536.5 250.0 C 584.9 127.6, 692.5 45.5, 742.2 105.8" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<text x="48.0" y="702.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#5b6570" text-anchor="start" letter-spacing="1.1">QUALITY  |  COST  |  LATENCY  |  FALLBACK  |  POLICY</text>
+</svg>

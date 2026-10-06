@@ -34,4 +34,5 @@
 
 # Presentation
 
-* [Serving Agentic LLMs at the Edge](presentation/slides.md) - Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700 & Instinct™ MI350P.
+* [Coder TCO](presentation/coder-tco.md) - Replace metered coding-assistant subscriptions with an on-premises AMD GPU serving OpenCode.
+* [Serving Agentic LLMs at the Edge](presentation/tail-latency.md) - Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700 & Instinct™ MI350P.

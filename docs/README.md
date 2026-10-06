@@ -84,12 +84,31 @@ python3 scripts/bench_qwen_tail_latency.py \
 
 | File | Contents |
 |---|---|
-| [presentation/slides.md](presentation/slides.md) | 19-slide comprehensive technical deck: tail latency, AgentX multi-turn dynamics, P/D architecture, PCIe transport, and tokenomics |
-| [presentation/slides.html](presentation/slides.html) | Standalone interactive browser-based presentation (HTML) |
-| [presentation/slides.pdf](presentation/slides.pdf) | High-resolution publication presentation deck (PDF) |
-| [presentation/slides.pptx](presentation/slides.pptx) | Editable PowerPoint slide deck (PPTX) |
+| [presentation/tail-latency.md](presentation/tail-latency.md) | 19-slide comprehensive technical deck: tail latency, AgentX multi-turn dynamics, P/D architecture, PCIe transport, and tokenomics |
+| [presentation/tail-latency.html](presentation/tail-latency.html) | Standalone interactive browser-based presentation (HTML) |
+| [presentation/tail-latency.pdf](presentation/tail-latency.pdf) | High-resolution publication presentation deck (PDF) |
+| [presentation/tail-latency.pptx](presentation/tail-latency.pptx) | Editable PowerPoint slide deck (PPTX) |
+| [presentation/coder-tco.md](presentation/coder-tco.md) | On-premises coding-agent TCO: subscription list prices against measured R9700S and MI350P token cost |
+| [presentation/coder-tco.html](presentation/coder-tco.html) | Standalone interactive browser-based presentation (HTML) |
+| [presentation/coder-tco.pdf](presentation/coder-tco.pdf) | High-resolution publication presentation deck (PDF) |
+| [presentation/coder-tco.pptx](presentation/coder-tco.pptx) | Editable PowerPoint slide deck (PPTX) |
 
 Compile or refresh decks via `./scripts/build_presentation.sh`.
+
+SVG sources and the PNG rasters the decks embed are in [assets/](assets/). Each name has both files.
+
+| File | Use |
+|---|---|
+| [llm-router](assets/llm-router.svg) | Coding request to local, frontier, or specialized |
+| [llm-router-tools](assets/llm-router-tools.svg) | Tools, response processing, and the return path |
+| [llm-router-detail](assets/llm-router-detail.svg) | Appendix: the earlier multi-vendor router |
+| [route-flow](assets/route-flow.svg) | Coder TCO slide 3: what moves onto the GPU |
+| [router-diagram](assets/router-diagram.svg) | Coder TCO slide 8: route by requirements |
+| [routing-classify](assets/routing-classify.svg) | Classify the prompt, then choose a model |
+| [routing-architecture](assets/routing-architecture.svg) | Requirements, filter, quality check, outcomes |
+| [routing-factors](assets/routing-factors.svg) | Hard constraints before soft preferences |
+| [routing-cascade](assets/routing-cascade.svg) | Cascade versus fallback |
+| [routing-eval](assets/routing-eval.svg) | Evaluation loop |
 
 ## How to run
 

@@ -519,6 +519,6 @@ Track 4: Presales Briefing Package   ────> TCO Economics (4.7x less expe
    - Run [`scripts/inspect_dual_gpu.py`](/scripts/inspect_dual_gpu.py) to pass homogeneous preflight.
    - Run [`scripts/bench_dual_gpu.sh`](/scripts/bench_dual_gpu.sh) across `--mode pd` vs `--mode dp2` to convert emulated dashed curves into solid measured Level 4 curves.
 4. **Track 4: Executive Briefing & Presales Collateral (Enablement Track)**:
-   - Finalize the [executive slide deck](/docs/presentation/slides.md) synthesizing the 12 TCO figures ([`docs/figures/tco/`](/docs/figures/tco/)) and 6 PDD figures ([`docs/figures/pd/`](/docs/figures/pd/)).
+   - Finalize the [executive slide deck](/docs/presentation/tail-latency.md) synthesizing the 12 TCO figures ([`docs/figures/tco/`](/docs/figures/tco/)) and 6 PDD figures ([`docs/figures/pd/`](/docs/figures/pd/)).
    - Detail the economic proposition: R9700 delivers a 5.6× less expensive capital expenditure and 4.7× less expensive 3-year TCO per token than H100 SXM5, while PDD eliminates the "Phantom Capacity Gap" under production SLAs.
 

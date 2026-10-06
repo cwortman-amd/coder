@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+<defs>
+<marker id="arrT" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#00c2de"/></marker>
+<marker id="arrG" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#C1A968"/></marker>
+<marker id="arrO" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#F26522"/></marker>
+<marker id="arrR" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="11" markerHeight="11" orient="auto" overflow="visible"><path d="M0 0.6 L9 5 L0 9.4 Z" fill="#ed1c24"/></marker>
+</defs>
+<rect width="1280" height="720" fill="#000000"/>
+<line x1="0" y1="0" x2="0" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="40" y1="0" x2="40" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="80" y1="0" x2="80" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="120" y1="0" x2="120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="160" y1="0" x2="160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="200" y1="0" x2="200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="240" y1="0" x2="240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="280" y1="0" x2="280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="320" y1="0" x2="320" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="360" y1="0" x2="360" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="400" y1="0" x2="400" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="440" y1="0" x2="440" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="480" y1="0" x2="480" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="520" y1="0" x2="520" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="560" y1="0" x2="560" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="600" y1="0" x2="600" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="640" y1="0" x2="640" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="680" y1="0" x2="680" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="720" y1="0" x2="720" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="760" y1="0" x2="760" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="800" y1="0" x2="800" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="840" y1="0" x2="840" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="880" y1="0" x2="880" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="920" y1="0" x2="920" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="960" y1="0" x2="960" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1000" y1="0" x2="1000" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1040" y1="0" x2="1040" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1080" y1="0" x2="1080" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1120" y1="0" x2="1120" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1160" y1="0" x2="1160" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1200" y1="0" x2="1200" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1240" y1="0" x2="1240" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="1280" y1="0" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="0" x2="1280" y2="0" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="40" x2="1280" y2="40" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="80" x2="1280" y2="80" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="120" x2="1280" y2="120" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="160" x2="1280" y2="160" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="200" x2="1280" y2="200" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="240" x2="1280" y2="240" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="280" x2="1280" y2="280" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="320" x2="1280" y2="320" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="360" x2="1280" y2="360" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="400" x2="1280" y2="400" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="440" x2="1280" y2="440" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="480" x2="1280" y2="480" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="520" x2="1280" y2="520" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="560" x2="1280" y2="560" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="600" x2="1280" y2="600" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="640" x2="1280" y2="640" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="680" x2="1280" y2="680" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<line x1="0" y1="720" x2="1280" y2="720" stroke="#00c2de" stroke-width="0.5" opacity="0.07"/>
+<path d="M40 18 H18 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 18 H1262 V40" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M40 702 H18 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<path d="M1240 702 H1262 V680" stroke="#1a7a88" stroke-width="1.4" fill="none"/>
+<text x="48.0" y="42.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#00c2de" text-anchor="start" letter-spacing="2.2">LLM ROUTING</text>
+<text x="48.0" y="150.0" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#ffffff" text-anchor="start">Route each prompt</text>
+<text x="48.0" y="196.0" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#ffffff" text-anchor="start">to the model that fits.</text>
+<text x="48.0" y="242.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#9aa3ad" text-anchor="start">Classify capability, context,</text>
+<text x="48.0" y="264.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#9aa3ad" text-anchor="start">quality, cost, and latency first.</text>
+<rect x="48.0" y="430.0" width="72.0" height="72.0" rx="10" fill="#0b1016" stroke="#00c2de" stroke-width="1.2"/>
+<path d="M78 453 c0-6 4-8 7-8 c3 0 4 2 5 2 c1 0 4-2 6 2 c2 4-1 6-1 8 c0 4-4 6-7 6 c-3 0-4-2-5-2 c-2 0-5 2-5-2 c0-2 0-4 0-6z" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="84.0" y="488.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#9aa3ad" text-anchor="middle">Capability</text>
+<rect x="132.0" y="430.0" width="72.0" height="72.0" rx="10" fill="#0b1016" stroke="#00c2de" stroke-width="1.2"/>
+<path d="M162 445 h10 l6 6 v8 h-16 z" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M172 445 v6 h6" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="168.0" y="488.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#9aa3ad" text-anchor="middle">Context</text>
+<rect x="216.0" y="430.0" width="72.0" height="72.0" rx="10" fill="#0b1016" stroke="#C1A968" stroke-width="1.2"/>
+<path d="M252.0 444.0 L254.0 449.3 L259.6 449.5 L255.2 453.0 L256.7 458.5 L252.0 455.4 L247.3 458.5 L248.8 453.0 L244.4 449.5 L250.0 449.3 Z" fill="#C1A968" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="252.0" y="488.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#9aa3ad" text-anchor="middle">Quality</text>
+<rect x="300.0" y="430.0" width="72.0" height="72.0" rx="10" fill="#0b1016" stroke="#F26522" stroke-width="1.2"/>
+<path d="M330 448 c0-3 12 -3 12 0 v8 c0 3-12 3-12 0 z" fill="none" stroke="#F26522" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M330 448 c0 3 12 3 12 0" fill="none" stroke="#F26522" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="336.0" y="488.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#9aa3ad" text-anchor="middle">Cost</text>
+<rect x="384.0" y="430.0" width="72.0" height="72.0" rx="10" fill="#0b1016" stroke="#C1A968" stroke-width="1.2"/>
+<path d="M421.6 444 L415 452.4 h6.4 L417.6 460 L426 451.2 h-6.4 Z" fill="#C1A968" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="420.0" y="488.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#9aa3ad" text-anchor="middle">Latency</text>
+<rect x="548.0" y="64.0" width="288.0" height="200.0" rx="12" fill="#05080c" stroke="#00c2de" stroke-width="1.4"/>
+<text x="564.0" y="86.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff" text-anchor="start">Routing Factors</text>
+<path d="M568 111 c0-6 4-8 7-8 c3 0 4 2 5 2 c1 0 4-2 6 2 c2 4-1 6-1 8 c0 4-4 6-7 6 c-3 0-4-2-5-2 c-2 0-5 2-5-2 c0-2 0-4 0-6z" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="588.0" y="113.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Capability</text>
+<text x="674.0" y="113.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">What the task needs</text>
+<path d="M568 134 h6 l6 6 v4 h-12 z" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M574 134 v6 h6" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="588.0" y="144.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Context</text>
+<text x="674.0" y="144.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Domain, length, format</text>
+<path d="M572.0 164.0 L573.5 168.0 L577.7 168.1 L574.4 170.8 L575.5 174.9 L572.0 172.5 L568.5 174.9 L569.6 170.8 L566.3 168.1 L570.5 168.0 Z" fill="#C1A968" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="588.0" y="175.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Quality</text>
+<text x="674.0" y="175.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Output requirements</text>
+<path d="M568 199 c0-3 8 -3 8 0 v4 c0 3-8 3-8 0 z" fill="none" stroke="#F26522" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M568 199 c0 3 8 3 8 0" fill="none" stroke="#F26522" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="588.0" y="206.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Cost</text>
+<text x="674.0" y="206.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Budget constraints</text>
+<path d="M573.28 226 L569 232.32 h5.12 L570.08 238 L576 231.36 h-5.12 Z" fill="#C1A968" stroke="#C1A968" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="588.0" y="237.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="start">Latency</text>
+<text x="674.0" y="237.0" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9aa3ad" text-anchor="start">Speed requirements</text>
+<rect x="548.0" y="292.0" width="176.0" height="57.0" rx="10" fill="#00181c" stroke="#00c2de" stroke-width="1.6"/>
+<text x="562.0" y="316.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="start">User prompt</text>
+<text x="562.0" y="337.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="start">Task, context, goals</text>
+<polygon points="916.9,354.5 858.0,388.5 799.1,354.5 799.1,286.5 858.0,252.5 916.9,286.5" fill="#00181c" stroke="#00c2de" stroke-width="2"/>
+<path d="M858.0 299.5 L858.0 292.5" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M858.0 299.5 L851.0 304.8" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M858.0 299.5 L865.0 304.8" fill="none" stroke="#00c2de" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="858.0" cy="299.5" r="2.9" fill="#00c2de"/>
+<circle cx="858.0" cy="292.5" r="2.4" fill="none" stroke="#00c2de" stroke-width="1.45"/>
+<circle cx="851.0" cy="304.8" r="2.4" fill="none" stroke="#00c2de" stroke-width="1.45"/>
+<circle cx="865.0" cy="304.8" r="2.4" fill="none" stroke="#00c2de" stroke-width="1.45"/>
+<text x="858.0" y="332.5" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">Routing Layer</text>
+<text x="858.0" y="348.5" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#9aa3ad" text-anchor="middle">Analyze and select</text>
+<rect x="1024.0" y="217.0" width="236.0" height="61.0" rx="10" fill="#00181c" stroke="#0c5563" stroke-width="1.4"/>
+<text x="1040.0" y="243.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="start">Model A</text>
+<text x="1040.0" y="264.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="start">General purpose</text>
+<rect x="1024.0" y="290.0" width="236.0" height="61.0" rx="10" fill="#06343c" stroke="#00c2de" stroke-width="2.4"/>
+<text x="1040.0" y="316.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="start">Model B</text>
+<text x="1040.0" y="337.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="start">Long context</text>
+<rect x="1024.0" y="363.0" width="236.0" height="61.0" rx="10" fill="#00181c" stroke="#0c5563" stroke-width="1.4"/>
+<text x="1040.0" y="389.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="start">Model C</text>
+<text x="1040.0" y="410.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="start">Reasoning</text>
+<rect x="1024.0" y="452.0" width="236.0" height="61.0" rx="10" fill="#1A080A" stroke="#ed1c24" stroke-width="1.6"/>
+<text x="1040.0" y="478.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="start">Fallback</text>
+<text x="1040.0" y="499.0" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#9aa3ad" text-anchor="start">If unavailable or unsuitable</text>
+<path d="M728 320 H808" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<path d="M918 320 H1006" stroke="#00c2de" stroke-width="2" fill="none"/>
+<path d="M1006 248 V394" stroke="#00c2de" stroke-width="2" fill="none"/>
+<path d="M1006 248 H1020" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<path d="M1006 320 H1020" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<path d="M1006 394 H1020" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" marker-end="url(#arrT)"/>
+<path d="M858 380 V482 H1020" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="butt" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#arrT)"/>
+<text x="941.0" y="468.5" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="600" fill="#f5b4b8" text-anchor="middle">If unavailable</text>
+<text x="48.0" y="702.0" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#5b6570" text-anchor="start" letter-spacing="1.1">CAPABILITY  |  QUALITY  |  COST  |  LATENCY  |  FALLBACK</text>
+</svg>

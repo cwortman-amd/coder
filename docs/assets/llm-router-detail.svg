@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 82 1024 500" width="1024" height="500">
+<defs>
+  <linearGradient id="panelCyan" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#00262c"/><stop offset="100%" stop-color="#001418"/>
+  </linearGradient>
+  <linearGradient id="panelPurple" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#351607"/><stop offset="100%" stop-color="#160903"/>
+  </linearGradient>
+  <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="682">
+    <feGaussianBlur stdDeviation="2" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <marker id="arrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#00c2de"/></marker><marker id="arrG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#C1A968"/></marker><marker id="arrY" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#facc15"/></marker><marker id="arrO" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#fb923c"/></marker><marker id="arrP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#F26522"/></marker><marker id="arrW" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#e7f9fc"/></marker>
+</defs>
+<rect width="1024" height="682" fill="#000000"/>
+<rect x="14" y="108" width="149" height="292" rx="10" fill="url(#panelCyan)" stroke="#009bb0" stroke-width="1.3" filter="url(#glow)"/>
+<rect x="26" y="115" width="18" height="18" rx="4" fill="#007f94"/>
+<text x="35" y="128" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >1</text>
+<text x="51" y="128" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >CODING REQUESTS</text>
+<rect x="22" y="143" width="134" height="249" rx="8" fill="none" stroke="#0c5563"/>
+<rect x="38" y="158" width="22" height="14" rx="2" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<path d="M35 175 h28" stroke="#00c2de" stroke-width="1.6"/>
+<text x="77" y="171" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="500" fill="#e5f7fa" text-anchor="start" >Explain function</text>
+<rect x="42" y="198" width="14" height="24" rx="3" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<text x="77" y="214" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="500" fill="#e5f7fa" text-anchor="start" >Fix type error</text>
+<path d="M43 245 l-7 7 7 7 M55 245 l7 7 -7 7 M52 242 l-6 20" fill="none" stroke="#00c2de" stroke-width="1.6"/>
+<text x="77" y="256" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="500" fill="#e5f7fa" text-anchor="start" >Repository refactor</text>
+<path d="M38 293 a11 9 0 1 1 5 8 l-6 3 2-6 z" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<circle cx="45" cy="293" r="1" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="49" cy="293" r="1" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="53" cy="293" r="1" fill="#00c2de" filter="url(#glow)"/>
+<text x="77" y="299" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="500" fill="#e5f7fa" text-anchor="start" >Private code</text>
+<rect x="28" y="322" width="122" height="62" rx="6" fill="#00181c" stroke="#0e4e5b"/>
+<text x="37" y="337" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#d2f4f8" text-anchor="start" >Example Query</text>
+<text x="37" y="354" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#ffffff" text-anchor="start" >&#8220;Refactor auth without</text>
+<text x="37" y="369" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#ffffff" text-anchor="start" >exposing private code.&#8221;</text>
+<rect x="263" y="92" width="238" height="358" rx="10" fill="url(#panelPurple)" stroke="#F26522" stroke-width="1.3" filter="url(#glow)"/>
+<rect x="275" y="99" width="18" height="18" rx="4" fill="#8A3A13"/>
+<text x="284" y="112" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >2</text>
+<text x="300" y="112" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="start" >LLM ROUTER <tspan font-size="8" fill="#F26522">(INTELLIGENT)</tspan></text>
+<rect x="270" y="128" width="225" height="314" rx="8" fill="none" stroke="#743010"/>
+<rect x="274" y="150.0" width="22" height="22" rx="5" fill="#351607" stroke="#8A3A13"/>
+<text x="285" y="164.5" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" >2.1</text>
+<rect x="300" y="140" width="190" height="42" rx="7" fill="#1F0D05" stroke="#723010"/>
+<path d="M315 151.0 h9 l5 5 v15 h-14 z M319 159.0 h7 M319 164.0 h7" fill="none" stroke="#F26522" stroke-width="1.4"/>
+<text x="348" y="155" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Analyze Request</text>
+<text x="348" y="167" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >Understand intent, extract entities,</text>
+<text x="348" y="178" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >identify context</text>
+<rect x="274" y="232.0" width="22" height="22" rx="5" fill="#351607" stroke="#8A3A13"/>
+<text x="285" y="246.5" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" >2.2</text>
+<rect x="300" y="220" width="190" height="46" rx="7" fill="#1F0D05" stroke="#723010"/>
+<path d="M322 234.0 L322 243.0 L314 251.0 M322 243.0 L330 251.0" stroke="#F26522" stroke-width="1.4"/>
+<circle cx="322" cy="234.0" r="2.6" fill="#1F0D05" stroke="#F26522" stroke-width="1.4"/>
+<circle cx="322" cy="243.0" r="2.6" fill="#1F0D05" stroke="#F26522" stroke-width="1.4"/>
+<circle cx="314" cy="251.0" r="2.6" fill="#1F0D05" stroke="#F26522" stroke-width="1.4"/>
+<circle cx="330" cy="251.0" r="2.6" fill="#1F0D05" stroke="#F26522" stroke-width="1.4"/>
+<text x="348" y="235" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Apply Routing Logic</text>
+<text x="348" y="247" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >Match with model capabilities</text>
+<text x="348" y="258" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >(cost, speed, accuracy, domain)</text>
+<rect x="274" y="312.0" width="22" height="22" rx="5" fill="#351607" stroke="#8A3A13"/>
+<text x="285" y="326.5" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" >2.3</text>
+<rect x="300" y="300" width="190" height="46" rx="7" fill="#1F0D05" stroke="#723010"/>
+<path d="M313 316.0 v14 a9 3.5 0 0 0 18 0 v-14 M313 323.0 a9 3.5 0 0 0 18 0" fill="none" stroke="#00c2de" stroke-width="1.4"/>
+<ellipse cx="322" cy="316.0" rx="9" ry="3.5" fill="none" stroke="#00c2de" stroke-width="1.4"/>
+<text x="348" y="315" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Build Context</text>
+<text x="348" y="327" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >Add conversation history,</text>
+<text x="348" y="338" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >user profile, real-time data</text>
+<rect x="274" y="393.0" width="22" height="22" rx="5" fill="#351607" stroke="#8A3A13"/>
+<text x="285" y="407.5" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle" >2.4</text>
+<rect x="300" y="380" width="190" height="48" rx="7" fill="#1F0D05" stroke="#723010"/>
+<circle cx="322" cy="404.0" r="10" fill="none" stroke="#C1A968" stroke-width="1.5"/>
+<circle cx="322" cy="404.0" r="4" fill="none" stroke="#C1A968" stroke-width="1.5"/>
+<text x="348" y="395" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Select Best Model</text>
+<text x="348" y="407" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >Choose optimal LLM or tool</text>
+<text x="348" y="418" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="400" fill="#b9c3d6" text-anchor="start" >based on routing rules</text>
+<rect x="568" y="92" width="221" height="358" rx="10" fill="url(#panelCyan)" stroke="#009bb0" stroke-width="1.3" filter="url(#glow)"/>
+<rect x="580" y="99" width="18" height="18" rx="4" fill="#007f94"/>
+<text x="589" y="112" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >3</text>
+<text x="605" y="112" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="start" >LLM / AI MODEL POOL</text>
+<rect x="578" y="130" width="204" height="55" rx="7" fill="#00181c" stroke="#0c5563"/>
+<svg x="589" y="143.5" width="28" height="28" viewBox="0 0 24 24"><path fill="#10a37f" d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>
+<text x="630" y="146" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >OpenAI</text>
+<text x="630" y="159" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#d6f3f7" text-anchor="start" >GPT-4o</text>
+<text x="630" y="171" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#8fc8d2" text-anchor="start" >General purpose</text>
+<rect x="724" y="138" width="50" height="14" rx="3" fill="#063f4a" stroke="#8eebf5" stroke-opacity="0.6"/>
+<text x="749.0" y="148" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="700" fill="#8eebf5" text-anchor="middle" >BALANCED</text>
+<text x="736" y="168" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="middle" >~1.2s</text>
+<text x="768" y="168" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#E6D5A8" text-anchor="middle" >$ $</text>
+<rect x="578" y="192" width="204" height="48" rx="7" fill="#00181c" stroke="#0c5563"/>
+<svg x="589" y="202.0" width="28" height="28" viewBox="0 0 48 48">
+  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+  <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+</svg>
+<text x="630" y="208" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Google</text>
+<text x="630" y="221" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#d6f3f7" text-anchor="start" >Gemini 1.5 Pro</text>
+<text x="630" y="233" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#8fc8d2" text-anchor="start" >Multimodal &amp; long context</text>
+<rect x="744" y="200" width="30" height="14" rx="3" fill="#3A3218" stroke="#E6D5A8" stroke-opacity="0.6"/>
+<text x="759.0" y="210" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="700" fill="#E6D5A8" text-anchor="middle" >FAST</text>
+<text x="736" y="230" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="middle" >~1.0s</text>
+<text x="768" y="230" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#E6D5A8" text-anchor="middle" >$</text>
+<rect x="578" y="254" width="204" height="54" rx="7" fill="#00181c" stroke="#0c5563"/>
+<svg x="589" y="267.0" width="28" height="28" viewBox="0 0 24 24"><path fill="#d97757" d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+<text x="630" y="270" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Anthropic</text>
+<text x="630" y="283" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#d6f3f7" text-anchor="start" >Claude 3.5</text>
+<text x="630" y="295" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#8fc8d2" text-anchor="start" >Reasoning &amp; analysis</text>
+<rect x="719" y="262" width="55" height="14" rx="3" fill="#7c2d12" stroke="#fdba74" stroke-opacity="0.6"/>
+<text x="746.5" y="272" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="700" fill="#fdba74" text-anchor="middle" >REASONING</text>
+<text x="736" y="292" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="middle" >~1.6s</text>
+<text x="768" y="292" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#E6D5A8" text-anchor="middle" >$ $</text>
+<rect x="578" y="318" width="204" height="48" rx="7" fill="#00181c" stroke="#0c5563"/>
+<svg x="589" y="328.0" width="28" height="28" viewBox="0 0 24 24"><path fill="#0082FB" d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"/></svg>
+<text x="630" y="334" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >Meta</text>
+<text x="630" y="347" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#d6f3f7" text-anchor="start" >Llama 3 70B</text>
+<text x="630" y="359" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#8fc8d2" text-anchor="start" >Open source / On-prem</text>
+<rect x="694" y="326" width="80" height="14" rx="3" fill="#3A3218" stroke="#E6D5A8" stroke-opacity="0.6"/>
+<text x="734.0" y="336" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="700" fill="#E6D5A8" text-anchor="middle" >COST-EFFICIENT</text>
+<text x="736" y="356" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="middle" >~2.1s</text>
+<text x="768" y="356" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#E6D5A8" text-anchor="middle" >$</text>
+<rect x="578" y="380" width="204" height="56" rx="7" fill="#00181c" stroke="#0c5563"/>
+<path d="M603 395.0 l11 6 v13 l-11 6 -11 -6 v-13 z M592 401.0 l11 6 11 -6 M603 407.0 v13" fill="none" stroke="#00c2de" stroke-width="1.6"/>
+<text x="630" y="396" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="start" >Domain Models</text>
+<text x="630" y="409" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="600" fill="#d6f3f7" text-anchor="start" >Mistral, Groq, Cohere etc.</text>
+<text x="630" y="421" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#8fc8d2" text-anchor="start" >Domain-specific use cases</text>
+<rect x="709" y="388" width="65" height="14" rx="3" fill="#713f12" stroke="#fde047" stroke-opacity="0.6"/>
+<text x="741.5" y="398" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="700" fill="#fde047" text-anchor="middle" >SPECIALIZED</text>
+<text x="736" y="424" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="middle" >Varies</text>
+<text x="768" y="424" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#E6D5A8" text-anchor="middle" >$</text>
+<rect x="847" y="118" width="161" height="318" rx="10" fill="url(#panelCyan)" stroke="#009bb0" stroke-width="1.3" filter="url(#glow)"/>
+<rect x="859" y="125" width="18" height="18" rx="4" fill="#007f94"/>
+<text x="868" y="138" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >4</text>
+<text x="884" y="138" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#ffffff" text-anchor="start" >TOOLS &amp; DATA <tspan font-size="6.5" fill="#009bb0">(REAL-TIME)</tspan></text>
+<rect x="855" y="148" width="146" height="280" rx="8" fill="none" stroke="#0c5563"/>
+<path d="M871 184 a6 6 0 0 1 1 -12 a8 8 0 0 1 15 2 a5 5 0 0 1 1 10 z" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<text x="908" y="170" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" >Real-time APIs</text>
+<text x="908" y="182" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >Weather, News, Stocks,</text>
+<text x="908" y="192" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >Maps, etc.</text>
+<path d="M862 204 H994" stroke="#0c5563"/>
+<path d="M872 225 v16 a9 3.5 0 0 0 18 0 v-16 M872 233 a9 3.5 0 0 0 18 0" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<ellipse cx="881" cy="225" rx="9" ry="3.5" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<text x="908" y="229" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" >Vector Database</text>
+<text x="908" y="241" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >Pinecone, Weaviate</text>
+<path d="M862 259 H994" stroke="#0c5563"/>
+<path d="M873 276 h11 l5 5 v17 h-16 z M877 285 h8 M877 290 h8" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<text x="908" y="283" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" >Knowledge Base</text>
+<text x="908" y="295" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >Company / Product Docs</text>
+<path d="M862 313 H994" stroke="#0c5563"/>
+<circle cx="879" cy="337" r="7" fill="none" stroke="#00c2de" stroke-width="1.8"/><path d="M884 342 l7 7" stroke="#00c2de" stroke-width="2.2"/>
+<text x="908" y="335" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" >Web Search</text>
+<text x="908" y="347" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >SerpAPI, Brave</text>
+<path d="M862 365 H994" stroke="#0c5563"/>
+<circle cx="881" cy="391" r="8" fill="none" stroke="#00c2de" stroke-width="3.5" stroke-dasharray="3 2.3"/><circle cx="881" cy="391" r="3" fill="none" stroke="#00c2de" stroke-width="1.5"/>
+<text x="908" y="387" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" >Internal Tools</text>
+<text x="908" y="399" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7" font-weight="400" fill="#b5dde5" text-anchor="start" >APIs, Databases, Services</text>
+<rect x="14" y="452" width="172" height="118" rx="10" fill="#14110C" stroke="#8A7544" stroke-width="1.3"/>
+<rect x="26" y="459" width="18" height="18" rx="4" fill="#6E5C38"/>
+<text x="35" y="472" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >6</text>
+<text x="56" y="472" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#F3E8C8" text-anchor="start" >FINAL RESPONSE</text>
+<circle cx="40" cy="517" r="16" fill="#C1A968"/><circle cx="40" cy="512" r="5" fill="#ffffff"/>
+<path d="M31 527 a9 7 0 0 1 18 0 z" fill="#ffffff"/>
+<rect x="68" y="488" width="110" height="74" rx="7" fill="#1A160E" stroke="#6E5C38"/>
+<path d="M77 498 h14 v12 h-14 z M80 501 h8 M80 505 h6" fill="none" stroke="#C1A968" stroke-width="1.2"/>
+<text x="76" y="524" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="400" fill="#ffffff" text-anchor="start" >Refactor plan generated</text>
+<text x="76" y="537" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="400" fill="#ffffff" text-anchor="start" >locally. Private code</text>
+<text x="76" y="550" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="400" fill="#ffffff" text-anchor="start" >remains inside the network.</text>
+<circle cx="169" cy="551" r="6" fill="#C1A968"/><path d="M166 551 l2 2 4 -4" fill="none" stroke="#ffffff" stroke-width="1.4"/>
+<rect x="392" y="500" width="264" height="68" rx="8" fill="#00181c" stroke="#009bb0" stroke-width="1.3" filter="url(#glow)"/>
+<rect x="404" y="509" width="18" height="18" rx="4" fill="#007f94"/>
+<text x="413" y="522" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" >5</text>
+<text x="441" y="522" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start" >RESPONSE PROCESSOR</text>
+<circle cx="432" cy="546" r="7.5" fill="none" stroke="#00c2de" stroke-width="3.5" stroke-dasharray="3 2.2"/><circle cx="432" cy="546" r="2.8" fill="none" stroke="#00c2de" stroke-width="1.4"/>
+<text x="453" y="542" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="start" >Validate &#8594; Filter &#8594; Format &#8594; Add Citations</text>
+<text x="453" y="556" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="400" fill="#d6f3f7" text-anchor="start" >&#8594; Apply Guardrails</text>
+<path d="M163 163 H258" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrC)"/>
+<circle cx="182" cy="163" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="211" cy="163" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<text x="210" y="145" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="500" fill="#e5f7fa" text-anchor="middle" >Query + Context</text>
+<path d="M383 188 V212" stroke="#d8deea" stroke-width="1.2" fill="none" marker-end="url(#arrW)"/>
+<path d="M383 272 V294" stroke="#d8deea" stroke-width="1.2" fill="none" marker-end="url(#arrW)"/>
+<path d="M383 352 V374" stroke="#d8deea" stroke-width="1.2" fill="none" marker-end="url(#arrW)"/>
+<text x="533" y="133" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="500" fill="#e5f7fa" text-anchor="middle" >Request</text>
+<text x="533" y="146" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8" font-weight="500" fill="#e5f7fa" text-anchor="middle" >+ Context</text>
+<path d="M501 160 H507 Q513 160 513 166 V201" stroke="#00c2de" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 201 V241" stroke="#C1A968" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 241 V279" stroke="#fb923c" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 279 V316" stroke="#F26522" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 316 V364" stroke="#facc15" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 364 V373" stroke="#facc15" stroke-width="1.8" stroke-dasharray="5 4" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M513 201 H530 Q540 201 540 191 V169 Q540 159 550 159 H566" stroke="#00c2de" stroke-width="2"  fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrC)"/>
+<circle cx="513" cy="201" r="3.6" fill="#00c2de" filter="url(#glow)"/>
+<path d="M513 241 H530 Q540 241 540 231 V227 Q540 217 550 217 H566" stroke="#C1A968" stroke-width="2"  fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrG)"/>
+<circle cx="513" cy="241" r="3.6" fill="#C1A968" filter="url(#glow)"/>
+<path d="M513 279 H566" stroke="#fb923c" stroke-width="2" stroke-dasharray="7 5" fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrO)"/>
+<circle cx="513" cy="279" r="3.6" fill="#fb923c" filter="url(#glow)"/>
+<path d="M513 316 H530 Q540 316 540 326 V333 Q540 343 550 343 H566" stroke="#F26522" stroke-width="2"  fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrP)"/>
+<circle cx="513" cy="316" r="3.6" fill="#F26522" filter="url(#glow)"/>
+<path d="M513 364 H530 Q540 364 540 374 V396 Q540 406 550 406 H566" stroke="#facc15" stroke-width="2"  fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrY)"/>
+<circle cx="513" cy="364" r="3.6" fill="#facc15" filter="url(#glow)"/>
+<path d="M796 259 H840" stroke="#e7f9fc" stroke-width="2.4" fill="none" stroke-linecap="round" filter="url(#glow)" marker-start="url(#arrW)" marker-end="url(#arrW)"/>
+<text x="818" y="279" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="500" fill="#e5f7fa" text-anchor="middle" >Fetch Real-time</text>
+<text x="818" y="290" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="7.5" font-weight="500" fill="#e5f7fa" text-anchor="middle" >Data / Context</text>
+<path d="M385 456 V474 Q385 482 393 482 H614 Q622 482 622 490 V497" stroke="#fb923c" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrO)"/>
+<circle cx="420" cy="482" r="2.6" fill="#facc15" filter="url(#glow)"/>
+<circle cx="460" cy="482" r="2.6" fill="#facc15" filter="url(#glow)"/>
+<circle cx="500" cy="482" r="2.6" fill="#facc15" filter="url(#glow)"/>
+<circle cx="540" cy="482" r="2.6" fill="#facc15" filter="url(#glow)"/>
+<circle cx="580" cy="482" r="2.6" fill="#facc15" filter="url(#glow)"/>
+<path d="M933 436 V506 Q933 522 917 522 H661" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrC)"/>
+<circle cx="933" cy="452" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="933" cy="480" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="900" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="858" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="816" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="774" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="732" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="690" cy="522" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<text x="731" y="492" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="500" fill="#E6D5A8" text-anchor="middle" >Model Response (Stream)</text>
+<path d="M392 525 H221 Q205 525 205 509 V451 Q205 435 189 435 H106 Q90 435 90 419 V405" stroke="#00c2de" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#glow)" marker-end="url(#arrC)"/>
+<circle cx="232" cy="525" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="268" cy="525" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="305" cy="525" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="350" cy="525" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="205" cy="495" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="205" cy="462" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="160" cy="435" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<circle cx="120" cy="435" r="2.6" fill="#00c2de" filter="url(#glow)"/>
+<text x="288" y="509" font-family="Inter, Segoe UI, Arial, Helvetica, sans-serif" font-size="8.5" font-weight="500" fill="#E6D5A8" text-anchor="middle" >Final Response</text>
+</svg>

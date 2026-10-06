@@ -1,3 +1,17 @@
+---
+type: Benchmark Report
+title: AgentX concurrency tail pilot
+description: This is a bounded load-spread pilot with a 40-minute campaign budget
+  and 15-minute profiling windows. Request p99 values are observed order statistics,
+  not stable population estimates.
+tags:
+- benchmark-report
+- tail-study
+- mi350p-20261001
+- agentx-c2-c4
+status: stable
+---
+
 # AgentX concurrency tail pilot
 
 This is a bounded load-spread pilot with a 40-minute campaign budget and 15-minute profiling windows. Request p99 values are observed order statistics, not stable population estimates.

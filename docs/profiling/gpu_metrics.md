@@ -1,3 +1,16 @@
+---
+type: Technical Report
+title: GPU metrics
+description: Socket power, UMC memory-bandwidth estimate, and amd-smi PCIe bandwidth
+  from each published throughput run. UMC GB/s is UMC percent times catalog peak and
+  is not a calibrated HBM counter. PCIe MB/s is measured...
+tags:
+- technical-report
+- gpu
+- metrics
+status: stable
+---
+
 # GPU metrics
 
 Socket power, UMC memory-bandwidth estimate, and amd-smi PCIe bandwidth from each published throughput run. UMC GB/s is UMC percent times catalog peak and is not a calibrated HBM counter. PCIe MB/s is measured traffic (PCIE_BANDWIDTH), not the link peak. Sample traces are not published.
