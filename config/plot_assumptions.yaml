@@ -24,6 +24,11 @@ capex:
     - "8× RTX 6000"
     - "8× MI350P"
   chassis_usd: [37000, 49000, 62000, 89000]
+  # The 256 GB and 512 GB server quotes share a $25,000 chassis when DRAM
+  # scales with capacity ($12,000 per 256 GB). That chassis is held for the
+  # other two fills. DRAM is the rest of each published server figure.
+  chassis_ex_dram_usd: [25000, 25000, 25000, 25000]
+  dram_usd: [12000, 24000, 37000, 64000]
   gpu_usd: [12000, 24000, 128000, 120000]
   power_3yr_usd: [3787, 3787, 7574, 7574]
   gpu_year_usd: [2199, 1600, 8232, 9024]

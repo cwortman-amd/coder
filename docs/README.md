@@ -109,6 +109,8 @@ SVG sources and the PNG rasters the decks embed are in [assets/](assets/). Each 
 | [routing-factors](assets/routing-factors.svg) | Hard constraints before soft preferences |
 | [routing-cascade](assets/routing-cascade.svg) | Cascade versus fallback |
 | [routing-eval](assets/routing-eval.svg) | Evaluation loop |
+| [model-family-comparison](assets/model-family-comparison.svg) | Local model families, with the publisher mark on each row |
+| [hardware-tier-guide](assets/hardware-tier-guide.svg) | Hardware tier quick-pick for those families |
 
 ## How to run
 

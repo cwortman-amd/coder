@@ -93,6 +93,8 @@ Efficiency at nameplate: R9600D 4.7 W/GB, R9700S 9.4 W/GB, MI350P 4.2 W/GB, RTX 
 
 ![Server Fill Capex and 3-Year TCO Comparison](figures/tco/01_tco_capex_breakdown.png)
 
+The chart splits each published server figure into a **$25,000** chassis and the DRAM remainder ($12,000, $24,000, $37,000, and $64,000). That split is a display convention: the 256 GB and 512 GB quotes share a $25,000 chassis when DRAM scales at $12,000 per 256 GB, and the same chassis is held for the other two fills. GPU capex, power, and the 3-year totals above are unchanged.
+
 ## What the server holds
 
 Checkpoint sizes are from this repo’s measurements, except the GPT-OSS row, which is a fit statement and not a weighed checkpoint. Usable memory is 29.8 GiB on a 32 GB card, 89.4 GiB on the RTX PRO 6000, and 134.1 GiB on the MI350P. Sixteen R9600D cards are 476.8 GiB. Eight R9700S cards are 238.4 GiB.
@@ -324,6 +326,10 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
    - **MI350P 1,024/1,024, 29 Sep**: The first request at C1 is **119 ms**. C2–C4 wave medians are **516–528 ms**. C8 is **467 ms**, C16 is **710 ms**, and C32 is **1,159 ms**. C64 is **1,721 ms**. Token-arrival p50 (ITL) goes from **12.5 ms at C1** to **20.1 ms at C32** and **29.6 ms at C64**. The C1 median of the four sequential prompts is 47 ms because requests 2–4 hit the prefix cache; that median is not the plotted point. The 8,192-token first request is **705 ms**. Later cells in that shape reuse the same prompt, so their TTFT is not plotted.
 
 ![Time-to-First-Token Latency vs Concurrency](figures/tco/09_ttft_latency.png)
+
+![Time-to-First-Token p50, p90, p95, and p99](figures/tco/09_ttft_p50_p90_p95.png)
+
+MI350P points on the four panels are the p50, p90, p95, and p99 of every request in the cell. On 1,024/1,024, C1 rises from **47 ms** at p50 to **98 ms** at p90, **109 ms** at p95, and **117 ms** at p99. C2 through C32 stay in a tight wave, within a few milliseconds of the median. At C64 the median is **1,721 ms** and p99 is **2,142 ms**. On 8,192/1,024, C1 rises from **76 ms** at p50 to **687 ms** at p99. At C16, p50 is **930 ms** and p99 is **1,317 ms**. At C32, p50 is **1,551 ms** and p99 is **2,118 ms**. Cells after C1 in that shape reuse one prompt. The standalone p50 chart still plots the cold first request, **119 ms** at C1 and **705 ms** for the 8,192-token prompt. R9700S p99 is the stored bench percentile at every point. On 8,192/1,024 it is **5.9 s at C4**, **45.9 s at C8**, and **129.0 s at C16**. On 1,024/1,024 it is **901 ms at C4**, **34.4 s at C8**, and **101.4 s at C16**. R9700S p90 and p95 are drawn through C2. C4–C16 request lists were not saved with that sweep.
 
 4. **SLO-Qualified Interactive Goodput vs. Batch Saturated Throughput**:
    - **Interactive SLA Target**: $\text{TTFT} \le 3.0\text{ s}$ and $\text{TPOT} \le 20\text{ ms}$ ($\ge 50\text{ tok/s per stream}$).

@@ -105,7 +105,11 @@ def plot_capex_and_tco():
     
     spec = capex()
     systems = spec["systems_full"]
+    chassis_only = np.array(spec["chassis_ex_dram_usd"], dtype=float)
+    dram_capex = np.array(spec["dram_usd"], dtype=float)
     chassis_capex = np.array(spec["chassis_usd"], dtype=float)
+    if not np.allclose(chassis_only + dram_capex, chassis_capex):
+        raise SystemExit("chassis_ex_dram_usd + dram_usd must equal chassis_usd")
     gpu_capex = np.array(spec["gpu_usd"], dtype=float)
     power_3yr = np.array(spec["power_3yr_usd"], dtype=float)
     total_tco = chassis_capex + gpu_capex + power_3yr
@@ -114,11 +118,17 @@ def plot_capex_and_tco():
     
     x = np.arange(len(systems))
     bar_width = 0.52
+    color_chassis, color_dram, color_gpu = "#546E7A", "#ed1c24", "#00c2de"
     
-    # Stacked bars
-    p1 = ax.bar(x, chassis_capex / 1000, bar_width, label="Server Chassis (Matched DRAM)", color="#546E7A", edgecolor="white", alpha=0.9)
-    p2 = ax.bar(x, gpu_capex / 1000, bar_width, bottom=chassis_capex / 1000, label="GPU Capex", color="#E53935", edgecolor="white", alpha=0.9)
-    p3 = ax.bar(x, power_3yr / 1000, bar_width, bottom=(chassis_capex + gpu_capex) / 1000, label=f"3-Yr GPU Power (50% TDP, ${kwh:.2f}/kWh)", color="#FFB300", edgecolor="white", alpha=0.9)
+    # Stacked bars. DRAM is the red portion of the published server price.
+    host = chassis_only / 1000
+    dram = dram_capex / 1000
+    gpu = gpu_capex / 1000
+    power = power_3yr / 1000
+    ax.bar(x, host, bar_width, label="Server Chassis", color=color_chassis, edgecolor="white", alpha=0.9)
+    ax.bar(x, dram, bar_width, bottom=host, label="Matched DRAM", color=color_dram, edgecolor="white", alpha=0.9)
+    ax.bar(x, gpu, bar_width, bottom=host + dram, label="GPU Capex", color=color_gpu, edgecolor="white", alpha=0.9)
+    ax.bar(x, power, bar_width, bottom=host + dram + gpu, label=f"3-Yr GPU Power (50% TDP, ${kwh:.2f}/kWh)", color="#FFB300", edgecolor="white", alpha=0.9)
     
     # Values inside / on top of bars
     for i in range(len(systems)):
@@ -127,11 +137,15 @@ def plot_capex_and_tco():
         ax.text(x[i], tot + 4, f"3-Yr TCO:\n${total_tco[i]:,}\n(${ann:,}/GPU-yr)", 
                 ha='center', va='bottom', fontsize=10.5, fontweight='bold', color='#1A237E')
         
-        # Internal labels
-        ch_val = chassis_capex[i] / 1000
-        gpu_val = gpu_capex[i] / 1000
-        ax.text(x[i], ch_val / 2, f"${chassis_capex[i]:,}", ha='center', va='center', color='white', fontweight='bold', fontsize=10)
-        ax.text(x[i], ch_val + gpu_val / 2, f"${gpu_capex[i]:,}", ha='center', va='center', color='white', fontweight='bold', fontsize=10)
+        segments = (
+            (0, host[i], f"${chassis_only[i]:,.0f}", "white"),
+            (host[i], dram[i], f"${dram_capex[i]:,.0f}", "white"),
+            (host[i] + dram[i], gpu[i], f"${gpu_capex[i]:,.0f}", "#042028"),
+        )
+        for bottom, height, label, ink in segments:
+            if height < 8:
+                continue
+            ax.text(x[i], bottom + height / 2, label, ha='center', va='center', color=ink, fontweight='bold', fontsize=10)
     
     ax.set_xlabel("Server Architecture & Hardware Fill", fontsize=13, fontweight='bold', labelpad=12)
     ax.set_ylabel("Total Cost ($ in Thousands)", fontsize=13, fontweight='bold', labelpad=10)
@@ -454,15 +468,17 @@ def plot_executive_dashboard():
     # 1. Capex & TCO Bar Chart
     spec = capex()
     systems = spec["systems_short"]
-    chassis_capex = np.array(spec["chassis_usd"], dtype=float) / 1000.0
+    chassis_only = np.array(spec["chassis_ex_dram_usd"], dtype=float) / 1000.0
+    dram_capex = np.array(spec["dram_usd"], dtype=float) / 1000.0
     gpu_capex = np.array(spec["gpu_usd"], dtype=float) / 1000.0
     power_3yr = np.array(spec["power_3yr_usd"], dtype=float) / 1000.0
-    total_tco     = chassis_capex + gpu_capex + power_3yr
+    total_tco = chassis_only + dram_capex + gpu_capex + power_3yr
     x = np.arange(len(systems))
     w = 0.50
-    ax1.bar(x, chassis_capex, w, label="Chassis Capex", color="#546E7A")
-    ax1.bar(x, gpu_capex, w, bottom=chassis_capex, label="GPU Capex", color="#E53935")
-    ax1.bar(x, power_3yr, w, bottom=chassis_capex + gpu_capex, label="3-Yr Power", color="#FFB300")
+    ax1.bar(x, chassis_only, w, label="Chassis", color="#546E7A")
+    ax1.bar(x, dram_capex, w, bottom=chassis_only, label="DRAM", color="#ed1c24")
+    ax1.bar(x, gpu_capex, w, bottom=chassis_only + dram_capex, label="GPU", color="#00c2de")
+    ax1.bar(x, power_3yr, w, bottom=chassis_only + dram_capex + gpu_capex, label="3-Yr Power", color="#FFB300")
     for i in range(len(systems)):
         ax1.text(x[i], total_tco[i] + 4, f"${total_tco[i]:.1f}k", ha='center', va='bottom', fontweight='bold', fontsize=9.5)
     ax1.set_title("A. System Capex & 3-Year TCO ($k)", fontsize=12, fontweight='bold', pad=8)
@@ -794,7 +810,7 @@ def plot_ttft_latency():
     # Shaded zones: Compliant (<= 3,000 ms) and Cut-Off Region (> 3,000 ms)
     ax.axhspan(80, 3000, color="#E8F5E9", alpha=0.35, label="SLO Compliant Region (TTFT ≤ 3.0s)")
     ax.axhspan(3000, 120000, color="#FFEBEE", alpha=0.35, label="SLO Cut-Off Region (TTFT > 3.0s, Batch Only)")
-    ax.axhline(3000, color="#D32F2F", linestyle="--", linewidth=2.0, label="3.0s Interactive SLO Cut-Off Ceiling")
+    ax.axhline(3000, color="#9E9E9E", linestyle=":", linewidth=1.6, label="3.0s Interactive SLO Cut-Off Ceiling")
     ax.axhline(1000, color="#4CAF50", linestyle=":", linewidth=1.2, alpha=0.85)
     ax.text(1.1, 1150, "1.0s Sub-Second Target", fontsize=8.5, fontweight="bold", color="#2E7D32")
     ax.text(1.1, 3350, "3.0s Interactive SLO Cut-Off Ceiling", fontsize=9.0, fontweight="bold", color="#B71C1C",
@@ -838,6 +854,146 @@ def plot_ttft_latency():
     output_path = os.path.join(OUTPUT_DIR, "09_ttft_latency.png")
     plt.savefig(output_path, dpi=300)
     plt.close()
+    return output_path
+
+# ==============================================================================
+# PLOT 9b: TTFT p50, p90, p95, and p99 side by side
+# ==============================================================================
+def plot_ttft_percentiles():
+    """Same series as the p50 chart, at p50, p90, p95, and p99.
+
+    R9700S C4–C16 are omitted from p90 and p95. Those vLLM summaries stored
+    the median and p99 only, and the request list was not saved. C1 and C2
+    p90 and p95 are the linear percentiles of the one or two measured
+    requests. p99 is the stored bench percentile at every R9700S point.
+    MI350P p50, p90, p95, and p99 are each computed from every request in
+    the cell. C1 is not replaced by the cold first request, and the 8,192-token
+    series is not a single copied marker. Cells after C1 on 8,192/1,024 reuse
+    one prompt. 1,024/1,024 includes C64, where p99 separates from the median.
+    """
+    # concurrency, then percentiles in milliseconds. A shorter list means
+    # later concurrencies were not stored.
+    series = (
+        {
+            "label": "R9700S (8,192 in / 1,024 out)",
+            "color": COLOR_R9700S_PEAK,
+            "fmt": "o-",
+            "c": [1, 2, 4, 8, 16],
+            "p50": [304.8, 443.9, 3319.7, 20445.2, 58410.1],
+            "p90": [308.0, 553.2],
+            "p95": [308.5, 566.9],
+            "p99": [308.8, 577.8, 5914.3, 45939.0, 128953.9],
+        },
+        {
+            "label": "R9700S (1,024 in / 1,024 out)",
+            "color": COLOR_R9700S_SLA,
+            "fmt": "s--",
+            "c": [1, 2, 4, 8, 16],
+            "p50": [259.5, 194.9, 808.7, 17258.1, 50360.4],
+            "p90": [373.0, 218.9],
+            "p95": [387.2, 221.9],
+            "p99": [398.6, 224.3, 900.7, 34397.9, 101410.4],
+        },
+        {
+            "label": "R9700S (1,024 in / 8,192 out)",
+            "color": "#C2185B",
+            "fmt": "^-.",
+            "c": [1, 2, 4],
+            "p50": [164.6, 189.1, 936.7],
+            "p90": [164.6, 228.5],
+            "p95": [164.6, 233.4],
+            "p99": [164.6, 237.4, 1043.3],
+        },
+        {
+            "label": "MI350P (1,024/1,024, every request)",
+            "color": COLOR_MI350P_PROD,
+            "fmt": "D-",
+            "c": [1, 2, 4, 8, 16, 32, 64],
+            "p50": [47.4, 528.0, 515.8, 466.9, 710.4, 1159.0, 1720.5],
+            "p90": [97.8, 529.5, 516.6, 467.5, 713.2, 1166.3, 2123.6],
+            "p95": [108.6, 529.7, 516.7, 467.5, 713.9, 1167.3, 2133.0],
+            "p99": [117.3, 529.8, 516.8, 467.5, 714.9, 1168.5, 2141.9],
+        },
+        {
+            "label": "MI350P (8,192/1,024, every request)",
+            "color": "#3949AB",
+            "fmt": "P-",
+            "c": [1, 2, 4, 8, 16, 32],
+            "p50": [75.7, 174.1, 1053.2, 577.3, 929.5, 1551.1],
+            "p90": [516.5, 205.0, 1054.2, 784.3, 1314.6, 1851.9],
+            "p95": [610.9, 208.8, 1054.3, 784.5, 1315.6, 1967.5],
+            "p99": [686.5, 211.9, 1054.5, 784.7, 1316.6, 2118.3],
+        },
+    )
+
+    y_max = 220000
+    fig, axes = plt.subplots(1, 4, figsize=(24.0, 6.9), dpi=160, sharey=True)
+    percentiles = ("p50", "p90", "p95", "p99")
+    titles = ("TTFT p50", "TTFT p90", "TTFT p95", "TTFT p99")
+    for ax, key, title in zip(axes, percentiles, titles):
+        ax.axhspan(80, 3000, color="#E8F5E9", alpha=0.35, zorder=0)
+        ax.axhspan(3000, y_max, color="#FFEBEE", alpha=0.35, zorder=0)
+        ax.axhline(3000, color="#9E9E9E", linestyle=":", linewidth=1.6, zorder=1)
+        ax.axhline(1000, color="#4CAF50", linestyle=":", linewidth=1.1, alpha=0.85, zorder=1)
+        for row in series:
+            values = row[key]
+            ax.plot(
+                row["c"][: len(values)],
+                values,
+                row["fmt"],
+                color=row["color"],
+                lw=2.2,
+                ms=6.5,
+                label=row["label"],
+                zorder=3,
+            )
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log")
+        ax.set_xticks([1, 2, 4, 8, 16, 32, 64])
+        ax.set_xticklabels(["C1", "C2", "C4", "C8", "C16", "C32", "C64"], fontsize=10, fontweight="bold")
+        ax.set_xlim(0.8, 80)
+        ax.set_ylim(80, y_max)
+        ax.set_title(title, fontsize=13, fontweight="bold", pad=8)
+        ax.set_xlabel("Concurrency per GPU (C)", fontsize=11, fontweight="bold")
+        ax.grid(True, which="both", linestyle="--", alpha=0.55)
+        if ax is axes[0]:
+            ax.set_yticks([100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 200000])
+            ax.get_yaxis().set_major_formatter(
+                plt.FuncFormatter(lambda y, _: f"{int(y):,} ms" if y < 1000 else f"{y / 1000:.1f} s")
+            )
+            ax.set_ylabel("Time-to-First-Token  [Lower is better]", fontsize=11, fontweight="bold")
+            ax.text(1.05, 1180, "1.0 s", fontsize=8, fontweight="bold", color="#2E7D32")
+            ax.text(1.05, 3600, "3.0 s SLO", fontsize=8, fontweight="bold", color="#B71C1C")
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=3,
+        frameon=True,
+        framealpha=0.95,
+        fontsize=9,
+        bbox_to_anchor=(0.5, 0.01),
+    )
+    fig.suptitle(
+        "Time-to-First-Token p50, p90, p95, and p99 vs Concurrency — Qwen3.8-27B MXFP4",
+        fontsize=14,
+        fontweight="bold",
+        y=0.98,
+    )
+    fig.text(
+        0.5,
+        0.905,
+        "MI350P panels use each percentile of the cell. They are not copies of the p50 series. 8,192-token cells after C1 reuse one prompt.",
+        ha="center",
+        fontsize=8.5,
+        color="#424242",
+    )
+    fig.tight_layout(rect=[0, 0.08, 1, 0.90])
+    output_path = os.path.join(OUTPUT_DIR, "09_ttft_p50_p90_p95.png")
+    fig.savefig(output_path, dpi=200)
+    plt.close(fig)
     return output_path
 
 # ==============================================================================
@@ -1026,11 +1182,12 @@ if __name__ == "__main__":
     p7  = plot_memory_bandwidth_utilization()
     p8  = plot_hardware_utilization_dashboard()
     p9  = plot_ttft_latency()
+    p9b = plot_ttft_percentiles()
     p10 = plot_slo_qualified_goodput()
     p11 = plot_joules_per_token()
     
     # Also copy to artifact directory for presentation / embedding
-    all_plots = [p1, p2, p3, p3b, p4, p5, p6, p7, p8, p9, p10, p11]
+    all_plots = [p1, p2, p3, p3b, p4, p5, p6, p7, p8, p9, p9b, p10, p11]
     for p in all_plots:
         dest = os.path.join(ARTIFACT_DIR, os.path.basename(p))
         shutil.copy(p, dest)

@@ -29,7 +29,7 @@ def bench_serve_args(
     result_dir: Optional[str] = None,
     result_filename: Optional[str] = None,
     percentile_metrics: Optional[str] = "tpot,ttft,itl,e2el",
-    metric_percentiles: Optional[str] = "75,90,95,99",
+    metric_percentiles: Optional[str] = "50,90,95,99",
     save_detailed: bool = True,
     random_prefix_len: Optional[int] = None,
     burstiness: Optional[float] = None,
@@ -112,7 +112,7 @@ def main() -> int:
     parser.add_argument("--result-filename", default="")
     parser.add_argument("--percentile-metrics", default="tpot,ttft,itl,e2el")
     parser.add_argument("--no-percentile-metrics", action="store_true")
-    parser.add_argument("--metric-percentiles", default="75,90,95,99")
+    parser.add_argument("--metric-percentiles", default="50,90,95,99")
     parser.add_argument("--no-metric-percentiles", action="store_true")
     parser.add_argument("--served-model-name", default="")
     parser.add_argument("--trust-remote-code", action="store_true")

@@ -312,8 +312,8 @@ Our benchmarking test suite bridges this gap by marrying vLLM's internal metrics
 | Tool / Script | Key Capabilities & Flags | Measured Dimensions |
 | :--- | :--- | :--- |
 | [`scripts/collect_amd_power.py`](../scripts/collect_amd_power.py) | `--tdp <watts>`, `--peak-bw <gbs>`, auto-detects `mi350p` (600W/4096 GB/s), `r9700` (300W/960 GB/s), `r9600` (150W/640 GB/s). | Power (W), % of TDP, Max Power, Energy (J), Duration. |
-| [`scripts/bench_openai_chat.py`](../scripts/bench_openai_chat.py) | `--stream`, `--monitor-power`, `--gpu-profile <target>`. | Client-side TTFT ($p_{50}, p_{95}, p_{99}$), ITL ($p_{50}, p_{95}$), Power (% TDP, W, J/tok), Memory Bandwidth (GB/s, % Peak). |
-| [`scripts/run_concurrency_sweep.py`](../scripts/run_concurrency_sweep.py) | `--gpu-profile <target>`, sweeps concurrency $C=1 \dots 32$, enforces `--percentile-metrics ttft,tpot,itl,e2el`. | TTFT, TPOT, ITL, Active Power, Power Util %, Memory Bandwidth GB/s, Bandwidth Util %. |
+| [`scripts/bench_openai_chat.py`](../scripts/bench_openai_chat.py) | `--stream`, `--monitor-power`, `--gpu-profile <target>`. | Client-side TTFT ($p_{50}$, $p_{90}$, $p_{95}$, $p_{99}$), ITL ($p_{50}$, $p_{90}$, $p_{95}$), Power (% TDP, W, J/tok), Memory Bandwidth (GB/s, % Peak). |
+| [`scripts/run_concurrency_sweep.py`](../scripts/run_concurrency_sweep.py) | `--gpu-profile <target>`, sweeps concurrency $C=1 \dots 32$, `--percentile-metrics ttft,tpot,itl,e2el`, `--metric-percentiles 50,90,95,99`, `--save-detailed`. | TTFT, TPOT, ITL, Active Power, Power Util %, Memory Bandwidth GB/s, Bandwidth Util %. |
 | [`scripts/bench_throughput.sh`](../scripts/bench_throughput.sh) | Automated multi-slice serving sweep with background `collect_amd_power.py`. | Matrix of Throughput, TPOT, TTFT, Power (W / % TDP), and Mem Bandwidth (GB/s / % Peak). |
 | [`scripts/bench_saturation_instrumented.sh`](../scripts/bench_saturation_instrumented.sh) | End-to-end saturation harness for R9700 and MI350P. | Live streaming TTFT and power under progressive concurrency load. |
 
