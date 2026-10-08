@@ -1,0 +1,120 @@
+{
+  "model": "Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "tokenizer": "Qwen/Qwen3.8-27B-FP8",
+  "gpu_profile": "r9700",
+  "input_lens": [
+    1024,
+    8192
+  ],
+  "output_len": 64,
+  "concurrency_list": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "num_prompts": 100,
+  "request_rate": "inf",
+  "started_utc": "2026-10-08T01:16:29.321110+00:00",
+  "runs": [
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 1,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c1_n100_20261008_011629.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c1_n100_20261008_011629.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 2,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c2_n100_20261008_012043.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c2_n100_20261008_012043.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 4,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c4_n100_20261008_012327.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c4_n100_20261008_012327.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 8,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c8_n100_20261008_012517.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c8_n100_20261008_012517.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 16,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c16_n100_20261008_012708.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c16_n100_20261008_012708.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 1024,
+      "output_len": 64,
+      "concurrency": 32,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl1024_osl64_c32_n100_20261008_012859.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/1k64/qwen_isl1024_osl64_c32_n100_20261008_012859.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 1,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c1_n100_20261008_013049.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c1_n100_20261008_013049.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 2,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c2_n100_20261008_013941.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c2_n100_20261008_013941.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 4,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c4_n100_20261008_014654.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c4_n100_20261008_014654.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 8,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c8_n100_20261008_015324.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c8_n100_20261008_015324.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 16,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c16_n100_20261008_015953.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c16_n100_20261008_015953.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    },
+    {
+      "input_len": 8192,
+      "output_len": 64,
+      "concurrency": 32,
+      "scratch": "_results/experiments/active_20261008_004947/qwen_tail/qwen_isl8192_osl64_c32_n100_20261008_020623.json",
+      "published_raw": "docs/results/qwen3.8-27b-mxfp4/latency/r9700/8k64/qwen_isl8192_osl64_c32_n100_20261008_020623.json.gz",
+      "published_profile": "docs/profiling/qwen3.8-27b-mxfp4-latency.json"
+    }
+  ],
+  "completed_utc": "2026-10-08T02:12:52.510308+00:00"
+}

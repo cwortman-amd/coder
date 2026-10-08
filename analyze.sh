@@ -88,20 +88,64 @@ while IFS= read -r manifest; do
         echo "AgentX campaign ${campaign} has no request exports beside the manifest. Keeping its existing analysis."
     fi
     if [ -f "${campaign}/analysis.json" ] && [ -f "${campaign}/request_samples.csv" ]; then
-        if [ "$campaign" = "${RESULTS}/agentx" ]; then
-            figure_dir="${FIGURES}/agentx"
-        else
+        if [[ "$campaign" == "${RESULTS}/tail_study/"* ]]; then
             figure_dir="${FIGURES}/agentx/${campaign#${RESULTS}/}"
+            run "$PY" "${ROOT}/scripts/plot_agentx_tail_sweep.py" \
+                --results-dir "$campaign" \
+                --output-dir "$figure_dir"
         fi
-        run "$PY" "${ROOT}/scripts/plot_agentx_tail_sweep.py" \
-            --results-dir "$campaign" \
-            --output-dir "$figure_dir"
     fi
 done < <(find "$RESULTS" -name manifest.json -print | sort | while IFS= read -r manifest; do
     if grep -q 'agentx_concurrency_tail_pilot' "$manifest"; then
         printf '%s\n' "$manifest"
     fi
 done)
+
+# Generate publication figures keyed by device identifier (r9700, mi350p) instead of date.
+for dev in r9700 mi350p; do
+    best_campaign="$("$PY" - "$RESULTS" "$dev" <<'PY'
+import json, sys
+from pathlib import Path
+results, target_dev = Path(sys.argv[1]), sys.argv[2].lower()
+candidates = []
+for manifest_path in results.rglob("manifest.json"):
+    try:
+        data = json.loads(manifest_path.read_text())
+    except Exception:
+        continue
+    if data.get("kind") != "agentx_concurrency_tail_pilot":
+        continue
+    c = manifest_path.parent
+    if not (c / "analysis.json").is_file() or not (c / "request_samples.csv").is_file():
+        continue
+    prof = data.get("gpu_profile")
+    if not prof:
+        s = str(c).lower()
+        prof = "mi350p" if ("mi350" in s or "gfx950" in s) else "r9700"
+    if prof.lower() != target_dev:
+        continue
+    runs = [r for r in data.get("runs", []) if r.get("status") == "completed"]
+    started = data.get("started_utc", "")
+    date_str = started[:10] if started else "1970-01-01"
+    candidates.append((date_str, len(runs), started, str(c)))
+if candidates:
+    candidates.sort()
+    print(candidates[-1][3])
+PY
+)"
+    if [ -n "$best_campaign" ] && [ -d "$best_campaign" ]; then
+        run "$PY" "${ROOT}/scripts/plot_agentx_tail_sweep.py" \
+            --results-dir "$best_campaign" \
+            --output-dir "${FIGURES}/agentx/${dev}" \
+            --device "$dev"
+        if [ "$dev" = "r9700" ]; then
+            run "$PY" "${ROOT}/scripts/plot_agentx_tail_sweep.py" \
+                --results-dir "$best_campaign" \
+                --output-dir "${FIGURES}/agentx" \
+                --device "$dev"
+        fi
+    fi
+done
 
 newest_chain=""
 while IFS= read -r manifest; do

@@ -1,17 +1,6 @@
----
-type: Benchmark Report
-title: AgentX concurrency tail pilot
-description: This is a one-hour load-spread pilot. Request p99 values are observed
-  order statistics, not stable population estimates.
-tags:
-- benchmark-report
-- agentx
-status: stable
----
-
 # AgentX concurrency tail pilot
 
-This is a one-hour load-spread pilot. Request p99 values are observed order statistics, not stable population estimates.
+This is a bounded load-spread pilot with a 180-minute campaign budget and 15-minute profiling windows. Request p99 values are observed order statistics, not stable population estimates.
 
 | C | Requests | Sessions completed | Tail resolution | TTFT p50/p95 | E2E p50/p95 | Avg-ITL p50/p95 | >1s gaps / intervals | Prefix hit |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|

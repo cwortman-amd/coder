@@ -224,6 +224,8 @@ def run_campaign(args: argparse.Namespace) -> int:
             args.url,
             "--model",
             args.model,
+            "--gpu-profile",
+            args.gpu_profile,
             "--aiperf",
             str(aiperf),
             "--tokenizer",

@@ -276,18 +276,62 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--device",
+        "--gpu-profile",
+        dest="gpu_profile",
+        default=None,
+        help="Device identifier (r9700 or mi350p)",
+    )
     args = parser.parse_args()
     RESULTS_DIR = args.results_dir
     OUTPUT_DIR = args.output_dir
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    USE_R9700_CAPTIONS = RESULTS_DIR.resolve() == DEFAULT_RESULTS_DIR.resolve()
-    if not USE_R9700_CAPTIONS:
+
+    profile = args.gpu_profile
+    if not profile:
+        manifest_path = RESULTS_DIR / "manifest.json"
+        if manifest_path.is_file():
+            try:
+                manifest_doc = json.loads(manifest_path.read_text())
+                profile = manifest_doc.get("gpu_profile")
+            except Exception:
+                pass
+    if not profile:
+        text = (str(RESULTS_DIR) + " " + str(OUTPUT_DIR)).lower()
+        if "mi350" in text or "gfx950" in text:
+            profile = "mi350p"
+        elif "r9700" in text or "gfx1201" in text:
+            profile = "r9700"
+        elif RESULTS_DIR.resolve() == DEFAULT_RESULTS_DIR.resolve():
+            profile = "r9700"
+
+    if profile:
+        profile = profile.lower()
+        if "mi350" in profile:
+            CAMPAIGN_TITLE = (
+                "AMD Instinct MI350P (144 GB) — Qwen3.8-27B MXFP4 (max_model_len=65,536)"
+            )
+            DASHBOARD_TITLE = (
+                "AMD Instinct™ MI350P (144 GB HBM3E) — Qwen3.8-27B-Quark-AWQ-MXFP4"
+            )
+            USE_R9700_CAPTIONS = False
+        else:
+            CAMPAIGN_TITLE = (
+                "AMD Radeon AI PRO R9700 (32 GB) — Qwen3.8-27B MXFP4 (max_model_len=65,536)"
+            )
+            DASHBOARD_TITLE = (
+                "AMD Radeon AI PRO R9700 (32 GB GDDR6) — Qwen3.8-27B-Quark-AWQ-MXFP4"
+            )
+            USE_R9700_CAPTIONS = True
+    else:
         manifest_path = RESULTS_DIR / "manifest.json"
         model = "AgentX"
         if manifest_path.is_file():
             model = json.loads(manifest_path.read_text()).get("model") or model
         CAMPAIGN_TITLE = f"{model} — {RESULTS_DIR.name}"
         DASHBOARD_TITLE = CAMPAIGN_TITLE
+        USE_R9700_CAPTIONS = False
     if ARTIFACT_DIR:
         ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     analysis, samples = load_data()

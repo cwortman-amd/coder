@@ -1,8 +1,10 @@
 {
   "schema_version": 1,
-  "campaign_manifest": "_results/agentx_tail_sweep/20260930_230406/manifest.json",
+  "campaign_manifest": "/home/amd/workspace/coder/docs/results/agentx/manifest.json",
   "interpretation": {
-    "kind": "one_hour_pilot",
+    "kind": "bounded_concurrency_pilot",
+    "campaign_budget_seconds": 10800,
+    "profiling_duration_seconds": 900,
     "stable_request_p99": false,
     "session_bootstrap_allowed": false,
     "request_p99_note": "p99 is retained as an observed order statistic; use the per-cell empirical_tail_resolution_percent before interpreting it.",

@@ -1,0 +1,46 @@
+{
+  "source": "amd-smi+device-metrics-exporter+prometheus",
+  "duration_s": 1760.61,
+  "sample_count": 7037,
+  "sample_interval_s": 0.25,
+  "gpu_index": 0,
+  "gpu_profile": "r9700",
+  "device_tdp_w": 300.0,
+  "device_peak_bw_gbs": 960.0,
+  "avg_power_w": 206.77,
+  "max_power_w": 236.0,
+  "peak_power_w": 236.0,
+  "min_power_w": 14.0,
+  "power_util_pct": 68.92,
+  "max_power_util_pct": 78.67,
+  "total_energy_joules": 363759.5,
+  "energy_joules": 363759.5,
+  "gfx_activity_pct_mean": 98.57,
+  "umc_activity_pct_mean": 74.74,
+  "umc_gbs_estimate": 717.51,
+  "umc_gbs_estimate_note": "UMC percent times catalog peak GB/s. An estimate, not a calibrated HBM counter.",
+  "vram_used_mb_mean": 28551.59,
+  "pcie_mbps_mean": null,
+  "pcie_mbps_peak": null,
+  "cpu_util_pct_mean": 52.12,
+  "gfx_clock_mean_mhz": 2630.91,
+  "mem_clock_mean_mhz": 1242.26,
+  "power_mean_w": 206.77,
+  "power_max_w": 236.0,
+  "exporter_scraped": true,
+  "exporter_series": {
+    "amd_gpu_average_package_power": 48.0,
+    "amd_gpu_gfx_activity": 48.0,
+    "amd_gpu_package_power": 48.0,
+    "amd_gpu_power_usage": 48.0,
+    "amd_gpu_umc_activity": 48.0,
+    "amd_gpu_used_vram": 48.0,
+    "amd_pcie_bandwidth": 48.0
+  },
+  "prometheus": {
+    "cpu_util_pct": {
+      "mean": 52.21,
+      "max": 53.52
+    }
+  }
+}

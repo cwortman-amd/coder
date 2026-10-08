@@ -582,13 +582,13 @@ While that GEMM runs, decode is starved. Schedulers queue up. Everything collaps
 
 <!-- _footer: "Slide 11 | AgentX Concurrency & Tail Latency Visuals" -->
 
-## 10. Visualizing AgentX Concurrency & Latency
+## 10. Visualizing AgentX Concurrency & Latency (R9700 Edge)
 
 <div class="grid-2">
 <div>
 
 ### TTFT Distributions & CDFs
-![w:470](../figures/agentx/01_agentx_ttft_histogram.png)
+![w:470](../figures/agentx/r9700/01_agentx_ttft_histogram.png)
 * **Panel A:** Distinct separation between sub-3s interactive zone and the 100s+ queue delay regime.
 * **Panel B:** CDF shifts completely off-screen at $C=16$ and $C=32$.
 
@@ -596,7 +596,7 @@ While that GEMM runs, decode is starved. Schedulers queue up. Everything collaps
 <div>
 
 ### Master Operational Dashboard
-![w:470](../figures/agentx/02_agentx_master_dashboard.png)
+![w:470](../figures/agentx/r9700/02_agentx_master_dashboard.png)
 * **Panel A:** Exponential TTFT tail explosion at $C=8$.
 * **Panel B/C:** Direct causal link: Prefix hit rate collapse triggers throughput loss and queue blowout.
 
@@ -632,6 +632,7 @@ Comparing collocated Claude Code AgentX curves across hardware tiers:
 * **C=1 to C=16:** Smooth scaling; 11.6 $\to$ 33.1 tok/s; zero waiting queue; prefix hit $>92\%$.
 * **C=32 Peak:** 46.8 tok/s, but p95 TTFT slips to 14.5s; 1,279 token pauses $>1$s.
 * **C=64 Collapse:** Output plunges to **4.01 tok/s** (-91%); 949 of every 1,000 intervals exceed 1s; 0 completed sessions!
+* **Visual Dashboards:** Empirical distributions plotted in [`docs/figures/agentx/mi350p/`](../figures/agentx/mi350p/).
 
 </div>
 <div>
@@ -975,8 +976,9 @@ Thank you, and I look forward to your questions.
 * **Published Data & Figures:**
   * Raw Tail Study Results: [`docs/results/tail_study/`](../results/tail_study/) & [`docs/figures/tail_study_dashboard.png`](../figures/tail_study_dashboard.png)
   * Raw AgentX Traces: [`docs/results/agentx/`](../results/agentx/) & [`docs/results/mi350p/agentx_concurrency.json`](../results/mi350p/agentx_concurrency.json)
-  * Raw Synthetic Latency Samples: [`docs/results/qwen3.8-27b-mxfp4/latency/r9700/`](../results/qwen3.8-27b-mxfp4/latency/r9700/)
-  * Latency & AgentX Figures: [`docs/figures/latency/`](../figures/latency/) & [`docs/figures/agentx/`](../figures/agentx/)
+  * Raw Synthetic Latency Samples: [`docs/results/qwen3.8-27b-mxfp4/latency/r9700/`](../results/qwen3.8-27b-mxfp4/latency/r9700/) & [`docs/results/qwen3.8-27b-mxfp4/latency/mi350p/`](../results/qwen3.8-27b-mxfp4/latency/mi350p/)
+  * Latency Figures: [`docs/figures/latency/`](../figures/latency/) (`r9700/`, `mi350p/`)
+  * AgentX Figures: [`docs/figures/agentx/`](../figures/agentx/) (`r9700/`, `mi350p/`)
   * TCO & PDD Dashboards: [`docs/figures/tco/`](../figures/tco/) & [`docs/figures/pd/`](../figures/pd/)
 * **Reproduction Commands:**
   ```bash
@@ -986,8 +988,9 @@ Thank you, and I look forward to your questions.
   /home/amd/workspace/coder/.venv/bin/python scripts/plot_tail_distributions.py \
     --input docs/results/tail_study/agent_chain_manifest.json \
     --out docs/figures/tail_study_dashboard.png
-  # Regenerate AgentX figures
-  /home/amd/workspace/coder/.venv/bin/python scripts/plot_agentx_tail_sweep.py
+  # Regenerate AgentX figures per device (r9700, mi350p)
+  /home/amd/workspace/coder/.venv/bin/python scripts/plot_agentx_tail_sweep.py --device r9700 --output-dir docs/figures/agentx/r9700
+  /home/amd/workspace/coder/.venv/bin/python scripts/plot_agentx_tail_sweep.py --device mi350p --output-dir docs/figures/agentx/mi350p
   # Regenerate Synthetic Latency Histograms
   /home/amd/workspace/coder/.venv/bin/python scripts/generate_latency_histogram_plots.py
   # Recompile Slides (HTML, PDF, PPTX)

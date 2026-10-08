@@ -55,6 +55,12 @@ All six cells exited 0 with `submission_valid: true` and zero request errors. Ra
 
 At C=64 the KV cache averaged **83.2%** full, with p99 **98.5%**. At C=128 the average waiting queue was **48.1 requests** and its p95 was **59**. The server admitted about 28–33 running requests in both overload cells, close to the KV ceiling, so raising the client lane count from 64 to 128 added queue depth rather than decode capacity.
 
+## Visualizations
+
+Empirical distributions and the master operational dashboard for MI350P AgentX are published under:
+* [`figures/agentx/mi350p/01_agentx_ttft_histogram.png`](figures/agentx/mi350p/01_agentx_ttft_histogram.png)
+* [`figures/agentx/mi350p/02_agentx_master_dashboard.png`](figures/agentx/mi350p/02_agentx_master_dashboard.png)
+
 ## What the tail supports
 
 C=1 through C=16 show a smooth load trend: TTFT p95 rises from 2.07 s to 3.97 s, and freezes above 1 s rise from 0 to 4.59 per 1,000 intervals. No server-side waiting queue forms. Prefix-cache hit rate stays above 92%.

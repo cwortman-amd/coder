@@ -71,7 +71,7 @@ The table below summarizes the measured order statistics across 15-minute profil
 
 ## 3. Publication-Grade Visualizations
 
-Two publication-quality figures illustrate the shift from healthy operation to thrashing breakdown:
+Two publication-quality figures illustrate the shift from healthy operation to thrashing breakdown on the Radeon AI PRO R9700 (published under `figures/agentx/r9700/` and mirrored at `figures/agentx/`):
 
 ### Figure 1: TTFT Empirical Distributions & CDFs
 [![AgentX TTFT Distribution](figures/agentx/01_agentx_ttft_histogram.png)](figures/agentx/01_agentx_ttft_histogram.png)

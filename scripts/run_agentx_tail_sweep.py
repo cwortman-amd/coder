@@ -82,6 +82,11 @@ def main() -> int:
         type=Path,
         default=ROOT / "_results" / "agentx_tail_sweep",
     )
+    parser.add_argument(
+        "--gpu-profile",
+        default="r9700",
+        help="Target GPU profile (e.g. r9700, mi350p)",
+    )
     parser.add_argument("--allow-short-duration", action="store_true", help="Allow duration < 900s for quick iteration")
     args = parser.parse_args()
 
@@ -115,6 +120,7 @@ def main() -> int:
     manifest: dict[str, Any] = {
         "schema_version": 1,
         "kind": "agentx_concurrency_tail_pilot",
+        "gpu_profile": args.gpu_profile,
         "started_utc": utc_now(),
         "campaign_budget_seconds": args.campaign_seconds,
         "profiling_duration_seconds": args.duration_seconds,
