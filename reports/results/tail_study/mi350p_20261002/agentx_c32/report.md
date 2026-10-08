@@ -4,7 +4,7 @@ This is a bounded load-spread pilot with a 30-minute campaign budget and 15-minu
 
 | C | Requests | Sessions completed | Tail resolution | TTFT p50/p95 | E2E p50/p95 | Avg-ITL p50/p95 | >1s gaps / intervals | Prefix hit |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 32 | 48 | 0 | 2.08% | 129407/232155 ms | 207664/442445 ms | 604/789 ms | 690 / 12497 | 12.536% |
+| 32 | 48 | None | 2.08% | 129407/232155 ms | 207664/442445 ms | 604/789 ms | 690 / 12497 | 12.536% |
 
 Raw request samples: `request_samples.csv`
 

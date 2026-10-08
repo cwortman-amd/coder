@@ -17,10 +17,10 @@
       "requests": 21,
       "distinct_source_conversations": 8,
       "sessions": {
-        "sent": 3,
-        "completed_at_send_stop": 1,
-        "completed": 1,
-        "cancelled": 0
+        "sent": null,
+        "completed_at_send_stop": null,
+        "completed": null,
+        "cancelled": null
       },
       "empirical_tail_resolution_percent": 4.762,
       "request_throughput_per_second": 0.022580616118368955,
@@ -277,10 +277,10 @@
       "requests": 46,
       "distinct_source_conversations": 7,
       "sessions": {
-        "sent": 5,
-        "completed_at_send_stop": 2,
-        "completed": 2,
-        "cancelled": 0
+        "sent": null,
+        "completed_at_send_stop": null,
+        "completed": null,
+        "cancelled": null
       },
       "empirical_tail_resolution_percent": 2.174,
       "request_throughput_per_second": 0.04946229150816044,

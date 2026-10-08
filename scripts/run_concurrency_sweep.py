@@ -23,6 +23,7 @@ import bench_serve  # noqa: E402
 import catalog  # noqa: E402
 from okf_docs import ensure_frontmatter  # noqa: E402
 from publish_latency_results import MissingDetailedLatency, publish_latency_result  # noqa: E402
+from request_event_schema import percentile  # noqa: E402
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "concurrency_sweep")
@@ -184,6 +185,9 @@ def main():
                 request_rate=None,
                 result_dir=bench_json_docker_dir,
                 result_filename=bench_filename,
+                percentile_metrics="tpot,ttft,itl,e2el",
+                metric_percentiles="50,90,95,99",
+                save_detailed=True,
             )
             bench_cmd = ["docker", "exec", args.container, "/opt/vllm/bin/vllm", *serve_args]
 
@@ -221,10 +225,33 @@ def main():
             failed_prompts = bench_data.get("failed", 0)
             agg_tok_s = bench_data.get("output_throughput", 0.0)
             total_output_tokens = bench_data.get("total_output_tokens", completed_prompts * args.output_len)
-            ttft_p50 = bench_data.get("median_ttft_ms", 0.0)
+            ttft_p50 = bench_data.get("p50_ttft_ms", bench_data.get("median_ttft_ms", 0.0))
+            ttft_p90 = bench_data.get("p90_ttft_ms", 0.0)
             ttft_p95 = bench_data.get("p95_ttft_ms", bench_data.get("p99_ttft_ms", 0.0))
-            tpot_p50 = bench_data.get("median_tpot_ms", 0.0)
+            ttft_p99 = bench_data.get("p99_ttft_ms", 0.0)
+            tpot_p50 = bench_data.get("p50_tpot_ms", bench_data.get("median_tpot_ms", 0.0))
+            tpot_p90 = bench_data.get("p90_tpot_ms", 0.0)
             tpot_p95 = bench_data.get("p95_tpot_ms", bench_data.get("p99_tpot_ms", 0.0))
+            tpot_p99 = bench_data.get("p99_tpot_ms", 0.0)
+
+            raw_ttfts = bench_data.get("ttfts") or []
+            if raw_ttfts and (ttft_p90 == 0.0 or ttft_p95 == 0.0 or ttft_p99 == 0.0):
+                ttft_samples_ms = [val * 1000.0 for val in raw_ttfts if val is not None]
+                if ttft_samples_ms:
+                    ttft_p50 = percentile(ttft_samples_ms, 50.0) or ttft_p50
+                    ttft_p90 = percentile(ttft_samples_ms, 90.0) or ttft_p90
+                    ttft_p95 = percentile(ttft_samples_ms, 95.0) or ttft_p95
+                    ttft_p99 = percentile(ttft_samples_ms, 99.0) or ttft_p99
+
+            raw_tpots = bench_data.get("tpots") or []
+            if raw_tpots and (tpot_p90 == 0.0 or tpot_p95 == 0.0 or tpot_p99 == 0.0):
+                tpot_samples_ms = [val * 1000.0 for val in raw_tpots if val is not None]
+                if tpot_samples_ms:
+                    tpot_p50 = percentile(tpot_samples_ms, 50.0) or tpot_p50
+                    tpot_p90 = percentile(tpot_samples_ms, 90.0) or tpot_p90
+                    tpot_p95 = percentile(tpot_samples_ms, 95.0) or tpot_p95
+                    tpot_p99 = percentile(tpot_samples_ms, 99.0) or tpot_p99
+
             avg_power = pwr_data.get("avg_power_w", 0.0)
             max_power = pwr_data.get("max_power_w", 0.0)
             total_energy = pwr_data.get("total_energy_joules", 0.0)
@@ -267,9 +294,13 @@ def main():
                 "agg_tok_s": round(agg_tok_s, 2),
                 "per_stream_tok_s": round(per_stream_tok_s, 2),
                 "ttft_p50_ms": round(ttft_p50, 1),
+                "ttft_p90_ms": round(ttft_p90, 1),
                 "ttft_p95_ms": round(ttft_p95, 1),
+                "ttft_p99_ms": round(ttft_p99, 1),
                 "tpot_p50_ms": round(tpot_p50, 2),
+                "tpot_p90_ms": round(tpot_p90, 2),
                 "tpot_p95_ms": round(tpot_p95, 2),
+                "tpot_p99_ms": round(tpot_p99, 2),
                 "avg_power_w": round(avg_power, 1),
                 "max_power_w": round(max_power, 1),
                 "power_util_pct": power_util_pct,
@@ -285,7 +316,7 @@ def main():
 
             c_runs.append(run_record)
             bw_txt = "N/A" if mem_bw_gb_s is None else f"{mem_bw_gb_s:.1f} GB/s ({mem_bw_util_pct:.1f}% Peak)"
-            print(f"Result: {agg_tok_s:.2f} tok/s | TTFT p50: {ttft_p50:.1f} ms | TPOT p50: {tpot_p50:.2f} ms | Power: {avg_power:.1f}W ({power_util_pct:.1f}% TDP) | BW: {bw_txt} | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
+            print(f"Result: {agg_tok_s:.2f} tok/s | TTFT p50/p90/p95/p99: {ttft_p50:.1f}/{ttft_p90:.1f}/{ttft_p95:.1f}/{ttft_p99:.1f} ms | TPOT p50/p90/p95/p99: {tpot_p50:.2f}/{tpot_p90:.2f}/{tpot_p95:.2f}/{tpot_p99:.2f} ms | Power: {avg_power:.1f}W ({power_util_pct:.1f}% TDP) | BW: {bw_txt} | {j_per_tok:.3f} J/tok | Hotspot: {hotspot_max}°C")
 
             time.sleep(5.0)
 
@@ -298,9 +329,13 @@ def main():
                 "agg_tok_s": round(sum(r["agg_tok_s"] for r in valid_runs) / len(valid_runs), 2),
                 "per_stream_tok_s": round(sum(r["per_stream_tok_s"] for r in valid_runs) / len(valid_runs), 2),
                 "ttft_p50_ms": round(sum(r["ttft_p50_ms"] for r in valid_runs) / len(valid_runs), 1),
+                "ttft_p90_ms": round(sum(r["ttft_p90_ms"] for r in valid_runs) / len(valid_runs), 1),
                 "ttft_p95_ms": round(sum(r["ttft_p95_ms"] for r in valid_runs) / len(valid_runs), 1),
+                "ttft_p99_ms": round(sum(r["ttft_p99_ms"] for r in valid_runs) / len(valid_runs), 1),
                 "tpot_p50_ms": round(sum(r["tpot_p50_ms"] for r in valid_runs) / len(valid_runs), 2),
+                "tpot_p90_ms": round(sum(r["tpot_p90_ms"] for r in valid_runs) / len(valid_runs), 2),
                 "tpot_p95_ms": round(sum(r["tpot_p95_ms"] for r in valid_runs) / len(valid_runs), 2),
+                "tpot_p99_ms": round(sum(r["tpot_p99_ms"] for r in valid_runs) / len(valid_runs), 2),
                 "avg_power_w": round(sum(r["avg_power_w"] for r in valid_runs) / len(valid_runs), 1),
                 "max_power_w": max(r["max_power_w"] for r in valid_runs),
                 "power_util_pct": round(sum(r["power_util_pct"] for r in valid_runs) / len(valid_runs), 1),
@@ -320,9 +355,13 @@ def main():
                 "agg_tok_s": 0.0,
                 "per_stream_tok_s": 0.0,
                 "ttft_p50_ms": 0.0,
+                "ttft_p90_ms": 0.0,
                 "ttft_p95_ms": 0.0,
+                "ttft_p99_ms": 0.0,
                 "tpot_p50_ms": 0.0,
+                "tpot_p90_ms": 0.0,
                 "tpot_p95_ms": 0.0,
+                "tpot_p99_ms": 0.0,
                 "avg_power_w": 0.0,
                 "max_power_w": 0.0,
                 "power_util_pct": 0.0,
@@ -339,18 +378,18 @@ def main():
         sweep_records.append(avg_record)
 
     # Plateau Analysis & Recommendations
-    print("\n" + "=" * 130)
+    print("\n" + "=" * 160)
     print("                                      CONCURRENCY SWEEP SUMMARY TABLE")
-    print("=" * 130)
-    print(f"{'C':<4} | {'Agg tok/s':<10} | {'Stream tok/s':<12} | {'TTFT p50/p95':<16} | {'TPOT p50/p95':<16} | {'Power (W / %TDP)':<20} | {'Mem BW (%Peak)':<18} | {'J/tok':<8} | {'Status'}")
-    print("-" * 130)
+    print("=" * 160)
+    print(f"{'C':<4} | {'Agg tok/s':<10} | {'Stream tok/s':<12} | {'TTFT p50/p90/p95/p99 (ms)':<32} | {'TPOT p50/p90/p95/p99 (ms)':<32} | {'Power (W / %TDP)':<20} | {'Mem BW (%Peak)':<18} | {'J/tok':<8} | {'Status'}")
+    print("-" * 160)
 
     for rec in sweep_records:
-        ttft_str = f"{rec['ttft_p50_ms']}/{rec['ttft_p95_ms']}"
-        tpot_str = f"{rec['tpot_p50_ms']}/{rec['tpot_p95_ms']}"
+        ttft_str = f"{rec['ttft_p50_ms']}/{rec['ttft_p90_ms']}/{rec['ttft_p95_ms']}/{rec['ttft_p99_ms']}"
+        tpot_str = f"{rec['tpot_p50_ms']}/{rec['tpot_p90_ms']}/{rec['tpot_p95_ms']}/{rec['tpot_p99_ms']}"
         pwr_str = f"{rec['avg_power_w']}W ({rec['power_util_pct']}%)"
         bw_str = f"{rec['mem_bw_gb_s']}G ({rec['mem_bw_util_pct']}%)"
-        print(f"{rec['concurrency']:<4} | {rec['agg_tok_s']:<10.2f} | {rec['per_stream_tok_s']:<12.2f} | {ttft_str:<16} | {tpot_str:<16} | {pwr_str:<20} | {bw_str:<18} | {rec['j_per_tok']:<8.3f} | {rec['status']}")
+        print(f"{rec['concurrency']:<4} | {rec['agg_tok_s']:<10.2f} | {rec['per_stream_tok_s']:<12.2f} | {ttft_str:<32} | {tpot_str:<32} | {pwr_str:<20} | {bw_str:<18} | {rec['j_per_tok']:<8.3f} | {rec['status']}")
 
     # Compute marginal gains
     for i in range(1, len(sweep_records)):
@@ -384,18 +423,31 @@ def main():
             )
         )
         rf.write(f"# {report_title}\n\n")
+        if "r9700" in prof:
+            rf.write("Narrative and earlier sweeps: [R9700.md](R9700.md).\n\n")
         rf.write(f"**Target Hardware**: {hw_label}\n")
         rf.write(f"**Model**: `{args.model}`\n")
         rf.write(f"**Workload**: {args.input_len:,} Input Tokens / {args.output_len:,} Output Tokens\n")
         rf.write(f"**Execution Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S EDT')}\n\n")
         rf.write("## Performance, Latency, Power & Bandwidth Ledger\n\n")
-        rf.write("| C | Aggregate tok/s | Per-stream tok/s | TTFT p50/p95 (ms) | TPOT p50/p95 (ms) | Power (W / % TDP) | Mem Bandwidth (GB/s / % Peak) | Total Energy (J) | J/token | tokens/Joule | Hotspot Max (°C) | Status |\n")
+        rf.write("| C | Aggregate tok/s | Per-stream tok/s | TTFT p50/p90/p95/p99 (ms) | TPOT p50/p90/p95/p99 (ms) | Power (W / % TDP) | Mem Bandwidth (GB/s / % Peak) | Total Energy (J) | J/token | tokens/Joule | Hotspot Max (°C) | Status |\n")
         rf.write("| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
         for rec in sweep_records:
-            rf.write(f"| **{rec['concurrency']}** | **{rec['agg_tok_s']:.2f}** | {rec['per_stream_tok_s']:.2f} | {rec['ttft_p50_ms']} / {rec['ttft_p95_ms']} | {rec['tpot_p50_ms']} / {rec['tpot_p95_ms']} | {rec['avg_power_w']} W ({rec['power_util_pct']}%) | {rec['mem_bw_gb_s']} GB/s ({rec['mem_bw_util_pct']}%) | {rec['total_energy_j']:,} | **{rec['j_per_tok']:.3f}** | **{rec['tok_per_j']:.4f}** | {rec['hotspot_max_c']} | `{rec['status']}` |\n")
+            rf.write(f"| **{rec['concurrency']}** | **{rec['agg_tok_s']:.2f}** | {rec['per_stream_tok_s']:.2f} | {rec['ttft_p50_ms']} / {rec['ttft_p90_ms']} / {rec['ttft_p95_ms']} / {rec['ttft_p99_ms']} | {rec['tpot_p50_ms']} / {rec['tpot_p90_ms']} / {rec['tpot_p95_ms']} / {rec['tpot_p99_ms']} | {rec['avg_power_w']} W ({rec['power_util_pct']}%) | {rec['mem_bw_gb_s']} GB/s ({rec['mem_bw_util_pct']}%) | {rec['total_energy_j']:,} | **{rec['j_per_tok']:.3f}** | **{rec['tok_per_j']:.4f}** | {rec['hotspot_max_c']} | `{rec['status']}` |\n")
         rf.write("\n---\n")
 
-    print(f"\n[Report] Markdown summary saved to: {report_file}")
+    summary_file = os.path.join(RESULTS_DIR, f"sweep_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    with open(summary_file, "w", encoding="utf-8") as sf:
+        json.dump({
+            "gpu_profile": prof,
+            "model": args.model,
+            "input_len": args.input_len,
+            "output_len": args.output_len,
+            "records": sweep_records,
+            "completed_utc": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        }, sf, indent=2)
+    print(f"\n[Results] JSON summary saved to: {summary_file}")
+    print(f"[Report] Markdown summary saved to: {report_file}")
 
 if __name__ == "__main__":
     main()
