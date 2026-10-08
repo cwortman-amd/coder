@@ -2,7 +2,7 @@
 """Generate publication-quality tail latency histogram and CDF plots.
 
 Visualizes empirical TTFT and ITL distributions for Qwen3.8-27B MXFP4 on AMD Radeon AI PRO R9700
-from raw detailed benchmark samples in docs/results/qwen3.8-27b-mxfp4/latency/r9700/.
+from raw detailed benchmark samples in reports/results/qwen3.8-27b-mxfp4/latency/r9700/.
 """
 from __future__ import annotations
 
@@ -27,9 +27,9 @@ TTFT_SLO_MS = SLO["ttft_ms"]
 ITL_SLO_MS = SLO["itl_p95_ms"]
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-RESULTS_ROOT = PROJECT_DIR / "docs" / "results" / "qwen3.8-27b-mxfp4" / "latency" / "r9700"
-PROFILING_JSON = PROJECT_DIR / "docs" / "profiling" / "qwen3.8-27b-mxfp4-latency.json"
-OUTPUT_DIR = PROJECT_DIR / "docs" / "figures" / "latency"
+RESULTS_ROOT = PROJECT_DIR / "reports" / "results" / "qwen3.8-27b-mxfp4" / "latency" / "r9700"
+PROFILING_JSON = PROJECT_DIR / "reports" / "profiling" / "qwen3.8-27b-mxfp4-latency.json"
+OUTPUT_DIR = PROJECT_DIR / "reports" / "figures" / "latency"
 ARTIFACT_DIR_ENV = os.environ.get("ARTIFACT_DIR")
 ARTIFACT_DIR = Path(ARTIFACT_DIR_ENV) if ARTIFACT_DIR_ENV else None
 

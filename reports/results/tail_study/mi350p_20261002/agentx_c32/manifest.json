@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "kind": "agentx_concurrency_tail_pilot",
+  "started_utc": "2026-10-02T10:19:42.198264+00:00",
+  "campaign_budget_seconds": 1800,
+  "profiling_duration_seconds": 900,
+  "concurrency_points": [
+    32
+  ],
+  "url": "http://127.0.0.1:8000",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "served_models": [
+    "Qwen/Qwen3.8-27B-FP8"
+  ],
+  "tokenizer": "models/Qwen3.8-27B-Quark-AWQ-MXFP4",
+  "dataset": "semianalysis_cc_traces_weka_062126",
+  "max_context_length": 65536,
+  "random_seed": 20260707,
+  "aiperf": "../.venv-aiperf/bin/aiperf",
+  "runs": [
+    {
+      "concurrency": 32,
+      "status": "completed",
+      "started_utc": "2026-10-02T10:19:42.198457+00:00",
+      "artifact_dir": "reports/results/tail_study/mi350p_20261002/agentx_c32/c32",
+      "command": [
+        "../.venv-aiperf/bin/aiperf",
+        "profile",
+        "--scenario",
+        "inferencex-agentx-mvp",
+        "--url",
+        "http://127.0.0.1:8000",
+        "--model",
+        "Qwen/Qwen3.8-27B-FP8",
+        "--tokenizer",
+        "models/Qwen3.8-27B-Quark-AWQ-MXFP4",
+        "--max-context-length",
+        "65536",
+        "--endpoint-type",
+        "chat",
+        "--public-dataset",
+        "semianalysis_cc_traces_weka_062126",
+        "--concurrency",
+        "32",
+        "--use-server-token-count",
+        "--benchmark-duration",
+        "900",
+        "--benchmark-grace-period",
+        "30",
+        "--random-seed",
+        "20260707",
+        "--artifact-dir",
+        "_results/experiments/active_20261002_075156/agentx-c32-followup/20261002_101942/c32",
+        "--ui",
+        "simple"
+      ],
+      "completed_utc": "2026-10-02T10:44:23.410507+00:00",
+      "elapsed_seconds": 1481.213,
+      "return_code": 0,
+      "console_log": "_results/experiments/active_20261002_075156/agentx-c32-followup/20261002_101942/c32/campaign_console.log"
+    }
+  ],
+  "completed_utc": "2026-10-02T10:44:23.423328+00:00",
+  "elapsed_seconds": 1481.225,
+  "status": "completed"
+}

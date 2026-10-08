@@ -10,7 +10,7 @@ Creates a 4-panel master dashboard:
 
 Requires: matplotlib, numpy
 Usage:
-  .venv/bin/python3 scripts/plot_tail_distributions.py --input docs/results/tail_study/agent_chain_manifest.json --out docs/figures/tail_study_dashboard.png
+  .venv/bin/python3 scripts/plot_tail_distributions.py --input reports/results/tail_study/agent_chain_manifest.json --out reports/figures/tail_study_dashboard.png
 """
 
 from __future__ import annotations
@@ -216,7 +216,7 @@ def plot_dashboard(data: Dict[str, Any], output_path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True, help="Input agent_chain_manifest.json")
-    parser.add_argument("--out", type=Path, default=Path("docs/figures/agent_chain_dashboard.png"), help="Output image file")
+    parser.add_argument("--out", type=Path, default=Path("reports/figures/agent_chain_dashboard.png"), help="Output image file")
     args = parser.parse_args()
 
     data = load_manifest(args.input)

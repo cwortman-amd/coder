@@ -4,7 +4,7 @@
 The default 1,000 requests per cell gives 0.1% empirical tail resolution.
 Output length is intentionally short: this is a TTFT/tail test, not a token
 throughput sweep. Raw vLLM detail is written to _results and immediately
-normalized into durable docs/results plus docs/profiling.
+normalized into durable reports/results plus reports/profiling.
 """
 from __future__ import annotations
 
@@ -124,7 +124,7 @@ def main() -> int:
     manifest_path = host_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"scratch manifest: {manifest_path}")
-    print("durable profile: docs/profiling/qwen3.8-27b-mxfp4-latency.json")
+    print("durable profile: reports/profiling/qwen3.8-27b-mxfp4-latency.json")
     return 0
 
 

@@ -5,8 +5,8 @@ Benchmark scratch lives under ``_results`` and is not persistent. This module
 normalizes either ``vllm bench serve --save-detailed`` output or this repo's
 streaming-client output, strips generated text, and writes:
 
-* exact request/token samples to ``docs/results`` as compressed JSON;
-* a small report index to ``docs/profiling``.
+* exact request/token samples to ``reports/results`` as compressed JSON;
+* a small report index to ``reports/profiling``.
 """
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ from distribution_stats import percentile_summary  # noqa: E402
 from request_event_schema import percentile  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_ROOT = ROOT / "docs" / "results" / "qwen3.8-27b-mxfp4" / "latency"
-PROFILE_PATH = ROOT / "docs" / "profiling" / "qwen3.8-27b-mxfp4-latency.json"
+RAW_ROOT = ROOT / "reports" / "results" / "qwen3.8-27b-mxfp4" / "latency"
+PROFILE_PATH = ROOT / "reports" / "profiling" / "qwen3.8-27b-mxfp4-latency.json"
 
 PERCENTILES = (50, 75, 90, 95, 99)
 TTFT_BINS_MS = (0, 50, 100, 250, 500, 1000, 2000, 3000, 5000, 10000, 30000)
@@ -208,7 +208,7 @@ def _update_profile(run: dict[str, Any], profile_path: Path) -> None:
             "model": "Qwen3.8-27B MXFP4",
             "note": (
                 "Report-ready index. Exact request and token samples are in the "
-                "referenced compressed files under docs/results."
+                "referenced compressed files under reports/results."
             ),
             "runs": [],
         }
@@ -261,7 +261,7 @@ def publish_latency_result(
         "concurrency": concurrency,
         "repetition": repetition,
         "source_format": "streaming_client" if "rows" in document else "vllm_save_detailed",
-        "raw_samples": str(Path("docs/results/qwen3.8-27b-mxfp4/latency") / relative),
+        "raw_samples": str(Path("reports/results/qwen3.8-27b-mxfp4/latency") / relative),
         "benchmark": {
             key: document.get(key)
             for key in (

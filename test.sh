@@ -48,7 +48,7 @@ Experiments covered by --experiments:
 The disaggregated P/D arm of experiment 6 needs a second server and is not
 started by this dispatcher.
 
-When the suites finish, results written during this run are copied to docs/results.
+When the suites finish, results written during this run are copied to reports/results.
 Plot scripts read that tree.
 
 Shared options:
@@ -213,7 +213,7 @@ SUITE_STARTED="$(date +%s)"
 
 publish_suite_results() {
     echo "------------------------------------------------------------------------"
-    echo "Publishing this run to docs/results"
+    echo "Publishing this run to reports/results"
     echo "------------------------------------------------------------------------"
     python3 "${SCRIPT_DIR}/scripts/publish_suite_results.py" --since "$SUITE_STARTED" \
         || echo "Publishing the suite results failed." >&2

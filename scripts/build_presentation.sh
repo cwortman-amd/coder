@@ -4,10 +4,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-PRESENTATION_DIR="$ROOT_DIR/docs/presentation"
+PRESENTATION_DIR="$ROOT_DIR/reports/presentation"
 
 # Usage: ./scripts/build_presentation.sh [deck ...]
-# With no arguments, every docs/presentation/*.md deck is built.
+# With no arguments, every reports/presentation/*.md deck is built.
 if [[ $# -gt 0 ]]; then
   DECKS=("$@")
 else

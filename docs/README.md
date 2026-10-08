@@ -53,23 +53,25 @@ Grouped by machine. The current production record is [MI350P.md](MI350P.md).
 
 ## Published measurements
 
-Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. `./test.sh` copies the results from that run into `docs/results` when it finishes. Plot scripts only read `docs/`.
+Write-ups stay in `docs/`. Measurements, profiles, figures, decks, and image assets are under `reports/`.
+
+Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. `./test.sh` copies the results from that run into `reports/results` when it finishes. `./analyze.sh` rebuilds campaign reports and the figures under `reports/figures/`.
 
 | Command | Published input | Figure |
 |---|---|---|
-| `./analyze.sh` | `docs/results/` and `docs/profiling/` | Every report and figure below |
-| `python3 scripts/generate_kv_plots.py` | `docs/results/` | `docs/figures/kv/` |
-| `python3 scripts/plot_gpu_utilization.py` | `docs/profiling/gpu_metrics.json` | `docs/figures/utilization/` |
-| `python3 scripts/generate_tco_plots.py` | `docs/profiling/power_bandwidth.json` and `docs/results/r9700/concurrency.json` | `docs/figures/tco/` |
-| `python3 scripts/generate_pd_plots.py` | `docs/results/pd/pd_emulator_summary.json` | `docs/figures/pd/` |
-| `python3 scripts/generate_tp_compare_plots.py` | `docs/results/tp_compare/mi350p/` | `docs/figures/tp/` |
-| `python3 scripts/generate_latency_histogram_plots.py` | `docs/results/qwen3.8-27b-mxfp4/latency/{profile}/` | `docs/figures/latency/{profile}/` |
-| `python3 scripts/plot_agentx_tail_sweep.py` | `docs/results/agentx/` | `docs/figures/agentx/{profile}/` & `docs/figures/agentx/` |
-| `.venv/bin/python3 scripts/plot_tail_distributions.py --input docs/results/tail_study/agent_chain_manifest.json --out docs/figures/tail_study_dashboard.png` | `docs/results/tail_study/` | `docs/figures/tail_study_dashboard.png` |
-| `python3 scripts/publish_latency_results.py --source-dir <qwen-run-dir> --gpu-profile <profile>` | `docs/results/qwen3.8-27b-mxfp4/latency/` | `docs/profiling/qwen3.8-27b-mxfp4-latency.json` |
-| `python3 scripts/run_agentx_tail_sweep.py` then `python3 scripts/analyze_agentx_tail_sweep.py` | `docs/results/mi350p/agentx_concurrency.json` | [MI350P-AGENTX.md](MI350P-AGENTX.md) |
+| `./analyze.sh` | `reports/results/` and `reports/profiling/` | Every report and figure below |
+| `python3 scripts/generate_kv_plots.py` | `reports/results/` | `reports/figures/kv/` |
+| `python3 scripts/plot_gpu_utilization.py` | `reports/profiling/gpu_metrics.json` | `reports/figures/utilization/` |
+| `python3 scripts/generate_tco_plots.py` | `reports/profiling/power_bandwidth.json` and `reports/results/r9700/concurrency.json` | `reports/figures/tco/` |
+| `python3 scripts/generate_pd_plots.py` | `reports/results/pd/pd_emulator_summary.json` | `reports/figures/pd/` |
+| `python3 scripts/generate_tp_compare_plots.py` | `reports/results/tp_compare/mi350p/` | `reports/figures/tp/` |
+| `python3 scripts/generate_latency_histogram_plots.py` | `reports/results/qwen3.8-27b-mxfp4/latency/{profile}/` | `reports/figures/latency/{profile}/` |
+| `python3 scripts/plot_agentx_tail_sweep.py` | `reports/results/agentx/` | `reports/figures/agentx/{profile}/` & `reports/figures/agentx/` |
+| `.venv/bin/python3 scripts/plot_tail_distributions.py --input reports/results/tail_study/agent_chain_manifest.json --out reports/figures/tail_study_dashboard.png` | `reports/results/tail_study/` | `reports/figures/tail_study_dashboard.png` |
+| `python3 scripts/publish_latency_results.py --source-dir <qwen-run-dir> --gpu-profile <profile>` | `reports/results/qwen3.8-27b-mxfp4/latency/` | `reports/profiling/qwen3.8-27b-mxfp4-latency.json` |
+| `python3 scripts/run_agentx_tail_sweep.py` then `python3 scripts/analyze_agentx_tail_sweep.py` | `reports/results/mi350p/agentx_concurrency.json` | [MI350P-AGENTX.md](MI350P-AGENTX.md) |
 
-`docs/profiling/power_bandwidth.json` holds the R9700 and MI350P concurrency-sweep power and bandwidth series used by the TCO figures. `docs/profiling/gpu_metrics.json` holds the suite throughput profile: socket power, the UMC memory-bandwidth estimate, and amd-smi PCIe traffic. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `docs/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`. AgentX multi-turn traces are archived under `docs/results/agentx/`, and empirical complete-task agent chain and open-loop sweep results are archived under `docs/results/tail_study/`. AgentX figures are published per device under `docs/figures/agentx/r9700/` and `docs/figures/agentx/mi350p/`, with canonical copies in `docs/figures/agentx/`. A `./test.sh` run also publishes its accuracy report, throughput directory, and experiment tree under `docs/results/`. Generated text is omitted.
+`reports/profiling/power_bandwidth.json` holds the R9700 and MI350P concurrency-sweep power and bandwidth series used by the TCO figures. `reports/profiling/gpu_metrics.json` holds the suite throughput profile: socket power, the UMC memory-bandwidth estimate, and amd-smi PCIe traffic. The PDD summary uses the 29 Sep contract: TTFT ≤ 3 s, TPOT ≤ 20 ms, p95 ITL ≤ 20 ms, p99 ITL ≤ 50 ms, and peak ITL ≤ 100 ms. Qwen latency runs are the exception to the older “sample traces are not kept” policy: test scripts now retain per-request TTFT, TPOT, E2E, and per-token ITL under `reports/results/qwen3.8-27b-mxfp4/latency/`, with report-ready percentiles and histograms in `reports/profiling/qwen3.8-27b-mxfp4-latency.json`. AgentX multi-turn traces are archived under `reports/results/agentx/`, and empirical complete-task agent chain and open-loop sweep results are archived under `reports/results/tail_study/`. AgentX figures are published per device under `reports/figures/agentx/r9700/` and `reports/figures/agentx/mi350p/`, with canonical copies in `reports/figures/agentx/`. A `./test.sh` run also publishes its accuracy report, throughput directory, and experiment tree under `reports/results/`. Generated text is omitted.
 
 For a report-grade tail run (1,000 requests per cell, 0.1% empirical resolution):
 
@@ -84,33 +86,33 @@ python3 scripts/bench_qwen_tail_latency.py \
 
 | File | Contents |
 |---|---|
-| [presentation/tail-latency.md](presentation/tail-latency.md) | 19-slide comprehensive technical deck: tail latency, AgentX multi-turn dynamics, P/D architecture, PCIe transport, and tokenomics |
-| [presentation/tail-latency.html](presentation/tail-latency.html) | Standalone interactive browser-based presentation (HTML) |
-| [presentation/tail-latency.pdf](presentation/tail-latency.pdf) | High-resolution publication presentation deck (PDF) |
-| [presentation/tail-latency.pptx](presentation/tail-latency.pptx) | Editable PowerPoint slide deck (PPTX) |
-| [presentation/coder-tco.md](presentation/coder-tco.md) | On-premises coding-agent TCO: subscription list prices against measured R9700S and MI350P token cost |
-| [presentation/coder-tco.html](presentation/coder-tco.html) | Standalone interactive browser-based presentation (HTML) |
-| [presentation/coder-tco.pdf](presentation/coder-tco.pdf) | High-resolution publication presentation deck (PDF) |
-| [presentation/coder-tco.pptx](presentation/coder-tco.pptx) | Editable PowerPoint slide deck (PPTX) |
+| [presentation/tail-latency.md](../reports/presentation/tail-latency.md) | 19-slide comprehensive technical deck: tail latency, AgentX multi-turn dynamics, P/D architecture, PCIe transport, and tokenomics |
+| [presentation/tail-latency.html](../reports/presentation/tail-latency.html) | Standalone interactive browser-based presentation (HTML) |
+| [presentation/tail-latency.pdf](../reports/presentation/tail-latency.pdf) | High-resolution publication presentation deck (PDF) |
+| [presentation/tail-latency.pptx](../reports/presentation/tail-latency.pptx) | Editable PowerPoint slide deck (PPTX) |
+| [presentation/coder-tco.md](../reports/presentation/coder-tco.md) | On-premises coding-agent TCO: subscription list prices against measured R9700S and MI350P token cost |
+| [presentation/coder-tco.html](../reports/presentation/coder-tco.html) | Standalone interactive browser-based presentation (HTML) |
+| [presentation/coder-tco.pdf](../reports/presentation/coder-tco.pdf) | High-resolution publication presentation deck (PDF) |
+| [presentation/coder-tco.pptx](../reports/presentation/coder-tco.pptx) | Editable PowerPoint slide deck (PPTX) |
 
 Compile or refresh decks via `./scripts/build_presentation.sh`.
 
-SVG sources and the PNG rasters the decks embed are in [assets/](assets/). Each name has both files.
+SVG sources and the PNG rasters the decks embed are in [assets/](../reports/assets/). Each name has both files.
 
 | File | Use |
 |---|---|
-| [llm-router](assets/llm-router.svg) | Coding request to local, frontier, or specialized |
-| [llm-router-tools](assets/llm-router-tools.svg) | Tools, response processing, and the return path |
-| [llm-router-detail](assets/llm-router-detail.svg) | Appendix: the earlier multi-vendor router |
-| [route-flow](assets/route-flow.svg) | Coder TCO slide 3: what moves onto the GPU |
-| [router-diagram](assets/router-diagram.svg) | Coder TCO slide 8: route by requirements |
-| [routing-classify](assets/routing-classify.svg) | Classify the prompt, then choose a model |
-| [routing-architecture](assets/routing-architecture.svg) | Requirements, filter, quality check, outcomes |
-| [routing-factors](assets/routing-factors.svg) | Hard constraints before soft preferences |
-| [routing-cascade](assets/routing-cascade.svg) | Cascade versus fallback |
-| [routing-eval](assets/routing-eval.svg) | Evaluation loop |
-| [model-family-comparison](assets/model-family-comparison.svg) | Local model families, with the publisher mark on each row |
-| [hardware-tier-guide](assets/hardware-tier-guide.svg) | Hardware tier quick-pick for those families |
+| [llm-router](../reports/assets/llm-router.svg) | Coding request to local, frontier, or specialized |
+| [llm-router-tools](../reports/assets/llm-router-tools.svg) | Tools, response processing, and the return path |
+| [llm-router-detail](../reports/assets/llm-router-detail.svg) | Appendix: the earlier multi-vendor router |
+| [route-flow](../reports/assets/route-flow.svg) | Coder TCO slide 3: what moves onto the GPU |
+| [router-diagram](../reports/assets/router-diagram.svg) | Coder TCO slide 8: route by requirements |
+| [routing-classify](../reports/assets/routing-classify.svg) | Classify the prompt, then choose a model |
+| [routing-architecture](../reports/assets/routing-architecture.svg) | Requirements, filter, quality check, outcomes |
+| [routing-factors](../reports/assets/routing-factors.svg) | Hard constraints before soft preferences |
+| [routing-cascade](../reports/assets/routing-cascade.svg) | Cascade versus fallback |
+| [routing-eval](../reports/assets/routing-eval.svg) | Evaluation loop |
+| [model-family-comparison](../reports/assets/model-family-comparison.svg) | Local model families, with the publisher mark on each row |
+| [hardware-tier-guide](../reports/assets/hardware-tier-guide.svg) | Hardware tier quick-pick for those families |
 
 ## How to run
 

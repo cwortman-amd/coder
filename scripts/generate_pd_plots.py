@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plot_data import illustrative_itl, published_pd_slo  # noqa: E402
 from publish_results import PUBLISHED_ROOT
 
-OUTPUT_DIR = "/home/amd/workspace/coder/docs/figures/pd"
+OUTPUT_DIR = "/home/amd/workspace/coder/reports/figures/pd"
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
 SUMMARY_JSON = os.path.join(str(PUBLISHED_ROOT), "pd", "pd_emulator_summary.json")
 PD_SLO = published_pd_slo(Path(SUMMARY_JSON))

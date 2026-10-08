@@ -45,7 +45,7 @@ Later chunk-size and Poisson-arrival experiments produced different tails under 
 
 ## Empirical tail latency distributions on Radeon AI PRO R9700
 
-To substantiate these dynamics with report-grade statistical resolution, we swept power-of-two concurrencies ($C = 1, 2, 4, 8, 16$) with 100 requests per cell ($N = 100$, 6,400 token samples per run) for Qwen3.8-27B MXFP4 on a dedicated R9700. Raw detailed traces are archived under `docs/results/qwen3.8-27b-mxfp4/latency/r9700/`, with normalized distributions and histograms in `docs/profiling/qwen3.8-27b-mxfp4-latency.json`.
+To substantiate these dynamics with report-grade statistical resolution, we swept power-of-two concurrencies ($C = 1, 2, 4, 8, 16$) with 100 requests per cell ($N = 100$, 6,400 token samples per run) for Qwen3.8-27B MXFP4 on a dedicated R9700. Raw detailed traces are archived under `reports/results/qwen3.8-27b-mxfp4/latency/r9700/`, with normalized distributions and histograms in `reports/profiling/qwen3.8-27b-mxfp4-latency.json`.
 
 | Workload | C | TTFT p50 | TTFT p90 | TTFT p95 | TTFT p99 | TPOT p50 | TPOT p95 | ITL p50 | ITL p95 | ITL p99 | Max ITL | Interactive SLO (TTFT ≤ 3s) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -61,9 +61,9 @@ To substantiate these dynamics with report-grade statistical resolution, we swep
 | **8k:64** | **C16** | 49,733 ms | 50,880 ms | 50,913 ms | 54,016 ms | 122 ms | 146 ms | 33.9 ms | 1,266 ms | 1,508 ms | 1,552 ms | Severe Contention (49.7s TTFT) |
 
 Two publication-grade distribution plots visualize these empirical profiles:
-* **TTFT Distribution Histograms** (`docs/figures/latency/01_ttft_tail_histogram.png`): Demonstrates the transition from prompt execution scaling ($C \le 4$) to discrete queueing delays beyond the `--max-num-seqs 4` scheduler threshold.
-* **ITL Tail & CDF Histograms** (`docs/figures/latency/02_itl_tail_histogram.png`): Proves the bimodal distribution of decoding tokens, where 90%+ remain at the nominal 30–33 ms rate while concurrent 8k prefills inject recurring 1,180–1,552 ms freezes in the p95/p99 tail.
-* **Master Evaluation Dashboard** (`docs/figures/latency/03_tail_latency_master_dashboard.png`): 4-panel synthesis of TTFT, ITL tail distributions, and SLO compliance states.
+* **TTFT Distribution Histograms** (`reports/figures/latency/01_ttft_tail_histogram.png`): Demonstrates the transition from prompt execution scaling ($C \le 4$) to discrete queueing delays beyond the `--max-num-seqs 4` scheduler threshold.
+* **ITL Tail & CDF Histograms** (`reports/figures/latency/02_itl_tail_histogram.png`): Proves the bimodal distribution of decoding tokens, where 90%+ remain at the nominal 30–33 ms rate while concurrent 8k prefills inject recurring 1,180–1,552 ms freezes in the p95/p99 tail.
+* **Master Evaluation Dashboard** (`reports/figures/latency/03_tail_latency_master_dashboard.png`): 4-panel synthesis of TTFT, ITL tail distributions, and SLO compliance states.
 
 Beyond synthetic $S:O$ pairs, we evaluated real-world multi-turn Claude Code agent traces (`semianalysis_cc_traces_weka_062126`) across concurrencies $C = 1 \dots 32$ with a 65,536-token context window (detailed in [`docs/AGENTX-TAIL.md`](AGENTX-TAIL.md)). That sweep revealed an insidious **concurrency cliff**: at $C=8$, aggregate throughput reaches its nominal peak (17.2 tok/s) while p95 TTFT slips to **51.8 seconds** and 363 token pauses exceed 1.0 second. At $C \ge 16$, KV cache saturation (>80%) triggers a catastrophic eviction cascade: prefix hit rate collapses from 93% to **0%**, scheduler queues balloon to 13.7 waiting requests, TTFT p50 explodes to **5.5 minutes**, and output throughput collapses by 59%.
 

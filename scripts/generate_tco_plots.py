@@ -83,7 +83,7 @@ plt.rcParams['grid.color'] = '#ECEFF1'
 plt.rcParams['grid.linestyle'] = '--'
 plt.rcParams['grid.alpha'] = 0.7
 
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "figures", "tco")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "figures", "tco")
 ARTIFACT_DIR = "/home/amd/.gemini/antigravity-cli/brain/3a344b95-6417-4951-aa06-7d6314d2ecfe"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
@@ -583,7 +583,7 @@ def plot_power_utilization():
     c_r9700_1k, pwr_r9700_1k = r9700_series("1k1k", "power_util_pct")
     c_r9700_long, pwr_r9700_long = r9700_series("1k8k", "power_util_pct")
     
-    # MI350P socket power from docs/profiling/power_bandwidth.json. TDP is 600 W.
+    # MI350P socket power from reports/profiling/power_bandwidth.json. TDP is 600 W.
     c_mi350, pwr_mi350_1k = mi350_series("1k1k", "power_util_pct", 32)
     _, pwr_mi350_8k = mi350_series("8k1k", "power_util_pct", 32)
     _, pwr_mi350_long = mi350_series("1k8k", "power_util_pct", 32)
@@ -654,7 +654,7 @@ def plot_memory_bandwidth_utilization():
     c_r9700_1k, bw_r9700_1k = r9700_series("1k1k", "bandwidth_util_pct")
     c_r9700_long, bw_r9700_long = r9700_series("1k8k", "bandwidth_util_pct")
     
-    # MI350P UMC activity from docs/profiling/power_bandwidth.json.
+    # MI350P UMC activity from reports/profiling/power_bandwidth.json.
     # umc_gbs_estimate = UMC% × catalog peak is not a calibrated HBM measurement.
     c_mi350, bw_mi350_1k = mi350_series("1k1k", "umc_activity_pct", 32)
     _, bw_mi350_8k = mi350_series("8k1k", "umc_activity_pct", 32)

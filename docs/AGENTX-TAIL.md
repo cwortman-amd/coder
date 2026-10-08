@@ -20,7 +20,7 @@ status: stable
 **Engine Settings:** `--max-model-len 65536 --max-num-seqs 4 --max-num-batched-tokens 4096 --gpu-memory-utilization 0.88 --attention-backend ROCM_AITER_UNIFIED_ATTN`  
 **Workload Dataset:** `semianalysis_cc_traces_weka_062126` (real-world multi-turn Claude Code agent traces)  
 **Execution Harness:** [`scripts/run_agentx_tail_sweep.py`](/scripts/run_agentx_tail_sweep.py), [`scripts/analyze_agentx_tail_sweep.py`](/scripts/analyze_agentx_tail_sweep.py), [`scripts/plot_agentx_tail_sweep.py`](/scripts/plot_agentx_tail_sweep.py)
-**Published Raw Data:** [`docs/results/agentx/`](/docs/results/agentx/) (`analysis.json`, `request_samples.csv`, `manifest.json`, `report.md`)
+**Published Raw Data:** [`reports/results/agentx/`](/reports/results/agentx/) (`analysis.json`, `request_samples.csv`, `manifest.json`, `report.md`)
 
 ---
 
@@ -71,19 +71,21 @@ The table below summarizes the measured order statistics across 15-minute profil
 
 ## 3. Publication-Grade Visualizations
 
-Two publication-quality figures illustrate the shift from healthy operation to thrashing breakdown on the Radeon AI PRO R9700 (published under `figures/agentx/r9700/` and mirrored at `figures/agentx/`):
+Two publication-quality figures illustrate the shift from healthy operation to thrashing breakdown on the Radeon AI PRO R9700. They are drawn from the complete campaign in `reports/results/agentx/` and published under `reports/figures/agentx/r9700/`, with the same files at `reports/figures/agentx/`:
 
 ### Figure 1: TTFT Empirical Distributions & CDFs
-[![AgentX TTFT Distribution](figures/agentx/01_agentx_ttft_histogram.png)](figures/agentx/01_agentx_ttft_histogram.png)
+[![AgentX TTFT Distribution](../reports/figures/agentx/01_agentx_ttft_histogram.png)](../reports/figures/agentx/01_agentx_ttft_histogram.png)
 * **Panel A (Log-Histogram):** Illustrates the clear separation between the sub-3-second interactive zone ($C=1\dots 4$) and the heavy right-tail queueing distribution that emerges at $C=8$ and dominates at $C=16$ and $C=32$.
 * **Panel B (Empirical CDF):** Demonstrates that at $C \le 4$, over 60–70% of requests complete prefill within 2 seconds. By $C=16$, 0% of requests meet the 3.0s interactive SLO, with the entire distribution displaced past 100 seconds.
 
 ### Figure 2: Concurrency & Tail Latency Master Dashboard
-[![AgentX Master Dashboard](figures/agentx/02_agentx_master_dashboard.png)](figures/agentx/02_agentx_master_dashboard.png)
+[![AgentX Master Dashboard](../reports/figures/agentx/02_agentx_master_dashboard.png)](../reports/figures/agentx/02_agentx_master_dashboard.png)
 * **Panel A (TTFT Scaling):** Highlights the knee point at $C=8$ where median TTFT remains stable (1.7s) while tail TTFT jumps exponentially to 51.8s.
 * **Panel B (Throughput vs ITL):** Shows aggregate output token throughput peaking at $C=8$ (17.2 tok/s) before collapsing to 9.4 tok/s ($C=16$) and 7.0 tok/s ($C=32$), while average ITL degrades from 53 ms to 213 ms.
 * **Panel C (Prefix Cache vs KV Pressure):** Captures the direct causal mechanism: prefix cache hit rate falls from 93.2% to 0% as average KV cache utilization breaches 80%.
 * **Panel D (Scheduler Queue Dynamics):** Shows the transition from GPU-bound execution (waiting queue = 0 at $C \le 4$) to severe scheduler starvation (waiting queue = 4.3 at $C=16$, 13.7 at $C=32$).
+
+An 8 Oct follow-up on the same R9700 MXFP4 recipe finished C1–C16 and stopped at `campaign_timeout` before C32. Its scorecard is [reports/results/experiments/active_20261008_004947/agentx/20261008_021252/report.md](../reports/results/experiments/active_20261008_004947/agentx/20261008_021252/report.md). C8 TTFT p95 is 33.6 s and the prefix hit rate is 68.7%, against 51.8 s and 65.3% in the complete campaign above. Those plots are [reports/figures/agentx/20261008/](../reports/figures/agentx/20261008/).
 
 ---
 
@@ -134,10 +136,10 @@ All raw traces, manifests, and tooling are version-controlled in the repository:
 
 ```bash
 # 1. Inspect published machine-readable analysis
-cat docs/results/agentx/analysis.json | jq .summary
+cat reports/results/agentx/analysis.json | jq .summary
 
 # 2. Inspect request-level sample records
-head -n 20 docs/results/agentx/request_samples.csv
+head -n 20 reports/results/agentx/request_samples.csv
 
 # 3. Regenerate publication-quality figures
 /home/amd/workspace/coder/.venv/bin/python scripts/plot_agentx_tail_sweep.py

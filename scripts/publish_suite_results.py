@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Copy the suite that just finished into docs/results.
+"""Copy the suite that just finished into reports/results.
 
 test.sh records a start time and calls this when it exits. Accuracy reports,
 throughput runs, and experiment directories newer than that time are copied.
 Plot scripts read this tree and do not copy scratch themselves.
 
 Qwen latency samples are already written under
-docs/results/qwen3.8-27b-mxfp4/latency/ and docs/profiling/ while the TTFT
+reports/results/qwen3.8-27b-mxfp4/latency/ and reports/profiling/ while the TTFT
 grid runs. This script publishes the rest of the suite.
 
 Throughput power files carry socket power, the UMC memory-bandwidth estimate,
 and amd-smi PCIe bandwidth. Those summaries are reduced into
-docs/profiling/gpu_metrics.json. The 0.25 s sample traces stay in _results.
+reports/profiling/gpu_metrics.json. The 0.25 s sample traces stay in _results.
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "_results"
-PUBLISHED = ROOT / "docs" / "results"
-PROFILING = ROOT / "docs" / "profiling"
+PUBLISHED = ROOT / "reports" / "results"
+PROFILING = ROOT / "reports" / "profiling"
 GPU_METRICS_JSON = PROFILING / "gpu_metrics.json"
 GPU_METRICS_MD = PROFILING / "gpu_metrics.md"
 AGENTX_KIND = "agentx_concurrency_tail_pilot"
@@ -108,7 +108,7 @@ def reduce_power_file(path: Path, run_name: str) -> dict | None:
 
 
 def publish_gpu_metrics(run_dirs: list[Path]) -> Path | None:
-    """Fold power summaries from published run directories into docs/profiling."""
+    """Fold power summaries from published run directories into reports/profiling."""
     incoming = []
     for run_dir in run_dirs:
         for path in _power_summaries(run_dir):
@@ -254,7 +254,7 @@ def main() -> int:
     parser.add_argument(
         "--gpu-metrics-report",
         action="store_true",
-        help="Rewrite docs/profiling/gpu_metrics.md from the published JSON",
+        help="Rewrite reports/profiling/gpu_metrics.md from the published JSON",
     )
     args = parser.parse_args()
     if args.gpu_metrics_report:

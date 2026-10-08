@@ -5,7 +5,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parents[1] / "docs" / "assets"
+OUT = Path(__file__).resolve().parents[1] / "reports" / "assets"
 TEAL, GOLD, ORANGE, RED = "#00c2de", "#C1A968", "#F26522", "#ed1c24"
 WHITE, MUTED = "#ffffff", "#9aa3ad"
 TF, GF, OF, RF, PANEL = "#00181c", "#14110C", "#1F0D05", "#1A080A", "#05080c"

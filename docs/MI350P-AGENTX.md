@@ -40,7 +40,7 @@ python3 scripts/run_agentx_tail_sweep.py \
 python3 scripts/analyze_agentx_tail_sweep.py
 ```
 
-All six cells exited 0 with `submission_valid: true` and zero request errors. Raw exports are in gitignored `_results/agentx_tail_sweep/20260930_180731/` and `_results/agentx_tail_sweep/20260930_224523/`. The durable summary is [results/mi350p/agentx_concurrency.json](results/mi350p/agentx_concurrency.json).
+All six cells exited 0 with `submission_valid: true` and zero request errors. Raw exports are in gitignored `_results/agentx_tail_sweep/20260930_180731/` and `_results/agentx_tail_sweep/20260930_224523/`. The durable summary is [results/mi350p/agentx_concurrency.json](../reports/results/mi350p/agentx_concurrency.json).
 
 ## Load curve
 
@@ -57,9 +57,9 @@ At C=64 the KV cache averaged **83.2%** full, with p99 **98.5%**. At C=128 the a
 
 ## Visualizations
 
-Empirical distributions and the master operational dashboard for MI350P AgentX are published under:
-* [`figures/agentx/mi350p/01_agentx_ttft_histogram.png`](figures/agentx/mi350p/01_agentx_ttft_histogram.png)
-* [`figures/agentx/mi350p/02_agentx_master_dashboard.png`](figures/agentx/mi350p/02_agentx_master_dashboard.png)
+Empirical distributions and the master operational dashboard for the 30 Sep curve above are published under:
+* [`figures/agentx/mi350p/01_agentx_ttft_histogram.png`](../reports/figures/agentx/mi350p/01_agentx_ttft_histogram.png)
+* [`figures/agentx/mi350p/02_agentx_master_dashboard.png`](../reports/figures/agentx/mi350p/02_agentx_master_dashboard.png)
 
 ## What the tail supports
 

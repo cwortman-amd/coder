@@ -133,7 +133,8 @@ Open your browser to [`http://localhost:4096`](http://localhost:4096) to use the
 │   ├── docker-compose.gguf.yml # llama.cpp GGUF orchestration
 │   ├── docker-compose.mxfp4.yml # Radiance MXFP4 W4A8 orchestration
 │   └── docker-compose.tp2.yml   # Tensor Parallelism (TP=2) 64 GB orchestration
-├── docs/                     # Architectural reports, specifications, and deep-dive documentation
+├── docs/                     # Write-ups, specifications, and test plans
+├── reports/                  # Published results, profiles, figures, decks, and assets
 ├── models/                   # Local GGUF and model weight storage
 └── benchmark/                # SWE-bench & GPQA benchmarking harness scripts
 ```
@@ -142,7 +143,8 @@ Open your browser to [`http://localhost:4096`](http://localhost:4096) to use the
 - **Root (`/`)**: Contains top-level entrypoint scripts (`setup.sh`, `check.sh`, `demo.sh`, `test.sh`, `throughput.sh`, `accuracy.sh`) for stack initialization, verification, and evaluation.
 - **`scripts/`**: Internal automation utilities, hardware probes (`inspect_dual_gpu.py`), power monitors (`collect_amd_power.py`), model downloaders (`download_model.sh`), and runtime architecture patches (`qwen3_5.py`).
 - **`docker/`**: Container definition files (`Dockerfile.*`) and Docker Compose configurations (`docker-compose.*.yml`) for vLLM FP8, llama.cpp HIP GGUF, Radiance MxFP4, and multi-GPU topologies (`tp2`, `dp2`, `pd`).
-- **`docs/`**: Technical documentation, architectural specifications, test plans, troubleshooting manuals, and empirical benchmark reports.
+- **`docs/`**: Technical write-ups, architectural specifications, test plans, and troubleshooting manuals.
+- **`reports/`**: Published measurements (`results/`, `profiling/`), figures, presentation decks, and image assets. `./test.sh` copies a finished run into `reports/results`. `./analyze.sh` rebuilds the reports and figures from that tree.
 - **`benchmark/`**: SWE-bench and GPQA evaluation harness scripts (`run_benchmark.py`, `run_gpqa.py`, `bench_phases.py`, `pd_router.py`), requirements, and sample datasets.
 - **`models/`**: Staging directory for local model weights, tokenizers, Jinja chat templates, and GGUF quantization files.
 
@@ -310,7 +312,7 @@ Switch inference engines at startup:
 
 ## Documentation
 
-This repository is an [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle. Start with the progressive-disclosure [bundle index](index.md) or the [documentation index](docs/index.md). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). GPT-OSS-120B AIM sweep: [docs/MI350P-AIMS.md](docs/MI350P-AIMS.md). GPT-OSS-120B MLPerf v6.1: [docs/MI350P-MLPERF.md](docs/MI350P-MLPERF.md). R9700 concurrency sweeps: [docs/R9700-SWEEP.md](docs/R9700-SWEEP.md) (8k:1k), [docs/R9700-SWEEP-1024-1024.md](docs/R9700-SWEEP-1024-1024.md) (1k:1k), and [docs/R9700-SWEEP-1024-8192.md](docs/R9700-SWEEP-1024-8192.md) (1k:8k). Server TCO analysis and presentation figures: [docs/TCO.md](docs/TCO.md). Disaggregated serving (P/D vs. DP) evaluation: [docs/PDD-FRAMEWORK.md](docs/PDD-FRAMEWORK.md) and [docs/PDD-EVAL.md](docs/PDD-EVAL.md).
+This repository is an [Open Knowledge Format v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) bundle. Start with the progressive-disclosure [bundle index](index.md) or the [documentation index](docs/index.md). Published measurements, figures, and decks are under [reports/](reports/). Current Instinct serving record: [docs/MI350P.md](docs/MI350P.md). GPT-OSS-120B AIM sweep: [docs/MI350P-AIMS.md](docs/MI350P-AIMS.md). GPT-OSS-120B MLPerf v6.1: [docs/MI350P-MLPERF.md](docs/MI350P-MLPERF.md). R9700 concurrency sweeps: [docs/R9700-SWEEP.md](docs/R9700-SWEEP.md) (8k:1k), [docs/R9700-SWEEP-1024-1024.md](docs/R9700-SWEEP-1024-1024.md) (1k:1k), and [docs/R9700-SWEEP-1024-8192.md](docs/R9700-SWEEP-1024-8192.md) (1k:8k). Server TCO analysis and presentation figures: [docs/TCO.md](docs/TCO.md). Disaggregated serving (P/D vs. DP) evaluation: [docs/PDD-FRAMEWORK.md](docs/PDD-FRAMEWORK.md) and [docs/PDD-EVAL.md](docs/PDD-EVAL.md).
 
 Every non-reserved Markdown concept carries OKF frontmatter. `index.md` files are reserved catalogs. Validate the graph and metadata after changing documentation:
 

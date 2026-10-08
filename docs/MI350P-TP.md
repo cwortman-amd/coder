@@ -36,13 +36,13 @@ functional TP=2 result, but it is **not a performance-qualified deployment**.
 | 4 | 253.22 | 20.26 | 0.080× | 303.8 ms | 2,798.8 ms |
 | 8 | 422.88 | 32.94 | 0.078× | 542.4 ms | 6,167.2 ms |
 
-![TP throughput](figures/tp/tp-throughput.png)
+![TP throughput](../reports/figures/tp/tp-throughput.png)
 
-![TP TTFT](figures/tp/tp-ttft.png)
+![TP TTFT](../reports/figures/tp/tp-ttft.png)
 
-The combined figure is [`figures/tp/tp-compare.png`](figures/tp/tp-compare.png).
+The combined figure is [`figures/tp/tp-compare.png`](../reports/figures/tp/tp-compare.png).
 Its published inputs are
-[`figures/tp/tp-compare.json`](figures/tp/tp-compare.json). Regenerate all
+[`figures/tp/tp-compare.json`](../reports/figures/tp/tp-compare.json). Regenerate all
 three plots with:
 
 ```bash

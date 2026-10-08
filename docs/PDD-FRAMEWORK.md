@@ -182,12 +182,12 @@ $$N_{\text{cards}} = \frac{D_{\text{annual}}}{T_{\text{available}} \times u_{\te
 The complete presales package is organized into an **Executive Briefing** backed by an **Engineering Audit Appendix**:
 
 ### 8.1 Executive Suite (Six Core Exhibits)
-1. **Exhibit 1: The Master 4-Panel Dashboard** ([`01_pdd_benefits_master_dashboard.png`](/docs/figures/pd/01_pdd_benefits_master_dashboard.png)) — Stalls, goodput, crossover break-even, and handoff delay tolerance.
-2. **Exhibit 2: Sustainable Capacity & Queue Stability Boundary** ([`02_pdd_sustainable_capacity_sweep.png`](/docs/figures/pd/02_pdd_sustainable_capacity_sweep.png)) — Completed vs. qualified req/s and queue growth onset ($\lambda > 0.72\text{ req/s}$).
-3. **Exhibit 3: Decode Retention Crossover ($\eta < 0.50$)** ([`03_pdd_decode_retention_crossover.png`](/docs/figures/pd/03_pdd_decode_retention_crossover.png)) — Empirical condition where 1 dedicated decoder beats 2 collocated cards in raw output.
-4. **Exhibit 4: Real-Time Inter-Token Latency Timeline** ([`04_pdd_token_latency_timeline.png`](/docs/figures/pd/04_pdd_token_latency_timeline.png)) — Waterfall trace of $613.3\text{ ms}$ stall during prompt chunking vs. uninterrupted 48.2 ms cadence.
-5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)) — Cost per 1,000 qualified requests ($0.49 vs. $3.98) and fleet sizing curves.
-6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](/docs/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)) — 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
+1. **Exhibit 1: The Master 4-Panel Dashboard** ([`01_pdd_benefits_master_dashboard.png`](/reports/figures/pd/01_pdd_benefits_master_dashboard.png)) — Stalls, goodput, crossover break-even, and handoff delay tolerance.
+2. **Exhibit 2: Sustainable Capacity & Queue Stability Boundary** ([`02_pdd_sustainable_capacity_sweep.png`](/reports/figures/pd/02_pdd_sustainable_capacity_sweep.png)) — Completed vs. qualified req/s and queue growth onset ($\lambda > 0.72\text{ req/s}$).
+3. **Exhibit 3: Decode Retention Crossover ($\eta < 0.50$)** ([`03_pdd_decode_retention_crossover.png`](/reports/figures/pd/03_pdd_decode_retention_crossover.png)) — Empirical condition where 1 dedicated decoder beats 2 collocated cards in raw output.
+4. **Exhibit 4: Real-Time Inter-Token Latency Timeline** ([`04_pdd_token_latency_timeline.png`](/reports/figures/pd/04_pdd_token_latency_timeline.png)) — Waterfall trace of $613.3\text{ ms}$ stall during prompt chunking vs. uninterrupted 48.2 ms cadence.
+5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](/reports/figures/pd/05_pdd_presales_tco_tokenomics.png)) — Cost per 1,000 qualified requests ($0.49 vs. $3.98) and fleet sizing curves.
+6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](/reports/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)) — 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
 
 
 ### 8.2 Engineering Audit Appendix

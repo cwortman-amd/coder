@@ -76,13 +76,13 @@ def main() -> None:
     parser.add_argument(
         "--results-dir",
         type=Path,
-        default=ROOT / "docs" / "results" / "tp_compare" / "mi350p",
-        help="Published TP=1 and TP=2 series under docs/results",
+        default=ROOT / "reports" / "results" / "tp_compare" / "mi350p",
+        help="Published TP=1 and TP=2 series under reports/results",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=ROOT / "docs" / "figures" / "tp",
+        default=ROOT / "reports" / "figures" / "tp",
     )
     args = parser.parse_args()
 

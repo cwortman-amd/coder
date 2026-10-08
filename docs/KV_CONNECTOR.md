@@ -572,7 +572,7 @@ Direction remains important for the copy itself. GPU1→GPU0 is byte-perfect but
 
 The backend integration benchmark is
 `scripts/kv_xfer/nixl_hip_ipc_bench.cpp`. The Qwen-shaped region record is
-`docs/results/kv_xfer/nixl_hip_ipc_regions.jsonl`. The descriptor matrix
+`reports/results/kv_xfer/nixl_hip_ipc_regions.jsonl`. The descriptor matrix
 stays a local bench output under `_results/kv_xfer_mi350p/`.
 
 Contiguous descriptors are not the Qwen3.8 layout. The live registration is
@@ -671,11 +671,11 @@ and recomputed one token each. No transfer failed.
 
 #### 8K/1K C1 on the GPU 1→GPU 0 pair
 
-Four serial streaming prompts, 8192 in / 1024 out, through the router. Decode Prometheus recorded zero failed transfers. Aggregate output throughput was **72.49 tok/s** over 56.5 s and 4,096 generated tokens. Inter-token latency was 10.58 ms p50 and 10.64 ms p95. Time to first token was 1.47 s p50 (mean 2.30 s). Per request the rates were 61.4, 73.4, 84.4, and 74.5 tok/s. Artifact: `docs/results/kv_xfer/hip_ipc_pd_8k1k.json`.
+Four serial streaming prompts, 8192 in / 1024 out, through the router. Decode Prometheus recorded zero failed transfers. Aggregate output throughput was **72.49 tok/s** over 56.5 s and 4,096 generated tokens. Inter-token latency was 10.58 ms p50 and 10.64 ms p95. Time to first token was 1.47 s p50 (mean 2.30 s). Per request the rates were 61.4, 73.4, 84.4, and 74.5 tok/s. Artifact: `reports/results/kv_xfer/hip_ipc_pd_8k1k.json`.
 
-`python3 scripts/generate_kv_plots.py` copies the gate JSON from `_results` when a fresh run is present, writes `docs/results/kv_connector_summary.json`, and draws `docs/figures/kv/01_hip_ipc_8k1k.png` from that summary. `_results`, `_src`, and `_opt` are local scratch and are not committed.
+`python3 scripts/generate_kv_plots.py` copies the gate JSON from `_results` when a fresh run is present, writes `reports/results/kv_connector_summary.json`, and draws `reports/figures/kv/01_hip_ipc_8k1k.png` from that summary. `_results`, `_src`, and `_opt` are local scratch and are not committed.
 
-About 11 s of a 12 s request is decode. The KV copy is about one token at this cadence. The 1.3–1.5 s time to first token is prefill on GPU 1 plus the handshake; a dedicated 8K prefill on a healthy GPU is 0.73 s (`docs/results/kv_xfer/dedicated_prefill_8k.json`, engine prefill). A same-process 1K/1K EngineCore trace attributes decode dispatch time to MXFP4 GEMM and reduction (49%), attention and KV (20%), and elementwise work (12%). That trace is the frozen single-GPU recipe, not this 1P1D process, and the profiled run itself was 57.35 tok/s.
+About 11 s of a 12 s request is decode. The KV copy is about one token at this cadence. The 1.3–1.5 s time to first token is prefill on GPU 1 plus the handshake; a dedicated 8K prefill on a healthy GPU is 0.73 s (`reports/results/kv_xfer/dedicated_prefill_8k.json`, engine prefill). A same-process 1K/1K EngineCore trace attributes decode dispatch time to MXFP4 GEMM and reduction (49%), attention and KV (20%), and elementwise work (12%). That trace is the frozen single-GPU recipe, not this 1P1D process, and the profiled run itself was 57.35 tok/s.
 
 The short-prompt probe on this same pair still fails the token gate. Prompt IDs matched the saved single-GPU control and the first completion ID did not (`optimized_peer_visible_probe.json` against `correctness_single.json`). The 72.49 tok/s figure is a transport measurement.
 
@@ -691,7 +691,7 @@ descriptor and 59.0 ms p50 at 256 descriptors.
 | Forced `rocm_ipc` | Failed to initialize | `probe_ipc.log` |
 | Native NIXL `HIP_IPC` READ | Measured | `nixl_hip_ipc_matrix.jsonl`; 5.55 ms p50, 48.3 GB/s |
 | NixlConnector initialization | Passed with DS layout | `backends=["HIP_IPC"]`, `VLLM_SSM_CONV_STATE_LAYOUT=DS`, 2,512 descriptors |
-| Qwen-shaped 16-region READ | Measured | `docs/results/kv_xfer/nixl_hip_ipc_regions.jsonl`; 20.5 ms p50, 45.3 GB/s |
+| Qwen-shaped 16-region READ | Measured | `reports/results/kv_xfer/nixl_hip_ipc_regions.jsonl`; 20.5 ms p50, 45.3 GB/s |
 | HIP-IPC Qwen3.8 handoff | Functional, experimental | Cold 8K moves 699,203,584 bytes; 240 descriptors coalesce to 96 copies |
 | Single-GPU token-id match | Failed | First completion mismatch at index 2 (81 tokens) and index 5 (8,246 tokens) on the earlier GPU 0→GPU 1 pair; the GPU 1→GPU 0 short prompt also mismatches at index 0 |
 | 8K HIP-IPC waterfall | Measured | Transfer p50 100 ms, p95 235 ms; client one-token p50 1,189 ms |

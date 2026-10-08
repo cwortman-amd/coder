@@ -117,7 +117,7 @@ def main():
     parser.add_argument(
         "--no-publish-latency",
         action="store_true",
-        help="Do not copy detailed latency samples to docs/results and docs/profiling",
+        help="Do not copy detailed latency samples to reports/results and reports/profiling",
     )
     args = parser.parse_args()
 

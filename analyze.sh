@@ -1,14 +1,14 @@
 #!/bin/bash
 # Rebuild every evaluation and experiment report from the published copies.
-# Inputs are docs/results and docs/profiling.
+# Inputs are reports/results and reports/profiling.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-RESULTS="${ROOT}/docs/results"
-PROFILING="${ROOT}/docs/profiling"
-FIGURES="${ROOT}/docs/figures"
+RESULTS="${ROOT}/reports/results"
+PROFILING="${ROOT}/reports/profiling"
+FIGURES="${ROOT}/reports/figures"
 
 if [ -x "${ROOT}/.venv/bin/python" ]; then
     PY="${ROOT}/.venv/bin/python"
@@ -25,10 +25,10 @@ Usage: $(basename "$0")
 Rebuild reports and figures from the latest published measurements.
 
 Inputs:
-  docs/results     AgentX campaigns, agent-chain manifests, latency samples, KV and P/D records
-  docs/profiling   Qwen latency index, GPU utilization, R9700 phase profiles
+  reports/results     AgentX campaigns, agent-chain manifests, latency samples, KV and P/D records
+  reports/profiling   Qwen latency index, GPU utilization, R9700 phase profiles
 
-Writes analysis next to each campaign and figures under docs/figures/.
+Writes analysis next to each campaign and figures under reports/figures/.
 EOF
 }
 
@@ -185,4 +185,4 @@ if [ "$FAILED" -ne 0 ]; then
     echo "One or more report generators failed." >&2
     exit 1
 fi
-echo "Reports regenerated from docs/results and docs/profiling."
+echo "Reports regenerated from reports/results and reports/profiling."

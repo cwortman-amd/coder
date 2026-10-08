@@ -30,9 +30,9 @@
 
 # Published Results
 
-* [Published Results Catalog](results/index.md) - Progressive-disclosure index for published benchmark results.
+* [Published Results Catalog](../reports/results/index.md) - Progressive-disclosure index for published benchmark results.
 
 # Presentation
 
-* [Coder TCO](presentation/coder-tco.md) - Replace metered coding-assistant subscriptions with an on-premises AMD GPU serving OpenCode.
-* [Serving Agentic LLMs at the Edge](presentation/tail-latency.md) - Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700 & Instinct™ MI350P.
+* [Coder TCO](../reports/presentation/coder-tco.md) - Replace metered coding-assistant subscriptions with an on-premises AMD GPU serving OpenCode.
+* [Serving Agentic LLMs at the Edge](../reports/presentation/tail-latency.md) - Empirical Evaluation of Qwen3.8-27B MXFP4 on AMD Radeon™ AI PRO R9700 & Instinct™ MI350P.

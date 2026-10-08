@@ -378,7 +378,7 @@ The customer-facing evaluation package is divided into an **Executive Suite** an
 ### 10.1 The Five Executive Exhibits
 
 ```
-docs/figures/pd/
+reports/figures/pd/
 ├── 01_pdd_benefits_master_dashboard.png     # Exhibit 1: Executive Master Dashboard
 ├── 02_pdd_sustainable_capacity_sweep.png    # Exhibit 2: Sustainable Capacity & Queue Stability
 ├── 03_pdd_decode_retention_crossover.png    # Exhibit 3: Decode Retention Crossover (η < 0.50)
@@ -387,12 +387,12 @@ docs/figures/pd/
 └── 06_pdd_vs_dp_tradeoff_pareto.png        # Exhibit 6: DP Replications vs PDD Tradeoff Pareto
 ```
 
-1. **Exhibit 1: Executive Master Dashboard** ([`01_pdd_benefits_master_dashboard.png`](/docs/figures/pd/01_pdd_benefits_master_dashboard.png)): 4-panel overview connecting stall distributions, usable goodput, break-even crossover, and handoff delay tolerance.
-2. **Exhibit 2: Sustainable Capacity Sweep** ([`02_pdd_sustainable_capacity_sweep.png`](/docs/figures/pd/02_pdd_sustainable_capacity_sweep.png)): Highlights the queue stability boundary ($\lambda > 0.72\text{ req/s}$) where DP=2 collapses into latency failure while 1P1D sustains compliant goodput.
-3. **Exhibit 3: Decode Retention Crossover** ([`03_pdd_decode_retention_crossover.png`](/docs/figures/pd/03_pdd_decode_retention_crossover.png)): Shows $\eta(\lambda)$ and the break-even condition where 1 dedicated decode card beats 2 collocated cards in raw volume.
-4. **Exhibit 4: Real-Time Token Freeze Timeline** ([`04_pdd_token_latency_timeline.png`](/docs/figures/pd/04_pdd_token_latency_timeline.png)): Side-by-side waterfall timeline contrasting a measured $613.3\text{ ms}$ forward execution stall against clockwork 48.2 ms decode pacing.
-5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](/docs/figures/pd/05_pdd_presales_tco_tokenomics.png)): Compares cost per 1,000 qualified requests ($\$0.49\text{ vs. }\$3.98$) and required GPU fleet counts across diurnal demand.
-6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](/docs/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)): 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
+1. **Exhibit 1: Executive Master Dashboard** ([`01_pdd_benefits_master_dashboard.png`](/reports/figures/pd/01_pdd_benefits_master_dashboard.png)): 4-panel overview connecting stall distributions, usable goodput, break-even crossover, and handoff delay tolerance.
+2. **Exhibit 2: Sustainable Capacity Sweep** ([`02_pdd_sustainable_capacity_sweep.png`](/reports/figures/pd/02_pdd_sustainable_capacity_sweep.png)): Highlights the queue stability boundary ($\lambda > 0.72\text{ req/s}$) where DP=2 collapses into latency failure while 1P1D sustains compliant goodput.
+3. **Exhibit 3: Decode Retention Crossover** ([`03_pdd_decode_retention_crossover.png`](/reports/figures/pd/03_pdd_decode_retention_crossover.png)): Shows $\eta(\lambda)$ and the break-even condition where 1 dedicated decode card beats 2 collocated cards in raw volume.
+4. **Exhibit 4: Real-Time Token Freeze Timeline** ([`04_pdd_token_latency_timeline.png`](/reports/figures/pd/04_pdd_token_latency_timeline.png)): Side-by-side waterfall timeline contrasting a measured $613.3\text{ ms}$ forward execution stall against clockwork 48.2 ms decode pacing.
+5. **Exhibit 5: Presales TCO Tokenomics & Fleet Sizing** ([`05_pdd_presales_tco_tokenomics.png`](/reports/figures/pd/05_pdd_presales_tco_tokenomics.png)): Compares cost per 1,000 qualified requests ($\$0.49\text{ vs. }\$3.98$) and required GPU fleet counts across diurnal demand.
+6. **Exhibit 6: DP Replications vs. PDD Tradeoff Dynamics** ([`06_pdd_vs_dp_tradeoff_pareto.png`](/reports/figures/pd/06_pdd_vs_dp_tradeoff_pareto.png)): 4-panel Pareto frontier analyzing TTFT queueing spikes, peak ITL forward stalls, the "Phantom Capacity Gap" (raw tok/s vs. qualified goodput), and multi-replica SLO collapse curves across DP=2, DP=8, 1P1D, and 1P:7D.
 
 
 ### 10.2 Engineering Audit Appendix Checklist
@@ -519,6 +519,6 @@ Track 4: Presales Briefing Package   ────> TCO Economics (4.7x less expe
    - Run [`scripts/inspect_dual_gpu.py`](/scripts/inspect_dual_gpu.py) to pass homogeneous preflight.
    - Run [`scripts/bench_dual_gpu.sh`](/scripts/bench_dual_gpu.sh) across `--mode pd` vs `--mode dp2` to convert emulated dashed curves into solid measured Level 4 curves.
 4. **Track 4: Executive Briefing & Presales Collateral (Enablement Track)**:
-   - Finalize the [executive slide deck](/docs/presentation/tail-latency.md) synthesizing the 12 TCO figures ([`docs/figures/tco/`](/docs/figures/tco/)) and 6 PDD figures ([`docs/figures/pd/`](/docs/figures/pd/)).
+   - Finalize the [executive slide deck](/reports/presentation/tail-latency.md) synthesizing the 12 TCO figures ([`reports/figures/tco/`](/reports/figures/tco/)) and 6 PDD figures ([`reports/figures/pd/`](/reports/figures/pd/)).
    - Detail the economic proposition: R9700 delivers a 5.6× less expensive capital expenditure and 4.7× less expensive 3-year TCO per token than H100 SXM5, while PDD eliminates the "Phantom Capacity Gap" under production SLAs.
 

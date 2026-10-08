@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plot the KV handoff from the measurements already in docs/results."""
+"""Plot the KV handoff from the measurements already in reports/results."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from publish_results import PUBLISHED_ROOT, build_kv_summary
 
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "figures", "kv")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "figures", "kv")
 
 
 def plot_kv_handoff(summary: dict) -> str:

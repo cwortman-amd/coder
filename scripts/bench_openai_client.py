@@ -133,7 +133,7 @@ def main_chat() -> int:
     p.add_argument(
         "--publish-latency",
         action="store_true",
-        help="Publish Qwen request/token samples to docs/results and docs/profiling",
+        help="Publish Qwen request/token samples to reports/results and reports/profiling",
     )
     p.add_argument("--repetition", type=int, default=1)
     args = p.parse_args()
@@ -348,7 +348,7 @@ def main_stream() -> int:
     parser.add_argument(
         "--publish-gpu-profile",
         default="",
-        help="Publish Qwen raw samples under docs/results for this GPU profile",
+        help="Publish Qwen raw samples under reports/results for this GPU profile",
     )
     parser.add_argument("--repetition", type=int, default=1)
     args = parser.parse_args()

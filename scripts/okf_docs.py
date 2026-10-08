@@ -20,7 +20,7 @@ LOCAL_FILE_PREFIX = "file:///home/amd/workspace/coder/"
 INDEX_PATHS = (
     Path("index.md"),
     Path("docs/index.md"),
-    Path("docs/results/index.md"),
+    Path("reports/results/index.md"),
     Path("_results/index.md"),
 )
 HEADING_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
@@ -37,11 +37,11 @@ DOC_OVERRIDES: dict[str, dict[str, Any]] = {
         "type": "Documentation Catalog",
         "tags": ["documentation", "catalog"],
     },
-    "docs/presentation/coder-tco.md": {
+    "reports/presentation/coder-tco.md": {
         "type": "Presentation",
         "tags": ["presentation", "tco", "coder", "on-premises"],
     },
-    "docs/presentation/tail-latency.md": {
+    "reports/presentation/tail-latency.md": {
         "type": "Presentation",
         "tags": ["presentation", "agentx", "tail-latency", "pdd"],
     },
@@ -191,7 +191,7 @@ def infer_tags(path: Path, doc_type: str) -> list[str]:
         tags.append(type_tag)
     for part in path.parts[:-1]:
         normalized = slug(part)
-        if normalized and normalized not in {"docs", "results", "profiling"}:
+        if normalized and normalized not in {"docs", "reports", "results", "profiling"}:
             tags.append(normalized)
     stem = slug(path.stem)
     for token in stem.split("-"):
@@ -287,7 +287,7 @@ def index_entry(index_path: Path, concept_path: Path) -> str:
         catalog_names = {
             "_results/index.md": ("Archived Results Catalog", "archived benchmark and profiling results"),
             "docs/index.md": ("Documentation Catalog", "project documentation"),
-            "docs/results/index.md": ("Published Results Catalog", "published benchmark results"),
+            "reports/results/index.md": ("Published Results Catalog", "published benchmark results"),
         }
         title, scope = catalog_names.get(
             concept_path.as_posix(),
@@ -328,11 +328,11 @@ def generate_indexes() -> None:
     docs_results = [
         path
         for path in concepts
-        if len(path.parts) >= 3 and path.parts[:2] == ("docs", "results")
+        if len(path.parts) >= 3 and path.parts[:2] == ("reports", "results")
     ]
     archived = [path for path in concepts if path.parts[0] == "_results"]
     write_index(
-        Path("docs/results/index.md"),
+        Path("reports/results/index.md"),
         [("Published Benchmark Results", docs_results)],
     )
     grouped: dict[str, list[Path]] = {}
@@ -344,10 +344,10 @@ def generate_indexes() -> None:
         Path("docs/index.md"),
         [
             ("Guides and Technical Reports", docs_top),
-            ("Published Results", [Path("docs/results/index.md")]),
+            ("Published Results", [Path("reports/results/index.md")]),
             ("Presentation", [
-                Path("docs/presentation/coder-tco.md"),
-                Path("docs/presentation/tail-latency.md"),
+                Path("reports/presentation/coder-tco.md"),
+                Path("reports/presentation/tail-latency.md"),
             ]),
         ],
     )

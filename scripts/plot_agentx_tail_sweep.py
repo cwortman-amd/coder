@@ -22,8 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from plot_style import BLUE, GREEN, ORANGE, PURPLE, RED, TEAL  # noqa: E402
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_RESULTS_DIR = PROJECT_DIR / "docs" / "results" / "agentx"
-DEFAULT_OUTPUT_DIR = PROJECT_DIR / "docs" / "figures" / "agentx"
+DEFAULT_RESULTS_DIR = PROJECT_DIR / "reports" / "results" / "agentx"
+DEFAULT_OUTPUT_DIR = PROJECT_DIR / "reports" / "figures" / "agentx"
 RESULTS_DIR = DEFAULT_RESULTS_DIR
 OUTPUT_DIR = DEFAULT_OUTPUT_DIR
 USE_R9700_CAPTIONS = True
@@ -53,7 +53,7 @@ def load_data() -> tuple[dict, list[dict]]:
     if not analysis_path.is_file() or not samples_path.is_file():
         raise SystemExit(
             f"AgentX figures need {analysis_path} and {samples_path}. "
-            "Publish the campaign under docs/results/agentx and run analyze.sh."
+            "Publish the campaign under reports/results/agentx and run analyze.sh."
         )
     with analysis_path.open() as f:
         analysis = json.load(f)

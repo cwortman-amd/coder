@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plot power, memory-bandwidth, and PCIe utilization for the latest published run.
 
-Reads docs/profiling/gpu_metrics.json. That file is written when test.sh copies
+Reads reports/profiling/gpu_metrics.json. That file is written when test.sh copies
 a throughput run. The figure is the latest run only.
 """
 
@@ -25,7 +25,7 @@ from publish_suite_results import (  # noqa: E402
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_DIR = ROOT / "docs" / "figures" / "utilization"
+OUTPUT_DIR = ROOT / "reports" / "figures" / "utilization"
 
 
 def _label(workload: str) -> str:

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Copy the measurement records a plot needs into docs/results.
+"""Copy the measurement records a plot needs into reports/results.
 
 Benchmarks write under _results. That tree is local scratch. The files
 below are the records post-processing reads, so they are copied to
-docs/results before a plot script runs. A missing source is left alone
+reports/results before a plot script runs. A missing source is left alone
 when the published copy is already present.
 """
 
@@ -19,10 +19,10 @@ from distribution_stats import percentile_summary  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = ROOT / "_results"
-PUBLISHED_ROOT = ROOT / "docs" / "results"
-PROFILING_ROOT = ROOT / "docs" / "profiling"
+PUBLISHED_ROOT = ROOT / "reports" / "results"
+PROFILING_ROOT = ROOT / "reports" / "profiling"
 
-# Source path relative to _results, published path relative to docs/results.
+# Source path relative to _results, published path relative to reports/results.
 MEASUREMENTS = (
     ("kv_xfer_mi350p/gates/hip_ipc_pd_gpu1p_gpu0d_8k1k.json", "kv_xfer/hip_ipc_pd_8k1k.json"),
     ("kv_xfer_mi350p/gates/correctness_pd.json", "kv_xfer/correctness_pd.json"),
@@ -197,7 +197,7 @@ def build_kv_summary() -> dict:
     return summary
 
 
-POWER_BANDWIDTH_JSON = ROOT / "docs" / "profiling" / "power_bandwidth.json"
+POWER_BANDWIDTH_JSON = ROOT / "reports" / "profiling" / "power_bandwidth.json"
 CONCURRENCY_DIR = SOURCE_ROOT / "priority_eval" / "tco_mi350p" / "concurrency_20260929"
 R9700_RESULTS_DIR = SOURCE_ROOT / "concurrency_sweep"
 R9700_TELEMETRY_DIR = SOURCE_ROOT / "telemetry"

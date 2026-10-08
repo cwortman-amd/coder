@@ -25,7 +25,7 @@ Planning comparison where host DRAM capacity matches total GPU VRAM capacity for
 | Server for 8× RTX PRO 6000 (768 GB DRAM) | $62,000 | 1 | $62,000 |
 | Server for 8× MI350P (1,536 GB DRAM) | $89,000 | 1 | $89,000 |
 
-Date: 29 September 2026. The 28 Sep token ledger is unchanged except the MI350P production C2 cells, which were measured on 29 Sep. Board specs below are vendor peak figures. Token-per-dollar is split into three shapes — 8,192/1,024, 1,024/8,192, and 1,024/1,024 — and a rate is priced only in the shape it was measured at. MI350P has two rows. **Production** is the frozen HF Quark MXFP4 recipe, `VLLM_ROCM_USE_AITER` unset. **DFlash-3** is the best non-production profile: speculative depth 3. It fails the equality gate (101/116) and the interactive latency gate, so it is not the default. R9700S rates are the R9700 MXFP4 sweeps in [R9700.md](R9700.md), [R9700-SWEEP.md](R9700-SWEEP.md), and [R9700-SWEEP-1024-1024.md](R9700-SWEEP-1024-1024.md) on the same 64 CU GPU. The R9600D has no run. The RTX PRO 6000 published median has no recorded input and output length, so it is not placed in any of the three tables. MI350P socket power, UMC activity, and joules per token for the utilization plots are in [profiling/power_bandwidth.json](profiling/power_bandwidth.json). `python3 scripts/generate_tco_plots.py` rebuilds that summary from a local sweep when `_results/priority_eval/tco_mi350p/concurrency_20260929/` is present, then plots the published file. The raw sweep is not committed.
+Date: 29 September 2026. The 28 Sep token ledger is unchanged except the MI350P production C2 cells, which were measured on 29 Sep. Board specs below are vendor peak figures. Token-per-dollar is split into three shapes — 8,192/1,024, 1,024/8,192, and 1,024/1,024 — and a rate is priced only in the shape it was measured at. MI350P has two rows. **Production** is the frozen HF Quark MXFP4 recipe, `VLLM_ROCM_USE_AITER` unset. **DFlash-3** is the best non-production profile: speculative depth 3. It fails the equality gate (101/116) and the interactive latency gate, so it is not the default. R9700S rates are the R9700 MXFP4 sweeps in [R9700.md](R9700.md), [R9700-SWEEP.md](R9700-SWEEP.md), and [R9700-SWEEP-1024-1024.md](R9700-SWEEP-1024-1024.md) on the same 64 CU GPU. The R9600D has no run. The RTX PRO 6000 published median has no recorded input and output length, so it is not placed in any of the three tables. MI350P socket power, UMC activity, and joules per token for the utilization plots are in [profiling/power_bandwidth.json](../reports/profiling/power_bandwidth.json). `python3 scripts/generate_tco_plots.py` rebuilds that summary from a local sweep when `_results/priority_eval/tco_mi350p/concurrency_20260929/` is present, then plots the published file. The raw sweep is not committed.
 
 ## Card reference
 
@@ -91,7 +91,7 @@ Three-year cost of ownership at 50% GPU draw, $0.12/kWh, zero residual value:
 
 Efficiency at nameplate: R9600D 4.7 W/GB, R9700S 9.4 W/GB, MI350P 4.2 W/GB, RTX PRO 6000 6.3 W/GB. Bandwidth per watt: R9600D 4.3 GB/s/W, R9700S 2.1 GB/s/W, MI350P 6.7 GB/s/W, RTX PRO 6000 3.0 GB/s/W.
 
-![Server Fill Capex and 3-Year TCO Comparison](figures/tco/01_tco_capex_breakdown.png)
+![Server Fill Capex and 3-Year TCO Comparison](../reports/figures/tco/01_tco_capex_breakdown.png)
 
 The chart splits each published server figure into a **$25,000** chassis and the DRAM remainder ($12,000, $24,000, $37,000, and $64,000). That split is a display convention: the 256 GB and 512 GB quotes share a $25,000 chassis when DRAM scales at $12,000 per 256 GB, and the same chassis is held for the other two fills. GPU capex, power, and the 3-year totals above are unchanged.
 
@@ -148,14 +148,14 @@ MI350P production is non-speculative Quark MXFP4, `ignore_eos`, one replica per 
 | 8× MI350P, DFlash-3 | 437 | — | 1,933 | 2,296 | 3,109 | 3,293 |
 | 8× RTX PRO 6000 | — | — | — | — | — | — |
 
-Production per card: C1 **39.19**, C2 **77.61**, C4 **149.10**, C8 **287.08**, C16 **522.47**, C32 **929.04**. C2 is the 29 Sep GPU 0 sweep; the other cells are the 28 Sep ledger. Power and UMC for that sweep are in [profiling/power_bandwidth.json](profiling/power_bandwidth.json). Throughput is still rising at C32. DFlash-3 per card: C1 **54.67**, C4 **241.66**, C8 **287.04**, C16 **388.67**, C32 **411.66**. DFlash-3 is less expensive at C1 and C4, tied at C8, and more expensive from C16 up because aggregate tok/s flattens.
+Production per card: C1 **39.19**, C2 **77.61**, C4 **149.10**, C8 **287.08**, C16 **522.47**, C32 **929.04**. C2 is the 29 Sep GPU 0 sweep; the other cells are the 28 Sep ledger. Power and UMC for that sweep are in [profiling/power_bandwidth.json](../reports/profiling/power_bandwidth.json). Throughput is still rising at C32. DFlash-3 per card: C1 **54.67**, C4 **241.66**, C8 **287.04**, C16 **388.67**, C32 **411.66**. DFlash-3 is less expensive at C1 and C4, tied at C8, and more expensive from C16 up because aggregate tok/s flattens.
 
 R9700S per card, Radiance `vllm-mxfp4` (8,192/1,024):
 - **Interactive SLA Tier (`--max-num-seqs 4`)**: C1 **32.81 tok/s** ($2.12/M), C2 **62.26 tok/s** ($1.12/M), C4 **101.80 tok/s** ($0.68/M). At C8 and C16, requests queue to protect interactive latency (TPOT 33.9–36.4 ms), holding throughput at **101.92 tok/s** ($0.68/M) and **100.20 tok/s** ($0.70/M).
 - **Batch Saturation Tier (`--max-num-seqs 8` or auto)**: C8 reaches peak throughput of **138.67 tok/s** (**1,109 tok/s** full server, **$0.50** per million tokens) with TPOT 44.87 ms. C16 reaches **135.93 tok/s** (**1,087 tok/s** full server, **$0.51** per million tokens) where the 32 GB card reaches 99.1% KV cache saturation.
 The latest sweep demonstrates a **+7.3% (C1)**, **+14.1% (C2)**, and **+11.3% (C4)** throughput increase over prior baseline runs, while reducing energy to **3.012 J/tok** at C4. The campaign drew about 186–265 W, so the 150 W planning average is low by roughly $2,000 over three years. With the matched 256 GB DRAM server ($37,000), 3-year TCO drops to $52,787 ($2,199/GPU-yr). At C1 through C8 the R9700S server ($0.50–$2.12) is significantly less expensive per token than the MI350P server. Only at high concurrency ($C \ge 16$) does the massive aggregate throughput of 8× MI350P pull ahead.
 
-![Serving Cost vs Concurrency (8,192 In / 1,024 Out)](figures/tco/02_cost_per_token_8k_1k.png)
+![Serving Cost vs Concurrency (8,192 In / 1,024 Out)](../reports/figures/tco/02_cost_per_token_8k_1k.png)
 
 ### 1,024 in / 8,192 out
 
@@ -207,7 +207,7 @@ R9700S per card, Radiance `vllm-mxfp4` (1,024/1,024, [R9700-SWEEP-1024-1024.md](
 - **Scheduler Capping**: Under `--max-num-seqs 4`, C8 runs at **121.99 tok/s** ($0.57/M) and C16 at **122.12 tok/s** ($0.57/M), delivering consistent sub-33 ms TPOT and 2.47–2.53 J/token efficiency across the board.
 At C1, C2, and C4, 8× R9700S ($0.57–$2.10/M) is **1.7× to 1.8× less expensive** per token than production MI350P (C1 $3.60, C2 $1.94, C4 $0.98). DFlash-3 is $2.51 at C1 and $0.78 at C4. An earlier MI350P FP8 sweep (51.48 / 193.28 / 371.15 tok/s at C1 / C4 / C8) is a different quant and is not in this table.
 
-![Serving Cost vs Concurrency (1,024 In / 1,024 Out)](figures/tco/03_cost_per_token_1k_1k.png)
+![Serving Cost vs Concurrency (1,024 In / 1,024 Out)](../reports/figures/tco/03_cost_per_token_1k_1k.png)
 
 
 ### 16× R9600D 150W iso-efficiency projection and tie targets
@@ -247,7 +247,7 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 
 ## Cross-platform comparison summary
 
-![TCO & Serving Performance Executive Dashboard](figures/tco/05_tco_executive_summary_dashboard.png)
+![TCO & Serving Performance Executive Dashboard](../reports/figures/tco/05_tco_executive_summary_dashboard.png)
 
 ### Cost per million tokens across shapes
 
@@ -268,7 +268,7 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | | 8× MI350P (Production Quark MXFP4) | $5.39 | $2.77 | $1.41 | $0.72 | $0.41 | $0.24 |
 | | 8× MI350P (DFlash-3 Speculative) | $3.01 | — | $1.06 | $1.71 | $1.38 | $1.19 |
 
-![Serving Cost vs Concurrency: Deep Code Generation (1,024 In / 8,192 Out)](figures/tco/03b_cost_per_token_1k_8k.png)
+![Serving Cost vs Concurrency: Deep Code Generation (1,024 In / 8,192 Out)](../reports/figures/tco/03b_cost_per_token_1k_8k.png)
 
 ### Aggregate server throughput (tok/s) across shapes
 
@@ -289,7 +289,7 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 | | 8× MI350P (Production Quark MXFP4) | 425 | 825 | 1,622 | 3,162 | 5,517 | 9,715 |
 | | 8× MI350P (DFlash-3 Speculative) | 759 | — | 2,156 | 1,337 | 1,656 | 1,926 |
 
-![Aggregate Server Throughput Across Shapes](figures/tco/04_aggregate_throughput.png)
+![Aggregate Server Throughput Across Shapes](../reports/figures/tco/04_aggregate_throughput.png)
 
 
 ### Architectural & Economic Takeaways
@@ -310,7 +310,7 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
 
 ### Hardware Resource Saturation Profiles (Power & Memory Bandwidth)
 
-![Hardware Utilization Profiles: Power & Memory Bandwidth](figures/tco/08_power_and_bandwidth_utilization.png)
+![Hardware Utilization Profiles: Power & Memory Bandwidth](../reports/figures/tco/08_power_and_bandwidth_utilization.png)
 
 1. **Power Utilization (% of Device Max TDP)**:
    - **Radeon AI PRO R9700S (300 W Max TDP)**: At $C=1 \dots 4$, operates between **61.2% and 66.5% of TDP** (184–199 W), delivering superior energy efficiency (1.79–3.38 J/token). At $C=16$, queue scaling elevates board power to **86.6%–88.4% of TDP** (260–265 W).
@@ -325,9 +325,9 @@ The R9700S rates are a 64 CU result. They are not an R9600D measurement.
    - **R9700S**: On 1,024-token prompts, TTFT p50 is **165–260 ms at C1**, **189–195 ms at C2**, and **809–937 ms at C4**. Under `--max-num-seqs 4`, C8 and C16 hold surplus requests in an admission queue (17–20 s at C8, 50–58 s at C16) so decode TPOT stays under 34 ms.
    - **MI350P 1,024/1,024, 29 Sep**: The first request at C1 is **119 ms**. C2–C4 wave medians are **516–528 ms**. C8 is **467 ms**, C16 is **710 ms**, and C32 is **1,159 ms**. C64 is **1,721 ms**. Token-arrival p50 (ITL) goes from **12.5 ms at C1** to **20.1 ms at C32** and **29.6 ms at C64**. The C1 median of the four sequential prompts is 47 ms because requests 2–4 hit the prefix cache; that median is not the plotted point. The 8,192-token first request is **705 ms**. Later cells in that shape reuse the same prompt, so their TTFT is not plotted.
 
-![Time-to-First-Token Latency vs Concurrency](figures/tco/09_ttft_latency.png)
+![Time-to-First-Token Latency vs Concurrency](../reports/figures/tco/09_ttft_latency.png)
 
-![Time-to-First-Token p50, p90, p95, and p99](figures/tco/09_ttft_p50_p90_p95.png)
+![Time-to-First-Token p50, p90, p95, and p99](../reports/figures/tco/09_ttft_p50_p90_p95.png)
 
 MI350P points on the four panels are the p50, p90, p95, and p99 of every request in the cell. On 1,024/1,024, C1 rises from **47 ms** at p50 to **98 ms** at p90, **109 ms** at p95, and **117 ms** at p99. C2 through C32 stay in a tight wave, within a few milliseconds of the median. At C64 the median is **1,721 ms** and p99 is **2,142 ms**. On 8,192/1,024, C1 rises from **76 ms** at p50 to **687 ms** at p99. At C16, p50 is **930 ms** and p99 is **1,317 ms**. At C32, p50 is **1,551 ms** and p99 is **2,118 ms**. Cells after C1 in that shape reuse one prompt. The standalone p50 chart still plots the cold first request, **119 ms** at C1 and **705 ms** for the 8,192-token prompt. R9700S p99 is the stored bench percentile at every point. On 8,192/1,024 it is **5.9 s at C4**, **45.9 s at C8**, and **129.0 s at C16**. On 1,024/1,024 it is **901 ms at C4**, **34.4 s at C8**, and **101.4 s at C16**. R9700S p90 and p95 are drawn through C2. C4–C16 request lists were not saved with that sweep.
 
@@ -339,7 +339,7 @@ MI350P points on the four panels are the p50, p90, p95, and p99 of every request
      - *Scale-Out Tensor Parallelism ($TP=2$)*: To satisfy $\text{TPOT} \le 20\text{ ms}$ on RDNA 4, pairing two R9700S cards in TP=2 doubles aggregate memory bandwidth to 1,280 GB/s, cutting per-stream TPOT to $\approx 15\text{ ms}$ ($> 60\text{ tok/s}$).
    - **Admission Queueing Trade-Off ($C \ge 8$)**: Under `--max-num-seqs 4`, the vLLM engine prevents prefill thrashing by holding surplus incoming requests in an admission queue (17.3s at C8, 50.4s at C16). While this protects decode cadence (<33 ms TPOT), it breaches the 3.0 s TTFT boundary, shifting excess requests into batch completion mode.
 
-![SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation](figures/tco/10_slo_qualified_goodput.png)
+![SLO-Qualified Interactive Goodput vs High-Concurrency Batch Saturation](../reports/figures/tco/10_slo_qualified_goodput.png)
 
 5. **Socket energy per output token (29 Sep)**: `amd-smi` socket power integrated over each request window.
 
@@ -355,7 +355,7 @@ MI350P points on the four panels are the p50, p90, p95, and p99 of every request
 | 1,024 in / 8,192 out | 6.68 | 3.38 | 1.79 | — | — |
 | 1,024 in / 1,024 out | 9.18 | 4.79 | 2.53 | 2.49 | 2.47 |
 
-![Socket energy per output token](figures/tco/11_joules_per_token.png)
+![Socket energy per output token](../reports/figures/tco/11_joules_per_token.png)
 
 At low concurrency ($C = 1$), static baseline system power dominates (184–226 W over a single ~33 tok/s stream), yielding ~9.2 J/tok for R9700S and 4.9–7.1 J/tok for MI350P. As concurrency increases to $C = 2 \dots 4$, energy efficiency improves dramatically on both platforms: R9700S drops to **1.79–3.01 J/tok** at $C=4$. Beyond $C \ge 4$, R9700S energy consumption plateaus at **~2.5–3.0 J/tok** as GDDR6 memory bandwidth reaches saturation and surplus requests enter admission queueing. In contrast, MI350P leverages its massive 4.0 TB/s HBM3E bandwidth to continually scale concurrency, reducing socket energy to **0.23 J/tok at $C=64$**. Electricity represents only 4–6% of total 3-year server TCO, so the overall cost-per-million-tokens ranking remains favorable to R9700S at low-to-medium concurrencies despite the higher joules per token.
 
@@ -370,4 +370,4 @@ Each table stays inside one shape. A blank cell means that concurrency was not m
 
 ## Deck
 
-The subscription comparison that uses these prices is [presentation/coder-tco.md](presentation/coder-tco.md). Its routing diagrams are in [assets/](assets/). Rebuild with `./scripts/build_presentation.sh coder-tco`.
+The subscription comparison that uses these prices is [presentation/coder-tco.md](../reports/presentation/coder-tco.md). Its routing diagrams are in [assets/](../reports/assets/). Rebuild with `./scripts/build_presentation.sh coder-tco`.

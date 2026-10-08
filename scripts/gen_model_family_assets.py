@@ -10,7 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 import re
 
-OUT = Path(__file__).resolve().parents[1] / "docs" / "assets"
+OUT = Path(__file__).resolve().parents[1] / "reports" / "assets"
 LOGO_DIR = OUT / "brand-logos"
 FONT = "Arial, Helvetica, sans-serif"
 BG = "#0c1117"
