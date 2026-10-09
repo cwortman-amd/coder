@@ -16,7 +16,7 @@ slo:
 
 campaigns:
   tail-matrix:
-    steps: [closed_loop, open_loop, cold_start, interference, ttft_grid, agentx]
+    steps: [closed_loop, open_loop, cold_start, interference, ttft_grid, agentx, tco_sweeps]
     closed_loop:
       concurrency: [1, 2, 4, 8, 16, 32]
       requests_per_cell: 75
@@ -44,6 +44,15 @@ campaigns:
       duration_seconds: 900
       campaign_seconds: 7200
       allow_short_duration: false
+    # Full-output sweeps that feed the R9700 TCO and TTFT percentile figures.
+    # The short-output ttft_grid above is a different experiment.
+    tco_sweeps:
+      gpu_profiles: [r9700]
+      concurrency: [1, 2, 4, 8, 16]
+      workloads:
+        - {input_len: 8192, output_len: 1024}
+        - {input_len: 1024, output_len: 1024}
+        - {input_len: 1024, output_len: 8192}
 
   tail-quick:
     steps: [closed_loop, open_loop, cold_start, interference, ttft_grid, agentx]

@@ -245,6 +245,57 @@ def run_campaign(args: argparse.Namespace) -> int:
         if rc:
             return rc
 
+    if "tco_sweeps" in steps:
+        row = spec["tco_sweeps"]
+        profile = args.gpu_profile.lower()
+        enabled_profiles = {str(value).lower() for value in row.get("gpu_profiles") or []}
+        if enabled_profiles and profile not in enabled_profiles:
+            print(
+                f"Skipping full-output TCO sweeps for {profile}; "
+                f"enabled profiles: {', '.join(sorted(enabled_profiles))}.",
+                flush=True,
+            )
+        else:
+            normalized_model = args.model.lower()
+            if "mxfp4" not in normalized_model and "quark-awq" not in normalized_model:
+                print(
+                    "Full-output TCO sweeps require the Qwen3.8-27B Quark "
+                    f"MXFP4 recipe; the active model is {args.model!r}.",
+                    file=sys.stderr,
+                )
+                return 1
+            container = args.container or _running_container()
+            if not container:
+                print("Full-output TCO sweeps need a running MXFP4 container.", file=sys.stderr)
+                return 1
+            for workload in row["workloads"]:
+                input_len = int(workload["input_len"])
+                output_len = int(workload["output_len"])
+                print(
+                    f"Full-output TCO sweep {input_len:,}:{output_len:,}",
+                    flush=True,
+                )
+                rc = _run(
+                    [
+                        py,
+                        str(ROOT / "scripts" / "run_concurrency_sweep.py"),
+                        "--container",
+                        container,
+                        "--model",
+                        args.model,
+                        "--gpu-profile",
+                        profile,
+                        "--input-len",
+                        str(input_len),
+                        "--output-len",
+                        str(output_len),
+                        "--concurrency-list",
+                        *_ints(row["concurrency"]),
+                    ]
+                )
+                if rc:
+                    return rc
+
     if "power_sweep" in steps:
         row = spec["power_sweep"]
         print("Power-of-two concurrency sweep", flush=True)

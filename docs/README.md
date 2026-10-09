@@ -57,6 +57,13 @@ Write-ups stay in `docs/`. Measurements, profiles, figures, decks, and image ass
 
 Benches write under `_results`. That directory, plus the local NIXL checkout `_src` and install prefix `_opt`, is gitignored. `./test.sh` copies the results from that run into `reports/results` when it finishes. `./analyze.sh` rebuilds campaign reports and the figures under `reports/figures/`.
 
+On R9700, the default full `./test.sh` run also executes the C1–C16 detailed
+concurrency sweeps for 8,192/1,024, 1,024/1,024, and 1,024/8,192 against the
+Qwen3.8-27B Quark MXFP4 server. Those cells publish TTFT and TPOT
+p50/p90/p95/p99 samples and replace that shape in the TCO plot inputs only
+when every cell passes. The dispatcher then rebuilds the figures. `./test.sh -q`
+keeps the short campaign and does not run these long full-output sweeps.
+
 | Command | Published input | Figure |
 |---|---|---|
 | `./analyze.sh` | `reports/results/` and `reports/profiling/` | Every report and figure below |

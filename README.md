@@ -233,7 +233,7 @@ The root directory contains 6 primary automation and benchmarking scripts. Below
   ./test.sh --both -g auto -e mxfp4 -d -c 8   # Accuracy then throughput
   ```
 - **Key Options & Flags**:
-  - **Suites**: no flag runs accuracy, throughput, and experiments. `-a, --all` runs those three with the accuracy sanity sample. `--full` runs those three with the full accuracy dataset. `--both` is accuracy then throughput. `--accuracy`, `--throughput`, and `--experiments` each run one suite.
+  - **Suites**: no flag runs accuracy, throughput, and experiments. On R9700 the experiment matrix adds the C=1–C16 MXFP4 sweeps for 8,192/1,024, 1,024/1,024, and 1,024/8,192, with p50/p90/p95/p99 samples. `-q` skips those three sweeps. `-a, --all` runs the three suites with the accuracy sanity sample. `--full` runs them with the full accuracy dataset. `--both` is accuracy then throughput. `--accuracy`, `--throughput`, and `--experiments` each run one suite. The dispatcher publishes the run and rebuilds `reports/figures/` when it exits.
   - **Shared Options**: `-g, --gpu-profile <auto|r9700|mi350p>`, `-e, --engine <vllm|mxfp4|llama.cpp|sglang>`, `-q, --quick`.
   - **Accuracy Flags**: `-s` (Sample), `-d` (Diamond/Lite), `-m` (Main/Verified), `--accuracy-limit <N>`, `--swe-only`, `--gpqa-only`, `--eval`.
   - **Throughput Flags**: `-c, --concurrency <N>`, `--num-prompts <N>`, `--test-cases <I:O,...>`, `--compare-engines`.

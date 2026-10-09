@@ -74,6 +74,26 @@ def r9700_result_series(workload, field, max_concurrency=None):
     rows.sort(key=lambda row: row["concurrency"])
     return [row["concurrency"] for row in rows], [row[field] for row in rows]
 
+
+def r9700_latency_percentiles(workload, fallback):
+    """Use complete published percentile rows, retaining legacy gaps otherwise."""
+    global _R9700_RESULTS
+    if _R9700_RESULTS is None:
+        _R9700_RESULTS = json.loads(R9700_RESULTS_JSON.read_text())
+    rows = sorted(
+        (row for row in _R9700_RESULTS["runs"] if row["workload"] == workload),
+        key=lambda row: row["concurrency"],
+    )
+    result = {"c": [row["concurrency"] for row in rows] or fallback["c"]}
+    for percentile_name in ("p50", "p90", "p95", "p99"):
+        field = f"ttft_{percentile_name}_ms"
+        values = [row.get(field) for row in rows]
+        if rows and all(isinstance(value, (int, float)) for value in values):
+            result[percentile_name] = values
+        else:
+            result[percentile_name] = fallback[percentile_name]
+    return result
+
 # Set styling
 plt.rcParams['font.sans-serif'] = ['Liberation Sans', 'DejaVu Sans', 'Arial', 'sans-serif']
 plt.rcParams['font.family'] = 'sans-serif'
@@ -789,14 +809,9 @@ def plot_ttft_latency():
     fig, ax = plt.subplots(figsize=(11, 6.8), dpi=300)
 
     # Measured TTFT p50 across concurrencies
-    c_8k1k = [1, 2, 4, 8, 16]
-    ttft_8k1k = [304.8, 443.9, 3319.7, 20445.2, 58410.1]
-
-    c_1k1k = [1, 2, 4, 8, 16]
-    ttft_1k1k = [259.5, 194.9, 808.7, 17258.1, 50360.4]
-
-    c_1k8k = [1, 2, 4]
-    ttft_1k8k = [164.6, 189.1, 936.7]
+    c_8k1k, ttft_8k1k = r9700_result_series("8k1k", "ttft_p50_ms")
+    c_1k1k, ttft_1k1k = r9700_result_series("1k1k", "ttft_p50_ms")
+    c_1k8k, ttft_1k8k = r9700_result_series("1k8k", "ttft_p50_ms")
 
     # 29 Sep GPU 0. C1 is the first request (later prompts in that cell hit
     # the prefix cache). C2+ is the wave p50. 8k later cells reuse the
@@ -862,10 +877,9 @@ def plot_ttft_latency():
 def plot_ttft_percentiles():
     """Same series as the p50 chart, at p50, p90, p95, and p99.
 
-    R9700S C4–C16 are omitted from p90 and p95. Those vLLM summaries stored
-    the median and p99 only, and the request list was not saved. C1 and C2
-    p90 and p95 are the linear percentiles of the one or two measured
-    requests. p99 is the stored bench percentile at every R9700S point.
+    R9700S uses the full published p50/p90/p95/p99 series when a refreshed
+    detailed sweep exists. Legacy workloads retain only the percentiles that
+    can be recovered from their stored summaries.
     MI350P p50, p90, p95, and p99 are each computed from every request in
     the cell. C1 is not replaced by the cold first request, and the 8,192-token
     series is not a single copied marker. Cells after C1 on 8,192/1,024 reuse
@@ -873,36 +887,54 @@ def plot_ttft_percentiles():
     """
     # concurrency, then percentiles in milliseconds. A shorter list means
     # later concurrencies were not stored.
-    series = (
+    r9700_8k1k = r9700_latency_percentiles(
+        "8k1k",
         {
-            "label": "R9700S (8,192 in / 1,024 out)",
-            "color": COLOR_R9700S_PEAK,
-            "fmt": "o-",
             "c": [1, 2, 4, 8, 16],
             "p50": [304.8, 443.9, 3319.7, 20445.2, 58410.1],
             "p90": [308.0, 553.2],
             "p95": [308.5, 566.9],
             "p99": [308.8, 577.8, 5914.3, 45939.0, 128953.9],
         },
+    )
+    r9700_1k1k = r9700_latency_percentiles(
+        "1k1k",
         {
-            "label": "R9700S (1,024 in / 1,024 out)",
-            "color": COLOR_R9700S_SLA,
-            "fmt": "s--",
             "c": [1, 2, 4, 8, 16],
             "p50": [259.5, 194.9, 808.7, 17258.1, 50360.4],
             "p90": [373.0, 218.9],
             "p95": [387.2, 221.9],
             "p99": [398.6, 224.3, 900.7, 34397.9, 101410.4],
         },
+    )
+    r9700_1k8k = r9700_latency_percentiles(
+        "1k8k",
         {
-            "label": "R9700S (1,024 in / 8,192 out)",
-            "color": "#C2185B",
-            "fmt": "^-.",
             "c": [1, 2, 4],
             "p50": [164.6, 189.1, 936.7],
             "p90": [164.6, 228.5],
             "p95": [164.6, 233.4],
             "p99": [164.6, 237.4, 1043.3],
+        },
+    )
+    series = (
+        {
+            "label": "R9700S (8,192 in / 1,024 out)",
+            "color": COLOR_R9700S_PEAK,
+            "fmt": "o-",
+            **r9700_8k1k,
+        },
+        {
+            "label": "R9700S (1,024 in / 1,024 out)",
+            "color": COLOR_R9700S_SLA,
+            "fmt": "s--",
+            **r9700_1k1k,
+        },
+        {
+            "label": "R9700S (1,024 in / 8,192 out)",
+            "color": "#C2185B",
+            "fmt": "^-.",
+            **r9700_1k8k,
         },
         {
             "label": "MI350P (1,024/1,024, every request)",

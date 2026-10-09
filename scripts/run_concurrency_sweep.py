@@ -30,6 +30,8 @@ RESULTS_DIR = os.path.join(PROJECT_DIR, "_results", "concurrency_sweep")
 TELEMETRY_DIR = os.path.join(PROJECT_DIR, "_results", "telemetry")
 DOCS_DIR = os.path.join(PROJECT_DIR, "docs")
 DOCKER_RESULTS_DIR = "/results/concurrency_sweep"
+PUBLISHED_R9700_RESULTS = Path(PROJECT_DIR) / "reports" / "results" / "r9700" / "concurrency.json"
+PUBLISHED_POWER_BANDWIDTH = Path(PROJECT_DIR) / "reports" / "profiling" / "power_bandwidth.json"
 
 def _power_sweep_defaults() -> tuple[list[int], dict[int, int], int]:
     """Concurrency and prompt counts live in config/campaigns.yaml."""
@@ -61,6 +63,96 @@ def _avg_optional(rows, key):
     if not values:
         return None
     return round(sum(values) / len(values), 2)
+
+
+def publish_r9700_plot_inputs(
+    workload: str,
+    sweep_records: list[dict],
+    *,
+    device_tdp: float,
+    peak_bw: float,
+) -> None:
+    """Upsert one measured workload into the canonical TCO plot inputs."""
+    measured = [row for row in sweep_records if row.get("status") == "PASSED"]
+    if not measured:
+        raise RuntimeError(f"{workload} produced no passed rows to publish")
+
+    results_document = {
+        "gpu_profile": "r9700",
+        "note": (
+            "Measured R9700 serving results used by the TCO plots. "
+            "Detailed request samples are indexed under reports/profiling."
+        ),
+        "runs": [],
+    }
+    if PUBLISHED_R9700_RESULTS.is_file():
+        loaded = json.loads(PUBLISHED_R9700_RESULTS.read_text())
+        if isinstance(loaded, dict):
+            results_document.update(loaded)
+    retained_results = [
+        row
+        for row in results_document.get("runs") or []
+        if row.get("workload") != workload
+    ]
+    for row in measured:
+        retained_results.append(
+            {
+                "workload": workload,
+                "concurrency": row["concurrency"],
+                "output_throughput_tok_s": row["agg_tok_s"],
+                "server_output_throughput_tok_s": round(row["agg_tok_s"] * 8, 3),
+                "ttft_p50_ms": row["ttft_p50_ms"],
+                "ttft_p90_ms": row["ttft_p90_ms"],
+                "ttft_p95_ms": row["ttft_p95_ms"],
+                "ttft_p99_ms": row["ttft_p99_ms"],
+                "tpot_p50_ms": row["tpot_p50_ms"],
+                "tpot_p90_ms": row["tpot_p90_ms"],
+                "tpot_p95_ms": row["tpot_p95_ms"],
+                "tpot_p99_ms": row["tpot_p99_ms"],
+            }
+        )
+    results_document["runs"] = sorted(
+        retained_results,
+        key=lambda row: (str(row.get("workload")), int(row.get("concurrency", 0))),
+    )
+    PUBLISHED_R9700_RESULTS.parent.mkdir(parents=True, exist_ok=True)
+    PUBLISHED_R9700_RESULTS.write_text(json.dumps(results_document, indent=2) + "\n")
+
+    profile_document = {"note": "Measured power and bandwidth series used by report plots.", "runs": []}
+    if PUBLISHED_POWER_BANDWIDTH.is_file():
+        loaded = json.loads(PUBLISHED_POWER_BANDWIDTH.read_text())
+        if isinstance(loaded, dict):
+            profile_document.update(loaded)
+    retained_profiles = [
+        row
+        for row in profile_document.get("runs") or []
+        if not (row.get("gpu_profile") == "r9700" and row.get("workload") == workload)
+    ]
+    for row in measured:
+        retained_profiles.append(
+            {
+                "gpu_profile": "r9700",
+                "workload": workload,
+                "concurrency": row["concurrency"],
+                "power_util_pct": row["power_util_pct"],
+                "avg_power_w": row["avg_power_w"],
+                "bandwidth_util_pct": row["mem_bw_util_pct"],
+                "bandwidth_gbs_estimate": row["mem_bw_gb_s"],
+                "device_tdp_w": device_tdp,
+                "device_peak_bw_gbs": peak_bw,
+                "joules_per_token": row["j_per_tok"],
+            }
+        )
+    profile_document["runs"] = sorted(
+        retained_profiles,
+        key=lambda row: (
+            str(row.get("gpu_profile")),
+            str(row.get("workload")),
+            int(row.get("concurrency", 0)),
+        ),
+    )
+    PUBLISHED_POWER_BANDWIDTH.parent.mkdir(parents=True, exist_ok=True)
+    PUBLISHED_POWER_BANDWIDTH.write_text(json.dumps(profile_document, indent=2) + "\n")
 
 
 def get_vram_peak_mb():
@@ -446,6 +538,25 @@ def main():
             "records": sweep_records,
             "completed_utc": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
         }, sf, indent=2)
+    if "r9700" in prof or "gfx1201" in prof or "radeon" in prof:
+        failed_concurrency = [
+            row["concurrency"] for row in sweep_records if row.get("status") != "PASSED"
+        ]
+        if failed_concurrency:
+            raise RuntimeError(
+                "Refusing to replace the canonical R9700 plot series because "
+                f"these cells failed: {failed_concurrency}"
+            )
+        publish_r9700_plot_inputs(
+            workload_slug(args.input_len, args.output_len),
+            sweep_records,
+            device_tdp=device_tdp,
+            peak_bw=peak_bw,
+        )
+        print(
+            f"[Published] Refreshed {PUBLISHED_R9700_RESULTS} and "
+            f"{PUBLISHED_POWER_BANDWIDTH}"
+        )
     print(f"\n[Results] JSON summary saved to: {summary_file}")
     print(f"[Report] Markdown summary saved to: {report_file}")
 

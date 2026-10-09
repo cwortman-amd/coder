@@ -44,6 +44,8 @@ Experiments covered by --experiments:
   6      Collocated prefill burst against active decode streams
          scripts/bench_prefill_decode_interference.py
   4      Provider comparison only when TAIL_COMPARE_MANIFEST names a second run
+  TCO    On R9700, full-output C=1,2,4,8,16 sweeps for 8K/1K, 1K/1K,
+         and 1K/8K, including p50/p90/p95/p99 and detailed samples
 
 The disaggregated P/D arm of experiment 6 needs a second server and is not
 started by this dispatcher.
@@ -211,14 +213,26 @@ fi
 FAILED=0
 SUITE_STARTED="$(date +%s)"
 
-publish_suite_results() {
+finalize_suite_results() {
+    local suite_status=$?
+    local final_status="$suite_status"
     echo "------------------------------------------------------------------------"
     echo "Publishing this run to reports/results"
     echo "------------------------------------------------------------------------"
-    python3 "${SCRIPT_DIR}/scripts/publish_suite_results.py" --since "$SUITE_STARTED" \
-        || echo "Publishing the suite results failed." >&2
+    if ! python3 "${SCRIPT_DIR}/scripts/publish_suite_results.py" --since "$SUITE_STARTED"; then
+        echo "Publishing the suite results failed." >&2
+        final_status=1
+    fi
+    echo "------------------------------------------------------------------------"
+    echo "Regenerating reports and figures from published measurements"
+    echo "------------------------------------------------------------------------"
+    if ! "${SCRIPT_DIR}/analyze.sh"; then
+        echo "Report generation failed." >&2
+        final_status=1
+    fi
+    return "$final_status"
 }
-trap publish_suite_results EXIT
+trap finalize_suite_results EXIT
 
 inference_container() {
     local name
